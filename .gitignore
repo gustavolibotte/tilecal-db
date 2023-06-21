@@ -1,0 +1,6 @@
+# DBeaver files
+.dbeaver/*
+.project
+
+# macOS
+.DS_Store
