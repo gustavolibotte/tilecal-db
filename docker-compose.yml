@@ -28,5 +28,12 @@ services:
       - "3306:3306"
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+  phpmyadmin:
+    image: phpmyadmin:5.2.1
+    container_name: tilecal-phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=tilecal-db-mysql
 volumes:
   mysqldata:
