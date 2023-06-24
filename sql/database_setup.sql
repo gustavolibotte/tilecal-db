@@ -191,16 +191,14 @@ END
 DELIMITER ;
 
 CREATE TABLE equipments (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    barcode VARCHAR(20) NOT NULL,
+    id VARCHAR(20) PRIMARY KEY NOT NULL,
     model_id INT UNSIGNED NOT NULL,
     location VARCHAR(30) NOT NULL,
     status VARCHAR(30) NOT NULL,
-    parent_id INT UNSIGNED,
+    parent_id VARCHAR(20),
     extra_params JSON,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT unique_equipment_barcode UNIQUE(barcode),
     CONSTRAINT fk_equipment_model FOREIGN KEY (model_id) REFERENCES models(id),
     CONSTRAINT fk_equipment_parent FOREIGN KEY (parent_id) REFERENCES equipments(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -208,7 +206,7 @@ CREATE TABLE equipments (
 
 CREATE TABLE equipments_hist(
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    equipment_id INT UNSIGNED NOT NULL,
+    equipment_id VARCHAR(20) NOT NULL,
     action ENUM('insert', 'update', 'delete') NOT NULL,
     changes JSON NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -222,7 +220,6 @@ FOR EACH ROW
 BEGIN
     SET @changes = JSON_OBJECT(
         'id', NEW.id,
-        'barcode', NEW.barcode,
         'model_id', NEW.model_id,
         'location', NEW.location,
         'status', NEW.status,
@@ -245,7 +242,6 @@ FOR EACH ROW
 BEGIN
     SET @changes = JSON_OBJECT(
         'id', OLD.id,
-        'barcode', OLD.barcode,
         'model_id', OLD.model_id,
         'location', OLD.location,
         'status', OLD.status,
@@ -272,10 +268,6 @@ BEGIN
     -- Customize this block to include the specific columns you want to track
     IF (NEW.id <> OLD.id) THEN
         SET @changes = JSON_SET(@changes, '$.id', JSON_OBJECT('old', OLD.id, 'new', NEW.id));
-    END IF;
-
-    IF (NEW.barcode <> OLD.barcode) THEN
-        SET @changes = JSON_SET(@changes, '$.barcode', JSON_OBJECT('old', OLD.barcode, 'new', NEW.barcode));
     END IF;
 
     IF (NEW.model_id <> OLD.model_id) THEN
@@ -310,7 +302,7 @@ DELIMITER ;
 
 CREATE TABLE equipments_to_files (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    equipment_id INT UNSIGNED NOT NULL,
+    equipment_id VARCHAR(20) NOT NULL,
     file_id INT UNSIGNED NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,

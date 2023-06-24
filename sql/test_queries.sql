@@ -19,7 +19,7 @@ WHERE name = 'pmt_blocker';
 -- Has ids 1 to 10 except 7
 
 INSERT INTO equipments(
-    barcode,
+    id,
     model_id,
     location,
     status,
@@ -36,12 +36,12 @@ START TRANSACTION;
 UPDATE equipments SET
     status='assembled'
 WHERE
-    barcode='987';
+    id='987';
 UPDATE equipments SET
-    parent_id=1 -- pmt block
+    parent_id='987' -- pmt block
 WHERE
-    barcode in ('123', '321', '789');
+    id in ('123', '321', '789');
 COMMIT;
 
-DELETE FROM equipments WHERE barcode='34578' -- deletes daughter board
+DELETE FROM equipments WHERE id='34578' -- deletes daughter board
 
