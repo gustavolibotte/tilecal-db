@@ -59,7 +59,7 @@ BEGIN
         'updated_at', OLD.updated_at
         );
     INSERT INTO equipments_hist(equipment_id, action, changes)
-    VALUES (OLD.id, 'insert', @changes);
+    VALUES (OLD.id, 'delete', @changes);
 END
 |
 DELIMITER ;
