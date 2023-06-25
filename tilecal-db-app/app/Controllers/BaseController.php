@@ -55,4 +55,12 @@ abstract class BaseController extends Controller
 
         // E.g.: $this->session = \Config\Services::session();
     }
+
+    public function buildDataTablesResponse($data)
+    {
+        $response['draw'] = 1;
+        $response['data'] = $data;
+        $response['recordsFiltered'] = count($data);
+        return json_encode($response);
+    }
 }

@@ -30,8 +30,11 @@ $routes->set404Override();
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
+
+// Equipments routes
 $routes->get('equipments', 'Equipments::index');
-$routes->post('fetch-equipments', 'Equipments::serverSideDataTables');
+$routes->post('fetch-equipments', 'Equipments::fetchEquipmentsTable');
+$routes->post('register-equipment', 'Equipments::register');
 
 /*
  * --------------------------------------------------------------------

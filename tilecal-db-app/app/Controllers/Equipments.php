@@ -4,22 +4,37 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\EquipmentModel;
+use App\Models\ModelModel;
 
 class Equipments extends BaseController
 {
     public function index()
     {
-        return view('equipment/table');
+        return view('equipment/index');
     }
 
-    public function serverSideDataTables()
+    public function fetchEquipmentsTable()
     {   
         $equipmentModel = new EquipmentModel();
         $data = $equipmentModel->equipmentsWithModelName();
-        $response['draw'] = 1;
-        $response['data'] = $data;
-        // $response['recordsTotal'] = count($data);
-        $response['recordsFiltered'] = count($data);
-        echo json_encode($response);
+        $response = $this->buildDataTablesResponse($data);
+        echo $response;
+    }
+
+    public function register() {
+        $equipmentModel = new EquipmentModel();
+        $modelModel = new ModelModel();
+        $modelName = $this->request->getVar('model_name');
+        $receivedParentId = $this->request->getVar('parent_id');
+
+        $data = [
+            'id' => $this->request->getVar('id'),
+            'model_id'  => $modelModel->getIdFromModelName($modelName),
+            'location' => $this->request->getVar('location'),
+            'status' => $this->request->getVar('status'),
+            'parent_id' => ($receivedParentId == '') ? null: $receivedParentId
+        ];
+        $equipmentModel->insert($data);
+        return $this->response->redirect(site_url('/equipments'));
     }
 }
