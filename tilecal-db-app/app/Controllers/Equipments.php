@@ -12,7 +12,9 @@ class Equipments extends BaseController
     {
         $equipmentModel = new EquipmentModel();
         $data['equipments'] = $equipmentModel->getEquipmentWithModelName();
-        return view('templates/header').view('equipment/index', $data);
+        return view('templates/header')
+              .view('equipment/index', $data)
+              .view('templates/footer');
     }
 
     public function fetchEquipmentsTable()
