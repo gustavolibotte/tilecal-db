@@ -6,21 +6,9 @@
   <title>TileCal Electronics Database Header </title>
   <link href="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/b-2.3.6/datatables.min.css" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"/>
-  <link rel="stylesheet" type="text/css" href="assets/css/equipment/index.css">
 </head>
 
-<!-- <body>
-<div class="position-absolute bottom-0 start-0">
-  <div class="container bg-dark">
-    <div class="row">
-      <div class="col">
-        <div class="d-flex justify-content-end">
-          <a href=<? echo base_url('help'); ?>Help</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</body> -->
+<body>
 <nav class="navbar fixed-bottom navbar-expand-lg bg-dark">
   <div class="container">
     <a class="navbar-brand" href="<? echo base_url()?>" style="color: #ffffff;"></a>
