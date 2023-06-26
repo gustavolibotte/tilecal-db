@@ -33,9 +33,10 @@ $routes->get('/', 'Home::index');
 
 // Equipments routes
 $routes->get('equipments', 'Equipments::index');
+$routes->get('equipments/register', 'Equipments::registerGet');
 $routes->get('equipments/(:alpha)', 'Equipments::index/$1');
 // $routes->post('fetch-equipments', 'Equipments::fetchEquipmentsTable');
-$routes->post('register-equipment', 'Equipments::register');
+// $routes->post('register-equipment', 'Equipments::register');
 
 /*
  * --------------------------------------------------------------------

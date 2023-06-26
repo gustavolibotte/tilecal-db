@@ -16,8 +16,7 @@ class Equipments extends BaseController
             $indexData['equipments'] = $equipmentModel->getEquipment();
         }
         else{
-            $formattedModelName = str_replace('_', ' ', $modelName);
-            $formattedModelName = ucfirst($formattedModelName);
+            $formattedModelName = ModelModel::formatModelName($modelName);
             $headerData['pageTitle'] = str_replace('Equipment',$formattedModelName ,$headerData['pageTitle']);
             $indexData['equipments'] = $equipmentModel->getEquipmentsWhereModel($modelName);
         }
@@ -34,20 +33,26 @@ class Equipments extends BaseController
         echo $response;
     }
 
-    public function register() {
-        $equipmentModel = new EquipmentModel();
-        $modelModel = new ModelModel();
-        $modelName = $this->request->getVar('model_name');
-        $receivedParentId = $this->request->getVar('parent_id');
+    public function registerGet(){
 
-        $data = [
-            'id' => $this->request->getVar('id'),
-            'model_id'  => $modelModel->getIdFromModelName($modelName),
-            'location' => $this->request->getVar('location'),
-            'status' => $this->request->getVar('status'),
-            'parent_id' => ($receivedParentId == '') ? null: $receivedParentId
-        ];
-        $equipmentModel->insert($data);
-        return $this->response->redirect(site_url('/equipments'));
+        $headerData['pageTitle'] = 'Register Equipment Tilecal Database';
+        $equipmentModel = new EquipmentModel();
+        $registerData['equipments'] = $equipmentModel->getEquipment();
+        $modelModel = new ModelModel();
+        $models = $modelModel->getNames();
+        foreach ($models as &$model) {
+            $model['formattedName'] = ModelModel::formatModelName($model['name']);
+        }
+        $registerData['models'] = $models;
+
+        return view('templates/header', $headerData)
+              .view('equipment/register', $registerData)
+              .view('templates/footer');
+    }
+
+    public function registerPost() {
+
+        helper('form');
+
     }
 }
