@@ -11,14 +11,18 @@ class Equipments extends BaseController
     public function index($modelName=null)
     {   
         $equipmentModel = new EquipmentModel();
+        $headerData['pageTitle'] = 'Tilecal Database Equipment Index';
         if (is_null($modelName)){
-            $data['equipments'] = $equipmentModel->getEquipment();
+            $indexData['equipments'] = $equipmentModel->getEquipment();
         }
         else{
-            $data['equipments'] = $equipmentModel->getEquipmentsWhereModel($modelName);
+            $formattedModelName = str_replace('_', ' ', $modelName);
+            $formattedModelName = ucfirst($formattedModelName);
+            $headerData['pageTitle'] = str_replace('Equipment',$formattedModelName ,$headerData['pageTitle']);
+            $indexData['equipments'] = $equipmentModel->getEquipmentsWhereModel($modelName);
         }
-        return view('templates/header')
-              .view('equipment/index', $data)
+        return view('templates/header', $headerData)
+              .view('equipment/index', $indexData)
               .view('templates/footer');
     }
 
