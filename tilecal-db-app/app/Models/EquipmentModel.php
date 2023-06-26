@@ -39,7 +39,7 @@ class EquipmentModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    public function getEquipment($id=null, $columns='*'){
+    public function getEquipmentRaw($id=null, $columns='*'){
 
         if (is_null($id)){
             $result = $this->findAll();
@@ -52,7 +52,7 @@ class EquipmentModel extends Model
         return $result;
     }
 
-    public function getEquipmentWithModelName($id=null)
+    public function getEquipment($id=null)
     {   
         $columns = 'equipments.id, ';
         $columns .= 'models.name as model, ';
@@ -74,6 +74,27 @@ class EquipmentModel extends Model
                            ->first();
         }
 
+        return $result;
+    }
+    /**
+     * Returns all the equipments for a specific model name
+     *
+     * @param string $modelName Model's name to query for equipments
+     *
+     * @return result The query results
+     */ 
+    public function getEquipmentsWhereModel($modelName){
+        $columns = 'equipments.id, ';
+        $columns .= 'models.name as model, ';
+        $columns .= 'equipments.location, ';
+        $columns .= 'equipments.status, ';
+        $columns .= 'equipments.parent_id, ';
+        $columns .= 'equipments.comments, ';
+        $result = $this->select($columns)
+                       ->where(sprintf("models.name = '%s'", $modelName))
+                       ->join('models', 'equipments.model_id = models.id')
+                       ->orderBy('equipments.last_update', 'DESC')
+                       ->findAll();
         return $result;
     }
 }

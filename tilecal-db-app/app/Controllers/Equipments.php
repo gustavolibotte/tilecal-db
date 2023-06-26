@@ -8,10 +8,15 @@ use App\Models\ModelModel;
 
 class Equipments extends BaseController
 {
-    public function index()
-    {
+    public function index($modelName=null)
+    {   
         $equipmentModel = new EquipmentModel();
-        $data['equipments'] = $equipmentModel->getEquipmentWithModelName();
+        if (is_null($modelName)){
+            $data['equipments'] = $equipmentModel->getEquipment();
+        }
+        else{
+            $data['equipments'] = $equipmentModel->getEquipmentsWhereModel($modelName);
+        }
         return view('templates/header')
               .view('equipment/index', $data)
               .view('templates/footer');
