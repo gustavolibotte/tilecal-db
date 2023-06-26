@@ -3,14 +3,14 @@
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>TileCal Electronics Database</title>
+  <title>TileCal Electronics Database Equipment Index </title>
   <link href="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/b-2.3.6/datatables.min.css" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"/>
 </head>
 
 <body>
 <div class="container mt-4">
-<h1>TileCal Electronics Database</h1>
+<h1>Equipment Index</h1>
 
     <!-- <div class="d-flex justify-content-end">
         <a href="<?php echo site_url('/addname') ?>" class="btn btn-primary">Add a Name & email</a>
@@ -51,8 +51,8 @@
               <input name="parent_id" type="text" class="form-control" id="parent-id-input" placeholder="Parent equipment barcode number" value="">
             </div>
             <div class="modal-footer">
-              <button type="button" form="register-equipment-form" class="btn btn-danger">Cancel</button>
-              <button type="submit" class="btn btn-success" data-bs-dismiss="modal">Register</button>
+              <button type="button" form="register-equipment-form" class="btn btn-danger"  data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-success" id="register-equipment-form-submit-button" data-bs-dismiss="modal" aria-pressed="true">Register</button>
             </div>
           </form>
         </div>
@@ -73,8 +73,7 @@
           <th>Location</th>
           <th>Status</th>
           <th>Parent ID</th>
-          <th>Created at</th>
-          <th>Updated at</th>
+          <th>Comments</th>
         </tr>
       </thead>
     </table>
@@ -87,6 +86,6 @@
 <script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
 <!-- App JS modules -->
-<script type="text/javascript" src="<?=base_url('assets/js/equipment/table.js')?>" ></script>
+<script type="text/javascript" src="<?=base_url('assets/js/equipment/index.js')?>" ></script>
 </body>
 </html>

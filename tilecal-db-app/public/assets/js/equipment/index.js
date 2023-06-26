@@ -15,8 +15,7 @@ function fetchDataTables(){
             { "data": 'location' },
             { "data": 'status' },
             { "data": 'parent_id' },
-            { "data": 'created_at' },
-            { "data": 'updated_at' },
+            { "data": 'comments' }
         ],
         "language": {
             "infoFiltered": "",  // This removes info from how much samples in table exist

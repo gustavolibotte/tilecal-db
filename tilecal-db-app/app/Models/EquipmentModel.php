@@ -13,13 +13,13 @@ class EquipmentModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id'];
+    protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments'];
 
     // Dates
     protected $useTimestamps = false;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
+    protected $updatedField  = 'last_update';
     protected $deletedField  = 'deleted_at';
 
     // Validation
@@ -39,35 +39,41 @@ class EquipmentModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    public function equipmentsWithModelName()
+    public function getEquipment($id=null, $columns='*'){
+
+        if (is_null($id)){
+            $result = $this->findAll();
+        }
+        else{
+            $result = $this->select($columns)
+                           ->where(sprintf("id = '%s'", $id))
+                           ->first();
+        }
+        return $result;
+    }
+
+    public function getEquipmentWithModelName($id=null)
     {   
         $columns = 'equipments.id, ';
         $columns .= 'models.name as model, ';
         $columns .= 'equipments.location, ';
         $columns .= 'equipments.status, ';
         $columns .= 'equipments.parent_id, ';
-        $columns .= 'equipments.created_at, ';
-        $columns .= 'equipments.updated_at';
-        $result = $this->select($columns)
-                      ->join('models', 'equipments.model_id = models.id')
-                      ->orderBy('equipments.updated_at', 'DESC')
-                      ->findAll();
-        return $result;
-    }
+        $columns .= 'equipments.comments, ';
+        if (is_null($id)){
+            $result = $this->select($columns)
+                           ->join('models', 'equipments.model_id = models.id')
+                           ->orderBy('equipments.last_update', 'DESC')
+                           ->findAll();
+        }
+        else{
+            $result = $this->select($columns)
+                           ->where(sprintf("equipments.id = '%s'", $id))
+                           ->join('models', 'equipments.model_id = models.id')
+                           ->orderBy('equipments.last_update', 'DESC')
+                           ->first();
+        }
 
-    public function fetchTableData()
-    {
-        $columns = 'equipments.id, ';
-        $columns .= 'models.name as model, ';
-        $columns .= 'equipments.location, ';
-        $columns .= 'equipments.status, ';
-        $columns .= 'equipments.parent_id, ';
-        $columns .= 'equipments.created_at, ';
-        $columns .= 'equipments.updated_at';
-        $result = $this->select($columns)
-                      ->join('models', 'equipments.model_id = models.id')
-                      ->orderBy('equipments.updated_at', 'DESC')
-                      ->findAll();
-        echo json_encode($result);
+        return $result;
     }
 }

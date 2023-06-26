@@ -16,7 +16,7 @@ class Equipments extends BaseController
     public function fetchEquipmentsTable()
     {   
         $equipmentModel = new EquipmentModel();
-        $data = $equipmentModel->equipmentsWithModelName();
+        $data = $equipmentModel->getEquipmentWithModelName();
         $response = $this->buildDataTablesResponse($data);
         echo $response;
     }
