@@ -1,14 +1,16 @@
 function fetchDataTables(){
     $('#equipments-table').DataTable({
-        "processing": "true",
-        "serverSide": "true",
-        "ajax": {
-            "url": '/fetch-equipments',
-            "type": 'POST',
-        },
-        "search": {
-            "return": "true",
-        },
+        // "processing": "true",
+        // "serverSide": "true",
+        "paging": "true",
+        // "ajax": {
+        //     "url": '/fetch-equipments',
+        //     "type": 'POST',
+        // },
+        // "search": {
+        //     "return": "true",
+        // },
+        "rowID": "id",
         "columns": [
             { "data": 'id' },
             { "data": 'model' },

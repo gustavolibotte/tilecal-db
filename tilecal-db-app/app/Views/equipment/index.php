@@ -12,10 +12,7 @@
 <div class="container mt-4">
 <h1>Equipment Index</h1>
 
-    <!-- <div class="d-flex justify-content-end">
-        <a href="<?php echo site_url('/addname') ?>" class="btn btn-primary">Add a Name & email</a>
-	</div> -->
-<div class="d-flex justify-content-end">
+<!-- <div class="d-flex justify-content-end">
         <button  class="btn btn-primary" id="reg-eq-button" data-bs-toggle="modal" data-bs-target="#reg-eq-modal">
           Register Equipment
         </button>
@@ -58,7 +55,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
   <?php
      if(isset($_SESSION['msg'])){
         echo $_SESSION['msg'];
@@ -76,6 +73,24 @@
           <th>Comments</th>
         </tr>
       </thead>
+      <tbody>
+          <?php if($equipments): ?>
+          <?php foreach($equipments as $equipment): ?>
+          <tr>
+            <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment['id'])); ?>"><?php echo $equipment['id']; ?></a></td>
+            <td><?php echo $equipment['model']; ?></td>
+            <td><?php echo $equipment['location']; ?></td>
+            <td><?php echo $equipment['status']; ?></td>
+            <?php if (is_null($equipment['parent_id'])): ?>
+              <td><?php echo $equipment['parent_id']; ?></td>
+            <?php else: ?>
+              <td><a type="button" class="btn btn-secondary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment['parent_id'])); ?>"><?php echo $equipment['parent_id']; ?></a></td>
+            <?php endif; ?>
+            <td><?php echo $equipment['comments']; ?></td>
+          </tr>
+         <?php endforeach; ?>
+         <?php endif; ?>
+       </tbody>
     </table>
   </div>
 </div>

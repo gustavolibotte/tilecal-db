@@ -33,7 +33,7 @@ $routes->get('/', 'Home::index');
 
 // Equipments routes
 $routes->get('equipments', 'Equipments::index');
-$routes->post('fetch-equipments', 'Equipments::fetchEquipmentsTable');
+// $routes->post('fetch-equipments', 'Equipments::fetchEquipmentsTable');
 $routes->post('register-equipment', 'Equipments::register');
 
 /*
