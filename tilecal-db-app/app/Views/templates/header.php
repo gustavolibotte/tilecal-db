@@ -6,7 +6,7 @@
   <title>TileCal Electronics Database Header </title>
   <link href="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/b-2.3.6/datatables.min.css" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"/>
-  <link rel="stylesheet" type="text/css" href="assets/css/customize_bs.css">
+  <link rel="stylesheet" type="text/css" href="assets/css/equipment/index.css">
 </head>
 
 <body>
