@@ -4,3 +4,6 @@
 
 # macOS
 .DS_Store
+
+# Directory to throw everything that isn't useful
+ignore/*
