@@ -85,7 +85,6 @@ class EquipmentModel extends Model
      */ 
     public function getEquipmentsWhereModel($modelName){
         $columns = 'equipments.id, ';
-        $columns .= 'models.name as model, ';
         $columns .= 'equipments.location, ';
         $columns .= 'equipments.status, ';
         $columns .= 'equipments.parent_id, ';
