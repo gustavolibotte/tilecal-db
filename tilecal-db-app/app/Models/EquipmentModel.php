@@ -76,6 +76,18 @@ class EquipmentModel extends Model
 
         return $result;
     }
+
+    public function getSideTable(){
+
+        $columns = 'equipments.id, ';
+        $columns .= 'models.name as model ';
+        $result = $this->select($columns)
+                        ->join('models', 'equipments.model_id = models.id')
+                        ->orderBy('equipments.last_update', 'DESC')
+                        ->limit(10)
+                        ->find();
+        return $result;
+    }
     /**
      * Returns all the equipments for a specific model name
      *

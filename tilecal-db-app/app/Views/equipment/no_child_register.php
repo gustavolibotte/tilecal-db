@@ -3,18 +3,19 @@
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>TileCal Electronics Database Equipment Index </title>
+  <title><? echo $model['name']?> Register </title>
   <link href="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/b-2.3.6/datatables.min.css" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/css/style.css'); ?>">
 </head>
 
 <body>
 <div class="container mt-4">
   <div class="jumbotron text-left">
-    <h1>Equipment Register</h1>
+    <h1><? echo $model['name']?> Register</h1>
   </div>
   <div class="row">
-    <div class="col-3 mt-4">
+    <div class="col-2 mt-4">
       <table class="table table-bordered" id="equipments-table">
         <thead>
           <tr>
@@ -27,7 +28,7 @@
           <?php foreach($equipments as $equipment): ?>
             <tr>
               <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment['id'])); ?>"><?php echo $equipment['id']; ?></a></td>
-              <td><?php echo $equipment['model']; ?></td>
+              <td><? echo $equipment['model']; ?></td>
             </tr>
           <?php endforeach; ?>
           <?php endif; ?>
@@ -53,17 +54,8 @@
                 <input name="id" type="text" class="form-control" id="equipment-id-input" placeholder="Equipment barcode number">
               </div>
               <div class="mb-3">
-                <label for="model-name" class="col-form-label">Model Name*:</label>
-                <select class="form-select" aria-label="Equipment model">
-                  <option selected>Choose an equipment model</option>
-                  <?php foreach($models as $model): ?>
-                    <option value=<? echo $model['name'] ?>> <? echo $model['formattedName']; ?> </option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-              <div class="mb-3">
                 <label for="model-name" class="col-form-label">Model*:</label>
-                <input name="model_name" type="text" class="form-control" id="model-name-input" placeholder="Equipment model name">
+                <input name="model_name" type="text" class="form-control" id="model-name-input" value="<? echo $model['name']?>" disabled>
               </div>
               <div class="mb-3">
               <label for="location-field" class="col-form-label">Location*:</label>
@@ -72,11 +64,6 @@
               <div class="mb-3">
               <label for="status-field" class="col-form-label">Status*:</label>
                 <input name="status" type="text" class="form-control" id="status-input" placeholder="Installed, tested, assembled ...">
-              </div>
-              <div class="mb-3">
-              <label for="parent-id" class="col-form-label">Parent ID:</label>
-                <input name="parent_id" type="text" class="form-control" id="parent-id-input" placeholder="Parent equipment barcode number">
-                <div id="parent-id-help" class="form-text">This id must be already registered into the database</div>
               </div>
               <label for="comments" class="col-form-label">Comments:</label>
                 <textarea class="form-control" type="text" id="comments-input" rows="3" placeholder="Useful info about the equipment"></textarea>
@@ -100,6 +87,6 @@
 <script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
 <!-- App JS modules -->
-<script type="text/javascript" src="<?=base_url('assets/js/equipment/register.js')?>" ></script>
+<script type="text/javascript" src="<?=base_url('assets/js/equipment/no_child_register.js')?>" ></script>
 </body>
 </html>

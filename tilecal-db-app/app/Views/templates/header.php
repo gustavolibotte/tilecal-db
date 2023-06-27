@@ -55,30 +55,29 @@
           </a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="<? echo base_url('equipments/batch-register')?>">Batch Register</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register')?>">Equipment</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/3_in_1_board'); ?>">3 in 1 Boards</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/carrier_board'); ?>">Carrier Board</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/cpm'); ?>">CPM</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/daughterboard'); ?>">Daughterboard</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/micro_drawer'); ?>">Micro Drawer</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/fenics'); ?>">FENICS</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/gbe_switch'); ?>">GbE Switch</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/hv_distribution_board'); ?>">HV Distribution Board</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/ipmc'); ?>">IPMC</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/micro_drawer'); ?>">Micro Drawer</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/mainboard'); ?>">Mainboard</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/mini_drawer'); ?>">Mini Drawer</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/micro_drawer'); ?>">Micro Drawer</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/mini_drawer'); ?>">Mini Drawer</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/module'); ?>">Module</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/phase_1_drawer'); ?>">Phase 1 Drawer</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/phase_1_hv_divider'); ?>">Phase 1 HV Divider</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/pmt'); ?>">PMT</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/pmt_block'); ?>">PMT Block</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/super_drawer'); ?>">Super Drawer</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/tdaqi'); ?>">TDAQi</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/register/tilecom'); ?>">TileCoM</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/3_in_1_board/register'); ?>">3 in 1 Boards</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/carrier_board/register'); ?>">Carrier Board</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/cpm/register'); ?>">CPM</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/daughterboard/register'); ?>">Daughterboard</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/micro_drawer/register'); ?>">Micro Drawer</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/fenics/register'); ?>">FENICS</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/gbe_switch/register'); ?>">GbE Switch</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/hv_distribution_board/register'); ?>">HV Distribution Board</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/ipmc/register'); ?>">IPMC</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/micro_drawer/register'); ?>">Micro Drawer</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/mainboard/register'); ?>">Mainboard</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/mini_drawer/register'); ?>">Mini Drawer</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/micro_drawer/register'); ?>">Micro Drawer</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/mini_drawer/register'); ?>">Mini Drawer</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/module/register'); ?>">Module</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/phase_1_drawer/register'); ?>">Phase 1 Drawer</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/phase_1_hv_divider/register'); ?>">Phase 1 HV Divider</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/pmt/register'); ?>">PMT</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/pmt_block/register'); ?>">PMT Block</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/super_drawer/register'); ?>">Super Drawer</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/tdaqi/register'); ?>">TDAQi</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/tilecom/register'); ?>">TileCoM</a></li>
           </ul>
         </li>
         <li class="nav-item dropdown" id="files-navbar-dropdown">

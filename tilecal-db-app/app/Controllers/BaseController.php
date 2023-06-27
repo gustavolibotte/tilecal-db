@@ -63,4 +63,9 @@ abstract class BaseController extends Controller
         $response['recordsFiltered'] = count($data);
         return json_encode($response);
     }
+
+    public function getHeaderData($pageTitle){
+        $headerData['pageTitle'] = $pageTitle;
+        return $headerData;
+    }
 }

@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\EquipmentModel;
-use App\Models\EquipmentModelModel;
 
 class Equipments extends BaseController
 {
@@ -24,28 +23,5 @@ class Equipments extends BaseController
         $data = $equipmentModel->getEquipmentWithModelName();
         $response = $this->buildDataTablesResponse($data);
         echo $response;
-    }
-
-    public function registerGet(){
-
-        $headerData['pageTitle'] = 'Register Equipment Tilecal Database';
-        $equipmentModel = new EquipmentModel();
-        $registerData['equipments'] = $equipmentModel->getEquipment();
-        $modelModel = new EquipmentModelModel();
-        $models = $modelModel->getNames();
-        foreach ($models as &$model) {
-            $model['formattedName'] = EquipmentModelModel::formatModelName($model['name']);
-        }
-        $registerData['models'] = $models;
-
-        return view('templates/header', $headerData)
-              .view('equipment/register', $registerData)
-              .view('templates/footer');
-    }
-
-    public function registerPost() {
-
-        helper('form');
-
     }
 }
