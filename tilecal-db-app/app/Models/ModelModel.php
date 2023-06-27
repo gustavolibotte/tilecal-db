@@ -54,4 +54,14 @@ class ModelModel extends Model
                      ->first();
         return $data['id'];
     }
+
+    public static function formatModelName($modelName){
+        $formattedModelName = str_replace('_', ' ', $modelName);
+        $formattedModelName = ucfirst($formattedModelName);
+        return $formattedModelName;
+    }
+
+    public function getNames(){
+        return $this->select('name')->findAll();
+    }
 }
