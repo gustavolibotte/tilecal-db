@@ -48,58 +48,55 @@
       </ul>
       <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-          <form id="register-equipment-form" action=<?
-            echo base_url(sprintf('%s/register', $model['snakeCase']))
-            ?> method="POST">
+          <form id="register-equipment-form" action=<? echo base_url(sprintf('%s/register', $model['snakeCase']))?> method="POST">
             <?= csrf_field() ?>
-              <div class="row">
-                <div class="col mt-4" id="equipment-info-row">
-                  <h4>Equipment info</h4>
-                  <div id="parent-id-help" class="form-text">* required field</div>
-                  <div class="mb-3">
-                    <label for="equipment-id-input" class="col-form-label">ID*:</label>
-                    <input name="id" type="text" class="form-control" id="equipment-id-input" placeholder="Equipment barcode number">
-                  </div>
-                  <div class="mb-3">
-                    <label for="model-name-input" class="col-form-label">Model*:</label>
-                    <input name="model_name" type="text" class="form-control" id="model-name-input" value="<? echo $model['name']?>" disabled>
-                  </div>
-                  <div class="mb-3">
-                    <label for="location-input" class="col-form-label">Location*:</label>
-                    <input name="location" type="text" class="form-control" id="location-input" placeholder="Equipment location (175 for building 175)">
-                  </div>
-                  <div class="mb-3">
-                    <label for="status-input" class="col-form-label">Status*:</label>
-                    <input name="status" type="text" class="form-control" id="status-input" placeholder="Installed, tested, assembled ...">
-                  </div>
-                  <div class="mb-3">
-                    <label for="comments-input" class="col-form-label">Comments:</label>
-                    <textarea class="form-control" type="text" id="comments-input" rows="3" placeholder="Useful info about the equipment"></textarea>
+            <div class="row">
+              <div class="col mt-4" id="equipment-info-row">
+                <h4>Equipment info</h4>
+                <div id="parent-id-help" class="form-text">* required field</div>
+                <div class="mb-3">
+                  <label for="equipment-id-input" class="col-form-label">ID*:</label>
+                  <input name="id" type="text" class="form-control" id="equipment-id-input" placeholder="Equipment barcode number">
+                </div>
+                <div class="mb-3">
+                  <label for="model-name-input" class="col-form-label">Model*:</label>
+                  <input name="model_name" type="text" class="form-control" id="model-name-input" value="<? echo $model['name']?>" disabled>
+                </div>
+                <div class="mb-3">
+                  <label for="location-input" class="col-form-label">Location*:</label>
+                  <input name="location" type="text" class="form-control" id="location-input" placeholder="Equipment location (175 for building 175)">
+                </div>
+                <div class="mb-3">
+                  <label for="status-input" class="col-form-label">Status*:</label>
+                  <input name="status" type="text" class="form-control" id="status-input" placeholder="Installed, tested, assembled ...">
+                </div>
+                <div class="mb-3">
+                  <label for="comments-input" class="col-form-label">Comments:</label>
+                  <textarea class="form-control" type="text" id="comments-input" rows="3" placeholder="Useful info about the equipment"></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="row" id="add-files-row">
+              <div class="col mt-4">
+                <div class="row">
+                  <div class="col-11"><h4>Link files</h4></div>
+                  <div class="col-1 text-right">
+                    <button class="btn btn-secondary mt-1" type="button" id="add-file-btn"><i class="bi bi-plus-lg"></i></button>
                   </div>
                 </div>
-                <div class="row" id="add-files-row">
-                  <div class="col mt-4">
-                    <div class="row">
-                      <div class="col-11"><h4>Link files</h4></div>
-                      <div class="col-1 text-right">
-                        <button class="btn btn-secondary mt-1" type="button" id="add-file-btn"><i class="bi bi-plus-lg"></i></button>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col"  id="add-files-col">
-                        <input type="text" class="form-control mt-1" name="files[]" placeholder="File name">
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                  <div class="row">
-                    <div class="col mt-4 text-right">
-                      <button type="button" form="register-equipment-form" class="btn btn-danger">Cancel</button>
-                      <button type="submit" class="btn btn-success" id="register-equipment-form-submit-button" aria-pressed="true">Register</button>
-                    </div>
+                <div class="row">
+                  <div class="col"  id="add-files-col">
+                    <input type="text" class="form-control mt-1" name="files[]" placeholder="File name">
                   </div>
                 </div>
               </div>
+            </div>
+            <div class="row">
+              <div class="col mt-4 text-right">
+                <button type="button" form="register-equipment-form" class="btn btn-danger">Cancel</button>
+                <button type="submit" class="btn btn-success" id="register-equipment-form-submit-button" aria-pressed="true">Register</button>
+              </div>
+            </div>
           </form>
         </div>
       </div>
