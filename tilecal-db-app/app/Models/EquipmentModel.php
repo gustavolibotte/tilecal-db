@@ -84,8 +84,7 @@ class EquipmentModel extends Model
         $result = $this->select($columns)
                         ->join('models', 'equipments.model_id = models.id')
                         ->orderBy('equipments.last_update', 'DESC')
-                        ->limit(10)
-                        ->find();
+                        ->findAll();
         return $result;
     }
     /**

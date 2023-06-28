@@ -12,8 +12,13 @@ function fetchDataTables(){
         scrollResize: true,
         scrollY: 50,
         scrollCollapse: true,
-        paging: false,
+        paging: false
     });
 }
 
 $(document).ready(fetchDataTables());
+
+$('#add-file-btn').click(function(){
+    $('#add-files-col').append(
+        '<input type="text" class="form-control mt-2" name="files[]" placeholder="File name">')
+});
