@@ -9,7 +9,7 @@
   <link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/css/style.css'); ?>">
 </head>
 
-<body>
+<header>
 <nav class="navbar navbar-expand-lg bg-dark">
   <div class="container">
     <a class="navbar-brand" href="<? echo base_url()?>" style="color: #ffffff;">Tilecal Electronics Database</a>
@@ -93,5 +93,5 @@
     </div>
   </div>
 </nav>
-</body>
+</header>
 </html>

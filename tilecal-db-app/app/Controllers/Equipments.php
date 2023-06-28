@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\EquipmentModel;
+use App\Models\FileModel;
 
 class Equipments extends BaseController
 {
@@ -17,11 +18,19 @@ class Equipments extends BaseController
               .view('templates/footer');
     }
 
-    public function fetchEquipmentsTable()
-    {   
+    public function view($id){
         $equipmentModel = new EquipmentModel();
-        $data = $equipmentModel->getEquipmentWithModelName();
-        $response = $this->buildDataTablesResponse($data);
-        echo $response;
+        $viewData['equipments'] = $equipmentModel->getEquipment();
+        $viewData['equipmentInfo'] = $equipmentModel->getEquipment($id);
+
+        $fileModel = new FileModel();
+        $viewData['files'] = $fileModel->getBindedFilesInfo($id);
+
+
+        $headerData['pageTitle'] = sprintf('Equipment %s', $id);
+
+        return view('templates/header', $headerData)
+              .view('equipment/view', $viewData)
+              .view('templates/footer');
     }
 }

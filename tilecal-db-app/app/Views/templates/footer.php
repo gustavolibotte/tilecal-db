@@ -8,7 +8,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"/>
 </head>
 
-<body>
+<footer>
 <nav class="navbar fixed-bottom navbar-expand-lg bg-dark">
   <div class="container">
     <a class="navbar-brand" href="<? echo base_url()?>" style="color: #ffffff;"></a>
@@ -26,5 +26,5 @@
     </div>
   </div>
 </nav>
-</body>
+</footer>
 </html>
