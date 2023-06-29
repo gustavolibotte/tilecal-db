@@ -52,8 +52,15 @@
         <div class="tab-pane fade show active" id="equip-info-pane" role="tabpanel" tabindex="0">
           <div class="row">
             <div class="col mt-4" id="equipment-info-col">
-              <h4>Equipment info</h4>
-              <ul class="list-group">
+              <div class="row">
+                <div class="col">
+                  <h4>Equipment info</h4>
+                </div>
+                <div class="col-1 text-right">
+                  <a type="button"class="btn btn-primary"href="#">Edit</a>
+                </div>
+              </div>
+              <ul class="list-group mt-2">
                 <li class="list-group-item">ID: <? echo $equipmentInfo['id']?> </li>
                 <li class="list-group-item">Model: <? echo $equipmentInfo['model']?> </li>
                 <li class="list-group-item">Location: <? echo $equipmentInfo['location']?> </li>
