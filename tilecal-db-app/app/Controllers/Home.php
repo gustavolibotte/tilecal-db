@@ -5,7 +5,10 @@ namespace App\Controllers;
 class Home extends BaseController
 {
     public function index()
-    {
-        return view('welcome_message');
+    {   
+        $headerData['pageTitle'] = 'Tilecal Database';
+        return view('templates/header', $headerData)
+               .view('welcome')
+               .view('templates/footer');
     }
 }
