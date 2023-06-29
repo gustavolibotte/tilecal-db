@@ -18,7 +18,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav ms-auto justify-content-end">
-      <li class="nav-item dropdown" id="view-equipments-navbar-dropdown">
+        <li class="nav-item dropdown" id="view-equipments-navbar-dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #ffffff;">
             Equipments
           </a>
@@ -29,14 +29,11 @@
             <li><a class="dropdown-item" href="<? echo base_url('equipments/carrier_board'); ?>">Carrier Board</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/cpm'); ?>">CPM</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/daughterboard'); ?>">Daughterboard</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/micro_drawer'); ?>">Micro Drawer</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/fenics'); ?>">FENICS</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/gbe_switch'); ?>">GbE Switch</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/hv_distribution_board'); ?>">HV Distribution Board</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/ipmc'); ?>">IPMC</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/micro_drawer'); ?>">Micro Drawer</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/mainboard'); ?>">Mainboard</a></li>
-            <li><a class="dropdown-item" href="<? echo base_url('equipments/mini_drawer'); ?>">Mini Drawer</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/micro_drawer'); ?>">Micro Drawer</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/mini_drawer'); ?>">Mini Drawer</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/module'); ?>">Module</a></li>
@@ -47,6 +44,27 @@
             <li><a class="dropdown-item" href="<? echo base_url('equipments/super_drawer'); ?>">Super Drawer</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/tdaqi'); ?>">TDAQi</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/tilecom'); ?>">TileCoM</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown" id="view-disassembly-navbar-dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #ffffff;">
+            Disassembly
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="<? echo base_url('disassembly/phase_1_drawer'); ?>">Phase 1 Drawer</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('disassembly/pmt_block'); ?>">PMT Block</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown" id="view-assembly-navbar-dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: #ffffff;">
+            Assembly
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/micro_drawer'); ?>">Micro Drawer</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/mini_drawer'); ?>">Mini Drawer</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/module'); ?>">Module</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/pmt_block'); ?>">PMT Block</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/super_drawer'); ?>">Super Drawer</a></li>
           </ul>
         </li>
         <li class="nav-item dropdown" id="register-equipments-navbar-dropdown">
