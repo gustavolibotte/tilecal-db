@@ -28,7 +28,7 @@ class Files extends BaseController
         $viewData['fileInfo'] = $fileModel->getFile($id);
 
 
-        $headerData['pageTitle'] = sprintf('Equipment %s', $id);
+        $headerData['pageTitle'] = sprintf('File %s', $id);
 
         return view('templates/header', $headerData)
               .view('files/view', $viewData)

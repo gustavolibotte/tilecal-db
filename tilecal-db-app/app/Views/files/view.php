@@ -74,7 +74,16 @@
             <div class="col mt-4" id="history-info-col">
               <h4>File history</h4>
               <ul class="list-group">
-                <li class="list-group-item"><b>2023-06-27 13:00</b> Lucas updated the uploaded file. Download the older version here <a type="button" class="btn btn-secondary" href="#"><i class="bi bi-download"></i></a></li>
+                <li class="list-group-item">
+                  <div class="row">
+                    <div class="col align-self-center">
+                      <p><b>2023-06-27 13:00</b> Lucas updated the uploaded file. Download the older version on the side button.</p>
+                    </div>
+                    <div class="col-1">
+                      <a type="button" class="btn btn-secondary" href="#"><i class="bi bi-download"></i></a>
+                    </div>
+                  </div>
+                </li>
               </ul>
             </div>
           </div>
