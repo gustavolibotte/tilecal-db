@@ -37,6 +37,7 @@ $routes->get('equipments', 'Equipments::index');
 $routes->get('equipments/fenics', 'Fenics::index');
 $routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1');
 $routes->get('equipments/fenics/register', 'Fenics::registerGet');
+$routes->get('files', 'Files::index');
 
 /*
  * --------------------------------------------------------------------
