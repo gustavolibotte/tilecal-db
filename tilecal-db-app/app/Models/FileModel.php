@@ -46,4 +46,21 @@ class FileModel extends Model
                        ->findAll();
         return $result;
     }
+
+    public function getFile($id=null)
+    {   
+        $columns = 'id, name, comments';
+        if (is_null($id)){
+            $result = $this->select($columns)
+                           ->orderBy('last_update', 'DESC')
+                           ->findAll();
+        }
+        else{
+            $result = $this->select($columns)
+                           ->where(sprintf("id = %s", $id))
+                           ->first();
+        }
+
+        return $result;
+    }
 }
