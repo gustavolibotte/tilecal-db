@@ -10,19 +10,6 @@ class Fenics extends Equipments
     public $modelName = "FENICS";
     public $snakeCaseModelName = "fenics";
 
-    public function index()
-    {
-        $equipmentModel = new FenicsModel();
-        $headerData = $this->getHeaderData(sprintf('%s Index', $this->modelName));
-        $indexData['equipments'] = $equipmentModel->getEquipment();
-        $indexData['model'] = [
-            "name" => $this->modelName
-        ];
-        return view('templates/header', $headerData)
-              .view('equipment/fenics/index', $indexData)
-              .view('templates/footer');
-    }
-
     public function registerGet(){
 
         helper('form');

@@ -47,9 +47,12 @@ class FileModel extends Model
         return $result;
     }
 
-    public function getFile($id=null)
-    {   
-        $columns = 'id, name, comments';
+    public function getFile($id=null, $columns=null)
+    {
+        if (is_null($columns)){
+            $columns = 'id, name, comments';
+        }
+        
         if (is_null($id)){
             $result = $this->select($columns)
                            ->orderBy('last_update', 'DESC')

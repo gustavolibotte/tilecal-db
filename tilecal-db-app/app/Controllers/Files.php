@@ -34,4 +34,16 @@ class Files extends BaseController
               .view('files/view', $viewData)
               .view('templates/footer');
     }
+
+    public function registerGet(){
+        helper('form');
+
+        $headerData = $this->getHeaderData(pageTitle: 'File Upload');
+        $fileModel = new FileModel();
+        $registerData['files'] = $fileModel->getFile(columns: 'id, name');
+
+        return view('templates/header', $headerData)
+              .view('files/register', $registerData)
+              .view('templates/footer');
+    }
 }
