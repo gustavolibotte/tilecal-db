@@ -35,6 +35,22 @@ class Files extends BaseController
               .view('templates/footer');
     }
 
+    public function download($id){
+
+        $fileModel = new FileModel();
+        $file = $fileModel->getFile($id, 'name, file_data');
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $file['name'] . '"');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        header('Content-Length: ' . strlen($file['file_data']));
+
+        echo $file['file_data'];
+    }
+
     public function registerGet(){
         helper('form');
 
@@ -46,4 +62,5 @@ class Files extends BaseController
               .view('files/register', $registerData)
               .view('templates/footer');
     }
+
 }

@@ -64,7 +64,7 @@
                 <li class="list-group-item">ID: <? echo $fileInfo['id']?> </li>
                 <li class="list-group-item">Name: <? echo $fileInfo['name']?> </li>
                 <li class="list-group-item">Description: <? echo $fileInfo['comments']?> </li>
-                <li class="list-group-item">Download: <a type="button" class="btn btn-secondary" href="#"><i class="bi bi-download"></i></a> </li>
+                <li class="list-group-item">Download: <a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $file['id'])); ?>"><i class="bi bi-download"></i></a> </li>
               </ul>
             </div>
           </div>

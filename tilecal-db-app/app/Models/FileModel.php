@@ -40,7 +40,7 @@ class FileModel extends Model
     protected $afterDelete    = [];
 
     public function getBindedFilesInfo($id){
-        $result = $this->select('name, comments')
+        $result = $this->select('file_id as id, name, comments')
                        ->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
                        ->where(sprintf("equipments_to_files.equipment_id = '%s'", $id))
                        ->findAll();

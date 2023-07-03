@@ -87,7 +87,7 @@
                     <tr>
                       <td><? echo $file['name']; ?></td>
                       <td><? echo $file['comments']; ?></td>
-                      <td><a type="button" class="btn btn-secondary" href="#"><i class="bi bi-download"></i></a></td>
+                      <td><a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $file['id'])); ?>"><i class="bi bi-download"></i></a></td>
                     </tr>
                   <?php endforeach; ?>
                   <?php endif; ?>
