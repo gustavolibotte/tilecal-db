@@ -1,9 +1,10 @@
-PMT
-PMT BLOCK
-HV Divider
-Super Drawer
-Mini Drawer
-3 in 1 Board
-FENICS
-Mainboard
-Daughterboard
+formatted_name,name
+PMT,pmt
+PMT Block,pmt_block
+HV Divider,hv_divider
+Super Drawer,super_drawer
+Mini Drawer,mini_drawer
+3 in 1 Board,3_in_1_board
+FENICS,fenics
+Mainboard,mainboard
+Daughterboard,daughterboard

@@ -8,11 +8,16 @@ use App\Models\FileModel;
 
 class Equipments extends BaseController
 {
-    public function index()
+    public function index($modelName=null)
     {   
         $equipmentModel = new EquipmentModel();
         $headerData['pageTitle'] = 'Equipment Index';
-        $indexData['equipments'] = $equipmentModel->getEquipment();
+        if (is_null($modelName)){
+            $indexData['equipments'] = $equipmentModel->getEquipment();
+        }
+        else{
+            $indexData['equipments'] = $equipmentModel->getEquipmentsWhereModel($modelName);
+        }
         return view('templates/header', $headerData)
               .view('equipment/index', $indexData)
               .view('templates/footer');

@@ -5,6 +5,7 @@ USE tilecal_db;
 CREATE TABLE models (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
+    formatted_name VARCHAR(50) NOT NULL,
     description TEXT,
     last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT unique_model_name UNIQUE(name)

@@ -55,7 +55,7 @@ class EquipmentModel extends Model
     public function getEquipment($id=null)
     {   
         $columns = 'equipments.id, ';
-        $columns .= 'models.name as model, ';
+        $columns .= 'models.formatted_name as model, ';
         $columns .= 'equipments.location, ';
         $columns .= 'equipments.status, ';
         $columns .= 'equipments.parent_id, ';
@@ -80,7 +80,7 @@ class EquipmentModel extends Model
     public function getSideTable(){
 
         $columns = 'equipments.id, ';
-        $columns .= 'models.name as model ';
+        $columns .= 'models.formatted_name as model ';
         $result = $this->select($columns)
                         ->join('models', 'equipments.model_id = models.id')
                         ->orderBy('equipments.last_update', 'DESC')
@@ -96,6 +96,7 @@ class EquipmentModel extends Model
      */ 
     public function getEquipmentsWhereModel($modelName){
         $columns = 'equipments.id, ';
+        $columns .= 'models.formatted_name as model, ';
         $columns .= 'equipments.location, ';
         $columns .= 'equipments.status, ';
         $columns .= 'equipments.parent_id, ';

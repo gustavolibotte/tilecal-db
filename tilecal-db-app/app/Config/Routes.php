@@ -34,9 +34,13 @@ $routes->get('/', 'Home::index');
 
 // Equipments routes
 $routes->get('equipments', 'Equipments::index');
-$routes->get('equipments/fenics', 'Fenics::index');
+$routes->get('equipments/(:segment)', 'Equipments::index/$1');
 $routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1');
+
+// Equipment register views
 $routes->get('equipments/fenics/register', 'Fenics::registerGet');
+
+// File routes
 $routes->get('files', 'Files::index');
 $routes->get('files/view/(:alphanum)', 'Files::view/$1');
 
