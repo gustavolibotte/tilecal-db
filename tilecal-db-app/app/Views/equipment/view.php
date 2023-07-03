@@ -65,6 +65,7 @@
                 <li class="list-group-item">Model: <? echo $equipmentInfo['model']?> </li>
                 <li class="list-group-item">Location: <? echo $equipmentInfo['location']?> </li>
                 <li class="list-group-item">Status: <? echo $equipmentInfo['status']?> </li>
+                <li class="list-group-item">Parent ID: <? echo $equipmentInfo['parent_id']?></li> 
                 <li class="list-group-item">Comments: <? echo $equipmentInfo['comments']?></li> 
               </ul>
             </div>
