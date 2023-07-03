@@ -38,17 +38,17 @@ class Files extends BaseController
     public function download($id){
 
         $fileModel = new FileModel();
-        $file = $fileModel->getFile($id, 'name, file_data');
+        $file = $fileModel->getFile($id, 'name, filetype, filedata');
 
         header('Content-Description: File Transfer');
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="' . $file['name'] . '"');
+        header('Content-Type: application/' . $file['filetype']);
+        header('Content-Disposition: attachment; filename="' . $file['name'] . '.' . $file['filetype']);
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
-        header('Content-Length: ' . strlen($file['file_data']));
+        header('Content-Length: ' . strlen($file['filedata']));
 
-        echo $file['file_data'];
+        echo $file['filedata'];
     }
 
     public function registerGet(){

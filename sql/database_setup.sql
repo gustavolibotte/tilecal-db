@@ -25,8 +25,9 @@ CREATE TABLE models_hist(
 CREATE TABLE files(
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
-    file_data MEDIUMBLOB NOT NULL, -- approx 16MB
-    comments TEXT,
+    filetype VARCHAR(10) NOT NULL,
+    filedata MEDIUMBLOB NOT NULL, -- approx 16MB
+    description TEXT NOT NULL,
     last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT unique_file_name UNIQUE(name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

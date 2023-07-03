@@ -13,7 +13,7 @@ class FileModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'file_data', 'comments'];
+    protected $allowedFields    = ['name', 'filetype', 'filedata', 'description'];
 
     // Dates
     protected $useTimestamps = false;
@@ -40,7 +40,7 @@ class FileModel extends Model
     protected $afterDelete    = [];
 
     public function getBindedFilesInfo($id){
-        $result = $this->select('file_id as id, name, comments')
+        $result = $this->select('file_id as id, name, description')
                        ->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
                        ->where(sprintf("equipments_to_files.equipment_id = '%s'", $id))
                        ->findAll();
@@ -50,7 +50,7 @@ class FileModel extends Model
     public function getFile($id=null, $columns=null)
     {
         if (is_null($columns)){
-            $columns = 'id, name, comments';
+            $columns = 'id, name, description';
         }
         
         if (is_null($id)){

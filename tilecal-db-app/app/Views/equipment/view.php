@@ -86,7 +86,7 @@
                   <?php foreach($files as $file): ?>
                     <tr>
                       <td><? echo $file['name']; ?></td>
-                      <td><? echo $file['comments']; ?></td>
+                      <td><? echo $file['description']; ?></td>
                       <td><a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $file['id'])); ?>"><i class="bi bi-download"></i></a></td>
                     </tr>
                   <?php endforeach; ?>
