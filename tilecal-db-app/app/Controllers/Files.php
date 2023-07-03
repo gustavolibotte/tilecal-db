@@ -8,6 +8,11 @@ use App\Models\EquipmentModel;
 
 class Files extends BaseController
 {
+
+    public $supportedFiles = [
+        "pdf"
+    ];
+
     public function index()
     {
         $fileModel = new FileModel();
@@ -51,12 +56,19 @@ class Files extends BaseController
         echo $file['filedata'];
     }
 
+    public function getRegisterData(){
+
+        $fileModel = new FileModel();
+        $registerData['files'] = $fileModel->getFile(columns: 'id, name');
+        $registerData['supportedFiles'] = $this->supportedFiles;
+        return $registerData;
+    }
+
     public function registerGet(){
         helper('form');
 
         $headerData = $this->getHeaderData(pageTitle: 'File Upload');
-        $fileModel = new FileModel();
-        $registerData['files'] = $fileModel->getFile(columns: 'id, name');
+        $registerData = $this->getRegisterData();
 
         return view('templates/header', $headerData)
               .view('files/register', $registerData)

@@ -58,7 +58,18 @@
                 <div id="parent-id-help" class="form-text">* required field</div>
                 <div class="mb-3">
                   <label for="name-input" class="col-form-label">Name*:</label>
-                  <input name="name" type="text" class="form-control" id="name-input" placeholder="2023_07_30_pmt_block_5628_test.pdf">
+                  <input name="name" type="text" class="form-control" id="name-input" placeholder="2023_07_30_pmt_block_5628_test">
+                </div>
+                <div class="mb-3">
+                  <label for="filetype-input" class="col-form-label">File type*:</label>
+                  <select class="form-select" id="filetype-input" aria-label="Default select example">
+                    <option selected>Select a file type</option>
+                    <?php if($supportedFiles): ?>
+                    <?php foreach($supportedFiles as $filetype): ?>
+                      <option><? echo $filetype; ?></option>
+                    <?php endforeach; ?>
+                    <?php endif; ?>
+                  </select>
                 </div>
                 <div class="mb-3">
                   <label for="file-input" class="form-label">Choose file to upload*:</label>
