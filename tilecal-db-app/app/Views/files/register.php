@@ -50,19 +50,27 @@
       </ul>
       <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-          <form id="register-equipment-form">
+          <?= form_open_multipart('files/upload', 'id="register-file-form"') ?>
+          <!-- <form id="register-equipment-form" action="<? echo base_url('files/upload')?>" method="POST"> -->
             <?= csrf_field() ?>
             <div class="row">
               <div class="col mt-4" id="equipment-info-row">
                 <h4>File info</h4>
                 <div id="parent-id-help" class="form-text">* required field</div>
+                <? if($validationErrors): ?>
+                  <ul>
+                    <?php foreach($validationErrors as $errorMsg): ?>
+                      <li><p class="text-danger"><? echo esc($errorMsg); ?></p></li>
+                    <?php endforeach; ?>
+                  </ul>
+                <?php endif; ?>
                 <div class="mb-3">
                   <label for="name-input" class="col-form-label">Name*:</label>
                   <input name="name" type="text" class="form-control" id="name-input" placeholder="2023_07_30_pmt_block_5628_test">
                 </div>
                 <div class="mb-3">
                   <label for="filetype-input" class="col-form-label">File type*:</label>
-                  <select class="form-select" id="filetype-input" aria-label="Default select example">
+                  <select class="form-select" name="filetype", id="filetype-input" aria-label="Default select example">
                     <option selected>Select a file type</option>
                     <?php if($supportedFiles): ?>
                     <?php foreach($supportedFiles as $filetype): ?>
@@ -73,18 +81,18 @@
                 </div>
                 <div class="mb-3">
                   <label for="file-input" class="form-label">Choose file to upload*:</label>
-                  <input class="form-control" type="file" id="file-input">
+                  <input class="form-control" name="file", type="file" id="file-input">
                 </div>
                 <div class="mb-3">
                   <label for="description-input" class="col-form-label">Description*:</label>
-                  <textarea class="form-control" type="text" id="description-input" rows="3" placeholder="Useful info about the file"></textarea>
+                  <textarea class="form-control" name="description" type="text" id="description-input" rows="3" placeholder="Useful info about the file"></textarea>
                 </div>
               </div>
             </div>
             <div class="row">
               <div class="col mt-4 text-right">
-                <a type="button" form="register-equipment-form" href="<? echo base_url('files')?>" class="btn btn-danger">Cancel</a>
-                <button type="submit" class="btn btn-success" id="register-equipment-form-submit-button" aria-pressed="true">Register</button>
+                <a type="button" form="register-file-form" href="<? echo base_url('files')?>" class="btn btn-danger">Cancel</a>
+                <button type="submit" class="btn btn-success" id="register-file-form-submit-button" aria-pressed="true">Register</button>
               </div>
             </div>
           </form>

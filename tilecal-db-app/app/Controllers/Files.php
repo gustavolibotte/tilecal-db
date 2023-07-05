@@ -56,11 +56,12 @@ class Files extends BaseController
         echo $file['filedata'];
     }
 
-    public function getRegisterData(){
+    public function getRegisterData($validationErrors=null){
 
         $fileModel = new FileModel();
         $registerData['files'] = $fileModel->getFile(columns: 'id, name');
         $registerData['supportedFiles'] = $this->supportedFiles;
+        $registerData['validationErrors'] = $validationErrors;
         return $registerData;
     }
 
@@ -73,6 +74,37 @@ class Files extends BaseController
         return view('templates/header', $headerData)
               .view('files/register', $registerData)
               .view('templates/footer');
+    }
+
+    public function registerPost(){
+        helper('form');
+
+        $file = $this->request->getFile('file');
+        $filepath = $file->getPathname();
+        $filetype = $file->getMimeType();
+
+        if (! $this->validate('fileUploadRules')){
+            $validationErrors = $this->validator->getErrors();
+        }
+        else{
+            $validationErrors = null;
+        }
+
+        // echo "FILE TYPE IS " . $filetype;
+        $headerData = $this->getHeaderData(pageTitle: 'File Upload');
+        $registerData = $this->getRegisterData($validationErrors);
+
+        return view('templates/header', $headerData)
+              .view('files/register', $registerData)
+              .view('templates/footer');
+        // $fileData = [
+        //     "name" => $this->request->getVar('name'),
+        //     "filetype" => $this->request->getVar('filetype'),
+        //     "filedata" => file_get_contents($filepath),
+        //     "description" => $this->request->getVar('description'),
+        // ];
+        // $fileModel = new FileModel();
+        // $fileModel->save($fileData);
     }
 
 }

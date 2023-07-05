@@ -44,6 +44,7 @@ $routes->get('equipments/fenics/register', 'Fenics::registerGet');
 $routes->get('files', 'Files::index');
 $routes->get('files/view/(:alphanum)', 'Files::view/$1');
 $routes->get('files/upload', 'Files::registerGet');
+$routes->post('files/upload', 'Files::registerPost');
 $routes->get('files/(:alphanum)', 'Files::download/$1');
 
 /*

@@ -1,6 +1,6 @@
 <?php
 
-namespace Config;
+namespace ValidationRules;
 
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Validation\StrictRules\CreditCardRules;
@@ -41,4 +41,9 @@ class Validation extends BaseConfig
     // --------------------------------------------------------------------
     // Rules
     // --------------------------------------------------------------------
+    public $fileUploadRules = [];
+    public function __construct(){
+        // helper('Validation/DBFileRules');
+        $this->fileUploadRules = ($fileRules = new DBFileRules())->upload();
+    }
 }
