@@ -36,10 +36,12 @@ RUN apt install -y htop
 
 # Install composer for dependency management
 # https://hub.docker.com/_/composer
-ARG ci4_version
-COPY --from=composer /usr/bin/composer /usr/bin/composer
-# zip is required by codeigniter4 installation thrgough composer
-RUN apt install -y zip
-RUN composer create-project codeigniter4/appstarter:${ci4_version} ci-app-starter
+ARG ci_version
+LABEL ci_version=$ci4_version
+# COPY --from=composer /usr/bin/composer /usr/bin/composer
+# # zip is required by codeigniter4 installation thrgough composer
+# RUN apt install -y zip
+# RUN composer create-project codeigniter4/appstarter:${ci4_version} ci-app-starter
 
 WORKDIR /root/tilecal-db
+CMD php spark serve --host 0.0.0.0
