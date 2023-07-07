@@ -19,7 +19,7 @@ class EquipmentModel extends Model
     protected $useTimestamps = false;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
-    protected $updatedField  = 'last_update';
+    protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
     // Validation
@@ -63,14 +63,14 @@ class EquipmentModel extends Model
         if (is_null($id)){
             $result = $this->select($columns)
                            ->join('models', 'equipments.model_id = models.id')
-                           ->orderBy('equipments.last_update', 'DESC')
+                           ->orderBy('equipments.updated_at', 'DESC')
                            ->findAll();
         }
         else{
             $result = $this->select($columns)
                            ->where(sprintf("equipments.id = '%s'", $id))
                            ->join('models', 'equipments.model_id = models.id')
-                           ->orderBy('equipments.last_update', 'DESC')
+                           ->orderBy('equipments.updated_at', 'DESC')
                            ->first();
         }
 
@@ -83,7 +83,7 @@ class EquipmentModel extends Model
         $columns .= 'models.formatted_name as model ';
         $result = $this->select($columns)
                         ->join('models', 'equipments.model_id = models.id')
-                        ->orderBy('equipments.last_update', 'DESC')
+                        ->orderBy('equipments.updated_at', 'DESC')
                         ->findAll();
         return $result;
     }
@@ -104,7 +104,7 @@ class EquipmentModel extends Model
         $result = $this->select($columns)
                        ->where(sprintf("models.name = '%s'", $modelName))
                        ->join('models', 'equipments.model_id = models.id')
-                       ->orderBy('equipments.last_update', 'DESC')
+                       ->orderBy('equipments.updated_at', 'DESC')
                        ->findAll();
         return $result;
     }

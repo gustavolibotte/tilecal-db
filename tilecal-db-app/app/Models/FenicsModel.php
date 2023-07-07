@@ -17,7 +17,7 @@ class FenicsModel extends EquipmentModel{
             $result = $this->select($columns)
                            ->where("models.name = 'fenics'")
                            ->join('models', 'equipments.model_id = models.id')
-                           ->orderBy('equipments.last_update', 'DESC')
+                           ->orderBy('equipments.updated_at', 'DESC')
                            ->findAll();
         }
         else{
@@ -25,7 +25,7 @@ class FenicsModel extends EquipmentModel{
                            ->where("models.name = 'fenics'")
                            ->where(sprintf("equipments.id = '%s'", $id))
                            ->join('models', 'equipments.model_id = models.id')
-                           ->orderBy('equipments.last_update', 'DESC')
+                           ->orderBy('equipments.updated_at', 'DESC')
                            ->first();
         }
 

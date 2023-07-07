@@ -41,11 +41,11 @@ class Files extends BaseController
     public function download($id){
 
         $fileModel = new FileModel();
-        $file = $fileModel->getFile($id, 'name, filetype, filedata');
+        $file = $fileModel->getFile($id, 'name, mime, filedata');
 
         header('Content-Description: File Transfer');
-        header('Content-Type: application/' . $file['filetype']);
-        header('Content-Disposition: attachment; filename="' . $file['name'] . '.' . $file['filetype']);
+        header(sprintf('Content-Type: %s', $file['mime']));
+        header(sprintf('Content-Disposition: attachment; filename="%s"', $file['name']));
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');

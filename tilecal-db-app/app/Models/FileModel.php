@@ -19,7 +19,7 @@ class FileModel extends Model
     protected $useTimestamps = false;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
-    protected $updatedField  = 'last_update';
+    protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
     // Validation
@@ -55,7 +55,7 @@ class FileModel extends Model
         
         if (is_null($id)){
             $result = $this->select($columns)
-                           ->orderBy('last_update', 'DESC')
+                           ->orderBy('updated_at', 'DESC')
                            ->findAll();
         }
         else{
