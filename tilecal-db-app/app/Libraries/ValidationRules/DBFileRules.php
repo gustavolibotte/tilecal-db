@@ -5,7 +5,7 @@ class DBFileRules{
 
     public static $maxDescriptionSize = 65535;
     public static $minDescriptionSize = 30;
-    public static $maxFilenameSize = 50;
+    public static $maxFilenameSize = 100;
     public static $maxFileSize = 15000;
 
     public static function upload(){
