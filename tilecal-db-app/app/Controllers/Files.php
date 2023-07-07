@@ -5,13 +5,11 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\FileModel;
 use App\Models\EquipmentModel;
+use ValidationRules\DBFileRules;
 
 class Files extends BaseController
 {
 
-    public $supportedFiles = [
-        "pdf"
-    ];
 
     public function index()
     {
@@ -56,12 +54,33 @@ class Files extends BaseController
         echo $file['filedata'];
     }
 
-    public function getRegisterData($validationErrors=null){
+    public function getRegisterData($validationErrors=null, $preFilledValues=null){
 
         $fileModel = new FileModel();
         $registerData['files'] = $fileModel->getFile(columns: 'id, name');
-        $registerData['supportedFiles'] = $this->supportedFiles;
         $registerData['validationErrors'] = $validationErrors;
+        $registerData['formPlaceholders'] = [
+            'name' => '2023_07_30_pmt_block_5628_test',
+            'description' => 'Useful info about the file'
+        ];
+        $registerData['formRestrictions'] = [
+            'name' => sprintf('Max %d characters', DBFileRules::$maxFilenameSize),
+            'file' => sprintf('File max size is %d kB', DBFileRules::$maxFileSize),
+            'description' => sprintf('Min %d characters and max %d characters',
+                                     DBFileRules::$minDescriptionSize,
+                                     DBFileRules::$maxDescriptionSize)
+        ];
+        $registerData['maxDescriptionLength'] = DBFileRules::$maxDescriptionSize;
+        if (is_null($preFilledValues)){
+            $registerData['preFilledValues'] = [
+                'name' => null,
+                'description' => null
+            ];
+        }
+        else{
+            $registerData['preFilledValues'] = $preFilledValues;
+        }
+
         return $registerData;
     }
 
@@ -80,31 +99,31 @@ class Files extends BaseController
         helper('form');
 
         $file = $this->request->getFile('file');
+        $formNonFileInputs = $this->request->getPost(['name', 'description']);
         $filepath = $file->getPathname();
         $filetype = $file->getMimeType();
 
-        if (! $this->validate('fileUploadRules')){
-            $validationErrors = $this->validator->getErrors();
+        if ($this->validate('fileUploadRules')){
+            $registerData = $this->getRegisterData();
+            $fileData = [
+                "name" => $formNonFileInputs['name'],
+                "filedata" => file_get_contents($filepath),
+                "description" => $formNonFileInputs['description'],
+            ];
         }
         else{
-            $validationErrors = null;
+            $validationErrors = $this->validator->getErrors();
+            $registerData = $this->getRegisterData(
+                $validationErrors,
+                $formNonFileInputs
+            );
         }
 
-        // echo "FILE TYPE IS " . $filetype;
         $headerData = $this->getHeaderData(pageTitle: 'File Upload');
-        $registerData = $this->getRegisterData($validationErrors);
 
         return view('templates/header', $headerData)
-              .view('files/register', $registerData)
-              .view('templates/footer');
-        // $fileData = [
-        //     "name" => $this->request->getVar('name'),
-        //     "filetype" => $this->request->getVar('filetype'),
-        //     "filedata" => file_get_contents($filepath),
-        //     "description" => $this->request->getVar('description'),
-        // ];
-        // $fileModel = new FileModel();
-        // $fileModel->save($fileData);
+        .view('files/register', $registerData)
+        .view('templates/footer');
     }
 
 }

@@ -19,6 +19,7 @@
   </div>
   <div class="row">
     <div class="col-3 mt-4">
+      <h4 class="text-center">Database Files</h4>
       <table class="table table-bordered" id="files-table">
         <thead>
           <tr>
@@ -56,7 +57,7 @@
             <div class="row">
               <div class="col mt-4" id="equipment-info-row">
                 <h4>File info</h4>
-                <div id="parent-id-help" class="form-text">* required field</div>
+                <div class="form-text">* required field</div>
                 <? if($validationErrors): ?>
                   <ul>
                     <?php foreach($validationErrors as $errorMsg): ?>
@@ -66,26 +67,18 @@
                 <?php endif; ?>
                 <div class="mb-3">
                   <label for="name-input" class="col-form-label">Name*:</label>
-                  <input name="name" type="text" class="form-control" id="name-input" placeholder="2023_07_30_pmt_block_5628_test">
+                  <input name="name" type="text" class="form-control" id="name-input" placeholder="<?echo $formPlaceholders['description'];?>" value="<? echo $preFilledValues['name']?>">
+                  <div class="form-text"><? echo $formRestrictions['name']; ?></div>
                 </div>
                 <div class="mb-3">
-                  <label for="filetype-input" class="col-form-label">File type*:</label>
-                  <select class="form-select" name="filetype", id="filetype-input" aria-label="Default select example">
-                    <option selected>Select a file type</option>
-                    <?php if($supportedFiles): ?>
-                    <?php foreach($supportedFiles as $filetype): ?>
-                      <option><? echo $filetype; ?></option>
-                    <?php endforeach; ?>
-                    <?php endif; ?>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label for="file-input" class="form-label">Choose file to upload*:</label>
+                  <label for="file-input" class="form-label">File*:</label>
                   <input class="form-control" name="file", type="file" id="file-input">
+                  <div class="form-text"><? echo $formRestrictions['file']; ?></div>
                 </div>
                 <div class="mb-3">
                   <label for="description-input" class="col-form-label">Description*:</label>
-                  <textarea class="form-control" name="description" type="text" id="description-input" rows="3" placeholder="Useful info about the file"></textarea>
+                  <textarea class="form-control" name="description" type="text" id="description-input" rows="3" placeholder="<?echo $formPlaceholders['description'];?>" maxlength="<? echo $maxDescriptionLength;?>"></textarea>
+                  <div class="form-text"><? echo $formRestrictions['description']; ?></div>
                 </div>
               </div>
             </div>

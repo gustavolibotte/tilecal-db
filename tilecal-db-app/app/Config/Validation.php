@@ -44,6 +44,6 @@ class Validation extends BaseConfig
     public $fileUploadRules = [];
     public function __construct(){
         // helper('Validation/DBFileRules');
-        $this->fileUploadRules = ($fileRules = new DBFileRules())->upload();
+        $this->fileUploadRules = DBFileRules::upload();
     }
 }

@@ -3,52 +3,44 @@ namespace ValidationRules;
 
 class DBFileRules{
 
-    # Max Number of charahters supported on MySQL TEXT datatype
-    public $maxDescriptionSize = 65535;
-    public $minDescriptionSize = 30;
-    public $maxFilenameSize = 50;
+    public static $maxDescriptionSize = 65535;
+    public static $minDescriptionSize = 30;
+    public static $maxFilenameSize = 50;
+    public static $maxFileSize = 15000;
 
-    public $supportedMimes = [
-        "application/pdf"
-    ];
-
-    public $supportedMimesFormatted = [
-        "PDF"
-    ];
-    public function upload(){
+    public static function upload(){
     
         $fileUploadRules = [
             "name" => [
                 "rules" => [
                     "required",
-                    sprintf("max_length[%s]", strval($this->maxFilenameSize)),
+                    sprintf("max_length[%s]", strval(DBFileRules::$maxFilenameSize)),
                 ],
                 "errors" => [
                     "required" => "You must fill a valid filename.",
-                    "max_length" => sprintf("Name max number of characters is %s.", strval($this->maxFilenameSize)),
+                    "max_length" => sprintf("Name max number of characters is %s.", strval(DBFileRules::$maxFilenameSize)),
                 ]
             ],
             "file" => [
                 "rules" => [
                     "uploaded[file]", 
-                    sprintf("mime_in[file,%s]", implode(",", $this->supportedMimes)),
-                    "max_size[file,15000]"
+                    sprintf("max_size[file,%s]", DBFileRules::$maxFileSize)
                 ],
                 "errors" => [
                     "uploaded" => "You must upload a file.",
-                    "mime_in" => sprintf("The uploaded file is not supported.\r\nSupported types: %s", implode(",", $this->supportedMimesFormatted))
+                    "max_size" => sprintf('Max file size is %s KB', DBFileRules::$maxFileSize)
                 ]
-                ],
+            ],
             "description" => [
                 "rules" => [
                     "required",
-                    sprintf("max_length[%s]", strval($this->maxDescriptionSize)),
-                    sprintf("min_length[%s]", strval($this->minDescriptionSize)),
+                    sprintf("max_length[%s]", strval(DBFileRules::$maxDescriptionSize)),
+                    sprintf("min_length[%s]", strval(DBFileRules::$minDescriptionSize)),
                 ],
                 "errors" => [
                     "required" => "A file description is required.",
-                    "max_length" => sprintf("Description max number of characters is %s.", strval($this->maxDescriptionSize)),
-                    "min_length" => sprintf("Description min number of characters is %s.", strval($this->minDescriptionSize)),
+                    "max_length" => sprintf("Description max number of characters is %s.", strval(DBFileRules::$maxDescriptionSize)),
+                    "min_length" => sprintf("Description min number of characters is %s.", strval(DBFileRules::$minDescriptionSize)),
                 ]
             ]
         ];
