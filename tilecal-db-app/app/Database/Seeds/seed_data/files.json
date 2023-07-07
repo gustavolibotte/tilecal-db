@@ -1,0 +1,7 @@
+{
+    "name": "performance_tilecal.pdf",
+    "mime": "application/pdf",
+    "extension": "pdf",
+    "filedata": "/root/tilecal-db/app/Database/Seeds/seed_data/performance_tilecal.pdf",
+    "description": "The Tile Calorimeter (TileCal) is a sampling hadronic calorimeter covering the central region of the ATLAS experiment, with steel as absorber and plastic scintillators as active medium. The scintillators are read-out by the wave-length shifting fibres coupled to the photomultiplier tubes (PMTs). The analogue signals from the PMTs are amplified, shaped, digitized by sampling the signal every 25 ns and stored on detector until a trigger decision is received. The TileCal frontend electronics reads out the signals produced by about 10000 channels measuring energies ranging from about 30 MeV to about 2 TeV. Each stage of the signal production from scintillation light to the signal reconstruction is monitored and calibrated. During LHC Run-2, high-momentum isolated muons have been used to study and validate the electromagnetic scale, while hadronic response has been probed with isolated hadrons. The calorimeter time resolution has been studied with multi-jet events. A summary of the performance results, including the calibration, stability, absolute energy scale, uniformity and time resolution, will be presented."
+}
