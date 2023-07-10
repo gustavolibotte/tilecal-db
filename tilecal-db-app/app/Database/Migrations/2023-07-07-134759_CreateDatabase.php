@@ -55,11 +55,11 @@ class CreateDatabase extends Migration
     }
 
     public function createEquipments(){
-        $this->forge->addField('id VARCHAR(20) NOT NULL');
+        $this->forge->addField('id INT UNSIGNED NOT NULL');
         $this->forge->addField('model_id INT UNSIGNED NOT NULL');
         $this->forge->addField('location VARCHAR(30) NOT NULL');
         $this->forge->addField('status VARCHAR(30) NOT NULL');
-        $this->forge->addField('parent_id VARCHAR(20)');
+        $this->forge->addField('parent_id INT UNSIGNED');
         $this->forge->addField('comments TEXT');
         $this->forge->addField('extra_params JSON');
         $this->forge->addField('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL');
@@ -72,7 +72,7 @@ class CreateDatabase extends Migration
 
     public function createEquipmentsHist(){
         $this->forge->addField('id INT UNSIGNED AUTO_INCREMENT');
-        $this->forge->addField('record_id VARCHAR(20) NOT NULL');
+        $this->forge->addField('record_id INT UNSIGNED NOT NULL');
         $this->forge->addField('user VARCHAR(20) NOT NULL');
         $this->forge->addField("action ENUM('insert', 'update', 'delete') NOT NULL");
         $this->forge->addField('changes JSON NOT NULL');
@@ -83,7 +83,7 @@ class CreateDatabase extends Migration
 
     public function createEquipments2Files(){
         $this->forge->addField('id INT UNSIGNED AUTO_INCREMENT');
-        $this->forge->addField('equipment_id VARCHAR(20) NOT NULL');
+        $this->forge->addField('equipment_id INT UNSIGNED NOT NULL');
         $this->forge->addField('file_id INT UNSIGNED NOT NULL');
         $this->forge->addField('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL');
         $this->forge->addField('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL');
