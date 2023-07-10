@@ -39,6 +39,7 @@ $routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1');
 
 // Equipment register views
 $routes->get('equipments/fenics/register', 'Fenics::registerGet');
+$routes->get('equipments/pmt/register', 'PMT::registerGet');
 
 // File routes
 $routes->get('files', 'Files::index');
