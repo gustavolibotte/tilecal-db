@@ -10,6 +10,7 @@ class CreateDatabase extends Migration
         $this->forge->addField('id INT UNSIGNED AUTO_INCREMENT');
         $this->forge->addField('name VARCHAR(50) NOT NULL');
         $this->forge->addField('formatted_name VARCHAR(50) NOT NULL');
+        $this->forge->addField('params JSON NOT NULL');
         $this->forge->addField('description TEXT');
         $this->forge->addField('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL');
         $this->forge->addField('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL');

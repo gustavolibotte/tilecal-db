@@ -13,7 +13,7 @@ class ModelModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'formatted_name', 'description'];
+    protected $allowedFields    = ['name', 'formatted_name', 'params', 'description'];
 
     // Dates
     protected $useTimestamps = false; //Already added by the SQL database

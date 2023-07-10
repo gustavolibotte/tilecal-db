@@ -2,46 +2,55 @@
     {
         "name": "pmt",
         "formatted_name": "PMT",
+        "params": ["beta", "nominal_hv", "qe", "type"],
         "description": null
     },
     {
         "name": "pmt_block",
         "formatted_name": "PMT Block",
+        "params": [],
         "description": null
     },
     {
         "name": "phase_2_hv_divider",
         "formatted_name": "Phase 2 HV Divider",
+        "params": [],
         "description": null
     },
     {
         "name": "super_drawer",
         "formatted_name": "Super Drawer",
+        "params": [],
         "description": null
     },
     {
         "name": "mini_drawer",
         "formatted_name": "Mini Drawer",
+        "params": [],
         "description": null
     },
     {
         "name": "3_in_1_board",
         "formatted_name": "3 in 1 Board",
+        "params": [],
         "description": null
     },
     {
         "name": "fenics",
         "formatted_name": "FENICS",
+        "params": [],
         "description": null
     },
     {
         "name": "mainboard",
         "formatted_name": "Mainboard",
+        "params": [],
         "description": null
     },
     {
         "name": "daughterboard",
         "formatted_name": "Daughterboard",
+        "params": [],
         "description": null
     }
 ]

@@ -14,6 +14,7 @@ class ModelSeeder extends Seeder
         $jsonData = json_decode($jsonString, true);
         $modelModel = new ModelModel();
         foreach ($jsonData as $row){
+            $row["params"] = json_encode($row['params']);
             $modelModel->insert($row);
         }
     }
