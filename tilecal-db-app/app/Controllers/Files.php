@@ -85,7 +85,7 @@ class Files extends BaseController
         return $registerData;
     }
 
-    public function registerGet(){
+    public function uploadGet(){
         helper('form');
 
         $headerData = $this->getHeaderData(pageTitle: 'File Upload');
@@ -96,7 +96,7 @@ class Files extends BaseController
               .view('templates/footer');
     }
 
-    public function registerPost(){
+    public function uploadPost(){
         helper('form');
 
         $file = $this->request->getFile('file');
