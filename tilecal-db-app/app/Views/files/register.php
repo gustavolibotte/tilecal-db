@@ -77,7 +77,7 @@
                 </div>
                 <div class="mb-3">
                   <label for="description-input" class="col-form-label">Description*:</label>
-                  <textarea class="form-control" name="description" type="text" id="description-input" rows="3" placeholder="<?echo $formPlaceholders['description'];?>" maxlength="<? echo $maxDescriptionLength;?>"></textarea>
+                  <textarea class="form-control" name="description" type="text" id="description-input" rows="3" placeholder="<?echo $formPlaceholders['description'];?>" maxlength="<? echo $maxDescriptionLength;?>"><? echo $preFilledValues['name']?></textarea>
                   <div class="form-text"><? echo $formRestrictions['description']; ?></div>
                 </div>
               </div>

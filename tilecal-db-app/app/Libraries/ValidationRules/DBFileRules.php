@@ -4,7 +4,7 @@ namespace ValidationRules;
 class DBFileRules{
 
     public static $maxDescriptionSize = 65535;
-    public static $minDescriptionSize = 30;
+    public static $minDescriptionSize = 10;
     public static $maxFilenameSize = 100;
     public static $maxFileSize = 15000;
 
@@ -15,10 +15,12 @@ class DBFileRules{
                 "rules" => [
                     "required",
                     sprintf("max_length[%s]", strval(DBFileRules::$maxFilenameSize)),
+                    "is_unique[files.name]"
                 ],
                 "errors" => [
                     "required" => "You must fill a valid filename.",
                     "max_length" => sprintf("Name max number of characters is %s.", strval(DBFileRules::$maxFilenameSize)),
+                    "is_unique" => "The filename {value} already exists"
                 ]
             ],
             "file" => [

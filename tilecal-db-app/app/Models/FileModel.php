@@ -13,7 +13,7 @@ class FileModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'filetype', 'filedata', 'description'];
+    protected $allowedFields    = ['name', 'mime', 'extension', 'filedata', 'description'];
 
     // Dates
     protected $useTimestamps = false;

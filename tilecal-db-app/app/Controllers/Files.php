@@ -41,11 +41,12 @@ class Files extends BaseController
     public function download($id){
 
         $fileModel = new FileModel();
-        $file = $fileModel->getFile($id, 'name, mime, filedata');
+        $file = $fileModel->getFile($id, 'name, mime, extension, filedata');
+        $filename = $file['name'] . '.' . $file['extension'];
 
         header('Content-Description: File Transfer');
         header(sprintf('Content-Type: %s', $file['mime']));
-        header(sprintf('Content-Disposition: attachment; filename="%s"', $file['name']));
+        header(sprintf('Content-Disposition: attachment; filename="%s"', $filename));
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
@@ -101,15 +102,18 @@ class Files extends BaseController
         $file = $this->request->getFile('file');
         $formNonFileInputs = $this->request->getPost(['name', 'description']);
         $filepath = $file->getPathname();
-        $filetype = $file->getMimeType();
 
         if ($this->validate('fileUploadRules')){
             $registerData = $this->getRegisterData();
             $fileData = [
                 "name" => $formNonFileInputs['name'],
+                "mime" => $file->getMimeType(),
+                "extension"=> $file->guessExtension(),
                 "filedata" => file_get_contents($filepath),
                 "description" => $formNonFileInputs['description'],
             ];
+            $fileModel = new FileModel();
+            $fileModel->insert($fileData);
         }
         else{
             $validationErrors = $this->validator->getErrors();
