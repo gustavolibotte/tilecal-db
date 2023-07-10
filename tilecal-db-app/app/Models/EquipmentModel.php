@@ -14,8 +14,8 @@ class EquipmentModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = false;
 
-    protected $generalFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments'];
-    protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'extra_params'];
+    protected $generalFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial'];
+    protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial', 'extra_params'];
 
     // Dates
     protected $useTimestamps = false;
