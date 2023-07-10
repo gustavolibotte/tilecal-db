@@ -49,19 +49,23 @@
       </ul>
       <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-          <form id="register-equipment-form" action=<? echo base_url(sprintf('%s/register', $model['name']))?> method="POST">
-            <?= csrf_field() ?>
+          <!-- <form id="register-equipment-form" action=<? echo base_url(sprintf('%s/register', $model['name']))?> method="POST"> -->
+          <?= form_open_multipart(base_url(sprintf('equipments/%s/register', $model['name'])), 'id="register-equipment-form"'); ?>
+          <?= csrf_field() ?>
             <div class="row">
               <div class="col mt-4" id="equipment-info-row">
                 <h4>Equipment info</h4>
                 <div id="parent-id-help" class="form-text">* required field</div>
+                <? if($validationErrors): ?>
+                  <ul>
+                    <?php foreach($validationErrors as $errorMsg): ?>
+                      <li><p class="text-danger"><? echo esc($errorMsg); ?></p></li>
+                    <?php endforeach; ?>
+                  </ul>
+                <?php endif; ?>
                 <div class="mb-3">
                   <label for="equipment-id-input" class="col-form-label">ID*:</label>
                   <input name="id" type="text" class="form-control" id="equipment-id-input" placeholder="<?echo $formPlaceholders['id'];?>" value="<? echo $preFilledValues['id']?>">
-                </div>
-                <div class="mb-3">
-                  <label for="model-name-input" class="col-form-label">Model*:</label>
-                  <input name="model_name" type="text" class="form-control" id="model-name-input" value="<? echo $model['formatted_name']?>" disabled>
                 </div>
                 <div class="mb-3">
                   <label for="location-input" class="col-form-label">Location*:</label>
@@ -72,24 +76,20 @@
                   <input name="status" type="text" class="form-control" id="status-input" placeholder="<?echo $formPlaceholders['status'];?>" value="<? echo $preFilledValues['status']?>">
                 </div>
                 <div class="mb-3">
-                  <label for="status-input" class="col-form-label">Status*:</label>
-                  <input name="status" type="text" class="form-control" id="status-input" placeholder="<?echo $formPlaceholders['status'];?>" value="<? echo $preFilledValues['status']?>">
-                </div>
-                <div class="mb-3">
                   <label for="beta-input" class="col-form-label">Beta*:</label>
-                  <input name="beta" type="number" class="form-control" id="beta-input" placeholder="<?echo $formPlaceholders['beta'];?>" value="<? echo $preFilledValues['beta']?>">
+                  <input name="beta" type="text" class="form-control" id="beta-input" placeholder="<?echo $formPlaceholders['beta'];?>" value="<? echo $preFilledValues['beta']?>">
                 </div>
                 <div class="mb-3">
                   <label for="nominal_hv-input" class="col-form-label">Nominal HV*:</label>
-                  <input name="nominal_hv" type="number" class="form-control" id="nominal_hv-input" placeholder="<?echo $formPlaceholders['nominal_hv'];?>" value="<? echo $preFilledValues['nominal_hv']?>">
+                  <input name="nominal_hv" type="text" class="form-control" id="nominal_hv-input" placeholder="<?echo $formPlaceholders['nominal_hv'];?>" value="<? echo $preFilledValues['nominal_hv']?>">
                 </div>
                 <div class="mb-3">
                   <label for="qe-input" class="col-form-label">QE*:</label>
-                  <input name="qe" type="number" class="form-control" id="qe-input" placeholder="<?echo $formPlaceholders['qe'];?>" value="<? echo $preFilledValues['qe']?>">
+                  <input name="qe" type="text" class="form-control" id="qe-input" placeholder="<?echo $formPlaceholders['qe'];?>" value="<? echo $preFilledValues['qe']?>">
                 </div>
                 <div class="mb-3">
                   <label for="type-input" class="col-form-label">Type*:</label>
-                  <input name="type" type="number" class="form-control" id="type-input" placeholder="<?echo $formPlaceholders['type'];?>" value="<? echo $preFilledValues['type']?>">
+                  <input name="type" type="text" class="form-control" id="type-input" placeholder="<?echo $formPlaceholders['type'];?>" value="<? echo $preFilledValues['type']?>">
                 </div>
                 <div class="mb-3">
                   <label for="comments-input" class="col-form-label">Comments:</label>
@@ -116,7 +116,7 @@
             <?php endif; ?>
             <div class="row">
               <div class="col mt-4 text-right">
-                <button type="button" form="register-equipment-form" class="btn btn-danger">Cancel</button>
+              <a type="button" form="upload-file-form" href="<? echo base_url('equipments/pmt')?>" class="btn btn-danger">Cancel</a>
                 <button type="submit" class="btn btn-success" id="register-equipment-form-submit-button" aria-pressed="true">Register</button>
               </div>
             </div>

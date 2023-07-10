@@ -12,8 +12,10 @@ class EquipmentModel extends Model
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
-    protected $protectFields    = true;
-    protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments'];
+    protected $protectFields    = false;
+
+    protected $generalFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments'];
+    protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'extra_params'];
 
     // Dates
     protected $useTimestamps = false;
@@ -30,7 +32,7 @@ class EquipmentModel extends Model
 
     // Callbacks
     protected $allowCallbacks = true;
-    protected $beforeInsert   = [];
+    protected $beforeInsert   = ['addModelID', 'makeJSON'];
     protected $afterInsert    = [];
     protected $beforeUpdate   = [];
     protected $afterUpdate    = [];
@@ -92,7 +94,7 @@ class EquipmentModel extends Model
      *
      * @param string $modelName Model's name to query for equipments
      *
-     * @return result The query results
+     * @return array The query results
      */ 
     public function getEquipmentsWhereModel($modelName){
         $columns = 'equipments.id, ';
@@ -107,5 +109,30 @@ class EquipmentModel extends Model
                        ->orderBy('equipments.updated_at', 'DESC')
                        ->findAll();
         return $result;
+    }
+
+    protected function makeJSON($data){
+        $extraData = null;
+        foreach ($data['data'] as $field=>$value){
+            if (! in_array($field, $this->generalFields)){
+                $extraData[$field] = $value;
+                unset($data['data'][$field]);
+            }
+        }
+        if (! is_null($extraData)){
+            $data['data']['extra_params'] = json_encode($extraData);
+        }
+        return $data;
+    }
+
+    protected function addModelID($data){
+        if (! array_key_exists('model_id', $data['data'])){
+            $modelName = $data['data']['model'];
+            unset($data['data']['model']);
+            $modelModel = new ModelModel();
+            $modelData = $modelModel->select('id')->where(sprintf("name = '%s'", $modelName))->first();
+            $data['data']['model_id'] = $modelData['id'];
+        }
+        return $data;
     }
 }

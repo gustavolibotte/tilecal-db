@@ -57,4 +57,43 @@ class PMT extends Equipments
               .view('equipment/pmt/register', $registerData)
               .view('templates/footer');
     }
+
+    public function registerPost(){
+
+        helper('form');
+
+        $formInputs = $this->request->getPost([
+            'id',
+            'location',
+            'status',
+            'comments',
+            'beta',
+            'nominal_hv',
+            'qe',
+            'type'
+        ]);
+        $formInputs['model'] = "pmt";
+        $formInputs['location'] = $this->toSnakeCase($formInputs['location']);
+        $formInputs['status'] = $this->toSnakeCase($formInputs['status']);
+        $formInputs['type'] = $this->toSnakeCase($formInputs['type']);
+
+        if ($this->validateData($formInputs, 'pmtRegisterRules')){
+            $registerData = $this->getRegisterData();
+            $equipmentModel = new EquipmentModel();
+            $equipmentModel -> insert($formInputs);
+        }
+        else{
+            $validationErrors = $this->validator->getErrors();
+            $registerData = $this->getRegisterData(
+                $validationErrors,
+                $formInputs
+            );
+        }
+
+        $headerData = $this->getHeaderData(pageTitle: 'PMT Register');
+
+        return view('templates/header', $headerData)
+              .view('equipment/pmt/register', $registerData)
+              .view('templates/footer');
+    }
 }

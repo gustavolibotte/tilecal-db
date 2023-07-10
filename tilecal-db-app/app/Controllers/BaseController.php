@@ -68,4 +68,9 @@ abstract class BaseController extends Controller
         $headerData['pageTitle'] = $pageTitle;
         return $headerData;
     }
+
+    public function toSnakeCase($input){
+        $output = strtolower(str_replace(' ', '_', $input));
+        return $output;
+    }
 }

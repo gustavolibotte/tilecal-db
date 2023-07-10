@@ -1,12 +1,14 @@
 <?php
 
-namespace ValidationRules;
+namespace Config;
 
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Validation\StrictRules\CreditCardRules;
 use CodeIgniter\Validation\StrictRules\FileRules;
 use CodeIgniter\Validation\StrictRules\FormatRules;
 use CodeIgniter\Validation\StrictRules\Rules;
+use ValidationRules\DBFileRules;
+use ValidationRules\EquipmentRules;
 
 class Validation extends BaseConfig
 {
@@ -42,8 +44,12 @@ class Validation extends BaseConfig
     // Rules
     // --------------------------------------------------------------------
     public $fileUploadRules = [];
+    public $equipmentRegisterRules = [];
+    public $pmtRegisterRules = [];
+    
     public function __construct(){
-        // helper('Validation/DBFileRules');
         $this->fileUploadRules = DBFileRules::upload();
+        $this->equipmentRegisterRules = EquipmentRules::register();
+        $this->pmtRegisterRules= EquipmentRules::pmtRegister();
     }
 }
