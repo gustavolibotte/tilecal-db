@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use App\Models\ModelModel;
 
 class EquipmentModel extends Model
 {
@@ -12,9 +13,11 @@ class EquipmentModel extends Model
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
-    protected $protectFields    = false;
+    protected $protectFields    = true;
 
     protected $generalFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial'];
+    protected $utilityFields    = ['model'];
+    protected $pmtFields        = ['beta', 'nominal_hv', 'qe', 'type'];
     protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial', 'extra_params'];
 
     // Dates
@@ -40,6 +43,11 @@ class EquipmentModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+    public function initialize(){
+        $this->allowedFields = array_merge($this->allowedFields, $this->utilityFields);
+        $this->allowedFields = array_merge($this->allowedFields, $this->pmtFields);
+    }
 
     public function getEquipmentRaw($id=null, $columns='*'){
 
