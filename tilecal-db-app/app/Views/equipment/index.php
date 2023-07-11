@@ -31,10 +31,10 @@
             <td><?php echo $equipment->modelLabel; ?></td>
             <td><?php echo $equipment->location; ?></td>
             <td><?php echo $equipment->status; ?></td>
-            <?php if (is_null($equipment->parent_id)): ?>
-              <td><?php echo $equipment->parent_id; ?></td>
+            <?php if (is_null($equipment->parentID)): ?>
+              <td><?php echo $equipment->parentID; ?></td>
             <?php else: ?>
-              <td><a type="button" class="btn btn-secondary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->parent_id)); ?>"><?php echo $equipment->parent_id; ?></a></td>
+              <td><a type="button" class="btn btn-secondary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->parentID)); ?>"><?php echo $equipment->parentID; ?></a></td>
             <?php endif; ?>
             <td><?php echo $equipment->comments; ?></td>
           </tr>

@@ -8,7 +8,12 @@ class Equipment extends Entity
 {
     protected $datamap = [
         "modelName" => "model_name",
-        "modelLabel" => "model_label"
+        "modelLabel" => "model_label",
+        "parentID" => "parent_id",
+        "modelParams" => "model_params",
+        "modelId" => "model_id",
+        "createdAt" => "created_at",
+        "updatedAt" => "updated_at"
     ];
     protected $dates   = ['created_at', 'updated_at', 'deleted_at'];
     protected $casts   = [

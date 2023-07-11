@@ -65,7 +65,7 @@
                 <li class="list-group-item">Model: <? echo $equipmentInfo->modelLabel?> </li>
                 <li class="list-group-item">Location: <? echo $equipmentInfo->location?> </li>
                 <li class="list-group-item">Status: <? echo $equipmentInfo->status?> </li>
-                <li class="list-group-item">Parent ID: <? echo $equipmentInfo->parent_id?></li> 
+                <li class="list-group-item">Parent ID: <? echo $equipmentInfo->parentID?></li> 
                 <li class="list-group-item">Comments: <? echo $equipmentInfo->comments?></li> 
               </ul>
             </div>
@@ -77,10 +77,10 @@
                   <h4>Model Params</h4>
                 </div>
               </div>
-              <?php if($equipmentInfo->model_params): ?>
-                <!-- <text><? echo print_r($equipmentInfo->model_params); ?></text> -->
+              <?php if($equipmentInfo->modelParams): ?>
+                <!-- <text><? echo print_r($equipmentInfo->modelParams); ?></text> -->
                 <ul class="list-group mt-2">
-                  <?php foreach($equipmentInfo->model_params as $name=>$value): ?>
+                  <?php foreach($equipmentInfo->modelParams as $name=>$value): ?>
                     <li class="list-group-item"><? echo ucwords(str_replace('_', ' ', $name)); ?>: <? echo $value; ?> </li>
                   <?php endforeach; ?>
                 </ul>
