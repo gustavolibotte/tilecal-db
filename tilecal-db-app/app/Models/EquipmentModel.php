@@ -15,7 +15,7 @@ class EquipmentModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
 
-    protected $generalFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial'];
+    protected $generalFields    = [];
     protected $utilityFields    = ['model'];
     protected $pmtFields        = ['beta', 'nominal_hv', 'qe', 'type'];
     protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial', 'model_params'];
@@ -35,7 +35,7 @@ class EquipmentModel extends Model
 
     // Callbacks
     protected $allowCallbacks = true;
-    protected $beforeInsert   = ['addModelID', 'makeJSON'];
+    protected $beforeInsert   = ['makeJSON', 'addModelID'];
     protected $afterInsert    = [];
     protected $beforeUpdate   = [];
     protected $afterUpdate    = [];
@@ -46,6 +46,7 @@ class EquipmentModel extends Model
     protected $baseJoinedColumns = null;
 
     public function initialize(){
+        $this->generalFields = array_merge($this->allowedFields, $this->utilityFields);
         $this->allowedFields = array_merge($this->allowedFields, $this->utilityFields);
         $this->allowedFields = array_merge($this->allowedFields, $this->pmtFields);
         $this->baseJoinedColumns = 'equipments.id, ';
@@ -120,6 +121,10 @@ class EquipmentModel extends Model
     }
 
     protected function makeJSON($data){
+        if (array_key_exists('model_params', $data['data'])){
+            return $data;
+        }
+
         $extraData = null;
         foreach ($data['data'] as $field=>$value){
             if (! in_array($field, $this->generalFields)){
