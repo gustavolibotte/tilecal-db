@@ -63,7 +63,7 @@ class CreateDatabase extends Migration
         $this->forge->addField('parent_id INT UNSIGNED');
         $this->forge->addField('serial VARCHAR(20)');
         $this->forge->addField('comments TEXT');
-        $this->forge->addField('extra_params JSON');
+        $this->forge->addField("model_params JSON");
         $this->forge->addField('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL');
         $this->forge->addField('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL');
         $this->forge->addPrimaryKey('id');

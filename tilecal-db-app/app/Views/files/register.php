@@ -32,9 +32,9 @@
           <?php if($files): ?>
           <?php foreach($files as $file): ?>
             <tr>
-              <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('files/view/%s', $file['id'])); ?>"><?php echo $file['id']; ?></a></td>
-              <td><? echo $file['name']; ?></td>
-              <td><a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $file['id'])); ?>"><i class="bi bi-download"></i></a></td>
+              <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('files/view/%s', $file->id)); ?>"><?php echo $file->id; ?></a></td>
+              <td><? echo $file->name; ?></td>
+              <td><a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $file->id)); ?>"><i class="bi bi-download"></i></a></td>
             </tr>
           <?php endforeach; ?>
           <?php endif; ?>

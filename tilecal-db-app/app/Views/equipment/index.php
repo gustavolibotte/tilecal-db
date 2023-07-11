@@ -27,16 +27,16 @@
           <?php if($equipments): ?>
           <?php foreach($equipments as $equipment): ?>
           <tr>
-            <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment['id'])); ?>"><?php echo $equipment['id']; ?></a></td>
-            <td><?php echo $equipment['model']; ?></td>
-            <td><?php echo $equipment['location']; ?></td>
-            <td><?php echo $equipment['status']; ?></td>
-            <?php if (is_null($equipment['parent_id'])): ?>
-              <td><?php echo $equipment['parent_id']; ?></td>
+            <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->id; ?></a></td>
+            <td><?php echo $equipment->model; ?></td>
+            <td><?php echo $equipment->location; ?></td>
+            <td><?php echo $equipment->status; ?></td>
+            <?php if (is_null($equipment->parent_id)): ?>
+              <td><?php echo $equipment->parent_id; ?></td>
             <?php else: ?>
-              <td><a type="button" class="btn btn-secondary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment['parent_id'])); ?>"><?php echo $equipment['parent_id']; ?></a></td>
+              <td><a type="button" class="btn btn-secondary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->parent_id)); ?>"><?php echo $equipment->parent_id; ?></a></td>
             <?php endif; ?>
-            <td><?php echo $equipment['comments']; ?></td>
+            <td><?php echo $equipment->comments; ?></td>
           </tr>
          <?php endforeach; ?>
          <?php endif; ?>

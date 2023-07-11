@@ -4,6 +4,7 @@ namespace App\Database\Seeds;
 
 use CodeIgniter\Database\Seeder;
 use App\Models\EquipmentModel;
+use App\Entities\Equipment;
 
 class EquipmentSeeder extends Seeder
 {
@@ -15,7 +16,8 @@ class EquipmentSeeder extends Seeder
         $equipmentModel = new EquipmentModel();
         foreach ($csv as $row) {
             $data = array_combine($keys, $row);
-            $equipmentModel->insert($data);
+            $model = new Equipment($data);
+            $equipmentModel->insert($model);
         }
     }
 }

@@ -11,14 +11,14 @@ class EquipmentModel extends Model
     protected $table            = 'equipments';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
+    protected $returnType       = \App\Entities\Equipment::class;
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
 
     protected $generalFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial'];
     protected $utilityFields    = ['model'];
     protected $pmtFields        = ['beta', 'nominal_hv', 'qe', 'type'];
-    protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial', 'extra_params'];
+    protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial', 'model_params'];
 
     // Dates
     protected $useTimestamps = false;
@@ -43,10 +43,21 @@ class EquipmentModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+    protected $baseJoinedColumns = null;
 
     public function initialize(){
         $this->allowedFields = array_merge($this->allowedFields, $this->utilityFields);
         $this->allowedFields = array_merge($this->allowedFields, $this->pmtFields);
+        $this->baseJoinedColumns = 'equipments.id, ';
+        $this->baseJoinedColumns .= 'models.formatted_name as model, ';
+        $this->baseJoinedColumns .= 'equipments.location, ';
+        $this->baseJoinedColumns .= 'equipments.status, ';
+        $this->baseJoinedColumns .= 'equipments.parent_id, ';
+        $this->baseJoinedColumns .= 'equipments.serial, ';
+        $this->baseJoinedColumns .= 'equipments.comments, ';
+        $this->baseJoinedColumns .= 'equipments.model_params, ';
+        $this->baseJoinedColumns .= 'equipments.updated_at, ';
+        $this->baseJoinedColumns .= 'equipments.created_at ';
     }
 
     public function getEquipmentRaw($id=null, $columns='*'){
@@ -64,20 +75,14 @@ class EquipmentModel extends Model
 
     public function getEquipment($id=null)
     {   
-        $columns = 'equipments.id, ';
-        $columns .= 'models.formatted_name as model, ';
-        $columns .= 'equipments.location, ';
-        $columns .= 'equipments.status, ';
-        $columns .= 'equipments.parent_id, ';
-        $columns .= 'equipments.comments, ';
         if (is_null($id)){
-            $result = $this->select($columns)
+            $result = $this->select($this->baseJoinedColumns)
                            ->join('models', 'equipments.model_id = models.id')
                            ->orderBy('equipments.updated_at', 'DESC')
                            ->findAll();
         }
         else{
-            $result = $this->select($columns)
+            $result = $this->select($this->baseJoinedColumns)
                            ->where(sprintf("equipments.id = '%s'", $id))
                            ->join('models', 'equipments.model_id = models.id')
                            ->orderBy('equipments.updated_at', 'DESC')
@@ -105,13 +110,8 @@ class EquipmentModel extends Model
      * @return array The query results
      */ 
     public function getEquipmentsWhereModel($modelName){
-        $columns = 'equipments.id, ';
-        $columns .= 'models.formatted_name as model, ';
-        $columns .= 'equipments.location, ';
-        $columns .= 'equipments.status, ';
-        $columns .= 'equipments.parent_id, ';
-        $columns .= 'equipments.comments, ';
-        $result = $this->select($columns)
+
+        $result = $this->select($this->baseJoinedColumns)
                        ->where(sprintf("models.name = '%s'", $modelName))
                        ->join('models', 'equipments.model_id = models.id')
                        ->orderBy('equipments.updated_at', 'DESC')
@@ -128,7 +128,7 @@ class EquipmentModel extends Model
             }
         }
         if (! is_null($extraData)){
-            $data['data']['extra_params'] = json_encode($extraData);
+            $data['data']['model_params'] = json_encode($extraData);
         }
         return $data;
     }

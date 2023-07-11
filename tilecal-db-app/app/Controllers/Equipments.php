@@ -24,18 +24,22 @@ class Equipments extends BaseController
     }
 
     public function view($id){
+        $viewData = $this->getViewData($id);
+        $headerData['pageTitle'] = sprintf('Equipment %s', $id);
+        return view('templates/header', $headerData)
+              .view('equipment/view', $viewData)
+              .view('templates/footer');
+    }
+
+    public function getViewData($id){
+
         $equipmentModel = new EquipmentModel();
-        $viewData['equipments'] = $equipmentModel->getEquipment();
+        $viewData['relatedEquipments'] = $equipmentModel->getEquipment();
         $viewData['equipmentInfo'] = $equipmentModel->getEquipment($id);
 
         $fileModel = new FileModel();
         $viewData['files'] = $fileModel->getBindedFilesInfo($id);
 
-
-        $headerData['pageTitle'] = sprintf('Equipment %s', $id);
-
-        return view('templates/header', $headerData)
-              .view('equipment/view', $viewData)
-              .view('templates/footer');
+        return $viewData;
     }
 }

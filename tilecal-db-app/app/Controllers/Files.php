@@ -42,17 +42,17 @@ class Files extends BaseController
 
         $fileModel = new FileModel();
         $file = $fileModel->getFile($id, 'name, mime, extension, filedata');
-        $filename = $file['name'] . '.' . $file['extension'];
+        $filename = $file->name . '.' . $file->extension;
 
         header('Content-Description: File Transfer');
-        header(sprintf('Content-Type: %s', $file['mime']));
+        header(sprintf('Content-Type: %s', $file->mime));
         header(sprintf('Content-Disposition: attachment; filename="%s"', $filename));
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
-        header('Content-Length: ' . strlen($file['filedata']));
+        header('Content-Length: ' . strlen($file->filedata));
 
-        echo $file['filedata'];
+        echo $file->filedata;
     }
 
     public function getRegisterData($validationErrors=null, $preFilledValues=null){
@@ -99,21 +99,22 @@ class Files extends BaseController
     public function uploadPost(){
         helper('form');
 
-        $file = $this->request->getFile('file');
+        $uploadedFile = $this->request->getFile('file');
         $formNonFileInputs = $this->request->getPost(['name', 'description']);
-        $filepath = $file->getPathname();
+        $filepath = $uploadedFile->getPathname();
 
         if ($this->validate('fileUploadRules')){
             $registerData = $this->getRegisterData();
             $fileData = [
                 "name" => $formNonFileInputs['name'],
-                "mime" => $file->getMimeType(),
-                "extension"=> $file->guessExtension(),
+                "mime" => $uploadedFile->getMimeType(),
+                "extension"=> $uploadedFile->guessExtension(),
                 "filedata" => file_get_contents($filepath),
                 "description" => $formNonFileInputs['description'],
             ];
+            $file = new \App\Entities\File($fileData);
             $fileModel = new FileModel();
-            $fileModel->insert($fileData);
+            $fileModel->insert($file);
         }
         else{
             $validationErrors = $this->validator->getErrors();

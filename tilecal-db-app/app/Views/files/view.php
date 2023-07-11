@@ -3,7 +3,7 @@
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title> File <? echo $fileInfo['id']?> </title>
+  <title> File <? echo $fileInfo->id?> </title>
   <link href="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/b-2.3.6/datatables.min.css" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css" integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e" crossorigin="anonymous">
@@ -14,7 +14,7 @@
 <div class="container mt-4 mb-5">
   <div class="row">
     <div class="jumbotron text-left">
-      <h1> File ID: <? echo $fileInfo['id']?></h1>
+      <h1> File ID: <? echo $fileInfo->id?></h1>
     </div>
   </div>
   <div class="row">
@@ -31,8 +31,8 @@
           <?php if($equipments): ?>
           <?php foreach($equipments as $equipment): ?>
             <tr>
-              <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment['id'])); ?>"><?php echo $equipment['id']; ?></a></td>
-              <td><? echo $equipment['model']; ?></td>
+              <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->id; ?></a></td>
+              <td><? echo $equipment->model; ?></td>
             </tr>
           <?php endforeach; ?>
           <?php endif; ?>
@@ -61,10 +61,10 @@
                 </div>
               </div>
               <ul class="list-group mt-2">
-                <li class="list-group-item">ID: <? echo $fileInfo['id']?> </li>
-                <li class="list-group-item">Name: <? echo $fileInfo['name']?> </li>
-                <li class="list-group-item">Description: <? echo $fileInfo['description']?> </li>
-                <li class="list-group-item">Download: <a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $fileInfo['id'])); ?>"><i class="bi bi-download"></i></a> </li>
+                <li class="list-group-item">ID: <? echo $fileInfo->id?> </li>
+                <li class="list-group-item">Name: <? echo $fileInfo->name?> </li>
+                <li class="list-group-item">Description: <? echo $fileInfo->description?> </li>
+                <li class="list-group-item">Download: <a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $fileInfo->id)); ?>"><i class="bi bi-download"></i></a> </li>
               </ul>
             </div>
           </div>

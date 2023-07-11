@@ -19,7 +19,7 @@
   </div>
   <div class="row">
     <div class="col-3 mt-4">
-      <h4 class="text-center">Related Equipments</h4>
+      <h4 class="text-center">Equipments</h4>
       <table class="table table-bordered" id="equipments-table">
         <thead>
           <tr>
@@ -31,8 +31,8 @@
           <?php if($relatedEquipments): ?>
           <?php foreach($relatedEquipments as $equipment): ?>
             <tr>
-              <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment['id'])); ?>"><?php echo $equipment['id']; ?></a></td>
-              <td><? echo $equipment['model']; ?></td>
+              <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->id; ?></a></td>
+              <td><? echo $equipment->model; ?></td>
             </tr>
           <?php endforeach; ?>
           <?php endif; ?>

@@ -13,7 +13,8 @@ class FileSeeder extends Seeder
         $jsonString = file_get_contents($seedDataPath);
         $fileData = json_decode($jsonString, true);
         $fileData['filedata'] = file_get_contents($fileData['filedata']);
+        $file = new \App\Entities\File($fileData);
         $fileModel = new FileModel();
-        $fileModel->insert($fileData);
+        $fileModel->insert($file);
     }
 }
