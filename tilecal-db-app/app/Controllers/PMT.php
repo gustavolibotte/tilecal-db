@@ -72,7 +72,7 @@ class PMT extends Equipments
             'qe',
             'type'
         ]);
-        $formInputs['model'] = "pmt";
+        $formInputs['model_name'] = "pmt";
         $formInputs['location'] = $this->toSnakeCase($formInputs['location']);
         $formInputs['status'] = $this->toSnakeCase($formInputs['status']);
         $formInputs['type'] = $this->toSnakeCase($formInputs['type']);

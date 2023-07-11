@@ -6,7 +6,10 @@ use CodeIgniter\Entity\Entity;
 
 class Equipment extends Entity
 {
-    protected $datamap = [];
+    protected $datamap = [
+        "modelName" => "model_name",
+        "modelLabel" => "model_label"
+    ];
     protected $dates   = ['created_at', 'updated_at', 'deleted_at'];
     protected $casts   = [
         "id" => "integer",

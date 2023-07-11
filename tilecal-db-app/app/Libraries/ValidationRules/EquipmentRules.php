@@ -42,7 +42,7 @@ class EquipmentRules{
                     "is_unique" => "This ID already exists"
                 ]
             ],
-            "model" => [
+            "model_name" => [
                 "rules" => [
                     "required",
                     "is_not_unique[models.name]",

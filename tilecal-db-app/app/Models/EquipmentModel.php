@@ -16,7 +16,7 @@ class EquipmentModel extends Model
     protected $protectFields    = true;
 
     protected $generalFields    = [];
-    protected $utilityFields    = ['model'];
+    protected $utilityFields    = ['model_name'];
     protected $pmtFields        = ['beta', 'nominal_hv', 'qe', 'type'];
     protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial', 'model_params'];
 
@@ -44,13 +44,16 @@ class EquipmentModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
     protected $baseJoinedColumns = null;
+    protected $selectSideTable = null;
 
     public function initialize(){
         $this->generalFields = array_merge($this->allowedFields, $this->utilityFields);
         $this->allowedFields = array_merge($this->allowedFields, $this->utilityFields);
         $this->allowedFields = array_merge($this->allowedFields, $this->pmtFields);
+
         $this->baseJoinedColumns = 'equipments.id, ';
-        $this->baseJoinedColumns .= 'models.formatted_name as model, ';
+        $this->baseJoinedColumns .= 'models.formatted_name as model_label, ';
+        $this->baseJoinedColumns .= 'models.name as model_name, ';
         $this->baseJoinedColumns .= 'equipments.location, ';
         $this->baseJoinedColumns .= 'equipments.status, ';
         $this->baseJoinedColumns .= 'equipments.parent_id, ';
@@ -59,6 +62,9 @@ class EquipmentModel extends Model
         $this->baseJoinedColumns .= 'equipments.model_params, ';
         $this->baseJoinedColumns .= 'equipments.updated_at, ';
         $this->baseJoinedColumns .= 'equipments.created_at ';
+
+        $this->selectSideTable = 'equipments.id, ';
+        $this->selectSideTable .= 'models.formatted_name as model_label ';
     }
 
     public function getEquipmentRaw($id=null, $columns='*'){
@@ -95,9 +101,7 @@ class EquipmentModel extends Model
 
     public function getSideTable(){
 
-        $columns = 'equipments.id, ';
-        $columns .= 'models.formatted_name as model ';
-        $result = $this->select($columns)
+        $result = $this->select($this->selectSideTable)
                         ->join('models', 'equipments.model_id = models.id')
                         ->orderBy('equipments.updated_at', 'DESC')
                         ->findAll();
@@ -140,8 +144,8 @@ class EquipmentModel extends Model
 
     protected function addModelID($data){
         if (! array_key_exists('model_id', $data['data'])){
-            $modelName = $data['data']['model'];
-            unset($data['data']['model']);
+            $modelName = $data['data']['model_name'];
+            unset($data['data']['model_name']);
             $modelModel = new ModelModel();
             $modelData = $modelModel->select('id')->where(sprintf("name = '%s'", $modelName))->first();
             $data['data']['model_id'] = $modelData['id'];

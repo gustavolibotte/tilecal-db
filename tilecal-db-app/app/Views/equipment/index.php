@@ -28,7 +28,7 @@
           <?php foreach($equipments as $equipment): ?>
           <tr>
             <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->id; ?></a></td>
-            <td><?php echo $equipment->model; ?></td>
+            <td><?php echo $equipment->modelLabel; ?></td>
             <td><?php echo $equipment->location; ?></td>
             <td><?php echo $equipment->status; ?></td>
             <?php if (is_null($equipment->parent_id)): ?>

@@ -32,7 +32,7 @@
           <?php foreach($relatedEquipments as $equipment): ?>
             <tr>
               <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->id; ?></a></td>
-              <td><? echo $equipment->model; ?></td>
+              <td><? echo $equipment->modelLabel; ?></td>
             </tr>
           <?php endforeach; ?>
           <?php endif; ?>
@@ -57,12 +57,12 @@
                   <h4>Equipment info</h4>
                 </div>
                 <div class="col-1 text-right">
-                  <a type="button"class="btn btn-primary"href="#">Edit</a>
+                  <a type="button"class="btn btn-primary" href="<?echo base_url(sprintf('%s/edit/%s', $equipmentInfo->modelName, $equipmentInfo->id))?>">Edit</a>
                 </div>
               </div>
               <ul class="list-group mt-2">
                 <li class="list-group-item">ID: <? echo $equipmentInfo->id?> </li>
-                <li class="list-group-item">Model: <? echo $equipmentInfo->model?> </li>
+                <li class="list-group-item">Model: <? echo $equipmentInfo->modelLabel?> </li>
                 <li class="list-group-item">Location: <? echo $equipmentInfo->location?> </li>
                 <li class="list-group-item">Status: <? echo $equipmentInfo->status?> </li>
                 <li class="list-group-item">Parent ID: <? echo $equipmentInfo->parent_id?></li> 
