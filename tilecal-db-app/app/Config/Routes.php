@@ -41,6 +41,8 @@ $routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1');
 $routes->get('equipments/fenics/register', 'Fenics::registerGet');
 $routes->get('equipments/pmt/register', 'PMT::registerGet');
 $routes->post('equipments/pmt/register', 'PMT::registerPost');
+$routes->get('equipments/edit/(:segment)/(:alphanum)', 'PMT::edit/$1/$2');
+$routes->post('equipments/edit/(:segment)/(:alphanum)', 'PMT::edit/$1/$2');
 
 // File routes
 $routes->get('files', 'Files::index');

@@ -45,11 +45,15 @@ class Validation extends BaseConfig
     // --------------------------------------------------------------------
     public $fileUploadRules = [];
     public $equipmentRegisterRules = [];
+    public $equipmentEditRules = [];
     public $pmtRegisterRules = [];
     
     public function __construct(){
         $this->fileUploadRules = DBFileRules::upload();
-        $this->equipmentRegisterRules = EquipmentRules::register();
-        $this->pmtRegisterRules= EquipmentRules::pmtRegister();
+        $equipmentRules = new EquipmentRules();
+
+        $this->equipmentRegisterRules = $equipmentRules->equipmentRegisterRules;
+        $this->pmtRegisterRules= $equipmentRules->pmtRegisterRules;
+        $this->equipmentEditRules = $equipmentRules->equipmentEditRules;
     }
 }

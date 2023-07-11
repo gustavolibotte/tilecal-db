@@ -4,13 +4,13 @@ namespace ValidationRules;
 class EquipmentRules{
 
     // MySQL max char count on text type
-    public static $maxCommentSize = 65535;
+    public $maxCommentSize = 65535;
 
-    public static $validLocations = [
+    public $validLocations = [
         '175'
     ];
 
-    public static $validStatus = [
+    public $validStatus = [
         'delivered', 
         'tested', 
         'assembled', 
@@ -18,18 +18,24 @@ class EquipmentRules{
         'broken'
     ];
 
-    public static $validPMTTypes = [
+    public $validPMTTypes = [
         'r11187',
         'r11187',
         'r7877'
     ];
+    public $registerIDRules = [];
+    public $editIDRules = [];
+    public $modelNameRules = [];
+    public $locationRules = [];
+    public $statusRules = [];
+    public $commentsRules = [];
+    public $equipmentRegisterRules = [];
+    public $equipmentEditRules = [];
+    public $pmtRegisterRules = [];
 
-    public static function register(){
-        
-        $validLocationsString = implode(', ', EquipmentRules::$validLocations);
-        $validStatusString = implode(', ', EquipmentRules::$validStatus);
 
-        $equipmentRegisterRules = [
+    public function __construct(){
+        $this->registerIDRules = [
             "id" => [
                 "rules" => [
                     "required",
@@ -41,7 +47,25 @@ class EquipmentRules{
                     "is_natural_no_zero" => "The ID must be greater than zero.",
                     "is_unique" => "This ID already exists"
                 ]
-            ],
+            ]
+        ];
+
+        $this->editIDRules = [
+            "id" => [
+                "rules" => [
+                    "required",
+                    "is_natural_no_zero",
+                    "is_not_unique[equipments.id]"
+                ],
+                "errors" => [
+                    "required" => "You must supply a ID for the equipment.",
+                    "is_natural_no_zero" => "The ID must be greater than zero.",
+                    "is_not_unique" => "The ID must exist"
+                ]
+            ]
+        ];
+
+        $this->modelNameRules = [
             "model_name" => [
                 "rules" => [
                     "required",
@@ -51,7 +75,11 @@ class EquipmentRules{
                     "required" => "You must supply a model for the equipment.",
                     "is_not_unique" => "The given model doesn't exist.",
                 ]
-            ],
+            ]
+        ];
+
+        $validLocationsString = implode(',', $this->validLocations);
+        $this->locationRules = [
             "location" => [
                 "rules" => [
                     "required",
@@ -61,7 +89,11 @@ class EquipmentRules{
                     "required" => "You must supply a location for the equipment.",
                     "in_list" => sprintf("The possible locations are %s", $validLocationsString),
                 ]
-            ],
+            ]
+        ];
+
+        $validStatusString = implode(',', $this->validStatus);
+        $this->statusRules = [
             "status" => [
                 "rules" => [
                     "required",
@@ -71,23 +103,42 @@ class EquipmentRules{
                     "required" => "You must supply a status for the equipment.",
                     "in_list" => sprintf("The possible statuses are %s", $validStatusString),
                 ]
-            ],
+            ]
+        ];
+
+        $this->commentsRules = [
             "comments" => [
                 "rules" => [
-                    sprintf("max_length[%s]", strval(EquipmentRules::$maxCommentSize)),
+                    sprintf("max_length[%d]", $this->maxCommentSize),
                 ],
                 "errors" => [
-                    "max_length" => sprintf("Description max number of characters is %d.", strval(EquipmentRules::$maxCommentSize)),
+                    "max_length" => sprintf("Description max number of characters is %d.", $this->maxCommentSize),
                 ]
             ]
         ];
-        
-        return $equipmentRegisterRules;
+
+        $this->equipmentRegisterRules = array_merge(
+            $this->registerIDRules,
+            $this->modelNameRules,
+            $this->locationRules,
+            $this->commentsRules,
+            $this->statusRules
+        );
+
+        $this->equipmentEditRules = array_merge(
+            $this->editIDRules,
+            $this->modelNameRules,
+            $this->locationRules,
+            $this->commentsRules,
+            $this->statusRules
+        );
+
+        $this->pmtRegisterRules = array_merge($this->equipmentEditRules, $this->pmtregister());
     }
 
-    public static function pmtRegister(){
+    public function pmtRegister(){
 
-        $validPMTTypesString = implode(', ', EquipmentRules::$validPMTTypes);
+        $validPMTTypesString = implode(', ', $this->validPMTTypes);
 
         $pmtExclusiveRules = [
             "beta" => [
@@ -138,11 +189,6 @@ class EquipmentRules{
             ]
         ];
 
-        $pmtRegisterRules = array_merge(
-            EquipmentRules::register(),
-            $pmtExclusiveRules
-        );
-
-        return $pmtRegisterRules;
+        return $pmtExclusiveRules;
     }
 }

@@ -57,7 +57,7 @@
                   <h4>Equipment info</h4>
                 </div>
                 <div class="col-1 text-right">
-                  <a type="button"class="btn btn-primary" href="<?echo base_url(sprintf('%s/edit/%s', $equipmentInfo->modelName, $equipmentInfo->id))?>">Edit</a>
+                  <a type="button"class="btn btn-primary" href="<?echo base_url(sprintf('equipments/edit/%s/%s', $equipmentInfo->modelName, $equipmentInfo->id))?>">Edit</a>
                 </div>
               </div>
               <ul class="list-group mt-2">

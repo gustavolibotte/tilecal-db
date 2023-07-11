@@ -37,7 +37,7 @@ class EquipmentModel extends Model
     protected $allowCallbacks = true;
     protected $beforeInsert   = ['makeJSON', 'addModelID'];
     protected $afterInsert    = [];
-    protected $beforeUpdate   = [];
+    protected $beforeUpdate   = ['makeJSON', 'addModelID'];
     protected $afterUpdate    = [];
     protected $beforeFind     = [];
     protected $afterFind      = [];

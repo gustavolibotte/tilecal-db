@@ -19,11 +19,12 @@ class PMT extends Equipments
             'id' => 'Equipment barcode number',
             'location' => 'Equipment location',
             'status' => 'Installed, assembled, broken, etc.',
+            'serial' => 'Equipment serial number',
             'comments' => 'Useful info about the equipment',
             'beta' => 'PMT beta parameter value',
             'nominal_hv' => 'PMT nominal HV value',
             'qe' => 'PMT QE value',
-            'type' => 'PMT Type'
+            'type' => 'PMT Type',
         ];
         $registerData['formRestrictions'] = [
         ];
@@ -33,6 +34,7 @@ class PMT extends Equipments
                 'id' => null,
                 'location' => null,
                 'status' => null,
+                'serial' => null,
                 'comments' => null,
                 'beta' => null,
                 'nominal_hv' => null,
