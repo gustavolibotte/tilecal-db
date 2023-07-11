@@ -19,6 +19,9 @@ RUN apt-get -y update \
 # https://stackoverflow.com/questions/46879196/mysqli-not-found-dockerized-php
 RUN docker-php-ext-install mysqli
 
+# Defining custom php.ini
+COPY php.ini /usr/local/etc/php/
+
 # Solves pearl location for installing postgres
 # https://stackoverflow.com/questions/2499794/how-to-fix-a-locale-setting-warning-from-perl
 # RUN export LC_CTYPE=en_US.UTF-8 >> ~/.bashrc
