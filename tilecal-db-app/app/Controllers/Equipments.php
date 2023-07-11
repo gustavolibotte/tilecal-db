@@ -181,7 +181,7 @@ class Equipments extends BaseController
             "name" => $equipment->modelName,
             "formatted_name" => $equipment->modelLabel
         ];
-        $title = sprintf('%s Edit', $equipment->modelLabel);
+        $title = sprintf('Editing %s ID %s', $equipment->modelLabel, $equipment->id);
         $headerData = $this->getHeaderData($title);
         $postUrl = base_url(sprintf('equipments/edit/%s/%s', $equipment->modelName, $equipment->id));
         $cancelUrl = base_url(sprintf('equipments/view/%s', $equipment->id));
