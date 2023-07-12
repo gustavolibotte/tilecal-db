@@ -12,8 +12,9 @@ class CreateDatabase extends Migration
         $this->forge->addField('formatted_name VARCHAR(50) NOT NULL');
         $this->forge->addField('params JSON NOT NULL');
         $this->forge->addField('description TEXT');
-        $this->forge->addField('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL');
-        $this->forge->addField('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL');
+        $this->forge->addField('updated_at TIMESTAMP NOT NULL');
+        $this->forge->addField('created_at TIMESTAMP NOT NULL');
+        $this->forge->addField('deleted_at TIMESTAMP');
         $this->forge->addField('CONSTRAINT unique_model_name UNIQUE(name)');
         $this->forge->addPrimaryKey('id');
         $this->forge->createTable('models', true);
@@ -37,8 +38,9 @@ class CreateDatabase extends Migration
         $this->forge->addField('extension VARCHAR(10) NOT NULL');
         $this->forge->addField('filedata MEDIUMBLOB NOT NULL');
         $this->forge->addField('description TEXT NOT NULL');
-        $this->forge->addField('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL');
-        $this->forge->addField('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL');
+        $this->forge->addField('updated_at TIMESTAMP NOT NULL');
+        $this->forge->addField('created_at TIMESTAMP NOT NULL');
+        $this->forge->addField('deleted_at TIMESTAMP');
         $this->forge->addField('CONSTRAINT unique_file_name UNIQUE(name)');
         $this->forge->addPrimaryKey('id');
         $this->forge->createTable('files', true);
@@ -64,8 +66,9 @@ class CreateDatabase extends Migration
         $this->forge->addField('serial VARCHAR(20)');
         $this->forge->addField('comments TEXT');
         $this->forge->addField("model_params JSON");
-        $this->forge->addField('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL');
-        $this->forge->addField('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL');
+        $this->forge->addField('updated_at TIMESTAMP NOT NULL');
+        $this->forge->addField('created_at TIMESTAMP NOT NULL');
+        $this->forge->addField('deleted_at TIMESTAMP');
         $this->forge->addPrimaryKey('id');
         $this->forge->addForeignKey('model_id', 'models', 'id');
         $this->forge->addForeignKey('parent_id', 'equipments', 'id');
@@ -87,8 +90,9 @@ class CreateDatabase extends Migration
         $this->forge->addField('id INT UNSIGNED AUTO_INCREMENT');
         $this->forge->addField('equipment_id INT UNSIGNED NOT NULL');
         $this->forge->addField('file_id INT UNSIGNED NOT NULL');
-        $this->forge->addField('updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL');
-        $this->forge->addField('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL');
+        $this->forge->addField('updated_at TIMESTAMP NOT NULL');
+        $this->forge->addField('created_at TIMESTAMP NOT NULL');
+        $this->forge->addField('deleted_at TIMESTAMP');
         $this->forge->addPrimaryKey('id');
         $this->forge->addForeignKey('equipment_id', 'equipments', 'id');
         $this->forge->addForeignKey('file_id', 'files', 'id');

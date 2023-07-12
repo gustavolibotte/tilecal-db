@@ -12,7 +12,7 @@ class EquipmentModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = \App\Entities\Equipment::class;
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
     protected $protectFields    = true;
 
     protected $generalFields    = [];
@@ -21,7 +21,7 @@ class EquipmentModel extends Model
     protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial', 'model_params'];
 
     // Dates
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
@@ -70,10 +70,11 @@ class EquipmentModel extends Model
     public function getEquipmentRaw($id=null, $columns='*'){
 
         if (is_null($id)){
-            $result = $this->findAll();
+            $result = $this->where("deleted_at IS NULL")->findAll();
         }
         else{
             $result = $this->select($columns)
+                           ->where("deleted_at IS NULL")
                            ->where(sprintf("id = '%s'", $id))
                            ->first();
         }
@@ -84,6 +85,7 @@ class EquipmentModel extends Model
     {   
         if (is_null($id)){
             $result = $this->select($this->baseJoinedColumns)
+                           ->where("equipments.deleted_at IS NULL")
                            ->join('models', 'equipments.model_id = models.id')
                            ->orderBy('equipments.updated_at', 'DESC')
                            ->findAll();
@@ -91,6 +93,7 @@ class EquipmentModel extends Model
         else{
             $result = $this->select($this->baseJoinedColumns)
                            ->where(sprintf("equipments.id = '%s'", $id))
+                           ->where("equipments.deleted_at IS NULL")
                            ->join('models', 'equipments.model_id = models.id')
                            ->orderBy('equipments.updated_at', 'DESC')
                            ->first();
@@ -102,9 +105,10 @@ class EquipmentModel extends Model
     public function getSideTable(){
 
         $result = $this->select($this->selectSideTable)
-                        ->join('models', 'equipments.model_id = models.id')
-                        ->orderBy('equipments.updated_at', 'DESC')
-                        ->findAll();
+                       ->where("equipments.deleted_at IS NULL")
+                       ->join('models', 'equipments.model_id = models.id')
+                       ->orderBy('equipments.updated_at', 'DESC')
+                       ->findAll();
         return $result;
     }
     /**
@@ -117,6 +121,7 @@ class EquipmentModel extends Model
     public function getEquipmentsWhereModel($modelName){
 
         $result = $this->select($this->baseJoinedColumns)
+                       ->where("equipments.deleted_at IS NULL")
                        ->where(sprintf("models.name = '%s'", $modelName))
                        ->join('models', 'equipments.model_id = models.id')
                        ->orderBy('equipments.updated_at', 'DESC')

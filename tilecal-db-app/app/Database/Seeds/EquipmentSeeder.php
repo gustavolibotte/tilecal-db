@@ -22,11 +22,18 @@ class EquipmentSeeder extends Seeder
         ];
         foreach ($csv as $row) {
             $data = array_combine($keys, $row);
-            // $data = array_merge($data, $randomModelParams);
-            // $data['model_params'] = json_encode($randomModelParams);
-            $model = new Equipment($data);
-            $model->model_params = $randomModelParams;
-            $equipmentModel->insert($model);
+            $equipment = new Equipment($data);
+            $equipment->model_params = $randomModelParams;
+            $equipmentModel->insert($equipment);
+            if ($this->shouldDelete(0.03)){
+                $equipmentModel->delete($equipment->id);
+            }
         }
+    }
+
+    public function shouldDelete($prob){
+        $deleteEntry = mt_rand(0,999);
+        $isDelete = $deleteEntry<($prob*1000);
+        return $isDelete;
     }
 }

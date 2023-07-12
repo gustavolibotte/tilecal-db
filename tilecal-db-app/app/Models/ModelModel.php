@@ -11,12 +11,12 @@ class ModelModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
     protected $protectFields    = true;
     protected $allowedFields    = ['name', 'formatted_name', 'params', 'description'];
 
     // Dates
-    protected $useTimestamps = false; //Already added by the SQL database
+    protected $useTimestamps = true; //Already added by the SQL database
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';

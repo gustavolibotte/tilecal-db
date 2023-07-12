@@ -11,12 +11,12 @@ class FileModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = \App\Entities\File::class;
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
     protected $protectFields    = true;
     protected $allowedFields    = ['name', 'mime', 'extension', 'filedata', 'description'];
 
     // Dates
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
@@ -43,6 +43,7 @@ class FileModel extends Model
         $result = $this->select('file_id as id, name, description')
                        ->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
                        ->where(sprintf("equipments_to_files.equipment_id = '%s'", $id))
+                       ->where("deleted_at IS NULL")
                        ->findAll();
         return $result;
     }
@@ -56,11 +57,13 @@ class FileModel extends Model
         if (is_null($id)){
             $result = $this->select($columns)
                            ->orderBy('updated_at', 'DESC')
+                           ->where("deleted_at IS NULL")
                            ->findAll();
         }
         else{
             $result = $this->select($columns)
                            ->where(sprintf("id = %s", $id))
+                           ->where("deleted_at IS NULL")
                            ->first();
         }
 
