@@ -72,7 +72,8 @@ class PMT extends Equipments
             'beta' => $this->request->getPost('beta'),
             'nominal_hv' => $this->request->getPost('nominal_hv'),
             'qe' => $this->request->getPost('qe'),
-            'type' => $this->request->getPost('type')
+            'type' => $this->request->getPost('type'),
+            'serial' => $this->request->getPost('serial')
         ];
         $formInputs['model_name'] = "pmt";
         $formInputs['location'] = $this->toSnakeCase($formInputs['location']);

@@ -67,6 +67,7 @@
                 <li class="list-group-item">Status: <? echo $equipmentInfo->status?> </li>
                 <li class="list-group-item">Parent ID: <? echo $equipmentInfo->parentID?></li>
                 <li class="list-group-item">Serial: <? echo $equipmentInfo->serial?> </li>
+                <li class="list-group-item">Deleted: <?php if($equipmentInfo->deletedAt): ?> <? echo $equipmentInfo->deletedAt?> <?php else: ?> No <?php endif; ?></li> 
                 <li class="list-group-item">Comments: <? echo $equipmentInfo->comments?></li> 
               </ul>
             </div>

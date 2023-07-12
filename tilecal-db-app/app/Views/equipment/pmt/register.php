@@ -76,6 +76,10 @@
                   <input name="status" type="text" class="form-control" id="status-input" placeholder="<?echo $formPlaceholders['status'];?>" value="<? echo $preFilledValues['status']?>">
                 </div>
                 <div class="mb-3">
+                  <label for="serial-input" class="col-form-label">Serial:</label>
+                  <input name="serial" type="text" class="form-control" id="serial-input" placeholder="<?echo $formPlaceholders['serial'];?>" value="<? echo $preFilledValues['serial']?>">
+                </div>
+                <div class="mb-3">
                   <label for="beta-input" class="col-form-label">Beta*:</label>
                   <input name="beta" type="text" class="form-control" id="beta-input" placeholder="<?echo $formPlaceholders['beta'];?>" value="<? echo $preFilledValues['beta']?>">
                 </div>
@@ -93,7 +97,7 @@
                 </div>
                 <div class="mb-3">
                   <label for="comments-input" class="col-form-label">Comments:</label>
-                  <textarea name="comments" class="form-control" type="text" id="comments-input" rows="3" placeholder="<?echo $formPlaceholders['comments'];?>" value="<? echo $preFilledValues['comments']?>"></textarea>
+                  <textarea name="comments" class="form-control" type="text" id="comments-input" rows="3" placeholder="<?echo $formPlaceholders['comments'];?>" ><? echo $preFilledValues['comments']; ?></textarea>
                 </div>
               </div>
             </div>

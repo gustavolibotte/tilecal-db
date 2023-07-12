@@ -5,6 +5,7 @@ class EquipmentRules{
 
     // MySQL max char count on text type
     public $maxCommentSize = 65535;
+    public $maxSerialSize = 20;
 
     public $validLocations = [
         '175'
@@ -25,6 +26,7 @@ class EquipmentRules{
     ];
     public $registerIDRules = [];
     public $editIDRules = [];
+    public $serialRules = [];
     public $modelNameRules = [];
     public $locationRules = [];
     public $statusRules = [];
@@ -117,12 +119,24 @@ class EquipmentRules{
             ]
         ];
 
+        $this->serialRules = [
+            "serial" => [
+                "rules" => [
+                    sprintf("max_length[%d]", $this->maxSerialSize),
+                ],
+                "errors" => [
+                    "max_length" => sprintf("Serial max number of characters is %d.", $this->maxSerialSize),
+                ]
+            ]
+                ];
+
         $this->equipmentRegisterRules = array_merge(
             $this->registerIDRules,
             $this->modelNameRules,
             $this->locationRules,
             $this->commentsRules,
-            $this->statusRules
+            $this->statusRules,
+            $this->serialRules
         );
 
         $this->equipmentEditRules = array_merge(
@@ -130,13 +144,14 @@ class EquipmentRules{
             $this->modelNameRules,
             $this->locationRules,
             $this->commentsRules,
-            $this->statusRules
+            $this->statusRules,
+            $this->serialRules
         );
 
         $this->pmtRegisterRules = array_merge($this->equipmentRegisterRules, $this->pmtregister());
     }
 
-    public function pmtRegister(){
+    protected function pmtRegister(){
 
         $validPMTTypesString = implode(', ', $this->validPMTTypes);
 
