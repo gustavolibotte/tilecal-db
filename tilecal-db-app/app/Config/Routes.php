@@ -35,11 +35,12 @@ $routes->get('/', 'Home::index');
 // Equipments routes
 $routes->get('equipments', 'Equipments::index');
 $routes->get('equipments/deleted', 'Equipments::deletedIndex');
+$routes->post('equipments/delete/(:alphanum)', 'Equipments::delete/$1');
 $routes->get('equipments/(:segment)', 'Equipments::index/$1');
 $routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1');
 
 // Equipment register views
-$routes->get('equipments/fenics/register', 'Fenics::registerGet');
+// $routes->get('equipments/fenics/register', 'Fenics::registerGet');
 $routes->get('equipments/pmt/register', 'PMT::registerGet');
 $routes->post('equipments/pmt/register', 'PMT::registerPost');
 $routes->get('equipments/edit/(:segment)/(:alphanum)', 'PMT::edit/$1/$2');

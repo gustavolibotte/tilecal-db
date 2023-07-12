@@ -3,9 +3,9 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\Equipment2FileModel;
 use App\Models\EquipmentModel;
 use App\Models\FileModel;
-use App\Models\ModelModel;
 
 class Equipments extends BaseController
 {   
@@ -155,6 +155,7 @@ class Equipments extends BaseController
     public function getInputData($model,
                                  $postUrl,
                                  $cancelUrl,
+                                 $deleteUrl,
                                  $pageTitle,
                                  $equipmentInputs,
                                  $validationErrors=null){
@@ -167,6 +168,7 @@ class Equipments extends BaseController
         $inputData["cancelUrl"] = $cancelUrl;
         $inputData['equipmentInputs'] = $equipmentInputs;
         $inputData['pageTitle'] = $pageTitle;
+        $inputData['deleteUrl'] = $deleteUrl;
 
         return $inputData;
     }
@@ -194,6 +196,7 @@ class Equipments extends BaseController
         $headerData = $this->getHeaderData($title);
         $postUrl = base_url(sprintf('equipments/edit/%s/%s', $equipment->modelName, $equipment->id));
         $cancelUrl = base_url(sprintf('equipments/view/%s', $equipment->id));
+        $deleteUrl = base_url(sprintf('equipments/delete/%s', $equipment->id));
         $equipmentInputs = $this->getEquipmentInputs(
             modelLabel: $equipment->modelLabel,
             equipment: $equipment,
@@ -203,6 +206,7 @@ class Equipments extends BaseController
         $inputData = $this->getInputData($model,
                                          $postUrl,
                                          $cancelUrl,
+                                         $deleteUrl,
                                          $title,
                                          $equipmentInputs,
                                          $validationErrors);
@@ -229,5 +233,16 @@ class Equipments extends BaseController
             d($formInputs);
             return $this->editGet($modelName, $id, $validationErrors);
         }
+    }
+
+    public function delete($id){
+
+        $equipmentModel = new EquipmentModel();
+        $equipment = $equipmentModel->getEquipment($id);
+        $equipmentModel->delete($id);
+        $equipment2File = new Equipment2FileModel();
+        $equipment2File->where(sprintf('equipment_id = %s', $id))->delete();
+
+        return redirect()->to(sprintf("equipments/%s", $equipment->modelName));
     }
 }

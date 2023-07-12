@@ -49,31 +49,39 @@
       </ul>
       <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-          <?= form_open_multipart($postUrl, 'id="register-equipment-form"'); ?>
-          <?= csrf_field() ?>
-            <div class="row">
-              <div class="col mt-4" id="equipment-info-row">
-                <h4>Equipment info</h4>
-                <div id="parent-id-help" class="form-text">* required field</div>
-                <? if($validationErrors): ?>
-                  <ul>
-                    <?php foreach($validationErrors as $errorMsg): ?>
-                      <li><p class="text-danger"><? echo esc($errorMsg); ?></p></li>
-                    <?php endforeach; ?>
-                  </ul>
-                <?php endif; ?>
-                <? foreach($equipmentInputs as $id=>$inputInfo): ?>
-                  <div class="mb-3">
-                    <label for="<? echo $id; ?>" class="col-form-label"><? echo $inputInfo['label']; ?>*:</label>
-                    <? echo call_user_func(sprintf('form_%s', $inputInfo['inputType']), $inputInfo['helperInput']); ?>
-                    <? if($inputInfo['inputHelp']): ?>
-                      <div id="<? echo $id; ?>-help" class="form-text">* <?echo $inputInfo['inputHelp']; ?></div>
-                    <? endif; ?>
-                  </div>
-                <? endforeach; ?>
-              </div>
+        <div class="row">
+          <div class="col mt-4">
+            <h4>Equipment info</h4>
+            <div id="parent-id-help" class="form-text">* required field</div>
+          </div>
+          <div class="col-1 mt-4 text-right">
+            <?= form_open_multipart($deleteUrl, 'id="delete-form"'); ?>
+              <button type="submit" form="delete-form" class="btn btn-danger">Delete</button>
+            </form>
+          </div>
+        </div>
+        <?= form_open_multipart($postUrl, 'id="register-equipment-form"'); ?>
+          <div class="row">
+            <div class="col mt-1">
+              <? if($validationErrors): ?>
+                <ul>
+                  <?php foreach($validationErrors as $errorMsg): ?>
+                    <li><p class="text-danger"><? echo esc($errorMsg); ?></p></li>
+                  <?php endforeach; ?>
+                </ul>
+              <?php endif; ?>
+              <? foreach($equipmentInputs as $id=>$inputInfo): ?>
+                <div class="mb-3">
+                  <label for="<? echo $id; ?>" class="col-form-label"><? echo $inputInfo['label']; ?>*:</label>
+                  <? echo call_user_func(sprintf('form_%s', $inputInfo['inputType']), $inputInfo['helperInput']); ?>
+                  <? if($inputInfo['inputHelp']): ?>
+                    <div id="<? echo $id; ?>-help" class="form-text">* <?echo $inputInfo['inputHelp']; ?></div>
+                  <? endif; ?>
+                </div>
+              <? endforeach; ?>
             </div>
-            <?php if($enableFileLink): ?>
+          </div>
+          <?php if($enableFileLink): ?>
             <div class="row" id="add-files-row">
               <div class="col mt-4">
                 <div class="row">
@@ -89,15 +97,14 @@
                 </div>
               </div>
             </div>
-            <?php endif; ?>
-            <div class="row">
-              <div class="col mt-4 text-right">
+          <?php endif; ?>
+          <div class="row">
+            <div class="col mt-4 text-right">
               <a type="button" form="upload-file-form" href="<? echo $cancelUrl ;?>" class="btn btn-danger">Cancel</a>
-                <button type="submit" class="btn btn-success" id="register-equipment-form-submit-button" aria-pressed="true">Register</button>
-              </div>
+              <button type="submit" class="btn btn-success" id="register-equipment-form-submit-button" aria-pressed="true">Submit</button>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>
