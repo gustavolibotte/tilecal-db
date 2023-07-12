@@ -19,6 +19,9 @@
           <th>ID</th>
           <th>Filename</th>
           <th>Description</th>
+          <th>Created</th>
+          <th>Updated</th>
+          <th>Deleted</th>
           <th>Download</th>
         </tr>
       </thead>
@@ -29,6 +32,13 @@
             <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('files/view/%s', $file->id)); ?>"><?php echo $file->id; ?></a></td>
             <td><?php echo $file->name; ?></td>
             <td><?php echo $file->description; ?></td>
+            <td><?php echo $file->createdAt; ?></td>
+            <td><?php echo $file->updatedAt; ?></td>
+            <?php if (is_null($file->deletedAt)): ?>
+              <td>False</td>
+            <?php else: ?>
+              <td><?php echo $file->deletedAt; ?></td>
+            <?php endif; ?>
             <td><a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $file->id)); ?>"><i class="bi bi-download"></i></a></td>
           </tr>
          <?php endforeach; ?>

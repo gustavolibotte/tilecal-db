@@ -84,13 +84,13 @@ class EquipmentModel extends Model
     public function getEquipment($id=null, $searchDeleted=false){
         $query = $this->select($this->baseJoinedColumns)
                       ->join('models', 'equipments.model_id = models.id');
-        $query = $this->searchDeleted($query, $searchDeleted);
         
         if (is_null($id)){
+            $query = $this->searchDeleted($query, $searchDeleted);
             $result = $query->findAll();
         }
         else{
-            $result = $query->find($id);
+            $result = $query->withDeleted()->find($id);
         }
 
         return $result;

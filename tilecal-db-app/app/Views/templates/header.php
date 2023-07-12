@@ -106,6 +106,7 @@
           <ul class="dropdown-menu" style="color: #ffffff;">
             <li><a class="dropdown-item" href="<? echo base_url('files'); ?>">View</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('files/upload'); ?>">Upload</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('files/deleted'); ?>">Deleted</a></li>
           </ul>
         </li>
       </ul>

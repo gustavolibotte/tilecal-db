@@ -40,33 +40,36 @@ class FileModel extends Model
     protected $afterDelete    = [];
 
     public function getBindedFilesInfo($id){
-        $result = $this->select('file_id as id, name, description')
-                       ->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
-                       ->where(sprintf("equipments_to_files.equipment_id = '%s'", $id))
-                       ->where("deleted_at IS NULL")
-                       ->findAll();
+        $query = $this->select('file_id as id, name, description')
+                      ->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
+                      ->where(sprintf("equipments_to_files.equipment_id = '%s'", $id));
+        $query = $this->searchDeleted($query, false);
+        $result = $query->findAll();
         return $result;
     }
 
-    public function getFile($id=null, $columns=null)
+    public function getFile($id=null, $columns=null, $searchDeleted=false)
     {
         if (is_null($columns)){
-            $columns = 'id, name, description';
+            $columns = 'id, name, description, created_at, updated_at, deleted_at';
         }
+        $query = $this->select($columns);
         
         if (is_null($id)){
-            $result = $this->select($columns)
-                           ->orderBy('updated_at', 'DESC')
-                           ->where("deleted_at IS NULL")
-                           ->findAll();
+            $query = $this->searchDeleted($query, $searchDeleted);
+            $result = $query->findAll();
         }
         else{
-            $result = $this->select($columns)
-                           ->where(sprintf("id = %s", $id))
-                           ->where("deleted_at IS NULL")
-                           ->first();
+            $result = $query->withDeleted()->find($id);
         }
 
         return $result;
+    }
+
+    protected function searchDeleted($query, $searchDeleted){
+        if ($searchDeleted){
+            return $query->withDeleted()->where("files.deleted_at IS NOT NULL");
+        }
+        return $query;
     }
 }
