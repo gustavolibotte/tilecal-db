@@ -133,7 +133,7 @@ class EquipmentRules{
             $this->statusRules
         );
 
-        $this->pmtRegisterRules = array_merge($this->equipmentEditRules, $this->pmtregister());
+        $this->pmtRegisterRules = array_merge($this->equipmentRegisterRules, $this->pmtregister());
     }
 
     public function pmtRegister(){

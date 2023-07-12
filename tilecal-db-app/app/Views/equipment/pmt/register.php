@@ -93,7 +93,7 @@
                 </div>
                 <div class="mb-3">
                   <label for="comments-input" class="col-form-label">Comments:</label>
-                  <textarea class="form-control" type="text" id="comments-input" rows="3" placeholder="<?echo $formPlaceholders['comments'];?>" value="<? echo $preFilledValues['comments']?>"></textarea>
+                  <textarea name="comments" class="form-control" type="text" id="comments-input" rows="3" placeholder="<?echo $formPlaceholders['comments'];?>" value="<? echo $preFilledValues['comments']?>"></textarea>
                 </div>
               </div>
             </div>

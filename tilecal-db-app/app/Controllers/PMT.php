@@ -64,16 +64,16 @@ class PMT extends Equipments
 
         helper('form');
 
-        $formInputs = $this->request->getPost([
-            'id',
-            'location',
-            'status',
-            'comments',
-            'beta',
-            'nominal_hv',
-            'qe',
-            'type'
-        ]);
+        $formInputs = [
+            'id' => $this->request->getPost('id'),
+            'location' => $this->request->getPost('location'),
+            'status' => $this->request->getPost('status'),
+            'comments' => $this->request->getPost('comments'),
+            'beta' => $this->request->getPost('beta'),
+            'nominal_hv' => $this->request->getPost('nominal_hv'),
+            'qe' => $this->request->getPost('qe'),
+            'type' => $this->request->getPost('type')
+        ];
         $formInputs['model_name'] = "pmt";
         $formInputs['location'] = $this->toSnakeCase($formInputs['location']);
         $formInputs['status'] = $this->toSnakeCase($formInputs['status']);
@@ -82,6 +82,7 @@ class PMT extends Equipments
         if ($this->validateData($formInputs, 'pmtRegisterRules')){
             $registerData = $this->getRegisterData();
             $equipmentModel = new EquipmentModel();
+            d($formInputs);
             $equipmentModel -> insert($formInputs);
         }
         else{

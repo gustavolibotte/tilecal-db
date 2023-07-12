@@ -15,7 +15,7 @@ class EquipmentModel extends Model
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
 
-    protected $generalFields    = [];
+    protected $generalFields    = ['created_at', 'updated_at', 'deleted_at'];
     protected $utilityFields    = ['model_name'];
     protected $pmtFields        = ['beta', 'nominal_hv', 'qe', 'type'];
     protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial', 'model_params'];
@@ -47,9 +47,8 @@ class EquipmentModel extends Model
     protected $selectSideTable = null;
 
     public function initialize(){
-        $this->generalFields = array_merge($this->allowedFields, $this->utilityFields);
-        $this->allowedFields = array_merge($this->allowedFields, $this->utilityFields);
-        $this->allowedFields = array_merge($this->allowedFields, $this->pmtFields);
+        $this->generalFields = array_merge($this->generalFields, $this->allowedFields, $this->utilityFields);
+        $this->allowedFields = array_merge($this->allowedFields, $this->utilityFields, $this->pmtFields);
 
         $this->baseJoinedColumns = 'equipments.id, ';
         $this->baseJoinedColumns .= 'models.formatted_name as model_label, ';
