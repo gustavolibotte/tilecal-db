@@ -61,54 +61,46 @@ class EquipmentModel extends Model
         $this->baseJoinedColumns .= 'equipments.comments, ';
         $this->baseJoinedColumns .= 'equipments.model_params, ';
         $this->baseJoinedColumns .= 'equipments.updated_at, ';
-        $this->baseJoinedColumns .= 'equipments.created_at ';
+        $this->baseJoinedColumns .= 'equipments.created_at, ';
+        $this->baseJoinedColumns .= 'equipments.deleted_at ';
 
         $this->selectSideTable = 'equipments.id, ';
         $this->selectSideTable .= 'models.formatted_name as model_label ';
     }
 
-    public function getEquipmentRaw($id=null, $columns='*'){
+    public function getEquipmentRaw($id=null, $columns='*', $searchDeleted=false){
+        $query = $this->select($columns);
+        $query = $this->searchDeleted($query, $searchDeleted);
 
         if (is_null($id)){
-            $result = $this->where("deleted_at IS NULL")->findAll();
+            $result = $query->findAll();
         }
         else{
-            $result = $this->select($columns)
-                           ->where("deleted_at IS NULL")
-                           ->where(sprintf("id = '%s'", $id))
-                           ->first();
+            $result = $query->find($id);
         }
         return $result;
     }
 
-    public function getEquipment($id=null)
-    {   
+    public function getEquipment($id=null, $searchDeleted=false){
+        $query = $this->select($this->baseJoinedColumns)
+                      ->join('models', 'equipments.model_id = models.id');
+        $query = $this->searchDeleted($query, $searchDeleted);
+        
         if (is_null($id)){
-            $result = $this->select($this->baseJoinedColumns)
-                           ->where("equipments.deleted_at IS NULL")
-                           ->join('models', 'equipments.model_id = models.id')
-                           ->orderBy('equipments.updated_at', 'DESC')
-                           ->findAll();
+            $result = $query->findAll();
         }
         else{
-            $result = $this->select($this->baseJoinedColumns)
-                           ->where(sprintf("equipments.id = '%s'", $id))
-                           ->where("equipments.deleted_at IS NULL")
-                           ->join('models', 'equipments.model_id = models.id')
-                           ->orderBy('equipments.updated_at', 'DESC')
-                           ->first();
+            $result = $query->find($id);
         }
 
         return $result;
     }
 
-    public function getSideTable(){
-
-        $result = $this->select($this->selectSideTable)
-                       ->where("equipments.deleted_at IS NULL")
-                       ->join('models', 'equipments.model_id = models.id')
-                       ->orderBy('equipments.updated_at', 'DESC')
-                       ->findAll();
+    public function getSideTable($searchDeleted=false){
+        $query = $this->select($this->selectSideTable)
+                      ->join('models', 'equipments.model_id = models.id');
+        $query = $this->searchDeleted($query, $searchDeleted);
+        $result = $query->findAll();
         return $result;
     }
     /**
@@ -118,14 +110,12 @@ class EquipmentModel extends Model
      *
      * @return array The query results
      */ 
-    public function getEquipmentsWhereModel($modelName){
-
-        $result = $this->select($this->baseJoinedColumns)
-                       ->where("equipments.deleted_at IS NULL")
-                       ->where(sprintf("models.name = '%s'", $modelName))
-                       ->join('models', 'equipments.model_id = models.id')
-                       ->orderBy('equipments.updated_at', 'DESC')
-                       ->findAll();
+    public function getEquipmentsWhereModel($modelName, $searchDeleted=false){
+        $query = $this->select($this->baseJoinedColumns)
+                      ->where(sprintf("models.name = '%s'", $modelName))
+                      ->join('models', 'equipments.model_id = models.id');
+        $query = $this->searchDeleted($query, $searchDeleted);
+        $result = $query->findAll();
         return $result;
     }
 
@@ -156,5 +146,12 @@ class EquipmentModel extends Model
             $data['data']['model_id'] = $modelData['id'];
         }
         return $data;
+    }
+
+    protected function searchDeleted($query, $searchDeleted){
+        if ($searchDeleted){
+            return $query->withDeleted()->where("equipments.deleted_at IS NOT NULL");
+        }
+        return $query;
     }
 }

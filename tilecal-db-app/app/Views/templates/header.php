@@ -24,6 +24,7 @@
           </a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="<? echo base_url('equipments'); ?>">All</a></li>
+            <li><a class="dropdown-item" href="<? echo base_url('equipments/deleted'); ?>">Deleted</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/3_in_1_board'); ?>">3 in 1 Boards</a></li>
             <li><a class="dropdown-item" href="<? echo base_url('equipments/carrier_board'); ?>">Carrier Board</a></li>

@@ -21,6 +21,9 @@
           <th>Status</th>
           <th>Parent ID</th>
           <th>Comments</th>
+          <th>Created at</th>
+          <th>Updated at</th>
+          <th>Deleted</th>
         </tr>
       </thead>
       <tbody>
@@ -37,6 +40,13 @@
               <td><a type="button" class="btn btn-secondary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->parentID)); ?>"><?php echo $equipment->parentID; ?></a></td>
             <?php endif; ?>
             <td><?php echo $equipment->comments; ?></td>
+            <td><?php echo $equipment->createdAt; ?></td>
+            <td><?php echo $equipment->updatedAt; ?></td>
+            <?php if (is_null($equipment->deletedAt)): ?>
+              <td>False</td>
+            <?php else: ?>
+              <td><?php echo $equipment->deletedAt; ?></td>
+            <?php endif; ?>
           </tr>
          <?php endforeach; ?>
          <?php endif; ?>

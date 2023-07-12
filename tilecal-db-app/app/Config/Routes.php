@@ -34,6 +34,7 @@ $routes->get('/', 'Home::index');
 
 // Equipments routes
 $routes->get('equipments', 'Equipments::index');
+$routes->get('equipments/deleted', 'Equipments::deletedIndex');
 $routes->get('equipments/(:segment)', 'Equipments::index/$1');
 $routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1');
 

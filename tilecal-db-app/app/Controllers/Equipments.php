@@ -8,17 +8,26 @@ use App\Models\FileModel;
 use App\Models\ModelModel;
 
 class Equipments extends BaseController
-{
-    public function index($modelName=null)
+{   
+    public function index($modelName=null, $searchDeleted=false)
     {   
         $equipmentModel = new EquipmentModel();
         $headerData['pageTitle'] = 'Equipment Index';
         if (is_null($modelName)){
-            $indexData['equipments'] = $equipmentModel->getEquipment();
+            $indexData['equipments'] = $equipmentModel->getEquipment(searchDeleted: $searchDeleted);
         }
         else{
-            $indexData['equipments'] = $equipmentModel->getEquipmentsWhereModel($modelName);
+            $indexData['equipments'] = $equipmentModel->getEquipmentsWhereModel($modelName, searchDeleted: $searchDeleted);
         }
+        return view('templates/header', $headerData)
+              .view('equipment/index', $indexData)
+              .view('templates/footer');
+    }
+
+    public function deletedIndex(){
+        $headerData = $this->getHeaderData(pageTitle: 'Deleted Equipment Index');
+        $equipmentModel = new EquipmentModel();
+        $indexData['equipments'] = $equipmentModel->getEquipment(searchDeleted: true);
         return view('templates/header', $headerData)
               .view('equipment/index', $indexData)
               .view('templates/footer');
