@@ -21,7 +21,6 @@ class EquipmentRules{
 
     public $validPMTTypes = [
         'r11187',
-        'r11187',
         'r7877'
     ];
     public $registerIDRules = [];
