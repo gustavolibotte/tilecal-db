@@ -7,10 +7,8 @@ use CodeIgniter\Model;
 abstract class LogModel extends Model{
 
     protected $histModelClass;
-    protected $insertLogIgnore = [];
-    protected $updateLogIgnore = [];
-    protected $useInsertID = true;
-
+    protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at'];
+    protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at'];
     abstract protected function getUpdateLog($updateInfo);
     abstract protected function getInsertLog($insertInfo);
 
