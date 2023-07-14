@@ -226,11 +226,10 @@ class Equipments extends BaseController
         if ($this->validateData($formInputs, 'equipmentEditRules')){
             $equipment = new \App\Entities\Equipment($formInputs);
             (new EquipmentModel)->save($equipment);
-            return $this->view($id);
+            return redirect()->to(sprintf("equipments/view/%s", $id));
         }
         else{
             $validationErrors = $this->validator->getErrors();
-            d($formInputs);
             return $this->editGet($modelName, $id, $validationErrors);
         }
     }
