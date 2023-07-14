@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
+use App\Models\BaseModel;
 use App\Models\ModelModel;
+use App\Entities\OperationLog;
 
-class EquipmentModel extends Model
+class EquipmentModel extends BaseModel
 {
     protected $DBGroup          = 'default';
     protected $table            = 'equipments';
@@ -14,10 +15,6 @@ class EquipmentModel extends Model
     protected $returnType       = \App\Entities\Equipment::class;
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-
-    protected $generalFields    = ['created_at', 'updated_at', 'deleted_at'];
-    protected $utilityFields    = ['model_name'];
-    protected $pmtFields        = ['beta', 'nominal_hv', 'qe', 'type'];
     protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial', 'model_params'];
 
     // Dates
@@ -46,7 +43,16 @@ class EquipmentModel extends Model
     protected $baseJoinedColumns = null;
     protected $selectSideTable = null;
 
+    // Custom
+    protected $generalFields    = ['created_at', 'updated_at', 'deleted_at'];
+    protected $utilityFields    = ['model_name'];
+    protected $pmtFields        = ['beta', 'nominal_hv', 'qe', 'type'];
+    protected $histModelClass = EquipmentHistModel::class;
+    protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'model_params'];
+    protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'model_params'];
+
     public function initialize(){
+        
         $this->generalFields = array_merge($this->generalFields, $this->allowedFields, $this->utilityFields);
         $this->allowedFields = array_merge($this->allowedFields, $this->utilityFields, $this->pmtFields);
 
@@ -65,6 +71,8 @@ class EquipmentModel extends Model
 
         $this->selectSideTable = 'equipments.id, ';
         $this->selectSideTable .= 'models.formatted_name as model_label ';
+
+        parent::initialize();
     }
 
     public function getEquipmentRaw($id=null, $columns='*', $searchDeleted=false){
@@ -152,5 +160,48 @@ class EquipmentModel extends Model
             return $query->withDeleted()->where("equipments.deleted_at IS NOT NULL");
         }
         return $query;
+    }
+
+    protected function getUpdateLog($updateInfo){
+        $id = $updateInfo["id"][0];
+        $oldRow = $this->find($id)->toRawArray();
+        $changes = $this->getUpdateChanges($oldRow, $updateInfo["data"]);
+
+        if (array_key_exists("model_params", $updateInfo["data"])){
+            $oldModelParams = json_decode($oldRow["model_params"]);
+            $newModelParams = json_decode($updateInfo["data"]["model_params"]);
+            $changes = array_merge($changes,
+                                   $this->getUpdateChanges($oldModelParams, $newModelParams));
+        }
+        $updateLog = new OperationLog([
+            "record_id" => $id,
+            "action" => "update",
+            "user" => "root",
+            "changes" => $changes
+        ]);
+        return $updateLog;
+    }
+
+    protected function getInsertLog($insertInfo){
+        $changes = [];
+        foreach ($insertInfo['data'] as $name=>$value){
+            if (!in_array($name, $this->insertLogIgnore)){
+                $changes[$name] = $value;
+            }
+        }
+        $modelParams = json_decode($insertInfo["data"]["model_params"]);
+        foreach ($modelParams as $name=>$value){
+            if (!in_array($name, $this->insertLogIgnore)){
+                $changes[$name] = $value;
+            }
+        }
+        $insertLog = new OperationLog([
+            "record_id" => $insertInfo["data"]["id"],
+            "action" => "insert",
+            "user" => "root",
+            "changes" => $changes
+        ]);
+
+        return $insertLog;
     }
 }
