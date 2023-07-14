@@ -10,7 +10,7 @@ class Equipment2FileModel extends LogModel
     protected $table            = 'equipments_to_files';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
+    protected $returnType       =  \App\Entities\Equipment2File::class;
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
     protected $allowedFields    = ['equipment_id', 'file_id'];

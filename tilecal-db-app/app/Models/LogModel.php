@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Entities\OperationLog;
 use CodeIgniter\Model;
 
 abstract class LogModel extends Model{
@@ -15,6 +16,7 @@ abstract class LogModel extends Model{
     protected function initialize(){
         $this->afterInsert[] = 'logInsert';
         $this->beforeUpdate[] = 'logUpdate';
+        $this->beforeDelete[] = 'logDelete';
     }
 
     protected function logInsert($insertInfo){
@@ -44,4 +46,16 @@ abstract class LogModel extends Model{
         return $changes;
     }
 
+    protected function logDelete($deleteInfo){
+        $deleteLog = new OperationLog([
+            "record_id" => $deleteInfo["id"],
+            "action" => "delete",
+            "user" => "root",
+            "changes" => [] // No need to register changes since the app uses soft delete
+        ]);
+        $histModel = new $this->histModelClass();
+        $histModel->insert($deleteLog);
+
+        return $deleteInfo;
+    }
 }

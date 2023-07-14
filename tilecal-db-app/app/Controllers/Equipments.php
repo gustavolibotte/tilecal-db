@@ -235,12 +235,14 @@ class Equipments extends BaseController
     }
 
     public function delete($id){
-
         $equipmentModel = new EquipmentModel();
         $equipment = $equipmentModel->getEquipment($id);
         $equipmentModel->delete($id);
         $equipment2File = new Equipment2FileModel();
-        $equipment2File->where(sprintf('equipment_id = %s', $id))->delete();
+        $fileReferences = $equipment2File->where(sprintf('equipment_id = %s', $id))->findAll();
+        foreach ($fileReferences as $reference){
+            $equipment2File->delete($reference->id);
+        }
 
         return redirect()->to(sprintf("equipments/%s", $equipment->modelName));
     }
