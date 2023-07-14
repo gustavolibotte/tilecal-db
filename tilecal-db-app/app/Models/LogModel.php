@@ -4,7 +4,7 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-abstract class BaseModel extends Model{
+abstract class LogModel extends Model{
 
     protected $histModelClass;
     protected $insertLogIgnore = [];

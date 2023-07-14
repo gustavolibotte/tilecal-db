@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Entities\OperationLog;
 
-class FileModel extends BaseModel
+class FileModel extends LogModel
 {
     protected $DBGroup          = 'default';
     protected $table            = 'files';

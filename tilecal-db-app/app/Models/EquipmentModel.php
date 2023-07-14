@@ -2,11 +2,9 @@
 
 namespace App\Models;
 
-use App\Models\BaseModel;
-use App\Models\ModelModel;
 use App\Entities\OperationLog;
 
-class EquipmentModel extends BaseModel
+class EquipmentModel extends LogModel
 {
     protected $DBGroup          = 'default';
     protected $table            = 'equipments';
