@@ -39,6 +39,7 @@ class ModelModel extends LogModel
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
+    // Custom
     protected $histModelClass = ModelHistModel::class;
 
     protected function getUpdateLog($updateInfo){
