@@ -13,7 +13,7 @@ class ModelHistModel extends Model
     protected $returnType       =  \App\Entities\OperationLog::class;
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['record_id', 'user', 'action', 'changes', 'filedata'];
+    protected $allowedFields    = ['record_id', 'user', 'action', 'changes'];
 
     // Dates
     protected $useTimestamps = false;
