@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
+use App\Entities\OperationLog;
 
-class FileModel extends Model
+class FileModel extends BaseModel
 {
     protected $DBGroup          = 'default';
     protected $table            = 'files';
@@ -39,6 +39,11 @@ class FileModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
+    // Custom
+    protected $histModelClass = FileHistModel::class;
+    protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'filedata'];
+    protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'filedata'];
+
     public function getBindedFilesInfo($id){
         $query = $this->select('file_id as id, name, description')
                       ->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
@@ -71,5 +76,37 @@ class FileModel extends Model
             return $query->withDeleted()->where("files.deleted_at IS NOT NULL");
         }
         return $query;
+    }
+
+    protected function getUpdateLog($updateInfo){
+        $id = $updateInfo["id"][0];
+        $oldRow = $this->find($id)->toRawArray();
+        $changes = $this->getUpdateChanges($oldRow, $updateInfo["data"]);
+        $updateLog = new OperationLog([
+            "record_id" => $id,
+            "action" => "update",
+            "user" => "root",
+            "changes" => $changes,
+            "filedata" => $updateInfo["data"]["filedata"]
+        ]);
+        return $updateLog;
+    }
+
+    protected function getInsertLog($insertInfo){
+        $changes = [];
+        foreach ($insertInfo['data'] as $name=>$value){
+            if (!in_array($name, $this->insertLogIgnore)){
+                $changes[$name] = $value;
+            }
+        }
+        $insertLog = new OperationLog([
+            "record_id" => $insertInfo["id"],
+            "action" => "insert",
+            "user" => "root",
+            "changes" => $changes,
+            "filedata" => $insertInfo["data"]["filedata"]
+        ]);
+
+        return $insertLog;
     }
 }

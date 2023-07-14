@@ -52,6 +52,7 @@ class CreateDatabase extends Migration
         $this->forge->addField('user VARCHAR(20) NOT NULL');
         $this->forge->addField("action ENUM('insert', 'update', 'delete') NOT NULL");
         $this->forge->addField('changes JSON NOT NULL');
+        $this->forge->addField('filedata MEDIUMBLOB');
         $this->forge->addField('created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL');
         $this->forge->addPrimaryKey('id');
         $this->forge->createTable('files_hist', true);
