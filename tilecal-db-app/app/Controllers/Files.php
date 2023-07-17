@@ -6,7 +6,9 @@ use App\Controllers\BaseController;
 use App\Models\FileModel;
 use App\Models\EquipmentModel;
 use ValidationRules\DBFileRules;
-use App\Models\Equipment2FileModel;
+use App\Models\FileHistModel;
+use App\Models\Equipment2FileHistModel;
+use App\Entities\OperationLog;
 
 class Files extends BaseController
 {
@@ -33,16 +35,31 @@ class Files extends BaseController
               .view('templates/footer');
     }
 
-    public function getViewData($id){
+    public function getFileHist($fileID){
+        $fileHistModel = new FileHistModel();
+        $fileHist = $fileHistModel->getHistWithoutData($fileID, 100);
+        $equipment2FileHistModel = new Equipment2FileHistModel();
+        $fileLinkHist = $equipment2FileHistModel
+            ->where(sprintf('JSON_EXTRACT(changes, "$.file_id") = %s', $fileID))
+            ->findAll();
+        d(sprintf('JSON_EXTRACT(changes, "$.file_id") = %s', $fileID));
+        d($fileID);
+        d($fileLinkHist);
+        $hist = array_merge($fileHist, $fileLinkHist);
+        usort($hist, [OperationLog::class, "cmp_obj"]);
+        return $hist;
+    }
+
+    public function getViewData($fileID){
         $fileModel = new FileModel();
-        $viewData['fileInfo'] = $fileModel->getFile($id);
+        $viewData['fileInfo'] = $fileModel->getFile($fileID);
         $equipmentModel = new EquipmentModel();
-        $viewData['relatedEquipments'] = $equipmentModel->getFileRelatedEquipments($id, limit:100);
-        return $viewData;
+        $viewData['relatedEquipments'] = $equipmentModel->getFileRelatedEquipments($fileID, limit:100);
+        $viewData['fileHist'] = array_reverse($this->getFileHist($fileID))
+;        return $viewData;
     }
 
     public function view($id){
-        $equipmentModel = new EquipmentModel();
         $viewData = $this->getViewData($id);
         $headerData['pageTitle'] = sprintf('File %s', $id);
 

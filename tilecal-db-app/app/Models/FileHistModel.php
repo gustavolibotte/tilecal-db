@@ -10,7 +10,7 @@ class FileHistModel extends Model
     protected $table            = 'files_hist';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
-    protected $returnType       =  \App\Entities\OperationLog::class;
+    protected $returnType       =  \App\Entities\FileLog::class;
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = ['record_id', 'user', 'action', 'changes', 'filedata'];
@@ -38,4 +38,11 @@ class FileHistModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+    public function getHistWithoutData($id, $limit=null){
+        $query = $this->select('record_id, user, action, changes')
+                      ->where(sprintf('record_id = %s', $id));
+        $result = is_null($limit)? $query->findAll(): $query->findAll($limit);
+        return $result;
+    }
 }
