@@ -32,7 +32,8 @@ class EquipmentLog extends OperationLog{
 
     protected function deleteMessage(){
         $msg = $this->getMessageStart();
-        $msg .= sprintf('<b>%s</b> deleted equipment with ID <b>%s</b>', $this->user, $this->recordID);
+        // recordID gives null for some reason and record_id doesnt
+        $msg .= sprintf('<b>%s</b> deleted equipment with ID <b>%s</b>', $this->user, $this->record_id);
         return $msg;
     }
 }
