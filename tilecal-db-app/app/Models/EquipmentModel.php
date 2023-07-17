@@ -101,11 +101,21 @@ class EquipmentModel extends LogModel
         return $result;
     }
 
-    public function getSideTable($searchDeleted=false){
+    public function getRelatedEquipments($id){
+        return $this->getSideTable(limit: 10);
+    }
+
+    public function getSideTable($searchDeleted=false, $limit=null){
         $query = $this->select($this->selectSideTable)
                       ->join('models', 'equipments.model_id = models.id');
         $query = $this->searchDeleted($query, $searchDeleted);
-        $result = $query->findAll();
+        
+        if (!is_null($limit)){
+            $result = $query->findAll($limit);
+        }
+        else{
+            $result = $query->findAll();
+        }
         return $result;
     }
     /**

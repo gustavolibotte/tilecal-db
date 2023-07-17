@@ -38,4 +38,12 @@ class EquipmentHistModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+
+    public function getEquipmentHist($equipmentId){
+        $res = $this->where(sprintf('record_id = %s', $equipmentId))
+                    ->orderBy('created_at', 'desc')
+                    ->findAll();
+        return $res;
+    }
 }

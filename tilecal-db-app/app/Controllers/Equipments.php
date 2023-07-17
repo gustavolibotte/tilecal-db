@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\Equipment2FileModel;
 use App\Models\EquipmentModel;
 use App\Models\FileModel;
+use App\Models\EquipmentHistModel;
 
 class Equipments extends BaseController
 {   
@@ -44,8 +45,11 @@ class Equipments extends BaseController
     public function getViewData($id){
 
         $equipmentModel = new EquipmentModel();
-        $viewData['relatedEquipments'] = $equipmentModel->getEquipment();
+        $viewData['relatedEquipments'] = $equipmentModel->getRelatedEquipments($id);
         $viewData['equipmentInfo'] = $equipmentModel->getEquipment($id);
+
+        $equipmentHistModel = new EquipmentHistModel();
+        $viewData["equipmentHist"] = $equipmentHistModel->getEquipmentHist($id);
 
         $fileModel = new FileModel();
         $viewData['files'] = $fileModel->getBindedFilesInfo($id);
@@ -152,7 +156,8 @@ class Equipments extends BaseController
         return $equipmentInputs;
     }
 
-    public function getInputData($model,
+    public function getInputData($equipmentID,
+                                 $model,
                                  $postUrl,
                                  $cancelUrl,
                                  $deleteUrl,
@@ -161,7 +166,7 @@ class Equipments extends BaseController
                                  $validationErrors=null){
         
         $inputData['enableFileLink'] = false;
-        $inputData['relatedEquipments'] = (new EquipmentModel())->getSideTable();
+        $inputData['relatedEquipments'] = (new EquipmentModel())->getRelatedEquipments($equipmentID);
         $inputData['model'] = $model;
         $inputData["validationErrors"] = $validationErrors;
         $inputData["postUrl"] = $postUrl;
@@ -203,7 +208,8 @@ class Equipments extends BaseController
             inculdeParent: false,
             readOnlyID: true
         );
-        $inputData = $this->getInputData($model,
+        $inputData = $this->getInputData($id,
+                                         $model,
                                          $postUrl,
                                          $cancelUrl,
                                          $deleteUrl,

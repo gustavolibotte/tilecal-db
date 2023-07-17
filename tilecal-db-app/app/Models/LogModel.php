@@ -34,7 +34,6 @@ abstract class LogModel extends Model{
     }
 
     protected function getUpdateChanges($old, $new){
-        $changes = [];
         foreach ($new as $name=>$newValue){
             if ((!in_array($name, $this->updateLogIgnore)) and ($old[$name] != $newValue)){
                 $changes[$name] = [
@@ -43,7 +42,11 @@ abstract class LogModel extends Model{
                 ];
             }
         }
-        return $changes;
+        if (isset($changes)){
+            return $changes;
+        }else{
+            return null;
+        }
     }
 
     protected function logDelete($deleteInfo){
@@ -51,7 +54,7 @@ abstract class LogModel extends Model{
             "record_id" => $deleteInfo["id"],
             "action" => "delete",
             "user" => "root",
-            "changes" => [] // No need to register changes since the app uses soft delete
+            "changes" => null // No need to register changes since the app uses soft delete
         ]);
         $histModel = new $this->histModelClass();
         $histModel->insert($deleteLog);

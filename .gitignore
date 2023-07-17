@@ -7,3 +7,6 @@
 
 # Directory to throw everything that isn't useful
 ignore/*
+
+# Ignore sql scripts
+sql/*
