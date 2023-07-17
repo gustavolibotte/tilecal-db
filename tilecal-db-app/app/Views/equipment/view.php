@@ -8,6 +8,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css" integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/css/style.css'); ?>">
+  <link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/css/view-style.css'); ?>">
 </head>
 
 <body>
@@ -18,7 +19,7 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-3 mt-4">
+    <div class="col-3 mt-4" id="side-table-col">
       <h4 class="text-center">Related Equipments</h4>
       <table class="table table-bordered" id="equipments-side-table">
         <thead>
@@ -51,7 +52,7 @@
       <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="equip-info-pane" role="tabpanel" tabindex="0">
           <div class="row">
-            <div class="col mt-4" id="equipment-info-col">
+            <div class="col mt-4" id="data-info-col">
               <div class="row">
                 <div class="col">
                   <h4>Equipment info</h4>
@@ -60,59 +61,63 @@
                   <a type="button"class="btn btn-primary" href="<?echo base_url(sprintf('equipments/edit/%s/%s', $equipmentInfo->modelName, $equipmentInfo->id))?>">Edit</a>
                 </div>
               </div>
-              <ul class="list-group mt-2">
-                <li class="list-group-item">ID: <? echo $equipmentInfo->id?> </li>
-                <li class="list-group-item">Model: <? echo $equipmentInfo->modelLabel?> </li>
-                <li class="list-group-item">Location: <? echo $equipmentInfo->location?> </li>
-                <li class="list-group-item">Status: <? echo $equipmentInfo->status?> </li>
-                <li class="list-group-item">Parent ID: <? echo $equipmentInfo->parentID?></li>
-                <li class="list-group-item">Serial: <? echo $equipmentInfo->serial?> </li>
-                <li class="list-group-item">Deleted: <?php if($equipmentInfo->deletedAt): ?> <? echo $equipmentInfo->deletedAt?> <?php else: ?> No <?php endif; ?></li> 
-                <li class="list-group-item">Comments: <? echo $equipmentInfo->comments?></li> 
-              </ul>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col mt-4" id="model-params-col">
               <div class="row">
-                <div class="col">
-                  <h4>Model Params</h4>
+                <div class="col" id="equipment-params-col">
+                  <ul class="list-group mt-2">
+                    <li class="list-group-item"><b>ID</b>: <? echo $equipmentInfo->id?> </li>
+                    <li class="list-group-item"><b>Model</b>: <? echo $equipmentInfo->modelLabel?> </li>
+                    <li class="list-group-item"><b>Location</b>: <? echo $equipmentInfo->location?> </li>
+                    <li class="list-group-item"><b>Status</b>: <? echo $equipmentInfo->status?> </li>
+                    <li class="list-group-item"><b>Parent</b> ID: <? echo $equipmentInfo->parentID?></li>
+                    <li class="list-group-item"><b>Serial</b>: <? echo $equipmentInfo->serial?> </li>
+                    <li class="list-group-item"><b>Deleted</b>: <?php if($equipmentInfo->deletedAt): ?> <? echo $equipmentInfo->deletedAt?> <?php else: ?> No <?php endif; ?></li> 
+                    <li class="list-group-item"><b>Comments</b>: <? echo $equipmentInfo->comments?></li> 
+                  </ul>
                 </div>
               </div>
-              <?php if($equipmentInfo->modelParams): ?>
-                <!-- <text><? echo print_r($equipmentInfo->modelParams); ?></text> -->
-                <ul class="list-group mt-2">
-                  <?php foreach($equipmentInfo->modelParams as $name=>$value): ?>
-                    <li class="list-group-item"><? echo ucwords(str_replace('_', ' ', $name)); ?>: <? echo $value; ?> </li>
-                  <?php endforeach; ?>
-                </ul>
-              <?php endif; ?>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col mt-4" id="files-info-col">
-              <h4>Related Files</h4>
-              <table class="table table-bordered" id="related-files-table">
-                <thead>
-                  <tr>
-                    <th>Filename</th>
-                    <th>Description</th>
-                    <th>Download</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php if($files): ?>
-                  <?php foreach($files as $file): ?>
-                    <tr>
-                      <td><? echo $file->name; ?></td>
-                      <td><? echo $file->description; ?></td>
-                      <td><a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $file->id)); ?>"><i class="bi bi-download"></i></a></td>
-                    </tr>
-                  <?php endforeach; ?>
+              <div class="row">
+                <div class="col mt-4" id="model-params-col">
+                  <div class="row">
+                    <div class="col">
+                      <h4>Model Params</h4>
+                    </div>
+                  </div>
+                  <?php if($equipmentInfo->modelParams): ?>
+                    <!-- <text><? echo print_r($equipmentInfo->modelParams); ?></text> -->
+                    <ul class="list-group mt-2">
+                      <?php foreach($equipmentInfo->modelParams as $name=>$value): ?>
+                        <li class="list-group-item"><b><? echo ucwords(str_replace('_', ' ', $name)); ?></b>: <? echo $value; ?> </li>
+                      <?php endforeach; ?>
+                    </ul>
                   <?php endif; ?>
-                </tbody>
-              </table>
-            </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col mt-4" id="files-info-col">
+                  <h4>Related Files</h4>
+                  <table class="table table-bordered" id="related-files-table">
+                    <thead>
+                      <tr>
+                        <th>Filename</th>
+                        <th>Description</th>
+                        <th>Download</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php if($files): ?>
+                      <?php foreach($files as $file): ?>
+                        <tr>
+                          <td><? echo $file->name; ?></td>
+                          <td><? echo $file->description; ?></td>
+                          <td><a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $file->id)); ?>"><i class="bi bi-download"></i></a></td>
+                        </tr>
+                      <?php endforeach; ?>
+                      <?php endif; ?>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              </div>
           </div>
         </div>
         <div class="tab-pane fade" id="history-info-pane" role="tabpanel" tabindex="0">

@@ -18,9 +18,9 @@ function fetchDataTables(){
         //     "infoFiltered": "",  // This removes info from how much samples in table exist
         //     "loadingRecords": "Please wait - loading..."
         // },
-        scrollResize: true,
-        scrollY: 100,
-        scrollCollapse: true,
+        searching: false,
+        scrollColapse: true,
+        scrollY: '65vh',
         paging: false
     });
 }

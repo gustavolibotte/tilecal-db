@@ -9,23 +9,25 @@ function fetchSideTable(){
             {"className": "dt-center", "targets": "_all"}
         ],
         searching: false,
-        scrollResize: true,
-        scrollY: 50,
-        scrollCollapse: true,
+        scrollColapse: true,
+        scrollY: '65vh',
         paging: false
     });
 }
 
 function fetchFilesTable(){
     $('#related-files-table').DataTable({
-        "rowID": "id",
-        searching: false,
-        scrollResize: true,
-        scrollY: 50,
-        scrollCollapse: true,
-        paging: false,
-        bInfo: false
+        rowID: "id",
+        searching: true,
+        scrollColapse: true,
+        scrollY: '33vh',
+        paging: false
     });
 }
 
-$(document).ready(fetchSideTable());
+function fetchTables(){
+    fetchSideTable()
+    fetchFilesTable()
+}
+
+$(document).ready(fetchTables);

@@ -9,11 +9,10 @@ function fetchSideTable(){
             {"className": "dt-center", "targets": "_all"}
         ],
         searching: false,
-        scrollResize: true,
-        scrollY: 50,
-        scrollCollapse: true,
+        scrollColapse: true,
+        scrollY: '65vh',
         paging: false
     });
 }
 
-$(document).ready(fetchSideTable());
+$(document).ready(fetchSideTable);

@@ -117,6 +117,6 @@
 <script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
 <!-- App JS modules -->
-<script type="text/javascript" src="<?=base_url('assets/js/equipment/no_child_register.js')?>" ></script>
+<script type="text/javascript" src="<?=base_url('assets/js/equipment/input.js')?>" ></script>
 </body>
 </html>

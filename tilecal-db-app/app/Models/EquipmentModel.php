@@ -110,10 +110,6 @@ class EquipmentModel extends LogModel
         return $result;
     }
 
-    public function getRelatedEquipments($id){
-        return $this->getSideTable(limit: 10);
-    }
-
     public function getSideTable($searchDeleted=false, $limit=null){
         $query = $this->select($this->selectSideTable)
                       ->join('models', 'equipments.model_id = models.id');

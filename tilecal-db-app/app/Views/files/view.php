@@ -8,6 +8,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css" integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/css/style.css'); ?>">
+  <link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/css/view-style.css'); ?>">
 </head>
 
 <body>
@@ -18,7 +19,7 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-3 mt-4">
+    <div class="col-3 mt-4" id="side-table-col">
       <h4 class="text-center">Related Equipments</h4>
       <table class="table table-bordered" id="equipments-side-table">
         <thead>
@@ -51,7 +52,7 @@
       <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="equip-info-pane" role="tabpanel" tabindex="0">
           <div class="row">
-            <div class="col mt-4" id="equipment-info-col">
+            <div class="col mt-4" id="data-info-col">
               <div class="row">
                 <div class="col">
                   <h4>File info</h4>

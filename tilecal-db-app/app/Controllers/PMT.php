@@ -11,7 +11,7 @@ class PMT extends Equipments
 
         $registerData['enableFileLink'] = false;
         $equipmentModel = new EquipmentModel();
-        $registerData['relatedEquipments'] = $equipmentModel->getSideTable();
+        $registerData['relatedEquipments'] = $equipmentModel->getSideTable(limit:30);
         $modelModel = new ModelModel();
         $registerData['model'] = $modelModel->where("name = 'pmt'")->first();
         $registerData['validationErrors'] = $validationErrors;

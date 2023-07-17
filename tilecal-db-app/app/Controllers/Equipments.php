@@ -44,10 +44,16 @@ class Equipments extends BaseController
               .view('templates/footer');
     }
 
+    public function getRelatedEquipments($equipmentID){
+        $equipmentModel = new EquipmentModel();
+        $relatedEquipments = $equipmentModel->getSideTable(30);
+        return $relatedEquipments;
+    }
+
     public function getViewData($id){
 
+        $viewData['relatedEquipments'] = $this->getRelatedEquipments($id);
         $equipmentModel = new EquipmentModel();
-        $viewData['relatedEquipments'] = $equipmentModel->getRelatedEquipments($id);
         $viewData['equipmentInfo'] = $equipmentModel->getEquipment($id);
         $viewData["equipmentHist"] = array_reverse($this->getEquipmentHist($id));
         $fileModel = new FileModel();
@@ -178,7 +184,7 @@ class Equipments extends BaseController
                                  $validationErrors=null){
         
         $inputData['enableFileLink'] = false;
-        $inputData['relatedEquipments'] = (new EquipmentModel())->getRelatedEquipments($equipmentID);
+        $inputData['relatedEquipments'] = $this->getRelatedEquipments($equipmentID);
         $inputData['model'] = $model;
         $inputData["validationErrors"] = $validationErrors;
         $inputData["postUrl"] = $postUrl;
