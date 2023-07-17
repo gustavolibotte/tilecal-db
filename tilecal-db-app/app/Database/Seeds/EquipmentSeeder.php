@@ -2,11 +2,10 @@
 
 namespace App\Database\Seeds;
 
-use CodeIgniter\Database\Seeder;
 use App\Models\EquipmentModel;
 use App\Entities\Equipment;
 
-class EquipmentSeeder extends Seeder
+class EquipmentSeeder extends BaseSeeder
 {
     public function run()
     {   
@@ -25,15 +24,9 @@ class EquipmentSeeder extends Seeder
             $equipment = new Equipment($data);
             $equipment->model_params = $randomModelParams;
             $equipmentModel->insert($equipment);
-            if ($this->shouldDelete(0.03)){
+            if ($this->probDecision(0.03)){
                 $equipmentModel->delete($equipment->id);
             }
         }
-    }
-
-    public function shouldDelete($prob){
-        $deleteEntry = mt_rand(0,999);
-        $isDelete = $deleteEntry<($prob*1000);
-        return $isDelete;
     }
 }

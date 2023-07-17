@@ -42,9 +42,6 @@ class Files extends BaseController
         $fileLinkHist = $equipment2FileHistModel
             ->where(sprintf('JSON_EXTRACT(changes, "$.file_id") = %s', $fileID))
             ->findAll();
-        d(sprintf('JSON_EXTRACT(changes, "$.file_id") = %s', $fileID));
-        d($fileID);
-        d($fileLinkHist);
         $hist = array_merge($fileHist, $fileLinkHist);
         usort($hist, [OperationLog::class, "cmp_obj"]);
         return $hist;

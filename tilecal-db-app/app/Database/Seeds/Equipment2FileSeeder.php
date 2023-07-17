@@ -2,12 +2,11 @@
 
 namespace App\Database\Seeds;
 
-use CodeIgniter\Database\Seeder;
 use App\Models\Equipment2FileModel;
 use App\Models\EquipmentModel;
 use App\Models\FileModel;
 
-class Equipment2FileSeeder extends Seeder
+class Equipment2FileSeeder extends BaseSeeder
 {
     public function run()
     {   
@@ -17,13 +16,15 @@ class Equipment2FileSeeder extends Seeder
         $files = $fileModel->getFile();
         $equipment2FileModel = new Equipment2FileModel();
         foreach ($equipments as $equipment){
-            $fileIdx = array_rand($files);
-            $fileBind = $files[$fileIdx];
-            $data = [
-                "equipment_id" => $equipment->id,
-                "file_id" => $fileBind->id
-            ];
-            $equipment2FileModel->insert($data);
+            if ($this->probDecision(0.1)){
+                $fileIdx = array_rand($files);
+                $fileBind = $files[$fileIdx];
+                $data = [
+                    "equipment_id" => $equipment->id,
+                    "file_id" => $fileBind->id
+                ];
+                $equipment2FileModel->insert($data);
+            }
         }
 
         // $seedDataPath = '/root/tilecal-db/app/Database/Seeds/seed_data/equipments2files.csv';

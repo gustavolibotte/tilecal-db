@@ -2,9 +2,7 @@
 
 namespace App\Database\Seeds;
 
-use CodeIgniter\Database\Seeder;
-
-class FillDatabase extends Seeder
+class FillDatabase extends BaseSeeder
 {
     public function run()
     {   

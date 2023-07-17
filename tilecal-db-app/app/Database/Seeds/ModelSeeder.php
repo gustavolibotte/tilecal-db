@@ -2,10 +2,9 @@
 
 namespace App\Database\Seeds;
 
-use CodeIgniter\Database\Seeder;
 use App\Models\ModelModel;
 
-class ModelSeeder extends Seeder
+class ModelSeeder extends BaseSeeder
 {   
     public function run()
     {   
