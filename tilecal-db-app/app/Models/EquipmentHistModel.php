@@ -10,7 +10,7 @@ class EquipmentHistModel extends Model
     protected $table            = 'equipments_hist';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
-    protected $returnType       =  \App\Entities\OperationLog::class;
+    protected $returnType       =  \App\Entities\EquipmentLog::class;
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = ['record_id', 'user', 'action', 'changes'];

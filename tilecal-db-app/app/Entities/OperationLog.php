@@ -22,7 +22,8 @@ class OperationLog extends Entity
         }elseif ($this->isUpdate()){
             return $this->updateMessage();
         }elseif ($this->isDelete()){
-            return $this->deleteMessage();
+            $msg = $this->deleteMessage();
+            return $this->makeDanger($msg);
         }else {
             return null;
         }
@@ -38,8 +39,18 @@ class OperationLog extends Entity
         return ($this->action == 'delete');
     }
 
-    protected function insertMessage(){
+    protected function makeDanger($msg){
+        $msg = '<p class=text-danger>' . $msg . '</p>';
+        return $msg;
+    }
+
+    protected function getMessageStart(){
         $msg = sprintf('<b>%s</b> - ', $this->createdAt);
+        return $msg;
+    }
+
+    protected function insertMessage(){
+        $msg = $this->getMessageStart();
         $msg .= sprintf('<b>%s</b> created entry with ID %s with values:', $this->user, $this->recordId);
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
@@ -50,7 +61,7 @@ class OperationLog extends Entity
     }
 
     protected function updateMessage(){
-        $msg = sprintf('<b>%s</b> - ', $this->createdAt);
+        $msg = $this->getMessageStart();
         if (is_null($this->changes)){
             $msg .= sprintf('<b>%s</b> submited update with no changes', $this->user,);
             return $msg;
@@ -65,10 +76,8 @@ class OperationLog extends Entity
     }
 
     protected function deleteMessage(){
-        $msg = '<p class=text-danger>';
-        $msg .= sprintf('<b>%s</b> - ', $this->createdAt);
+        $msg = $this->getMessageStart();
         $msg .= sprintf('<b>%s</b> deleted entry with ID <b>%s</b>', $this->user, $this->recordID);
-        $msg .= '</p>';
         return $msg;
     }
 }
