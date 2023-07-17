@@ -118,8 +118,6 @@
         <div class="tab-pane fade" id="history-info-pane" role="tabpanel" tabindex="0">
           <div class="row">
             <div class="col mt-4" id="history-info-col">
-              <div clas="row">
-                <div class="col mt-4">
                   <h4>Equipment history</h4>
                   <? if($equipmentHist):?>
                     <? foreach($equipmentHist as $history): ?>
@@ -128,17 +126,6 @@
                       </ul>
                     <? endforeach; ?>
                   <? endif; ?>
-                </div>
-              </div>
-              <hr/>
-              <div clas="row">
-                <div class="col mt-4">
-                  <h4>Linked files history</h4>
-                  <ul class="list-group">
-                    <li class="list-group-item"><b>2023-06-27 13:00</b> Lucas updated status from "working" to "broken"</li>
-                  </ul>
-                </div>
-              </div>
             </div>
           </div>
         </div>

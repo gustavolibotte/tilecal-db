@@ -46,7 +46,6 @@ class Equipment2FileModel extends LogModel
         $id = $updateInfo["id"][0];
         $oldRow = $this->find($id)->toRawArray();
         $changes = $this->getUpdateChanges($oldRow, $updateInfo["data"]);
-
         $updateLog = new OperationLog([
             "record_id" => $id,
             "action" => "update",
@@ -57,13 +56,11 @@ class Equipment2FileModel extends LogModel
     }
 
     protected function getInsertLog($insertInfo){
-        $changes = [];
         foreach ($insertInfo['data'] as $name=>$value){
             if (!in_array($name, $this->insertLogIgnore)){
                 $changes[$name] = $value;
             }
         }
-
         $insertLog = new OperationLog([
             "record_id" => $insertInfo["id"],
             "action" => "insert",
@@ -72,5 +69,22 @@ class Equipment2FileModel extends LogModel
         ]);
 
         return $insertLog;
+    }
+
+    protected function getDeleteLog($deleteInfo){
+        $equipment2FileModel = new Equipment2FileModel();
+        $data2Delete = $equipment2FileModel
+            ->find($deleteInfo["id"])
+            ->toRawArray();
+        $deleteLog = new OperationLog([
+            "record_id" => $deleteInfo["id"],
+            "action" => "delete",
+            "user" => "root",
+            "changes" => json_encode($data2Delete)
+        ]);
+        $histModel = new $this->histModelClass();
+        $histModel->insert($deleteLog);
+
+        return $deleteInfo;
     }
 }

@@ -80,4 +80,8 @@ class OperationLog extends Entity
         $msg .= sprintf('<b>%s</b> deleted entry with ID <b>%s</b>', $this->user, $this->recordID);
         return $msg;
     }
+
+    static function cmp_obj($a, $b){
+        return $a->createdAt <=> $b->createdAt;
+    }
 }

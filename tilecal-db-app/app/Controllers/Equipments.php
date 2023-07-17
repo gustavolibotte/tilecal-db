@@ -7,6 +7,8 @@ use App\Models\Equipment2FileModel;
 use App\Models\EquipmentModel;
 use App\Models\FileModel;
 use App\Models\EquipmentHistModel;
+use App\Models\Equipment2FileHistModel;
+use App\Entities\OperationLog;
 
 class Equipments extends BaseController
 {   
@@ -47,14 +49,24 @@ class Equipments extends BaseController
         $equipmentModel = new EquipmentModel();
         $viewData['relatedEquipments'] = $equipmentModel->getRelatedEquipments($id);
         $viewData['equipmentInfo'] = $equipmentModel->getEquipment($id);
-
-        $equipmentHistModel = new EquipmentHistModel();
-        $viewData["equipmentHist"] = $equipmentHistModel->getEquipmentHist($id);
-
+        $viewData["equipmentHist"] = array_reverse($this->getEquipmentHist($id));
         $fileModel = new FileModel();
         $viewData['files'] = $fileModel->getBindedFilesInfo($id);
 
         return $viewData;
+    }
+
+    public function getEquipmentHist($equipmentId){
+        $equipmentHistmodel = new EquipmentHistModel();
+        $equipmentHist = $equipmentHistmodel->where(sprintf('record_id = %s', $equipmentId))
+                                            ->findAll();
+        $equipment2FileHistModel = new Equipment2FileHistModel();
+        $fileLinkHist = $equipment2FileHistModel
+            ->where(sprintf('JSON_EXTRACT(changes, "$.equipment_id") = %s', $equipmentId))
+            ->findAll();
+        $hist = array_merge($equipmentHist, $fileLinkHist);
+        usort($hist, [OperationLog::class, "cmp_obj"]);
+        return $hist;
     }
 
     public function getEquipmentInputs(
