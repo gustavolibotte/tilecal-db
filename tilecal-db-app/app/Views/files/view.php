@@ -28,8 +28,8 @@
           </tr>
         </thead>
         <tbody>
-          <?php if($equipments): ?>
-          <?php foreach($equipments as $equipment): ?>
+          <?php if($relatedEquipments): ?>
+          <?php foreach($relatedEquipments as $equipment): ?>
             <tr>
               <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->id; ?></a></td>
               <td><? echo $equipment->modelLabel; ?></td>

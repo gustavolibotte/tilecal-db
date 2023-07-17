@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\FileModel;
 use App\Models\EquipmentModel;
 use ValidationRules\DBFileRules;
+use App\Models\Equipment2FileModel;
 
 class Files extends BaseController
 {
@@ -32,14 +33,17 @@ class Files extends BaseController
               .view('templates/footer');
     }
 
-    public function view($id){
-        $equipmentModel = new EquipmentModel();
-        $viewData['equipments'] = $equipmentModel->getEquipment();
-
+    public function getViewData($id){
         $fileModel = new FileModel();
         $viewData['fileInfo'] = $fileModel->getFile($id);
+        $equipmentModel = new EquipmentModel();
+        $viewData['relatedEquipments'] = $equipmentModel->getFileRelatedEquipments($id, limit:100);
+        return $viewData;
+    }
 
-
+    public function view($id){
+        $equipmentModel = new EquipmentModel();
+        $viewData = $this->getViewData($id);
         $headerData['pageTitle'] = sprintf('File %s', $id);
 
         return view('templates/header', $headerData)

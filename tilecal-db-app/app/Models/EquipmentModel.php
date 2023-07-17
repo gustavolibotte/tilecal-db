@@ -101,6 +101,15 @@ class EquipmentModel extends LogModel
         return $result;
     }
 
+    public function getFileRelatedEquipments($fileID, $limit=null){
+        $query = $this->select($this->baseJoinedColumns)
+                      ->join('models', 'equipments.model_id = models.id')
+                      ->join('equipments_to_files', 'equipments.id = equipments_to_files.equipment_id')
+                      ->where(sprintf('equipments_to_files.file_id = %s', $fileID));
+        $result = is_null($limit)? $query->findAll(): $query->findAll($limit);
+        return $result;
+    }
+
     public function getRelatedEquipments($id){
         return $this->getSideTable(limit: 10);
     }
