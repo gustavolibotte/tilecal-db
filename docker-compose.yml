@@ -4,7 +4,7 @@ services:
   web-server:    
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ${DOCKERFILE_PATH}
       args:
         version: ${TILECAL_DB_VERSION}
         ci_version: ${CI_VERSION}
@@ -13,7 +13,7 @@ services:
     tty: true
     volumes:
       - type: bind
-        source: ./tilecal-db-app
+        source: ./tilecal-db
         target: /root/tilecal-db
     ports:
       - "8080:8080"
