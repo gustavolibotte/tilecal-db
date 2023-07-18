@@ -20,7 +20,7 @@ RUN apt-get -y update \
 RUN docker-php-ext-install mysqli
 
 # Defining custom php.ini
-COPY php.ini /usr/local/etc/php/
+COPY dockerfiles/php.ini /usr/local/etc/php/
 
 # Solves pearl location for installing postgres
 # https://stackoverflow.com/questions/2499794/how-to-fix-a-locale-setting-warning-from-perl

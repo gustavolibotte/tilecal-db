@@ -4,7 +4,7 @@ services:
   web-server:    
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ${DOCKERFILE_PATH}
       args:
         version: ${TILECAL_DB_VERSION}
         ci_version: ${CI_VERSION}
