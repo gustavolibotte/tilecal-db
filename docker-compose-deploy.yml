@@ -4,6 +4,8 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile-deploy
+      args:
+      - CI_VERSION=4.3.6
     image: tilecal-db:deploy
     container_name: tilecal-db-deploy-web-server
     tty: true
