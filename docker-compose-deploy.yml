@@ -1,0 +1,13 @@
+name: "tilecal-db-deploy"
+services:
+  web-server:    
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile-deploy
+    image: tilecal-db:deploy
+    container_name: tilecal-db-deploy-web-server
+    tty: true
+    ports:
+      - "8080:8080"
+volumes:
+  mysqldata:

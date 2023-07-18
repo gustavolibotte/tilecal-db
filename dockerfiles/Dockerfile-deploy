@@ -22,6 +22,6 @@ RUN docker-php-ext-install mysqli
 # Defining custom php.ini
 COPY dockerfiles/php.ini /usr/local/etc/php/
 
-COPY tilecal-db/ .
+ADD tilecal-db/ /root/tilecal-db/
 WORKDIR /root/tilecal-db
 CMD php spark serve --host 0.0.0.0
