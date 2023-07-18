@@ -1,0 +1,161 @@
+<?php
+
+namespace App\Controllers;
+
+use App\Controllers\BaseController;
+use App\Models\FileModel;
+use App\Models\EquipmentModel;
+use ValidationRules\DBFileRules;
+use App\Models\FileHistModel;
+use App\Models\Equipment2FileHistModel;
+use App\Entities\OperationLog;
+
+class Files extends BaseController
+{
+
+
+    public function index()
+    {
+        $fileModel = new FileModel();
+        $indexData['files'] = $fileModel->getFile();
+        
+        $headerData['pageTitle'] = 'File Index';
+
+        return view('templates/header', $headerData)
+              .view('files/index', $indexData)
+              .view('templates/footer');
+    }
+
+    public function deletedIndex(){
+        $headerData = $this->getHeaderData(pageTitle: 'Deleted File Index');
+        $fileModel = new FileModel();
+        $indexData['files'] = $fileModel->getFile(searchDeleted: true);
+        return view('templates/header', $headerData)
+              .view('files/index', $indexData)
+              .view('templates/footer');
+    }
+
+    public function getFileHist($fileID){
+        $fileHistModel = new FileHistModel();
+        $fileHist = $fileHistModel->getHistWithoutData($fileID, 100);
+        $equipment2FileHistModel = new Equipment2FileHistModel();
+        $fileLinkHist = $equipment2FileHistModel
+            ->where(sprintf('JSON_EXTRACT(changes, "$.file_id") = %s', $fileID))
+            ->findAll();
+        $hist = array_merge($fileHist, $fileLinkHist);
+        usort($hist, [OperationLog::class, "cmp_obj"]);
+        return $hist;
+    }
+
+    public function getViewData($fileID){
+        $fileModel = new FileModel();
+        $viewData['fileInfo'] = $fileModel->getFile($fileID);
+        $equipmentModel = new EquipmentModel();
+        $viewData['relatedEquipments'] = $equipmentModel->getFileRelatedEquipments($fileID, limit:100);
+        $viewData['fileHist'] = array_reverse($this->getFileHist($fileID))
+;        return $viewData;
+    }
+
+    public function view($id){
+        $viewData = $this->getViewData($id);
+        $headerData['pageTitle'] = sprintf('File %s', $id);
+
+        return view('templates/header', $headerData)
+              .view('files/view', $viewData)
+              .view('templates/footer');
+    }
+
+    public function download($id){
+
+        $fileModel = new FileModel();
+        $file = $fileModel->getFile($id, 'name, mime, extension, filedata');
+        $filename = $file->name . '.' . $file->extension;
+
+        header('Content-Description: File Transfer');
+        header(sprintf('Content-Type: %s', $file->mime));
+        header(sprintf('Content-Disposition: attachment; filename="%s"', $filename));
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        header('Content-Length: ' . strlen($file->filedata));
+
+        echo $file->filedata;
+    }
+
+    public function getRegisterData($validationErrors=null, $preFilledValues=null){
+
+        $fileModel = new FileModel();
+        $registerData['files'] = $fileModel->getFile(columns: 'id, name');
+        $registerData['validationErrors'] = $validationErrors;
+        $registerData['formPlaceholders'] = [
+            'name' => '2023_07_30_pmt_block_5628_test',
+            'description' => 'Useful info about the file'
+        ];
+        $registerData['formRestrictions'] = [
+            'name' => sprintf('Max %d characters', DBFileRules::$maxFilenameSize),
+            'file' => sprintf('File max size is %d kB', DBFileRules::$maxFileSize),
+            'description' => sprintf('Min %d characters and max %d characters',
+                                     DBFileRules::$minDescriptionSize,
+                                     DBFileRules::$maxDescriptionSize)
+        ];
+        $registerData['maxDescriptionLength'] = DBFileRules::$maxDescriptionSize;
+        if (is_null($preFilledValues)){
+            $registerData['preFilledValues'] = [
+                'name' => null,
+                'description' => null
+            ];
+        }
+        else{
+            $registerData['preFilledValues'] = $preFilledValues;
+        }
+
+        return $registerData;
+    }
+
+    public function uploadGet(){
+        helper('form');
+
+        $headerData = $this->getHeaderData(pageTitle: 'File Upload');
+        $registerData = $this->getRegisterData();
+
+        return view('templates/header', $headerData)
+              .view('files/register', $registerData)
+              .view('templates/footer');
+    }
+
+    public function uploadPost(){
+        helper('form');
+
+        $uploadedFile = $this->request->getFile('file');
+        $formNonFileInputs = $this->request->getPost(['name', 'description']);
+        $filepath = $uploadedFile->getPathname();
+
+        if ($this->validate('fileUploadRules')){
+            $registerData = $this->getRegisterData();
+            $fileData = [
+                "name" => $formNonFileInputs['name'],
+                "mime" => $uploadedFile->getMimeType(),
+                "extension"=> $uploadedFile->guessExtension(),
+                "filedata" => file_get_contents($filepath),
+                "description" => $formNonFileInputs['description'],
+            ];
+            $file = new \App\Entities\File($fileData);
+            $fileModel = new FileModel();
+            $fileModel->insert($file);
+        }
+        else{
+            $validationErrors = $this->validator->getErrors();
+            $registerData = $this->getRegisterData(
+                $validationErrors,
+                $formNonFileInputs
+            );
+        }
+
+        $headerData = $this->getHeaderData(pageTitle: 'File Upload');
+
+        return view('templates/header', $headerData)
+        .view('files/register', $registerData)
+        .view('templates/footer');
+    }
+
+}

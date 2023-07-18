@@ -1,0 +1,39 @@
+name: "tilecal-db"
+version: ${TILECAL_DB_VERSION}
+services:
+  web-server:    
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        version: ${TILECAL_DB_VERSION}
+        ci_version: ${CI_VERSION}
+    image: tilecal-db-base:${TILECAL_DB_VERSION}
+    container_name: tilecal-db-web-server
+    tty: true
+    volumes:
+      - type: bind
+        source: ./tilecal-db-app
+        target: /root/tilecal-db
+    ports:
+      - "8080:8080"
+  database:
+    image: mysql:8.0.33
+    container_name: tilecal-db-mysql
+    volumes:
+      - type: volume
+        source: mysqldata
+        target: /var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+  phpmyadmin:
+    image: phpmyadmin:5.2.1
+    container_name: tilecal-phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=tilecal-db-mysql
+volumes:
+  mysqldata:
