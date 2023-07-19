@@ -8,7 +8,7 @@ class ModelSeeder extends BaseSeeder
 {   
     public function run()
     {   
-        $seedDataPath = '/root/tilecal-db/app/Database/Seeds/seed_data/models.json';
+        $seedDataPath = ROOTPATH . '/app/Database/Seeds/seed_data/models.json';
         $jsonString = file_get_contents($seedDataPath);
         $jsonData = json_decode($jsonString, true);
         $modelModel = new ModelModel();

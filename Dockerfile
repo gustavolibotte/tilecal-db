@@ -3,20 +3,21 @@ EXPOSE 8080
 
 LABEL maintainer="Lucas Nunes"
 LABEL email="lucas.nunes@cern.ch"
-
-ARG CI_VERSION=4.3.6
 LABEL version=beta
+
+ENV CI_VERSION "4.3.6"
 LABEL ci_version=${CI_VERSION}
 WORKDIR /root
 
-ENV BASE_URL = "http://tilecal-db-dev/"
-ENV ENVIRONMENT = "development"
-ENV DB_HOSTNAME = ""
-ENV DB_DATABASE = ""
-ENV DB_USERNAME = ""
-ENV PASSWORD = ""
-ENV DB_DRIVER = ""
-ENV DB_PORT = ""
+ENV ENVIRONMENT ""
+ENV BASE_URL ""
+ENV DB_HOSTNAME ""
+ENV DB_DATABASE ""
+ENV DB_USERNAME ""
+ENV PASSWORD ""
+ENV DB_DRIVER ""
+ENV DB_PREFIX ""
+ENV DB_PORT ""
 
 # Installs int php extension
 # https://stackoverflow.com/questions/48674297/php-intl-extension-in-docker-container
@@ -30,16 +31,17 @@ RUN apt-get -y update \
 RUN docker-php-ext-install mysqli
 
 # Defining custom php.ini
-COPY dockerfiles/php.ini /usr/local/etc/php/
+COPY php.ini /usr/local/etc/php/
 
-WORKDIR /usr/tilecal-db
-ADD tilecal-db/ /usr/tilecal-db/
-
+# Compose installation (zip is required by codeigniter4 installation thrgough composer)
 COPY --from=composer /usr/bin/composer /usr/bin/composer
-# zip is required by codeigniter4 installation thrgough composer
 RUN apt install -y zip
+
+# Building app file structure
+WORKDIR /usr/local/tilecal-db/
+ADD tilecal-db/ /usr/local/tilecal-db/
 RUN composer create-project codeigniter4/appstarter:${CI_VERSION} ci-app-starter
-RUN mv ci-app-starter/vendor ./
+RUN cp -r ci-app-starter/vendor ./
 RUN rm -r ci-app-starter
 
-CMD php spark serve --host 0.0.0.0
+CMD bash run.sh

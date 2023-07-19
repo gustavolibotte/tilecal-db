@@ -10,3 +10,6 @@ ignore/*
 
 # Ignore sql scripts
 sql/*
+
+#Ignore environments
+**/.env

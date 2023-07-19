@@ -1,7 +1,0 @@
-name: "oc-compose"
-services:
-  oc:
-    image: gitlab-registry.cern.ch/paas-tools/openshift-client
-    container_name: oc-container
-    tty: true
-  
