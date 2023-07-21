@@ -18,7 +18,10 @@ ENV DB_PASSWORD ""
 ENV DB_DRIVER ""
 ENV DB_PREFIX ""
 ENV DB_PORT ""
-
+ENV CLIENT_ID ""
+ENV CLIENT_SECRET ""
+ENV CERN_PASSWORD ""
+ENV CERN_USERNAME ""
 # Installs int php extension
 # https://stackoverflow.com/questions/48674297/php-intl-extension-in-docker-container
 RUN apt-get -y update \
@@ -41,6 +44,8 @@ RUN apt install -y zip
 WORKDIR /usr/local/tilecal-db/
 ADD tilecal-db/ /usr/local/tilecal-db/
 RUN composer create-project codeigniter4/appstarter:${CI_VERSION} ci-app-starter
+# RUN composer require jumbojett/openid-connect-php
+RUN composer require firebase/php-jwt
 RUN cp -r ci-app-starter/vendor ./
 RUN rm -r ci-app-starter
 

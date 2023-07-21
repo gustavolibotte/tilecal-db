@@ -13,3 +13,6 @@ sql/*
 
 #Ignore environments
 **/.env
+
+#ignore composer files
+composer*
