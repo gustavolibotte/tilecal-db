@@ -16,3 +16,4 @@ sql/*
 
 #ignore composer files
 composer*
+vendor/*
