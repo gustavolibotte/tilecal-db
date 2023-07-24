@@ -27,14 +27,18 @@ class Home extends BaseController
         ];
         d($tokenRequestParams);
 
-        $tokenResponse = $client->post(
-            getenv('sso_issuerURL') . '/protocol/openid-connect/token', 
-            $tokenRequestParams);
-
-        d($tokenResponse);
-        $body = json_decode($tokenResponse->getBody());
-        $decoded = JWT::decode( $body->access_token, JWK::parseKeySet($jwks));
-        d($decoded);
+        try{
+            $tokenResponse = $client->post(
+                getenv('sso_issuerURL') . '/protocol/openid-connect/token', 
+                $tokenRequestParams);
+    
+            d($tokenResponse);
+            $body = json_decode($tokenResponse->getBody());
+            $decoded = JWT::decode( $body->access_token, JWK::parseKeySet($jwks));
+            d($decoded);
+        } catch (Exception $e) {
+            echo 'Caught exception: ',  $e->getMessage(), "\n";
+        }
 
         $oidc = new OpenIDConnectClient(
             getenv('sso_issuerURL'),
