@@ -27,18 +27,18 @@ class Home extends BaseController
         ];
         d($tokenRequestParams);
 
-        try{
-            $tokenResponse = $client->post(
-                getenv('sso_issuerURL') . '/protocol/openid-connect/token', 
-                $tokenRequestParams);
+        // try{
+        //     $tokenResponse = $client->post(
+        //         getenv('sso_issuerURL') . '/protocol/openid-connect/token', 
+        //         $tokenRequestParams);
     
-            d($tokenResponse);
-            $body = json_decode($tokenResponse->getBody());
-            $decoded = JWT::decode( $body->access_token, JWK::parseKeySet($jwks));
-            d($decoded);
-        } catch (Exception $e) {
-            echo 'Caught exception: ',  $e->getMessage(), "\n";
-        }
+        //     d($tokenResponse);
+        //     $body = json_decode($tokenResponse->getBody());
+        //     $decoded = JWT::decode( $body->access_token, JWK::parseKeySet($jwks));
+        //     d($decoded);
+        // } catch (Throwable $e) {
+        //     echo 'Caught exception: ',  $e->getMessage(), "\n";
+        // }
 
         $oidc = new OpenIDConnectClient(
             getenv('sso_issuerURL'),
@@ -59,15 +59,15 @@ class Home extends BaseController
         $roles = $oidc->requestUserInfo('cern_roles');
         d($roles);
 
-        $instrospectInfo = $client->request('POST', getenv('sso_issuerURL') . '/protocol/openid-connect/token/introspect', [
-            'form_params' => [
-                'token' => $access_token,
-                'client_id' => getenv('sso_clientID'),
-                'client_secret' => getenv('sso_clientSecret'),
-            ],
-            'timeout' => 5
-        ]);
-        d($instrospectInfo);
+        // $instrospectInfo = $client->request('POST', getenv('sso_issuerURL') . '/protocol/openid-connect/token/introspect', [
+        //     'form_params' => [
+        //         'token' => $access_token,
+        //         'client_id' => getenv('sso_clientID'),
+        //         'client_secret' => getenv('sso_clientSecret'),
+        //     ],
+        //     'timeout' => 5
+        // ]);
+        // d($instrospectInfo);
 
 
         $headerData['pageTitle'] = 'Tilecal Database';
