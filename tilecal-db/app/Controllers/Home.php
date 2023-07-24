@@ -11,15 +11,15 @@ class Home extends BaseController
     public function index()
     {
         $client = \Config\Services::curlrequest();
-        $response = $client->get(getenv('sso_issuerURL') . '/protocol/openid-connect/certs');
+        $response = $client->get(getenv('SSO_ISSUER') . '/protocol/openid-connect/certs');
         $jwks = json_decode($response->getBody(), true);
         d($jwks);
 
         $tokenRequestParams = [
             'form_params' => [
                 'grant_type' => 'client_credentials',
-                'client_id' => getenv('sso_clientID'),
-                'client_secret' => getenv('sso_clientSecret'),
+                'client_id' => getenv('SSO_CLIENT_ID'),
+                'client_secret' => getenv('SSO_CLIENT_SECRET'),
                 'scope' => 'openid'
             ],
             'timeout' => 5,
@@ -29,7 +29,7 @@ class Home extends BaseController
 
         // try{
         //     $tokenResponse = $client->post(
-        //         getenv('sso_issuerURL') . '/protocol/openid-connect/token', 
+        //         getenv('SSO_ISSUER') . '/protocol/openid-connect/token', 
         //         $tokenRequestParams);
     
         //     d($tokenResponse);
@@ -41,13 +41,13 @@ class Home extends BaseController
         // }
 
         $oidc = new OpenIDConnectClient(
-            getenv('sso_issuerURL'),
-            getenv('sso_clientID'),
-            getenv('sso_clientSecret'),
+            getenv('SSO_ISSUER'),
+            getenv('SSO_CLIENT_ID'),
+            getenv('SSO_CLIENT_SECRET'),
         );
         $authentication = $oidc->authenticate();
         d($authentication);
-        $oidc->providerConfigParam(array('token_endpoint'=>(getenv('sso_issuerURL') . '/protocol/openid-connect/token')));
+        $oidc->providerConfigParam(array('token_endpoint'=>(getenv('SSO_ISSUER') . '/protocol/openid-connect/token')));
         $oidc->addScope('openid');
         $access_token = $oidc->requestClientCredentialsToken()->access_token;
         $clientCredentialsToken = JWT::decode( $access_token, JWK::parseKeySet($jwks));
@@ -59,11 +59,11 @@ class Home extends BaseController
         $roles = $oidc->requestUserInfo('cern_roles');
         d($roles);
 
-        // $instrospectInfo = $client->request('POST', getenv('sso_issuerURL') . '/protocol/openid-connect/token/introspect', [
+        // $instrospectInfo = $client->request('POST', getenv('SSO_ISSUER') . '/protocol/openid-connect/token/introspect', [
         //     'form_params' => [
         //         'token' => $access_token,
-        //         'client_id' => getenv('sso_clientID'),
-        //         'client_secret' => getenv('sso_clientSecret'),
+        //         'client_id' => getenv('SSO_CLIENT_ID'),
+        //         'client_secret' => getenv('SSO_CLIENT_SECRET'),
         //     ],
         //     'timeout' => 5
         // ]);

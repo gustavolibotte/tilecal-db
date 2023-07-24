@@ -23,11 +23,11 @@ services:
       - DB_DRIVER=${DB_DRIVER}
       - DB_PORT=${DB_PORT}
       - DB_PASSWORD=${DB_PASSWORD}
-      - sso_clientID=${sso_clientID}
-      - sso_clientSecret=${sso_clientSecret}
+      - SSO_CLIENT_ID=${SSO_CLIENT_ID}
+      - SSO_CLIENT_SECRET=${SSO_CLIENT_SECRET}
       - CERN_PASSWORD=${CERN_PASSWORD}
       - CERN_USERNAME=${CERN_USERNAME}
-      - sso_issuerURL=${sso_issuerURL}
+      - SSO_ISSUER=${SSO_ISSUER}
   database:
     image: mysql:8.0.28
     container_name: tilecal-db-mysql
