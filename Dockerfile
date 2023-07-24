@@ -44,9 +44,9 @@ RUN apt install -y zip
 WORKDIR /usr/local/tilecal-db/
 ADD tilecal-db/ /usr/local/tilecal-db/
 RUN composer create-project codeigniter4/appstarter:${CI_VERSION} ci-app-starter
-# RUN composer require jumbojett/openid-connect-php
-RUN composer require firebase/php-jwt
 RUN cp -r ci-app-starter/vendor ./
 RUN rm -r ci-app-starter
+RUN composer require jumbojett/openid-connect-php
+RUN composer require firebase/php-jwt
 
 CMD bash run.sh
