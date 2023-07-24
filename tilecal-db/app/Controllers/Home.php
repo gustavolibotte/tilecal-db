@@ -41,7 +41,8 @@ class Home extends BaseController
             getenv('CLIENT_ID'),
             getenv('CLIENT_SECRET'),
         );
-        $oidc->authenticate();
+        $authentication = $oidc->authenticate();
+        d($authentication);
         $oidc->providerConfigParam(array('token_endpoint'=>(getenv('OPENID_PROVIDER') . '/protocol/openid-connect/token')));
         $oidc->addScope('openid');
         $access_token = $oidc->requestClientCredentialsToken()->access_token;
