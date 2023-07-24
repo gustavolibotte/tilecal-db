@@ -27,6 +27,20 @@ class Home extends BaseController
         ];
         d($tokenRequestParams);
 
+        $authenticationParams = [
+            'allow_redirects' => true,
+            'query' => [
+                'redirect_uri' => base_url(),
+                'scope' => 'open_id',
+                'response_type' => 'code'
+            ]
+        ];
+        $authResponse = $client->get(
+            getenv('OPENID_PROVIDER') . '/protocol/openid-connect/auth',
+            $authenticationParams
+        );
+        d($authResponse);
+
         $tokenResponse = $client->post(
             getenv('OPENID_PROVIDER') . '/protocol/openid-connect/token', 
             $tokenRequestParams);
