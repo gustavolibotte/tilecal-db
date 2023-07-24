@@ -18,6 +18,10 @@ class Home extends BaseController
         $oidc->authenticate();
         $name = $oidc->requestUserInfo('name');
         d($name);
+        $infos = $oidc->requestUserInfo();
+        d($infos);
+        $roles = $oidc->requestUserInfo('cern_roles');
+        d($roles);
         $headerData['pageTitle'] = 'Tilecal Database';
         return view('templates/header', $headerData)
                .view('welcome')
