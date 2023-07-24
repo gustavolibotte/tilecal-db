@@ -44,7 +44,7 @@ class Home extends BaseController
         $oidc->authenticate();
         $oidc->providerConfigParam(array('token_endpoint'=>(getenv('OPENID_PROVIDER') . '/protocol/openid-connect/token')));
         $oidc->addScope('openid');
-        $clientCredentialsToken = $oidc->requestClientCredentialsToken()->access_token;
+        $clientCredentialsToken = JWT::decode( $oidc->requestClientCredentialsToken()->access_token, JWK::parseKeySet($jwks));
         d($clientCredentialsToken);
         $name = $oidc->requestUserInfo('name');
         d($name);
