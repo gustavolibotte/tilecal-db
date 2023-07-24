@@ -44,7 +44,8 @@ class Home extends BaseController
         $oidc->authenticate();
         $oidc->providerConfigParam(array('token_endpoint'=>(getenv('OPENID_PROVIDER') . '/protocol/openid-connect/token')));
         $oidc->addScope('openid');
-        $clientCredentialsToken = JWT::decode( $oidc->requestClientCredentialsToken()->access_token, JWK::parseKeySet($jwks));
+        $access_token = $oidc->requestClientCredentialsToken()->access_token;
+        $clientCredentialsToken = JWT::decode( $access_token, JWK::parseKeySet($jwks));
         d($clientCredentialsToken);
         $name = $oidc->requestUserInfo('name');
         d($name);
@@ -52,6 +53,16 @@ class Home extends BaseController
         d($infos);
         $roles = $oidc->requestUserInfo('cern_roles');
         d($roles);
+
+        $instrospectInfo = $client->request('POST', getenv('OPENID_PROVIDER') . '/protocol/openid-connect/token/introspect', [
+            'form_params' => [
+                'token' => $access_token,
+                'client_id' => getenv('CLIENT_ID'),
+                'client_secret' => getenv('CLIENT_SECRET'),
+            ],
+            'timeout' => 5
+        ]);
+        d($instrospectInfo);
 
 
         $headerData['pageTitle'] = 'Tilecal Database';
