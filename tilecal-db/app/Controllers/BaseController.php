@@ -56,10 +56,12 @@ abstract class BaseController extends Controller
     {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
-        helper('cookie');
+        $issuer = getenv('SSO_ISSUER');
+        $clientId = getenv('SSO_CLIENT_ID');
+        helper(['cookie', 'text']);
         $this->oidc = new OpenIDConnectClient(
-            getenv('SSO_ISSUER'),
-            getenv('SSO_CLIENT_ID'),
+            $issuer,
+            $clientId,
             getenv('SSO_CLIENT_SECRET'),
         );
         $this->oidc->addScope('openid');
@@ -70,8 +72,8 @@ abstract class BaseController extends Controller
         $keycloakIdentity = has_cookie('KEYCLOAK_IDENTITY');
         d($keycloakIdentity);
 
-        $authenticated = ($authSessionIDExists)? true: $this->oidc->authenticate();
-        d($authenticated);
+        $authenticatedOIDC = ($authSessionIDExists)? true: $this->oidc->authenticate();
+        d($authenticatedOIDC);
         $this->userInfo = $this->oidc->requestUserInfo();
         d($this->userInfo);
 
@@ -84,6 +86,25 @@ abstract class BaseController extends Controller
         $access_token = $this->oidc->requestClientCredentialsToken()->access_token;
         $clientCredentialsToken = JWT::decode( $access_token, JWK::parseKeySet($jwks));
         d($clientCredentialsToken);
+
+        $implicitResponse = $requestClient->get(
+            $issuer . '/protocol/openid-connect/auth',
+            [
+                'allow_redirect' => true,
+                'query' => [
+                    'prompt' => 'none',
+                    'response_type' => 'id_token',
+                    'client_id' => $clientId,
+                    'nonce' => random_string('crypto'),
+                    'state' => random_string('crypto'),
+                    'scope' => 'openid',
+                    'redirect_uri' => base_url(),
+                    'audience' => 'authorization-service-api',
+                    'response_mode' => 'success'
+                ]
+            ]
+        );
+        d($implicitResponse);
 
         // Preload any models, libraries, etc, here.
 
