@@ -63,8 +63,14 @@ abstract class BaseController extends Controller
             getenv('SSO_CLIENT_SECRET'),
         );
         $this->oidc->addScope('openid');
-        
-        $authenticated = (has_cookie('AUTH_SESSION_ID'))? true: $this->oidc->authenticate();
+        $authSessionIDExists = has_cookie('AUTH_SESSION_ID');
+        d($authSessionIDExists);
+        $keycloakSession = has_cookie('KEYCLOAK_SESSION');
+        d($keycloakSession);
+        $keycloakIdentity = has_cookie('KEYCLOAK_IDENTITY');
+        d($keycloakIdentity);
+
+        $authenticated = ($authSessionIDExists)? true: $this->oidc->authenticate();
         d($authenticated);
         $this->userInfo = $this->oidc->requestUserInfo();
         d($this->userInfo);
