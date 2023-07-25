@@ -57,8 +57,8 @@ abstract class BaseController extends Controller
     {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
-        // $this->session = \Config\Services::session();
-        // d($_SESSION);
+        $this->session = \Config\Services::session();
+        d($_SESSION);
         helper(['cookie', 'text']);
 
         $requestClient = \Config\Services::curlrequest();
@@ -66,7 +66,6 @@ abstract class BaseController extends Controller
         $jwks = json_decode($response->getBody(), true);
         d($jwks);
         $this->request->getVar('state');
-        unset($_REQUEST['code']);
 
         $issuer = getenv('SSO_ISSUER');
         $clientId = getenv('SSO_CLIENT_ID');
@@ -87,7 +86,7 @@ abstract class BaseController extends Controller
         $keycloakIdentity = has_cookie('KEYCLOAK_IDENTITY');
         d($keycloakIdentity);
 
-        $authenticatedOIDC = ($authSessionIDExists)? true: $this->oidc->authenticate();
+        $authenticatedOIDC = ($this->session->get('isLogged'))? true: $this->oidc->authenticate();
         d($authenticatedOIDC);
         $this->userInfo = $this->oidc->requestUserInfo();
         d($this->userInfo);
@@ -105,7 +104,7 @@ abstract class BaseController extends Controller
         d($clientCredentialsToken);
 
         d($_SESSION);
-
+        $this->session->setTempdata('isLogged', true, 20*60); // 20 minutes
         // $implicitResponse = $requestClient->get(
         //     $issuer . '/protocol/openid-connect/auth',
         //     [
