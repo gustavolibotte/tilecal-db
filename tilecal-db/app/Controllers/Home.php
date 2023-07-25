@@ -45,8 +45,8 @@ class Home extends BaseController
             getenv('SSO_CLIENT_ID'),
             getenv('SSO_CLIENT_SECRET'),
         );
-        $authentication = $oidc->authenticate();
-        d($authentication);
+        // $authentication = $oidc->authenticate();
+        // d($authentication);
         $oidc->providerConfigParam(array('token_endpoint'=>(getenv('SSO_ISSUER') . '/protocol/openid-connect/token')));
         $oidc->addScope('openid');
         $access_token = $oidc->requestClientCredentialsToken()->access_token;
