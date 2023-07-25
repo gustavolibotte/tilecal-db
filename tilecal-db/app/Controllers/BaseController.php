@@ -57,8 +57,8 @@ abstract class BaseController extends Controller
     {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
-        $this->session = \Config\Services::session();
-        d($_SESSION);
+        // $this->session = \Config\Services::session();
+        // d($_SESSION);
         helper(['cookie', 'text']);
 
         $requestClient = \Config\Services::curlrequest();
@@ -66,6 +66,7 @@ abstract class BaseController extends Controller
         $jwks = json_decode($response->getBody(), true);
         d($jwks);
         $this->request->getVar('state');
+        unset($_REQUEST['code']);
 
         $issuer = getenv('SSO_ISSUER');
         $clientId = getenv('SSO_CLIENT_ID');
