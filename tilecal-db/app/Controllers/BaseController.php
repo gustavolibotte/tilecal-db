@@ -27,6 +27,7 @@ abstract class BaseController extends Controller
 {
     protected $oidc;
     protected $userInfo;
+    protected $session;
     /**
      * Instance of the main Request object.
      *
@@ -56,55 +57,63 @@ abstract class BaseController extends Controller
     {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
-        $issuer = getenv('SSO_ISSUER');
-        $clientId = getenv('SSO_CLIENT_ID');
         helper(['cookie', 'text']);
-        // $this->oidc = new OpenIDConnectClient(
-        //     $issuer,
-        //     $clientId,
-        //     getenv('SSO_CLIENT_SECRET'),
-        // );
-        // $this->oidc->addScope('openid');
-        // $authSessionIDExists = has_cookie('AUTH_SESSION_ID');
-        // d($authSessionIDExists);
-        // $keycloakSession = has_cookie('KEYCLOAK_SESSION');
-        // d($keycloakSession);
-        // $keycloakIdentity = has_cookie('KEYCLOAK_IDENTITY');
-        // d($keycloakIdentity);
-
-        // $authenticatedOIDC = ($authSessionIDExists)? true: $this->oidc->authenticate();
-        // d($authenticatedOIDC);
-        // $this->userInfo = $this->oidc->requestUserInfo();
-        // d($this->userInfo);
 
         $requestClient = \Config\Services::curlrequest();
-        // $response = $requestClient->get(getenv('SSO_ISSUER') . '/protocol/openid-connect/certs');
-        // $jwks = json_decode($response->getBody(), true);
-        // d($jwks);
+        $response = $requestClient->get(getenv('SSO_ISSUER') . '/protocol/openid-connect/certs');
+        $jwks = json_decode($response->getBody(), true);
+        d($jwks);
 
-        // $this->oidc->providerConfigParam(array('token_endpoint'=>(getenv('SSO_ISSUER') . '/protocol/openid-connect/token')));
-        // $access_token = $this->oidc->requestClientCredentialsToken()->access_token;
-        // $clientCredentialsToken = JWT::decode( $access_token, JWK::parseKeySet($jwks));
-        // d($clientCredentialsToken);
-
-        $implicitResponse = $requestClient->get(
-            $issuer . '/protocol/openid-connect/auth',
-            [
-                'allow_redirects' => true,
-                'query' => [
-                    'prompt' => 'none',
-                    'response_type' => 'id_token',
-                    'client_id' => $clientId,
-                    'nonce' => random_string('crypto'),
-                    'state' => random_string('crypto'),
-                    'scope' => 'openid',
-                    'redirect_uri' => base_url(),
-                    'audience' => 'authorization-service-api',
-                    'response_mode' => 'success'
-                ]
-            ]
+        $issuer = getenv('SSO_ISSUER');
+        $clientId = getenv('SSO_CLIENT_ID');
+        $this->oidc = new OpenIDConnectClient(
+            $issuer,
+            $clientId,
+            getenv('SSO_CLIENT_SECRET'),
         );
-        d($implicitResponse);
+        $this->oidc->addScope('openid');
+        $this->oidc->setTimeout(5);
+        $this->oidc->setAllowImplicitFlow(true);
+        $this->oidc->setRedirectURL(base_url());
+
+        $authSessionIDExists = has_cookie('AUTH_SESSION_ID');
+        d($authSessionIDExists);
+        $keycloakSession = has_cookie('KEYCLOAK_SESSION');
+        d($keycloakSession);
+        $keycloakIdentity = has_cookie('KEYCLOAK_IDENTITY');
+        d($keycloakIdentity);
+
+        $authenticatedOIDC = ($authSessionIDExists)? true: $this->oidc->authenticate();
+        d($authenticatedOIDC);
+        $this->userInfo = $this->oidc->requestUserInfo();
+        d($this->userInfo);
+        $access_token = $this->oidc->getAccessToken();
+        $decodedAccessToken = JWT::decode( $access_token, JWK::parseKeySet($jwks));
+        d($decodedAccessToken);
+
+        $this->oidc->providerConfigParam(array('token_endpoint'=>(getenv('SSO_ISSUER') . '/protocol/openid-connect/token')));
+        $access_token = $this->oidc->requestClientCredentialsToken()->access_token;
+        $clientCredentialsToken = JWT::decode( $access_token, JWK::parseKeySet($jwks));
+        d($clientCredentialsToken);
+
+        // $implicitResponse = $requestClient->get(
+        //     $issuer . '/protocol/openid-connect/auth',
+        //     [
+        //         'allow_redirects' => true,
+        //         'query' => [
+        //             'prompt' => 'none',
+        //             'response_type' => 'id_token',
+        //             'client_id' => $clientId,
+        //             'nonce' => random_string('crypto'),
+        //             'state' => random_string('crypto'),
+        //             'scope' => 'openid',
+        //             'redirect_uri' => base_url(),
+        //             'audience' => 'authorization-service-api',
+        //             'response_mode' => 'success'
+        //         ]
+        //     ]
+        // );
+        // d($implicitResponse);
 
         // Preload any models, libraries, etc, here.
 
