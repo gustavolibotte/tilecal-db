@@ -58,6 +58,7 @@ abstract class BaseController extends Controller
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
         $this->session = \Config\Services::session();
+        d($_SESSION);
         helper(['cookie', 'text']);
 
         $requestClient = \Config\Services::curlrequest();
@@ -102,9 +103,7 @@ abstract class BaseController extends Controller
         $clientCredentialsToken = JWT::decode( $access_token, $keySet);
         d($clientCredentialsToken);
 
-        d($this->session->get('openid_connect_code_verifier'));
-        d($this->session->get('openid_connect_state'));
-        d($this->session->get('openid_connect_nonce'));
+        d($_SESSION);
 
         // $implicitResponse = $requestClient->get(
         //     $issuer . '/protocol/openid-connect/auth',
