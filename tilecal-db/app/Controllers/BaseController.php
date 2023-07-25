@@ -9,6 +9,8 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Jumbojett\OpenIDConnectClient;
+use Firebase\JWT\JWK;
+use Firebase\JWT\JWT;
 
 
 /**
@@ -54,17 +56,28 @@ abstract class BaseController extends Controller
     {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
-
+        helper('cookie');
         $this->oidc = new OpenIDConnectClient(
             getenv('SSO_ISSUER'),
             getenv('SSO_CLIENT_ID'),
             getenv('SSO_CLIENT_SECRET'),
         );
         $this->oidc->addScope('openid');
-        $authenticated = $this->oidc->authenticate();
+        
+        $authenticated = (has_cookie('AUTH_SESSION_ID'))? true: $this->oidc->authenticate();
         d($authenticated);
         $this->userInfo = $this->oidc->requestUserInfo();
         d($this->userInfo);
+
+        $requestClient = \Config\Services::curlrequest();
+        $response = $requestClient->get(getenv('SSO_ISSUER') . '/protocol/openid-connect/certs');
+        $jwks = json_decode($response->getBody(), true);
+        d($jwks);
+
+        $this->oidc->providerConfigParam(array('token_endpoint'=>(getenv('SSO_ISSUER') . '/protocol/openid-connect/token')));
+        $access_token = $this->oidc->requestClientCredentialsToken()->access_token;
+        $clientCredentialsToken = JWT::decode( $access_token, JWK::parseKeySet($jwks));
+        d($clientCredentialsToken);
 
         // Preload any models, libraries, etc, here.
 
