@@ -56,7 +56,9 @@ abstract class BaseController extends Controller
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
         // Do Not Edit This Line
+        d($_SESSION);
         parent::initController($request, $response, $logger);
+        d($_SESSION);
         $this->session = \Config\Services::session();
         d($_SESSION);
         helper(['cookie', 'text']);
