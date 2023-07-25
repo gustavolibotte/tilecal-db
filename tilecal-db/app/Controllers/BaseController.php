@@ -63,6 +63,7 @@ abstract class BaseController extends Controller
         $response = $requestClient->get(getenv('SSO_ISSUER') . '/protocol/openid-connect/certs');
         $jwks = json_decode($response->getBody(), true);
         d($jwks);
+        $this->request->getVar('state');
 
         $issuer = getenv('SSO_ISSUER');
         $clientId = getenv('SSO_CLIENT_ID');
@@ -70,11 +71,11 @@ abstract class BaseController extends Controller
             $issuer,
             $clientId,
             getenv('SSO_CLIENT_SECRET'),
+            $issuer
         );
         $this->oidc->addScope('openid');
         $this->oidc->setTimeout(5);
         $this->oidc->setAllowImplicitFlow(true);
-        $this->oidc->setRedirectURL(base_url());
 
         $authSessionIDExists = has_cookie('AUTH_SESSION_ID');
         d($authSessionIDExists);
@@ -87,14 +88,23 @@ abstract class BaseController extends Controller
         d($authenticatedOIDC);
         $this->userInfo = $this->oidc->requestUserInfo();
         d($this->userInfo);
-        $access_token = $this->oidc->getAccessToken();
-        $decodedAccessToken = JWT::decode( $access_token, JWK::parseKeySet($jwks));
+        $accessToken = $this->oidc->getAccessToken();
+        $keySet = JWK::parseKeySet($jwks);
+        $decodedAccessToken = JWT::decode($accessToken, $keySet);
         d($decodedAccessToken);
+        $idToken = $this->oidc->getIdToken();
+        $decodedIdToken = JWT::decode($idToken, $keySet);
+        d($decodedIdToken);
 
         $this->oidc->providerConfigParam(array('token_endpoint'=>(getenv('SSO_ISSUER') . '/protocol/openid-connect/token')));
         $access_token = $this->oidc->requestClientCredentialsToken()->access_token;
-        $clientCredentialsToken = JWT::decode( $access_token, JWK::parseKeySet($jwks));
+        $clientCredentialsToken = JWT::decode( $access_token, $keySet);
         d($clientCredentialsToken);
+
+        $this->session = \Config\Services::session();
+        d($this->session->get('openid_connect_code_verifier'));
+        d($this->session->get('openid_connect_state'));
+        d($this->session->get('openid_connect_nonce'));
 
         // $implicitResponse = $requestClient->get(
         //     $issuer . '/protocol/openid-connect/auth',
