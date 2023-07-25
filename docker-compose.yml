@@ -23,11 +23,11 @@ services:
       - DB_DRIVER=${DB_DRIVER}
       - DB_PORT=${DB_PORT}
       - DB_PASSWORD=${DB_PASSWORD}
-      - SSO_ISSUER=${SSO_ISSUER}
       - SSO_CLIENT_ID=${SSO_CLIENT_ID}
       - SSO_CLIENT_SECRET=${SSO_CLIENT_SECRET}
       - CERN_PASSWORD=${CERN_PASSWORD}
       - CERN_USERNAME=${CERN_USERNAME}
+      - SSO_ISSUER=${SSO_ISSUER}
   database:
     image: mysql:8.0.28
     container_name: tilecal-db-mysql
@@ -48,7 +48,7 @@ services:
       - PMA_HOST=${DB_HOSTNAME}
   oc:
     image: gitlab-registry.cern.ch/paas-tools/openshift-client
-    container_name: tilecal-db-oc-container
+    container_name: oc-container
     tty: true
   python:
     image: python:3.10.12
