@@ -8,6 +8,8 @@ use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use Jumbojett\OpenIDConnectClient;
+
 
 /**
  * Class BaseController
@@ -21,6 +23,8 @@ use Psr\Log\LoggerInterface;
  */
 abstract class BaseController extends Controller
 {
+    protected $oidc;
+    protected $userInfo;
     /**
      * Instance of the main Request object.
      *
@@ -50,6 +54,17 @@ abstract class BaseController extends Controller
     {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
+
+        $this->oidc = new OpenIDConnectClient(
+            getenv('SSO_ISSUER'),
+            getenv('SSO_CLIENT_ID'),
+            getenv('SSO_CLIENT_SECRET'),
+        );
+        $this->oidc->addScope('openid');
+        $authenticated = $this->oidc->authenticate();
+        d($authenticated);
+        $this->userInfo = $this->oidc->requestUserInfo();
+        d($this->userInfo);
 
         // Preload any models, libraries, etc, here.
 
