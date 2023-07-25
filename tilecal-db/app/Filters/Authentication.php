@@ -62,6 +62,7 @@ class Authentication implements FilterInterface
             $jwks = json_decode($response->getBody(), true);
             $keySet = JWK::parseKeySet($jwks);
             $decodedAccessToken = JWT::decode($oidc->getAccessToken(), $keySet);
+            d($decodedAccessToken);
             $sessionData = [
                 'isLogged' => true,
             ];
