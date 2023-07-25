@@ -15,7 +15,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ENVIRONMENT=development
+      - ENVIRONMENT=${ENVIRONMENT}
       - BASE_URL=http://localhost:8080
       - DB_HOSTNAME=${DB_HOSTNAME}
       - DB_DATABASE=${DB_DATABASE}
@@ -25,9 +25,11 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - SSO_CLIENT_ID=${SSO_CLIENT_ID}
       - SSO_CLIENT_SECRET=${SSO_CLIENT_SECRET}
+      - SSO_ISSUER=${SSO_ISSUER},
+      - SSO_PROVIDER=${SSO_PROVIDER}
+      - SSO_REDIRECT_URL=${SSO_REDIRECT_URL}
       - CERN_PASSWORD=${CERN_PASSWORD}
       - CERN_USERNAME=${CERN_USERNAME}
-      - SSO_ISSUER=${SSO_ISSUER}
   database:
     image: mysql:8.0.28
     container_name: tilecal-db-mysql
