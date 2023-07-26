@@ -48,8 +48,11 @@ class PMT extends Equipments
 
         return $registerData;
     }
-    public function registerGet()
-    {
+    public function registerGet(){
+
+        if(!$this->currentUser->canAlter()){
+            return $this->httpErrorView(401);
+        }
         helper('form');
 
         $headerData = $this->getHeaderData(pageTitle: 'PMT Register');
@@ -62,6 +65,9 @@ class PMT extends Equipments
 
     public function registerPost(){
 
+        if(!$this->currentUser->canAlter()){
+            return $this->httpErrorView(401);
+        }
         helper('form');
 
         $formInputs = [
@@ -83,7 +89,6 @@ class PMT extends Equipments
         if ($this->validateData($formInputs, 'pmtRegisterRules')){
             $registerData = $this->getRegisterData();
             $equipmentModel = new EquipmentModel();
-            d($formInputs);
             $equipmentModel -> insert($formInputs);
         }
         else{

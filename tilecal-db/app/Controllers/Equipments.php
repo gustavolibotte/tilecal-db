@@ -209,6 +209,9 @@ class Equipments extends BaseController
 
     public function editGet($modelName, $id, $validationErrors=null){
 
+        if(!$this->currentUser->canAlter()){
+            return $this->httpErrorView(401);
+        }
         $equipmentModel = new EquipmentModel();
         $equipment = $equipmentModel->getEquipment($id);
         $model = [
@@ -242,6 +245,9 @@ class Equipments extends BaseController
 
     public function editPost($modelName, $id){
 
+        if(!$this->currentUser->canAlter()){
+            return $this->httpErrorView(401);
+        }
         $formInputs = $this->request->getPost();
         $formInputs['model_name'] = $this->toSnakeCase($formInputs['model_label']);
         $formInputs['location'] = $this->toSnakeCase($formInputs['location']);

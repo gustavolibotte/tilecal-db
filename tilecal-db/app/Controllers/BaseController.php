@@ -8,9 +8,6 @@ use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use Jumbojett\OpenIDConnectClient;
-use Firebase\JWT\JWK;
-use Firebase\JWT\JWT;
 
 
 /**
@@ -25,7 +22,7 @@ use Firebase\JWT\JWT;
  */
 abstract class BaseController extends Controller
 {
-    protected $userInfo;
+    protected $currentUser;
     /**
      * Instance of the main Request object.
      *
@@ -56,11 +53,7 @@ abstract class BaseController extends Controller
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
         $session = \Config\Services::session();
-        $this->userInfo = $session->get('userInfo');    // Set on auth filter
-    }
-
-    protected function authenticate(){
-
+        $this->currentUser = new \App\Entities\User($session->get('userInfo'));
     }
 
     public function buildDataTablesResponse($data)
@@ -79,5 +72,22 @@ abstract class BaseController extends Controller
     public function toSnakeCase($input){
         $output = strtolower(str_replace(' ', '_', $input));
         return $output;
+    }
+
+    public function httpErrorView($errorCode){
+        $this->response->setStatusCode($errorCode);
+        $headerData = $this->getHeaderData(pageTitle: sprintf('Error %d', $errorCode));
+        $functionStr = sprintf('\App\Library\ErrorUtils\ErrorData::get%sData', $errorCode);
+        $errorData = call_user_func($functionStr);
+
+        return view('templates/header', $headerData)
+               .view('errors/http_error', $errorData)
+               .view('templates/footer');
+    }
+
+    public function authorizeAlteration(){
+        if(!$this->currentUser->canAlter()){
+            return $this->httpErrorView(401);
+        }
     }
 }

@@ -113,6 +113,10 @@ class Files extends BaseController
     }
 
     public function uploadGet(){
+
+        if(!$this->currentUser->canAlter()){
+            return $this->httpErrorView(401);
+        }
         helper('form');
 
         $headerData = $this->getHeaderData(pageTitle: 'File Upload');
@@ -124,6 +128,10 @@ class Files extends BaseController
     }
 
     public function uploadPost(){
+
+        if(!$this->currentUser->canAlter()){
+            return $this->httpErrorView(401);
+        }
         helper('form');
 
         $uploadedFile = $this->request->getFile('file');
