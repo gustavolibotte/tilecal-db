@@ -78,7 +78,7 @@ class Authentication implements FilterInterface
                     'name' => $decodedAccessToken->name,
                     'email' => $decodedAccessToken->email,
                     'cernId' => $decodedAccessToken->cern_person_id,
-                    'origEmail' => $decodedAccessToken->cern_email_upn,
+                    'origEmail' => $decodedAccessToken->cern_mail_upn,
                     'language' => $decodedAccessToken->cern_preferred_language,
                     'sessionState' => $decodedAccessToken->session_state,
                     'roles' => $decodedAccessToken->cern_roles,
