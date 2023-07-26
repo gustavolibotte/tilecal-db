@@ -55,7 +55,6 @@ class ModelModel extends LogModel
         $updateLog = new OperationLog([
             "record_id" => $id,
             "action" => "update",
-            "user" => "root",
             "changes" => $changes
         ]);
         return $updateLog;
@@ -75,7 +74,6 @@ class ModelModel extends LogModel
         $insertLog = new OperationLog([
             "record_id" => $insertInfo["id"],
             "action" => "insert",
-            "user" => "root",
             "changes" => $changes
         ]);
 

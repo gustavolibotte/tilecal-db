@@ -10,13 +10,13 @@ class Equipment2FileSeeder extends BaseSeeder
 {
     public function run()
     {   
-        $equipmentModel = new EquipmentModel();
+        $equipmentModel = new EquipmentModel(migration: true);
         $equipments = $equipmentModel->getEquipment();
-        $fileModel = new FileModel();
+        $fileModel = new FileModel(migration: true);
         $files = $fileModel->getFile();
-        $equipment2FileModel = new Equipment2FileModel();
+        $equipment2FileModel = new Equipment2FileModel(migration: true);
         foreach ($equipments as $equipment){
-            if ($this->probDecision(0.1)){
+            if ($this->probDecision(1)){
                 $fileIdx = array_rand($files);
                 $fileBind = $files[$fileIdx];
                 $data = [

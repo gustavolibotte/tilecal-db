@@ -85,7 +85,6 @@ class FileModel extends LogModel
         $updateLog = new OperationLog([
             "record_id" => $id,
             "action" => "update",
-            "user" => "root",
             "changes" => $changes,
             "filedata" => $updateInfo["data"]["filedata"]
         ]);
@@ -102,7 +101,6 @@ class FileModel extends LogModel
         $insertLog = new OperationLog([
             "record_id" => $insertInfo["id"],
             "action" => "insert",
-            "user" => "root",
             "changes" => $changes,
             "filedata" => $insertInfo["data"]["filedata"]
         ]);

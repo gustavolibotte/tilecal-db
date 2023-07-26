@@ -49,7 +49,6 @@ class Equipment2FileModel extends LogModel
         $updateLog = new OperationLog([
             "record_id" => $id,
             "action" => "update",
-            "user" => "root",
             "changes" => $changes
         ]);
         return $updateLog;
@@ -64,7 +63,6 @@ class Equipment2FileModel extends LogModel
         $insertLog = new OperationLog([
             "record_id" => $insertInfo["id"],
             "action" => "insert",
-            "user" => "root",
             "changes" => $changes
         ]);
 
@@ -79,7 +77,6 @@ class Equipment2FileModel extends LogModel
         $deleteLog = new OperationLog([
             "record_id" => $deleteInfo["id"],
             "action" => "delete",
-            "user" => "root",
             "changes" => json_encode($data2Delete)
         ]);
         $histModel = new $this->histModelClass();

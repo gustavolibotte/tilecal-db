@@ -12,7 +12,7 @@ class EquipmentSeeder extends BaseSeeder
         $seedDataPath = ROOTPATH . '/app/Database/Seeds/seed_data/equipments.csv';
         $csv = array_map("str_getcsv", file($seedDataPath, FILE_SKIP_EMPTY_LINES));
         $keys = array_shift($csv);
-        $equipmentModel = new EquipmentModel();
+        $equipmentModel = new EquipmentModel(migration: true);
         $randomModelParams = [
             "beta" => 123123,
             "nominal_hv" => 123123123,

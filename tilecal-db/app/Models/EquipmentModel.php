@@ -189,7 +189,6 @@ class EquipmentModel extends LogModel
         $updateLog = new OperationLog([
             "record_id" => $id,
             "action" => "update",
-            "user" => "root",
             "changes" => $changes
         ]);
         return $updateLog;
@@ -211,7 +210,6 @@ class EquipmentModel extends LogModel
         $insertLog = new OperationLog([
             "record_id" => $insertInfo["data"]["id"],
             "action" => "insert",
-            "user" => "root",
             "changes" => $changes
         ]);
 

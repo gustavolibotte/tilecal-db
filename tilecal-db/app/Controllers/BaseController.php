@@ -52,8 +52,8 @@ abstract class BaseController extends Controller
     {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
-        $session = \Config\Services::session();
-        $this->currentUser = new \App\Entities\User($session->get('userInfo'));
+        helper('authentication');
+        $this->currentUser = getUser();
     }
 
     public function buildDataTablesResponse($data)
