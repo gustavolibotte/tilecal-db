@@ -45,7 +45,6 @@ function getUser(){
                 $jwks = json_decode($response->getBody(), true);
                 $keySet = JWK::parseKeySet($jwks);
                 $decodedAccessToken = JWT::decode($oidc->getAccessToken(), $keySet);
-                d($decodedAccessToken);
                 $userInfo = [
                     'username' => $decodedAccessToken->cern_upn,
                     'preferredUsername' => $decodedAccessToken->preferred_username,
@@ -61,7 +60,6 @@ function getUser(){
                     'authTime' => $decodedAccessToken->auth_time,
                     'nonce' => $decodedAccessToken->nonce
                 ];
-                d($userInfo);
             }
             $tempTime = 20*60;
             $session->setTempdata('isLogged', true, $tempTime);
