@@ -1,0 +1,108 @@
+...@classes
+
+direction: up
+
+title: {
+  label: In detector equipments
+  near: top-center
+  shape: text
+  style.font-size: 40
+}
+
+# Node declaration
+PMT: {
+  shape: class
+  beta: float
+  qe: float
+  nominal_hv: float
+  store_barcode: varchar(50)
+  type: varchar(50)
+}
+
+FENICS: {
+  shape: class
+}
+HV Divider: {
+  shape: class
+}
+
+PMT Block: {
+  shape: class
+  mini_drawer_pos: uint
+  
+}
+
+Daughterboard: {
+  shape: class
+  
+}
+
+Mainboard: {
+  shape: class
+  
+}
+
+Micro Drawer: {
+  shape: class
+  
+}
+
+Mini Drawer: {
+  shape: class
+  super_drawer_pos: uint
+  
+}
+
+Super Drawer: {
+  shape: class
+  
+}
+
+LV Box: {
+  shape: class
+  box_identifier: varchar(50)
+  insertion_date: timestamp
+  link: https://www.particle.cz/work/TileDB2/lvbox?code=20LLEPSO101066
+  tooltip: This equipment has a special database and box_identifier refers to its identifier in this database.
+}
+
+HV Regulation Board: {
+  shape: class
+}
+
+Auxiliary Board: {
+  shape: class
+}
+
+HV Power Suppply: {
+  shape: class
+}
+
+Module: {
+  shape: class
+  parition_position: uint
+}
+
+Partition: {
+  shape: class
+}
+
+
+# Edge declaration
+PMT -> PMT Block: 1 {class: connection}
+FENICS -> PMT Block: 1 {class: connection}
+HV Divider -> PMT Block: 1 {class: connection}
+PMT Block -> Mini Drawer: 12 {class: connection}
+PMT Block -> Micro Drawer: Undefined {class: connection}
+Mainboard -> Mini Drawer: 1 {class: connection}
+Daughterboard -> Mini Drawer: 1 {class: connection}
+Mini Drawer -> Super Drawer: 4 {class: connection}
+Super Drawer -> Module: 1 {class: connection}
+Micro Drawer -> Module: 1 {class: connection}
+HV Regulation Board -> Module: 1 {class: connection}
+Auxiliary Board -> Module: 1 {class: connection}
+LV Box -> Module: 1 {class: connection}
+Module -> Partition: 1 {class:connection}
+HV Power Suppply -> Partition: 1 {class:connection}
+
+  

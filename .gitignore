@@ -17,3 +17,6 @@ sql/*
 #ignore composer files
 composer*
 vendor/*
+
+# Diagrams
+diagrams/compiled

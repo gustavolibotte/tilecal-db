@@ -1,0 +1,92 @@
+// Use DBML to define your database structure
+// Source: https://dbdiagram.io/d/64c2319102bd1c4a5ec8fc81
+
+// Custom types
+Enum actions {
+  insert
+  delete
+  update
+}
+
+// Tables
+Table equipments {
+  id uint [primary key, increment]
+  barcode char(7) [unique, not null]
+  model_id uint [not null]
+  location varchar(5) [note: 'It may be a location inside', not null]
+  status uint [note: 'Current equipment status', not null]
+  parent_id uint [note: 'Equipment where this entery is installed']
+  serial varchar(20) [note: 'Equipment serial number']
+  comments text [note: 'Possible comments on the equipment']
+  model_params json [note: 'Model specific params']
+  created_at timestamp [default: 'now()', not null, note: 'When equipment was registered into the database']
+  updated_at timestamp [note: 'Last update timestamp']
+  deleted_at timestamp [note: 'Registers when equipment was deleted']
+}
+
+Table models {
+  id uint [primary key, increment]
+  name varchar(50) [unique, not null]
+  in_detector bool [not null]
+  label varchar(50) [not null]
+  params json [not null, note: 'Model specific params']
+  description text [note: 'Equipment description']
+  created_at timestamp [default: 'now()', not null]
+  updated_at timestamp
+  deleted_at timestamp
+}
+
+Table files {
+  id uint [primary key, increment]
+  mime varchar(50) [not null, note: 'File mime type according to the IANA media types']
+  filepath varchar [not null]
+  description text [not null, note: 'File description']
+  created_at timestamp [default: 'now()', not null]
+  updated_at timestamp
+  deleted_at timestamp
+}
+
+Table files_to_equipments{
+  id uint [primary key, increment]
+  equipment_id uint [not null]
+  file_id uint [not null]
+  created_at timestamp [default: 'now()', not null]
+  updated_at timestamp
+  deleted_at timestamp
+}
+
+Table locations {
+  id uint [primary key, increment]
+  name varchar(100) [not null]
+  mne char(3) [not null]
+  number char(3) [not null]
+  place varchar(30) [not null]
+  country varchar(20) [not null]
+}
+
+Table statuses {
+  id uint [primary key, increment]
+  name varchar(20) [not null]
+  description text [not null]
+}
+
+Table db_hist{
+  id uint [primary key, increment]
+  user varchar(20) [not null]
+  record_id varchar(10) [not null]
+  table varchar(50) [not null]
+  action alteration_ops [not null]
+}
+
+// Relations
+Ref: equipments.status > statuses.id
+Ref: equipments.model_id < models.id
+Ref: equipments.id < equipments.parent_id
+Ref: equipments.id < files_to_equipments.equipment_id
+Ref: files.id < files_to_equipments.file_id
+Ref: equipments.id < db_hist.record_id
+Ref: files.id < db_hist.record_id
+Ref: files_to_equipments.id < db_hist.record_id
+Ref: models.id < db_hist.record_id
+
+

@@ -1,0 +1,51 @@
+direction: up
+
+classes: {
+  connection: {
+    style.font-size: 20
+  }
+}
+
+title: {
+  label: Off detector equipments
+  near: top-center
+  shape: text
+  style.font-size: 40
+}
+
+# Nodes
+PPr blade: {
+  shape: class
+  rack_number: integer
+  shelf_number: integer
+  slot_number: integer
+  installation_date: timestamp
+  modules: undefined
+  tooltip: Validate what these modules are
+}
+
+Carrierboard: {
+  shape: class
+}
+CPM: {
+  shape: class
+}
+TDAQi: {
+  shape: class
+}
+TileCoM: {
+  shape: class
+}
+GbE switch: {
+  shape: class
+}
+IPMC: {
+  shape: class
+}
+
+# Edges
+PPr blade -> TDAQi: up to 1 {class: connection}
+CPM -> Carrierboard: up to 4 {class: connection}
+IPMC -> Carrierboard: up to 1 {class: connection}
+TileCoM -> Carrierboard: up to 1 {class: connection}
+GbE switch-> Carrierboard: up to 1 {class: connection}
