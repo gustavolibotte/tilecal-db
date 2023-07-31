@@ -10,82 +10,21 @@ title: {
 }
 
 # Node declaration
-PMT: {
-  shape: class
-  beta: float
-  qe: float
-  nominal_hv: float
-  store_barcode: varchar(50)
-  type: varchar(50)
-}
-
-FENICS: {
-  shape: class
-}
-HV Divider: {
-  shape: class
-}
-
-PMT Block: {
-  shape: class
-  mini_drawer_pos: uint
-  
-}
-
-Daughterboard: {
-  shape: class
-  
-}
-
-Mainboard: {
-  shape: class
-  
-}
-
-Micro Drawer: {
-  shape: class
-  
-}
-
-Mini Drawer: {
-  shape: class
-  super_drawer_pos: uint
-  
-}
-
-Super Drawer: {
-  shape: class
-  
-}
-
-LV Box: {
-  shape: class
-  box_identifier: varchar(50)
-  insertion_date: timestamp
-  link: https://www.particle.cz/work/TileDB2/lvbox?code=20LLEPSO101066
-  tooltip: This equipment has a special database and box_identifier refers to its identifier in this database.
-}
-
-HV Regulation Board: {
-  shape: class
-}
-
-Auxiliary Board: {
-  shape: class
-}
-
-HV Power Suppply: {
-  shape: class
-}
-
-Module: {
-  shape: class
-  parition_position: uint
-}
-
-Partition: {
-  shape: class
-}
+...@equipments.pmt
+...@equipments.fenics
+...@equipments.hv_divider
+...@equipments.pmt_block
+...@equipments.daughterboard
+...@equipments.mainboard
+...@equipments.micro_drawer
+...@equipments.mini_drawer
+...@equipments.super_drawer
+...@equipments.lv_box
+...@equipments.regulation_board
+...@equipments.auxiliary_board
+...@equipments.hv_power_supply
+...@equipments.module
+...@equipments.partition
 
 
 # Edge declaration

@@ -14,34 +14,13 @@ title: {
 }
 
 # Nodes
-PPr blade: {
-  shape: class
-  rack_number: integer
-  shelf_number: integer
-  slot_number: integer
-  installation_date: timestamp
-  modules: undefined
-  tooltip: Validate what these modules are
-}
-
-Carrierboard: {
-  shape: class
-}
-CPM: {
-  shape: class
-}
-TDAQi: {
-  shape: class
-}
-TileCoM: {
-  shape: class
-}
-GbE switch: {
-  shape: class
-}
-IPMC: {
-  shape: class
-}
+...@equipments.ppr_blade
+...@equipments.carrierboard
+...@equipments.cpm
+...@equipments.tdaqi
+...@equipments.tilecom
+...@equipments.gbe_switch
+...@equipments.ipmc
 
 # Edges
 PPr blade -> TDAQi: up to 1 {class: connection}

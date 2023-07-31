@@ -1,0 +1,169 @@
+pmt: {
+    PMT: {
+        shape: class
+        beta: float
+        qe: float
+        nominal_hv: float
+        store_barcode: varchar(50)
+        type: varchar(50)
+    }
+}
+
+fenics: {
+    FENICS: {
+        shape: class
+    }
+}
+
+hv_divider: {
+    HV Divider: {
+        shape: class
+    }
+}
+
+pmt_block: {
+    PMT Block: {
+        shape: class
+        phase2_pos: uint
+        phase1_pos: uint
+    }
+}
+
+daughterboard:{
+    Daughterboard: {
+        shape: class
+    }     
+}
+
+mainboard: {
+    Mainboard: {
+        shape: class
+    }
+}
+
+micro_drawer: {
+    Micro Drawer: {
+        shape: class
+    }
+}
+
+mini_drawer: {
+    Mini Drawer: {
+        shape: class
+        super_drawer_pos: uint
+    }
+}
+
+super_drawer: {
+    Super Drawer: {
+        shape: class
+    }
+}
+
+lv_box: {
+    LV Box: {
+        shape: class
+        box_identifier: varchar(50)
+        insertion_date: timestamp
+        link: https://www.particle.cz/work/TileDB2/lvbox?code=20LLEPSO101066
+        tooltip: This equipment has a special database and box_identifier refers to its identifier in this database.
+    }
+}
+
+regulation_board: {
+    HV Regulation Board: {
+        shape: class
+    }
+}
+
+auxiliary_board: {
+    Auxiliary Board: {
+        shape: class
+    }      
+}
+
+hv_power_supply: {
+    HV Power Suppply: {
+        shape: class
+    }
+}
+
+module: {
+    Module: {
+        shape: class
+        parition_position: uint
+    }
+}
+
+partition: {
+    Partition: {
+        shape: class
+        tooltip: There are only 4: LBA, LBC EBA or EBC
+    }
+}
+
+ppr_blade: {
+    PPr blade: {
+        shape: class
+        rack_number: integer
+        shelf_number: integer
+        slot_number: integer
+        installation_date: timestamp
+        modules: undefined
+        tooltip: Validate what these modules are
+    }
+}
+
+carrierboard: {
+    Carrierboard: {
+        shape: class
+    }
+}
+
+cpm: {
+    CPM: {
+        shape: class
+    }
+}
+
+tdaqi: {
+    TDAQi: {
+        shape: class
+    }
+}
+
+tilecom: {
+    TileCoM: {
+        shape: class
+    }
+}
+
+gbe_switch: {
+    GbE switch: {
+        shape: class
+    }
+}
+
+ipmc: {
+    IPMC: {
+        shape: class
+    }
+}
+
+phase1_super_drawer: {
+    Phase 1 Super Drawer: {
+        shape: class
+    }
+}
+
+3_in_1_board: {
+    3 in 1 Board: {
+        shape: class
+    }
+}
+
+phase1_hv_divider: {
+    Phase 1 HV Divider: {
+        shape: class
+    }
+}

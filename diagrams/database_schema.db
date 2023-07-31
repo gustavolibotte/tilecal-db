@@ -1,4 +1,5 @@
 // Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
 // Source: https://dbdiagram.io/d/64c2319102bd1c4a5ec8fc81
 
 // Custom types
@@ -8,15 +9,24 @@ Enum actions {
   update
 }
 
+Enum tables {
+  equipments
+  models
+  files
+  locations
+  equipments_to_files
+  statuses
+}
+
 // Tables
 Table equipments {
   id uint [primary key, increment]
-  barcode char(7) [unique, not null]
-  model_id uint [not null]
-  location varchar(5) [note: 'It may be a location inside', not null]
+  barcode char(7) [unique, not null, note: 'TileCal equipment barcode']
+  model uint [not null]
+  location uint [note: 'It may be a location inside', not null]
   status uint [note: 'Current equipment status', not null]
   parent_id uint [note: 'Equipment where this entery is installed']
-  serial varchar(20) [note: 'Equipment serial number']
+  serial varchar(20) [unique, note: 'Equipment serial number']
   comments text [note: 'Possible comments on the equipment']
   model_params json [note: 'Model specific params']
   created_at timestamp [default: 'now()', not null, note: 'When equipment was registered into the database']
@@ -28,7 +38,7 @@ Table models {
   id uint [primary key, increment]
   name varchar(50) [unique, not null]
   in_detector bool [not null]
-  label varchar(50) [not null]
+  label varchar(50) [unique, not null]
   params json [not null, note: 'Model specific params']
   description text [note: 'Equipment description']
   created_at timestamp [default: 'now()', not null]
@@ -38,15 +48,18 @@ Table models {
 
 Table files {
   id uint [primary key, increment]
-  mime varchar(50) [not null, note: 'File mime type according to the IANA media types']
-  filepath varchar [not null]
+  mime varchar(50) [not null, note: '''
+    File mime type according to the IANA media types.
+    No need for dim table since those types are fixed by the protocol'
+  ''']
+  filedata mediumblob [not null]
   description text [not null, note: 'File description']
   created_at timestamp [default: 'now()', not null]
   updated_at timestamp
   deleted_at timestamp
 }
 
-Table files_to_equipments{
+Table equipments_to_files{
   id uint [primary key, increment]
   equipment_id uint [not null]
   file_id uint [not null]
@@ -57,11 +70,13 @@ Table files_to_equipments{
 
 Table locations {
   id uint [primary key, increment]
-  name varchar(100) [not null]
-  mne char(3) [not null]
-  number char(3) [not null]
-  place varchar(30) [not null]
-  country varchar(20) [not null]
+  name varchar(10) [unique, not null]
+  description varchar(280) [not null, note: '''
+    Description of where this location is, example:
+    name: SU
+    Description: Stockholm University
+    Size of a tweet
+  ''']
 }
 
 Table statuses {
@@ -70,23 +85,30 @@ Table statuses {
   description text [not null]
 }
 
-Table db_hist{
+Table db_hist {
   id uint [primary key, increment]
   user varchar(20) [not null]
-  record_id varchar(10) [not null]
-  table varchar(50) [not null]
   action alteration_ops [not null]
+  record_id uint [not null]
+  table tables [not null]
+  changes json [not null]
+  filedata mediumblob [note: '''
+    Not null only when a new file is uploaded and the older file needs to be saved
+  ''']
 }
 
 // Relations
 Ref: equipments.status > statuses.id
-Ref: equipments.model_id < models.id
+Ref: equipments.model < models.id
 Ref: equipments.id < equipments.parent_id
-Ref: equipments.id < files_to_equipments.equipment_id
-Ref: files.id < files_to_equipments.file_id
+Ref: equipments.id < equipments_to_files.equipment_id
+Ref: files.id < equipments_to_files.file_id
+Ref: locations.id < equipments.location
 Ref: equipments.id < db_hist.record_id
 Ref: files.id < db_hist.record_id
-Ref: files_to_equipments.id < db_hist.record_id
+Ref: equipments_to_files.id < db_hist.record_id
 Ref: models.id < db_hist.record_id
+Ref: locations.id < db_hist.id
+Ref: statuses.id < db_hist.id
 
 

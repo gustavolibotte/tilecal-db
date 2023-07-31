@@ -1,0 +1,40 @@
+...@classes
+
+direction: up
+
+title: {
+  label: Phase 1 in detector equipments
+  near: top-center
+  shape: text
+  style.font-size: 40
+}
+
+# Node declaration
+...@equipments.pmt
+...@equipments.phase1_hv_divider
+...@equipments.pmt_block
+...@equipments.daughterboard
+...@equipments.mainboard
+...@equipments.phase1_super_drawer
+...@equipments.lv_box
+...@equipments.regulation_board
+...@equipments.auxiliary_board
+...@equipments.hv_power_supply
+...@equipments.module
+...@equipments.partition
+...@equipments.3_in_1_board
+
+
+# Edge declaration
+PMT -> PMT Block: 1 {class: connection}
+3 in 1 Board -> PMT Block: 1 {class: connection}
+Phase 1 HV Divider -> PMT Block: 1 {class: connection}
+PMT Block -> Phase 1 Super Drawer: 12 {class: connection}
+Mainboard -> Phase 1 Super Drawer: 1 {class: connection}
+Daughterboard -> Phase 1 Super Drawer: 1 {class: connection}
+Phase 1 Super Drawer -> Module: 1 {class: connection}
+HV Regulation Board -> Module: 1 {class: connection}
+Auxiliary Board -> Module: 1 {class: connection}
+LV Box -> Module: 1 {class: connection}
+Module -> Partition: 1 {class:connection}
+HV Power Suppply -> Partition: 1 {class:connection}
