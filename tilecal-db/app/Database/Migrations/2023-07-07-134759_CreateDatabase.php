@@ -201,19 +201,12 @@ class CreateDatabase extends Migration
                 'null' => false
             ],
             'tables' => [
-                'type' => 'ENUM',
-                'constraint' => [
-                    'equipments',
-                    'models',
-                    'files',
-                    'locations',
-                    'equipments_to_files',
-                    'statuses'
-                ],
+                'type' => 'VARCHAR',
+                'constraint' => 30,
                 'null' => false
             ],
             'action' => [
-                'type' => 'ENUM',
+                'type' => 'VARCHAR',
                 'constraint' => ['insert', 'update', 'delete'],
                 'null' => false
             ],
