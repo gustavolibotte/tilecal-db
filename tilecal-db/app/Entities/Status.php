@@ -6,7 +6,11 @@ use CodeIgniter\Entity\Entity;
 
 class Status extends Entity
 {
-    protected $datamap = [];
+    protected $datamap = [
+        "createdAt" => "created_at",
+        "updatedAt" => "updated_at",
+        "deletedAt" => "deleted_at"
+    ];
     protected $dates   = ['created_at', 'updated_at', 'deleted_at'];
     protected $casts   = [];
 }
