@@ -12,6 +12,8 @@ class Equipment extends Entity
         "parentID" => "parent_id",
         "modelParams" => "model_params",
         "modelId" => "model_id",
+        "locationId" => "location_id",
+        "statusId" => 'status_id',
         "createdAt" => "created_at",
         "updatedAt" => "updated_at",
         "deletedAt" => "deleted_at"

@@ -8,6 +8,8 @@ class SeedDatabase extends BaseSeeder
     {
         $this->seedModels();
         $this->seedStatuses();
+        $this->seedLocations();
+        $this->seedFiles();
     }
 
     public function seedModels(){
@@ -49,4 +51,42 @@ class SeedDatabase extends BaseSeeder
             }
         }
     }
+
+    public function seedEquipments(){
+        $modelModel = new \App\Models\ModelModel(isMigration: true);
+        $models = $modelModel->findAll();
+
+        $locationModel = new \App\Models\LocationModel(isMigration: true);
+        $locations = $locationModel->findAll();
+
+        $statusModel = new \App\Models\StatusModel(isMigration: true);
+        $statuses = $statusModel->findAll();
+        
+        $jsonData = $this->readJSON('equipments.json');
+
+        $equipmentModel = new \App\Models\EquipmentModel(isMigration: true);
+        $randomModelParams = [
+            "beta" => 123123,
+            "nominal_hv" => 123123123,
+            "qe" => 123123123,
+            "type" => 'R11187'
+        ];
+
+        helper('random');
+        foreach ($jsonData as $row) {
+            $equipment = new \App\Entities\Equipment($row);
+            $model = choice($models);
+            $equipment->modelId = $model->id;
+            $location = choice($locations);
+            $equipment->locationId = $location->id;
+            $status = choice($statuses);
+            $equipment->statusId = $status->id;
+            $equipment->modelParams = $randomModelParams;
+            $equipmentModel->insert($equipment);
+            if ($this->probDecision(0.03)){
+                $equipmentModel->delete($equipment->id);
+            }
+        }
+    }
+
 }
