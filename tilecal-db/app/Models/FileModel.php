@@ -13,7 +13,7 @@ class FileModel extends LogModel
     protected $returnType       = \App\Entities\File::class;
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'mime', 'extension', 'filedata', 'description'];
+    protected $allowedFields    = ['name', 'mime', 'filedata', 'description'];
 
     // Dates
     protected $useTimestamps = true;
