@@ -27,4 +27,13 @@ class SeedDatabase extends BaseSeeder
             $statusModel->insert($status);
         }
     }
+
+    public function seedLocations(){
+        $jsonData = $this->readJSON('location.json');
+        $locationModel = new \App\Models\LocationModel(isMigration: true);
+        foreach ($jsonData as $row){
+            $location = new \App\Entities\Location($row);
+            $locationModel->insert($location);
+        }
+    }
 }
