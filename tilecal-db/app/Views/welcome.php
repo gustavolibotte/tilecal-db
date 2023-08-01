@@ -7,6 +7,8 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"/>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
+
+<?= view_cell('HeaderCell') ?>
 <body>
 <div class="container mt-4">
 
@@ -36,11 +38,12 @@
       </ul>
     </div>
   </div>
-
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
-
 </body>
+
+<?= view_cell('FooterCell') ?>
+
 </html>
