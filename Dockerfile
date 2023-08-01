@@ -3,7 +3,6 @@ EXPOSE 8080
 
 LABEL maintainer="Lucas Nunes"
 LABEL email="lucas.nunes@cern.ch"
-LABEL version=beta
 
 ENV CI_VERSION "4.3.6"
 LABEL ci_version=${CI_VERSION}
@@ -48,10 +47,8 @@ RUN apt install -y zip
 WORKDIR /usr/local/tilecal-db/
 ADD tilecal-db/ /usr/local/tilecal-db/
 RUN composer require codeigniter4/framework:${CI_VERSION}
-# RUN composer create-project codeigniter4/appstarter:${CI_VERSION} ci-app-starter
+# RUN composer create-project codeigniter4/appstarter:4.3.6 ci-app-starter
 RUN composer require jumbojett/openid-connect-php
 RUN composer require firebase/php-jwt
-# RUN cp -r ci-app-starter/vendor ./
-# RUN rm -r ci-app-starter
 
 CMD bash run.sh

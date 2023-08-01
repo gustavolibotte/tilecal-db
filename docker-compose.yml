@@ -52,13 +52,13 @@ services:
     image: gitlab-registry.cern.ch/paas-tools/openshift-client
     container_name: oc-container
     tty: true
-  python:
-    image: python:3.10.12
-    container_name: tilecal-db-python
-    tty: true
-    volumes:
-      - type: bind
-        source: ./tilecal-db
-        target: /usr/local/tilecal-db
+  # python:
+  #   image: python:3.10.12
+  #   container_name: tilecal-db-python
+  #   tty: true
+  #   volumes:
+  #     - type: bind
+  #       source: ./tilecal-db
+  #       target: /usr/local/tilecal-db
 volumes:
   mysqldata:
