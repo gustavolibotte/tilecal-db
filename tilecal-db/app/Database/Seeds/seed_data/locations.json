@@ -1,0 +1,66 @@
+[
+    {
+        "name": "B175",
+        "description": "CERN Building 175"
+    },
+    {
+        "name": "B174",
+        "description": "CERN Building 174"
+    },
+    {
+        "name": "B171",
+        "description": "CERN Building 171"
+    },
+    {
+        "name": "LHCb",
+        "description": "LHCb experiment"
+    },
+    {
+        "name": "Testbeam",
+        "description": "Tiles testbeam building"
+    },
+    {
+        "name": "INFN-Pisa",
+        "description": "National Institute of Nuclear Physics in Pisa"
+    },
+    {
+        "name": "UX15",
+        "description": "ATLAS UX15 area"
+    },
+    {
+        "name": "USA15",
+        "description": "ATLAS USA15 area"
+    },
+    {
+        "name": "SU",
+        "description": "Stockholm University"
+    },
+    {
+        "name": "UC",
+        "description": "University of Chicago"
+    },
+    {
+        "name": "UTA",
+        "description": "University of Texas Arlington"
+    },
+    {
+        "name": "LIP",
+        "description": "Instrumentation and PArticle Physics Lab (Laborat[orio de Instrumentação e f[isica de partículas"
+    },
+    {
+        "name": "CSIC-UV",
+        "description": "Valencia University Physics Institute (Instituto de Fisica Corpuscular)"
+    },
+    {
+        "name": "UH",
+        "description": "Heidelberg University"
+    },
+    {
+        "name": "UW",
+        "description": "University of Witwatersand"
+    },
+    {
+        "name": "MSU",
+        "description": "Michigan State University"
+    }
+]
