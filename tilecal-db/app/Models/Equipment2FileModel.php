@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Entities\OperationLog;
-
 class Equipment2FileModel extends LogModel
 {
     protected $DBGroup          = 'default';
@@ -41,47 +39,4 @@ class Equipment2FileModel extends LogModel
     
     // Custom
     protected $histModelClass = Equipment2FileHistModel::class;
-
-    protected function getUpdateLog($updateInfo){
-        $id = $updateInfo["id"][0];
-        $oldRow = $this->find($id)->toRawArray();
-        $changes = $this->getUpdateChanges($oldRow, $updateInfo["data"]);
-        $updateLog = new OperationLog([
-            "record_id" => $id,
-            "action" => "update",
-            "changes" => $changes
-        ]);
-        return $updateLog;
-    }
-
-    protected function getInsertLog($insertInfo){
-        foreach ($insertInfo['data'] as $name=>$value){
-            if (!in_array($name, $this->insertLogIgnore)){
-                $changes[$name] = $value;
-            }
-        }
-        $insertLog = new OperationLog([
-            "record_id" => $insertInfo["id"],
-            "action" => "insert",
-            "changes" => $changes
-        ]);
-
-        return $insertLog;
-    }
-
-    protected function getDeleteLog($deleteInfo){
-        $equipment2FileModel = new Equipment2FileModel();
-        $data2Delete = $equipment2FileModel
-            ->find($deleteInfo["id"])
-            ->toRawArray();
-        $deleteLog = new OperationLog([
-            "record_id" => $deleteInfo["id"],
-            "action" => "delete",
-            "changes" => json_encode($data2Delete)
-        ]);
-        $histModel = new $this->histModelClass();
-        $histModel->insert($deleteLog);
-
-        return $deleteInfo;
-    }
 }

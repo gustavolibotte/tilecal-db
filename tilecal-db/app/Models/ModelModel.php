@@ -13,10 +13,10 @@ class ModelModel extends LogModel
     protected $returnType       = 'array';
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'formatted_name', 'params', 'description'];
+    protected $allowedFields    = ['name', 'in_detector', 'label', 'params', 'description'];
 
     // Dates
-    protected $useTimestamps = true; //Already added by the SQL database
+    protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';

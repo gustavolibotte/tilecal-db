@@ -3,6 +3,7 @@
 namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
+use CodeIgniter\Database\RawSql;
 
 class CreateDatabase extends Migration
 {   
@@ -13,10 +14,12 @@ class CreateDatabase extends Migration
                 'null' => false
             ],
             'updated_at' => [
-                'type' => 'TIMESTAMP'
+                'type' => 'TIMESTAMP',
+                'null' => true
             ],
             'deleted_at' => [
-                'type' => 'TIMESTAMP'
+                'type' => 'TIMESTAMP',
+                'null' => true
             ]
         ]);
     }
@@ -53,7 +56,8 @@ class CreateDatabase extends Migration
                 'null' => false
             ],
             'description' => [
-                'type' => 'TEXT'
+                'type' => 'TEXT',
+                'null' => true
             ]
         ]);
         $this->addTimestamps();
@@ -135,34 +139,30 @@ class CreateDatabase extends Migration
             ],
             'location_id' => [
                 'type' => 'INT',
-                'unsigned' => true
+                'unsigned' => true,
+                'null' => false
             ],
             'status_id' => [
                 'type' => 'INT',
-                'unsigned' => true
+                'unsigned' => true,
+                'null' => false
             ],
             'parent_id' => [
                 'type' => 'INT',
-                'unsigned' => true
+                'unsigned' => true,
+                'null' => true
             ],
             'serial' => [
                 'type' => 'VARCHAR',
-                'constraint' => 36  # Number of chars in uuid
+                'constraint' => 36, # Number of chars in uuid,
+                'null' => true
             ],
             'comments' => [
-                'type' => 'TEXT'
-            ],
-            'created_at' => [
-                'type' => 'TIMESTAMP',
-                'null' => false
-            ],
-            'updated_at' => [
-                'type' => 'TIMESTAMP'
-            ],
-            'deleted_at' => [
-                'type' => 'TIMESTAMP'
+                'type' => 'TEXT',
+                'null' => true
             ]
         ]);
+        $this->addTimestamps();
         $this->forge->addPrimaryKey('id');
         $this->forge->addForeignKey('model_id', 'models', 'id');
         $this->forge->addForeignKey('parent_id', 'equipments', 'id');
@@ -200,13 +200,13 @@ class CreateDatabase extends Migration
                 'constraint' => 20,
                 'null' => false
             ],
-            'tables' => [
+            'table' => [
                 'type' => 'VARCHAR',
                 'constraint' => 30,
                 'null' => false
             ],
             'action' => [
-                'type' => 'VARCHAR',
+                'type' => 'ENUM',
                 'constraint' => ['insert', 'update', 'delete'],
                 'null' => false
             ],
@@ -221,10 +221,12 @@ class CreateDatabase extends Migration
             ],
             'filedata' => [
                 'type' => 'MEDIUMBLOB',
+                'null' => true
             ],
             'created_at' => [
                 'type' => 'TIMESTAMP',
-                'null' => false
+                'null' => false,
+                'default' => new RawSql('CURRENT_TIMESTAMP')
             ]
         ]);
         $this->forge->addPrimaryKey('id');
