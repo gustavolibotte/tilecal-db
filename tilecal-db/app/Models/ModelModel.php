@@ -10,7 +10,7 @@ class ModelModel extends LogModel
     protected $table            = 'models';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
+    protected $returnType       = \App\Entities\Model::class;
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
     protected $allowedFields    = ['name', 'in_detector', 'label', 'params', 'description'];

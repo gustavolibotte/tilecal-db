@@ -13,7 +13,7 @@ class EquipmentModel extends LogModel
     protected $returnType       = \App\Entities\Equipment::class;
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial', 'model_params'];
+    protected $allowedFields    = ['barcode', 'model_id', 'location_id', 'status_id', 'parent_id', 'comments', 'serial', 'model_params'];
 
     // Dates
     protected $useTimestamps = true;

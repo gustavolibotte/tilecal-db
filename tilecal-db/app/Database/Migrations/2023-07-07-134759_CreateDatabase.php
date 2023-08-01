@@ -105,7 +105,12 @@ class CreateDatabase extends Migration
         $this->addId();
         $this->forge->addField([
             'name' => [
-                'mime' => 'VARCHAR',
+                'type' => 'VARCHAR',
+                'constraint' => 100,
+                'null' => false
+            ],
+            'mime' => [
+                'type' => 'VARCHAR',
                 'constraint' => 50,
                 'null' => false
             ],
@@ -128,7 +133,7 @@ class CreateDatabase extends Migration
         $this->forge->addField([
             'barcode' => [
                 'type' => 'CHAR',
-                'contraint' => 7,
+                'constraint' => 7,
                 'unique' => true,
                 'null' => false
             ],
@@ -156,6 +161,10 @@ class CreateDatabase extends Migration
                 'type' => 'VARCHAR',
                 'constraint' => 36, # Number of chars in uuid,
                 'null' => true
+            ],
+            'model_params' => [
+                'type' => 'JSON',
+                'null' => false
             ],
             'comments' => [
                 'type' => 'TEXT',

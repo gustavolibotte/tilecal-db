@@ -12,9 +12,14 @@ class BaseSeeder extends Seeder
         return $isDelete;
     }
 
+    protected function readFile($filepath){
+        $fullpath = ROOTPATH . 'app/Database/Seeds/seed_data/' . $filepath;
+        $filedata = file_get_contents($fullpath);
+        return $filedata;
+    }
+
     protected function readJSON($filepath){
-        $fullpath = ROOTPATH . '/app/Database/Seeds/seed_data/' . $filepath;
-        $jsonString = file_get_contents($fullpath);
+        $jsonString = $this->readFile($filepath);
         $jsonData = json_decode($jsonString, true);
         return $jsonData;
     }

@@ -12,5 +12,7 @@ class Location extends Entity
         "deletedAt" => "deleted_at"
     ];
     protected $dates   = ['created_at', 'updated_at', 'deleted_at'];
-    protected $casts   = [];
+    protected $casts   = [
+        'id' => 'integer'
+    ];
 }

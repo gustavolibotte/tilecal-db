@@ -5,11 +5,14 @@ namespace App\Database\Seeds;
 class SeedDatabase extends BaseSeeder
 {
     public function run()
-    {
+    {   
+        helper('random');
         $this->seedModels();
         $this->seedStatuses();
         $this->seedLocations();
         $this->seedFiles();
+        $this->seedEquipments();
+        $this->seedEquipments2Files();
     }
 
     public function seedModels(){
@@ -31,7 +34,7 @@ class SeedDatabase extends BaseSeeder
     }
 
     public function seedLocations(){
-        $jsonData = $this->readJSON('location.json');
+        $jsonData = $this->readJSON('locations.json');
         $locationModel = new \App\Models\LocationModel(isMigration: true);
         foreach ($jsonData as $row){
             $location = new \App\Entities\Location($row);
@@ -41,9 +44,11 @@ class SeedDatabase extends BaseSeeder
 
     public function seedFiles(){
         $jsonData = $this->readJSON('files.json');
+        // d($jsonData);
         foreach ($jsonData as $fileData){
-            $fileData['filedata'] = file_get_contents(ROOTPATH . $fileData['filedata']);
+            $fileData['filedata'] = $this->readFile($fileData['filedata']);
             $file = new \App\Entities\File($fileData);
+            // d($file->name);
             $fileModel = new \App\Models\FileModel(isMigration: true);
             $fileModel->insert($file);
             if (str_starts_with($fileData['name'], 'deleted')){
@@ -72,20 +77,38 @@ class SeedDatabase extends BaseSeeder
             "type" => 'R11187'
         ];
 
-        helper('random');
+        $i = 0;
         foreach ($jsonData as $row) {
             $equipment = new \App\Entities\Equipment($row);
-            $model = choice($models);
-            $equipment->modelId = $model->id;
-            $location = choice($locations);
-            $equipment->locationId = $location->id;
-            $status = choice($statuses);
-            $equipment->statusId = $status->id;
-            $equipment->modelParams = $randomModelParams;
+            $model = random_choice($models);
+            $equipment->model_id = $model->id;
+            $location = random_choice($locations);
+            $equipment->location_id = $location->id;
+            $status = random_choice($statuses);
+            $equipment->status_id = $status->id;
+            $equipment->model_params = $randomModelParams;
             $equipmentModel->insert($equipment);
             if ($this->probDecision(0.03)){
                 $equipmentModel->delete($equipment->id);
             }
+        }
+    }
+
+    public function seedEquipments2Files(){
+        $equipmentModel = new \App\Models\EquipmentModel(isMigration: true);
+        $equipments = $equipmentModel->findAll();
+        $fileModel = new \App\Models\FileModel(isMigration: true);
+        $files = $fileModel->findAll();
+
+        $equipments2FileModel = new \App\Models\Equipment2FileModel(isMigration: true);
+        foreach ($equipments as $equipment){
+            $file = random_choice($files);
+            $data = [
+                'equipment_id' => $equipment->id,
+                'file_id' => $file->id
+            ];
+            $equipment2File = new \App\Entities\Equipment2File($data);
+            $equipments2FileModel->insert($equipment2File);
         }
     }
 
