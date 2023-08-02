@@ -6,25 +6,20 @@ use App\Controllers\BaseController;
 use App\Models\Equipment2FileModel;
 use App\Models\EquipmentModel;
 use App\Models\FileModel;
-use App\Models\EquipmentHistModel;
-use App\Models\Equipment2FileHistModel;
-use App\Entities\OperationLog;
 
 class Equipments extends BaseController
 {   
     public function index($modelName=null, $searchDeleted=false)
     {   
         $equipmentModel = new EquipmentModel();
-        $headerData['pageTitle'] = 'Equipment Index';
         if (is_null($modelName)){
             $indexData['equipments'] = $equipmentModel->getEquipment(searchDeleted: $searchDeleted);
         }
         else{
             $indexData['equipments'] = $equipmentModel->getEquipmentsWhereModel($modelName, searchDeleted: $searchDeleted);
         }
-        return view('templates/header', $headerData)
-              .view('equipment/index', $indexData)
-              .view('templates/footer');
+        $indexData['pageTitle'] = 'Equipment Index';
+        return view('equipment/index', $indexData);
     }
 
     public function deletedIndex(){
@@ -36,30 +31,16 @@ class Equipments extends BaseController
               .view('templates/footer');
     }
 
-    public function view($id){
-        $viewData = $this->getViewData($id);
-        $headerData['pageTitle'] = sprintf('Equipment %s', $id);
-        return view('templates/header', $headerData)
-              .view('equipment/view', $viewData)
-              .view('templates/footer');
-    }
-
-    public function getRelatedEquipments($equipmentID){
+    public function view($equipmentId){
         $equipmentModel = new EquipmentModel();
-        $relatedEquipments = $equipmentModel->getSideTable(30);
-        return $relatedEquipments;
-    }
-
-    public function getViewData($equipmentId){
-
-        $viewData['relatedEquipments'] = $this->getRelatedEquipments($equipmentId);
-        $equipmentModel = new EquipmentModel();
+        $viewData['relatedEquipments'] = $equipmentModel->getRelatedEquipments($equipmentId);
         $viewData['equipmentInfo'] = $equipmentModel->getEquipment($equipmentId);
         $fileModel = new FileModel();
         $viewData['files'] = $fileModel->getBindedFilesInfo($equipmentId);
         $histModel = new \App\Models\HistModel();
         $viewData["equipmentHist"] = $histModel->getEquipmentHist($equipmentId);
-        return $viewData;
+
+        return view('equipment/view', $viewData);
     }
 
     public function getEquipmentInputs(
@@ -169,9 +150,9 @@ class Equipments extends BaseController
                                  $pageTitle,
                                  $equipmentInputs,
                                  $validationErrors=null){
-        
+        $equipmentModel = new EquipmentModel();
         $inputData['enableFileLink'] = false;
-        $inputData['relatedEquipments'] = $this->getRelatedEquipments($equipmentID);
+        $inputData['relatedEquipments'] = $equipmentModel->getRelatedEquipments($equipmentID);
         $inputData['model'] = $model;
         $inputData["validationErrors"] = $validationErrors;
         $inputData["postUrl"] = $postUrl;

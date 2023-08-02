@@ -75,8 +75,7 @@ class EquipmentModel extends LogModel
         parent::initialize();
     }
 
-    public function getEquipment($id=null, $searchDeleted=false){
-        $id = (int)$id;
+    public function getEquipment($id=null, $searchDeleted=false, $limit=null){
         $query = $this->select($this->baseJoinedColumns)
                       ->join('models', 'equipments.model_id = models.id')
                       ->join('locations', 'equipments.location_id = locations.id')
@@ -85,7 +84,7 @@ class EquipmentModel extends LogModel
                       ->join('models parent_models', 'parents.model_id = parent_models.id');
         if (is_null($id)){
             $query = $this->searchDeleted($query, $searchDeleted);
-            $result = $query->findAll();
+            $result = ($limit)? $query->findAll($limit): $query->findAll();
         }
         else{
             $result = $query->withDeleted()->find($id);
@@ -114,6 +113,11 @@ class EquipmentModel extends LogModel
             $result = $query->findAll();
         }
         return $result;
+    }
+
+    public function getRelatedEquipments($equipmentId){
+        $relatedEquipments = $this->getEquipment(limit:30);
+        return $relatedEquipments;
     }
     /**
      * Returns all the equipments for a specific model name

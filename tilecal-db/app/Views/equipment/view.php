@@ -3,7 +3,7 @@
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title> Equipment <? echo $equipmentInfo->id?> </title>
+  <title> Equipment <? echo $equipmentInfo->barcode?> </title>
   <link href="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/b-2.3.6/datatables.min.css" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css" integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e" crossorigin="anonymous">
@@ -11,11 +11,13 @@
   <link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/css/view-style.css'); ?>">
 </head>
 
+<?= view_cell('HeaderCell') ?>
+
 <body>
 <div class="container mt-4 mb-5">
   <div class="row">
     <div class="jumbotron text-left">
-      <h1> Equipment ID: <? echo $equipmentInfo->id?></h1>
+      <h1> Equipment: <? echo $equipmentInfo->barcode?></h1>
     </div>
   </div>
   <div class="row">
@@ -24,7 +26,7 @@
       <table class="table table-bordered" id="equipments-side-table">
         <thead>
           <tr>
-            <th>ID</th>
+            <th>Barcode</th>
             <th>Model</th>
           </tr>
         </thead>
@@ -32,7 +34,7 @@
           <?php if($relatedEquipments): ?>
           <?php foreach($relatedEquipments as $equipment): ?>
             <tr>
-              <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->id; ?></a></td>
+              <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->barcode; ?></a></td>
               <td><? echo $equipment->modelLabel; ?></td>
             </tr>
           <?php endforeach; ?>
@@ -68,7 +70,7 @@
                     <li class="list-group-item"><b>Model</b>: <? echo $equipmentInfo->modelLabel?> </li>
                     <li class="list-group-item"><b>Location</b>: <? echo $equipmentInfo->location?> </li>
                     <li class="list-group-item"><b>Status</b>: <? echo $equipmentInfo->status?> </li>
-                    <li class="list-group-item"><b>Parent</b> ID: <? echo $equipmentInfo->parentID?></li>
+                    <li class="list-group-item"><b>Parent ID</b>: <? echo $equipmentInfo->parentID?></li>
                     <li class="list-group-item"><b>Serial</b>: <? echo $equipmentInfo->serial?> </li>
                     <li class="list-group-item"><b>Deleted</b>: <?php if($equipmentInfo->deletedAt): ?> <? echo $equipmentInfo->deletedAt?> <?php else: ?> No <?php endif; ?></li> 
                     <li class="list-group-item"><b>Comments</b>: <? echo $equipmentInfo->comments?></li> 
@@ -83,7 +85,6 @@
                     </div>
                   </div>
                   <?php if($equipmentInfo->modelParams): ?>
-                    <!-- <text><? echo print_r($equipmentInfo->modelParams); ?></text> -->
                     <ul class="list-group mt-2">
                       <?php foreach($equipmentInfo->modelParams as $name=>$value): ?>
                         <li class="list-group-item"><b><? echo ucwords(str_replace('_', ' ', $name)); ?></b>: <? echo $value; ?> </li>
@@ -148,4 +149,7 @@
 <!-- App JS modules -->
 <script type="text/javascript" src="<?=base_url('assets/js/equipment/view.js')?>" ></script>
 </body>
+
+<?= view_cell('FooterCell') ?>
+
 </html>

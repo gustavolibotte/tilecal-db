@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title><? echo $pageTitle ?></title>
@@ -8,7 +8,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"/>
 </head>
 
-<?= view_cell('HeaderCell') ?>
+<?= $this->include('layouts/header') ?>
 
 <body>
   <?= $this->renderSection('content') ?>
@@ -23,8 +23,6 @@
 
 </body>
 
-
-
-<?= view_cell('FooterCell') ?>
+<?= $this->include('layouts/footer') ?>
 
 </html>
