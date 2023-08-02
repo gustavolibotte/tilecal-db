@@ -51,11 +51,9 @@ class SeedDatabase extends BaseSeeder
     public function seedFiles(){
         echo "Seeding Files\n";
         $jsonData = $this->readJSON('files.json');
-        // d($jsonData);
         foreach ($jsonData as $fileData){
             $fileData['filedata'] = $this->readFile($fileData['filedata']);
             $file = new \App\Entities\File($fileData);
-            // d($file->name);
             $fileModel = new \App\Models\FileModel(isMigration: true);
             $fileModel->insert($file);
             if (str_starts_with($fileData['name'], 'deleted')){

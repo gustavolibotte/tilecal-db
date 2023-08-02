@@ -12,9 +12,11 @@ class OperationLog extends Entity
     ];
     protected $dates   = ['created_at'];
     protected $casts   = [
-         "changes" => "json",
+         "changes" => "json-array",
          "record_id" => "integer"
     ];
+
+    protected $msgIgnore = ['id', 'filedata'];
 
     protected function getMessage(){
         if ($this->isInsert()){
@@ -51,10 +53,12 @@ class OperationLog extends Entity
 
     protected function insertMessage(){
         $msg = $this->getMessageStart();
-        $msg .= sprintf('<b>%s</b> created entry with ID %s with values:', $this->user, $this->recordId);
+        $msg .= sprintf('<b>%s</b> created this entry with values:', $this->user);
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
-            $msg .= sprintf('<li> <b>%s</b> - %s </li>', $name, $value);
+            if (!in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s </li>', $name, $value);
+            }
         }
         $msg .= '</ul>';
         return $msg;
@@ -66,10 +70,13 @@ class OperationLog extends Entity
             $msg .= sprintf('<b>%s</b> submited update with no changes', $this->user,);
             return $msg;
         }
-        $msg .= sprintf('<b>%s</b> updated entry with ID <b>%s</b> with values:', $this->user, $this->recordId);
+        $msg .= sprintf('<b>%s</b> updated this entry with values:', $this->user);
         $msg .= '<ul>';
+        sort($this->changes);
         foreach ($this->changes as $name=>$value){
-            $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', $name, $value->old, $value->new);
+            if (!in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', $name, $value->old, $value->new);
+            }
         }
         $msg .= '</ul>';
         return $msg;
@@ -77,11 +84,15 @@ class OperationLog extends Entity
 
     protected function deleteMessage(){
         $msg = $this->getMessageStart();
-        $msg .= sprintf('<b>%s</b> deleted entry with ID <b>%s</b>', $this->user, $this->recordID);
+        $msg .= sprintf('<b>%s</b> deleted this entry', $this->user);
         return $msg;
     }
 
-    static function cmp_obj($a, $b){
+    static function orderByCreation($a, $b){
         return $a->createdAt <=> $b->createdAt;
+    }
+
+    static function orderByCreationReverse($a, $b){
+        return $b->createdAt <=> $a->createdAt;
     }
 }

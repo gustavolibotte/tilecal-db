@@ -76,13 +76,13 @@ class EquipmentModel extends LogModel
     }
 
     public function getEquipment($id=null, $searchDeleted=false){
+        $id = (int)$id;
         $query = $this->select($this->baseJoinedColumns)
                       ->join('models', 'equipments.model_id = models.id')
                       ->join('locations', 'equipments.location_id = locations.id')
                       ->join('statuses', 'equipments.status_id = statuses.id')
                       ->join('equipments parents', 'equipments.parent_id = parents.id')
                       ->join('models parent_models', 'parents.model_id = parent_models.id');
-        
         if (is_null($id)){
             $query = $this->searchDeleted($query, $searchDeleted);
             $result = $query->findAll();
@@ -90,7 +90,6 @@ class EquipmentModel extends LogModel
         else{
             $result = $query->withDeleted()->find($id);
         }
-
         return $result;
     }
 
@@ -204,7 +203,6 @@ class EquipmentModel extends LogModel
                 $changes[$name] = $value;
             }
         }
-        // d($insertInfo);
         $insertLog = new OperationLog([
             "record_id" => $insertInfo["id"],
             "action" => "insert",

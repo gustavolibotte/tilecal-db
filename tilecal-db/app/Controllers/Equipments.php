@@ -50,29 +50,16 @@ class Equipments extends BaseController
         return $relatedEquipments;
     }
 
-    public function getViewData($id){
+    public function getViewData($equipmentId){
 
-        $viewData['relatedEquipments'] = $this->getRelatedEquipments($id);
+        $viewData['relatedEquipments'] = $this->getRelatedEquipments($equipmentId);
         $equipmentModel = new EquipmentModel();
-        $viewData['equipmentInfo'] = $equipmentModel->getEquipment($id);
-        $viewData["equipmentHist"] = array_reverse($this->getEquipmentHist($id));
+        $viewData['equipmentInfo'] = $equipmentModel->getEquipment($equipmentId);
         $fileModel = new FileModel();
-        $viewData['files'] = $fileModel->getBindedFilesInfo($id);
-
+        $viewData['files'] = $fileModel->getBindedFilesInfo($equipmentId);
+        $histModel = new \App\Models\HistModel();
+        $viewData["equipmentHist"] = $histModel->getEquipmentHist($equipmentId);
         return $viewData;
-    }
-
-    public function getEquipmentHist($equipmentId){
-        $equipmentHistmodel = new EquipmentHistModel();
-        $equipmentHist = $equipmentHistmodel->where(sprintf('record_id = %s', $equipmentId))
-                                            ->findAll();
-        $equipment2FileHistModel = new Equipment2FileHistModel();
-        $fileLinkHist = $equipment2FileHistModel
-            ->where(sprintf('JSON_EXTRACT(changes, "$.equipment_id") = %s', $equipmentId))
-            ->findAll();
-        $hist = array_merge($equipmentHist, $fileLinkHist);
-        usort($hist, [OperationLog::class, "cmp_obj"]);
-        return $hist;
     }
 
     public function getEquipmentInputs(
