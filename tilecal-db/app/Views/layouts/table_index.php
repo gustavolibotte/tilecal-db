@@ -11,7 +11,9 @@
 <?= $this->include('layouts/header') ?>
 
 <body>
-  <?= $this->renderSection('content') ?>
+  <div class="container mt-4">
+    <?= $this->renderSection('content') ?>
+  </div>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
