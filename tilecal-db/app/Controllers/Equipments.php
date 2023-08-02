@@ -31,14 +31,17 @@ class Equipments extends BaseController
 
     public function view($equipmentId){
         $equipmentModel = new EquipmentModel();
+        $equipmentInfo = $equipmentModel->getEquipment($equipmentId);
         $viewData['relatedEquipments'] = $equipmentModel->getRelatedEquipments($equipmentId);
-        $viewData['equipmentInfo'] = $equipmentModel->getEquipment($equipmentId);
+        $viewData['equipmentInfo'] = $equipmentInfo;
         $fileModel = new FileModel();
         $viewData['files'] = $fileModel->getBindedFilesInfo($equipmentId);
         $histModel = new \App\Models\HistModel();
         $viewData["equipmentHist"] = $histModel->getEquipmentHist($equipmentId);
+        $viewData['viewHeader'] = sprintf('Equipment: %s', $equipmentInfo->barcode);
+        $viewData['pageTitle'] = sprintf('Equipment %s', $equipmentInfo->barcode);
 
-        return view('equipment/view', $viewData);
+        return view('equipment/new_view', $viewData);
     }
 
     public function getEquipmentInputs(

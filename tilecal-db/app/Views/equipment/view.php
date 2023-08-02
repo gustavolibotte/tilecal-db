@@ -11,7 +11,7 @@
   <link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/css/view-style.css'); ?>">
 </head>
 
-<?= view_cell('HeaderCell') ?>
+<?= $this->include('layouts/header') ?>
 
 <body>
 <div class="container mt-4 mb-5">
@@ -150,6 +150,6 @@
 <script type="text/javascript" src="<?=base_url('assets/js/equipment/view.js')?>" ></script>
 </body>
 
-<?= view_cell('FooterCell') ?>
+<?= $this->include('layouts/footer') ?>
 
 </html>

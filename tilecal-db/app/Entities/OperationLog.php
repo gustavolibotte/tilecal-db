@@ -25,10 +25,8 @@ class OperationLog extends Entity
             $this->action, snake2CamelCase($this->table)
         );
         if (method_exists($this, $msgBuilder)){
-            echo "Found special message builder ";
             return $this->$msgBuilder();
         } else{
-            echo "Default Builder ";
             $defaultMsgBuilder = sprintf(
                 'default%sMessage',
                 ucfirst($this->action)
