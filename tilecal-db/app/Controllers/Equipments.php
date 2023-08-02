@@ -47,6 +47,21 @@ class Equipments extends BaseController
 
     public function register($modelName='pmt'){
         helper('form');
+        helper('string');
+
+        $formClass = sprintf('\App\Library\Forms\%sForm', snake2LowerCamelCase($modelName));
+
+        if ($this->request->is('post')){
+            echo "validating";
+            $form = new $formClass($this->request->getPost());
+            if ($form->validate()){
+                $form->clear();
+            };
+        } else{
+            echo "new form";
+            $form = new $formClass();
+        }
+
         $modelModel = new ModelModel();
         $model = $modelModel->where(sprintf("name = '%s'", $modelName))->first();
         $registerData['model'] = $model;
@@ -55,8 +70,9 @@ class Equipments extends BaseController
         $registerData['viewHeader'] = $title;
         $equipmentModel = new EquipmentModel();
         $registerData['equipments'] = $equipmentModel->getEquipment(limit:30);
-        $registerData['equipmentForm'] = new \App\Library\Forms\EquipmentForm(['model_label' => $model->label]);
+        $registerData['equipmentForm'] = $form;
         $registerData['enableFileLink'] = false;
+
         return view('equipment/register', $registerData);
     }
 

@@ -7,9 +7,8 @@ class EquipmentForm extends Form{
     public $validationRules;
     public $fields;
 
-    public function __construct($formValues=null)
+    public function initialize()
     {
-        parent::__construct($formValues);
         $this->fields = [
             'barcode' => [
                 'id' => 'barcode',
@@ -55,7 +54,7 @@ class EquipmentForm extends Form{
                 ]
             ],
             'comments' => [
-                'id' => 'status',
+                'id' => 'comments',
                 'required' => false,
                 'fieldType' => 'textarea',
                 'fieldParams' => [
@@ -68,13 +67,13 @@ class EquipmentForm extends Form{
             "barcode" => [
                 "rules" => [
                     "required",
-                    "alpha_numeic",
+                    "alpha_numeric",
                     "exact_length[7]",
                     "is_unique[equipments.barcode]"
                 ],
                 "errors" => [
                     "required" => "You must supply a barcode for the equipment.",
-                    "alpha_numeic" => "The barcode must be alphanumeric.",
+                    "alpha_numeric" => "The barcode must be alphanumeric.",
                     "exact_length" => "The barcode must have 7 characthers.",
                     "is_unique" => "This barcode already exists."
                 ]

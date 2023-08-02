@@ -18,6 +18,4 @@
 
 </body>
 
-<?= $this->include('layouts/footer') ?>
-
 </html>

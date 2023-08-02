@@ -8,21 +8,24 @@ abstract class Form{
     public $validator;
     public $fields;
     public $validationRules;
-    protected $calledValidate = false;
+    public $isValid = false;
 
     public function __construct($formValues=null)
     {
         $this->formValues = (is_null($formValues))? []: $formValues;
         $this->validator = \Config\Services::validation();
+        $this->initialize();
+        $this->validator->setRules($this->validationRules);
     }
 
+    protected function initialize(){}
+
     public function validate(){
-        $this->calledValidate = true;
-        return $this->validator->run($this->formValues);
+        $this->isValid = $this->validator->run($this->formValues);
+        return $this->isValid;
     }
 
     public function getErrors(){
-        $this->validator->setRules($this->validationRules);
         return $this->validator->getErrors();
     }
 
@@ -30,11 +33,19 @@ abstract class Form{
         helper('app_form');
         helper('array');
         $str = '';
-        if ($this->calledValidate){
-            foreach ($this->getErrors() as $errorMsg){
-                $str .= form_alert($errorMsg);
+        if (!is_null($this->isValid)){
+            $str .= '<div>';
+            if ($this->isValid){
+                $alert = form_alert('Register success', 'success');
+                $str .= $alert;
+            } else{
+                foreach ($this->getErrors() as $errorMsg){
+                    $alert = form_alert($errorMsg, 'danger');
+                    $str .= $alert;
+                }
             }
         }
+        
         foreach ($this->fields as $name=>$field) {
             $str .= form_field(
                 dot_array_search('id', $field),
@@ -46,5 +57,9 @@ abstract class Form{
                 dot_array_search('label', $field));
         }
         return $str;
+    }
+
+    public function clear(){
+        $this->formValues = [];
     }
 }

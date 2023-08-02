@@ -26,9 +26,10 @@ function form_help($id, $helpText){
     return $helpStr;
 }
 
-function form_alert($message){
-    $alert = '<div class="alert alert-primary" role="alert">';
-    $alert .= $message;
+function form_alert(string $message, string $type='danger'){
+    $alert = sprintf('<div class="alert alert-%s alert-dismissible" role="alert">', $type);
+    $alert .= sprintf('<div>%s</div>', $message);
+    $alert .= '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
     $alert .= '</div>';
     return $alert;
 }
