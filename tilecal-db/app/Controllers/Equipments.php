@@ -52,13 +52,11 @@ class Equipments extends BaseController
         $formClass = sprintf('\App\Library\Forms\%sForm', snake2LowerCamelCase($modelName));
 
         if ($this->request->is('post')){
-            echo "validating";
             $form = new $formClass($this->request->getPost());
             if ($form->validate()){
                 $form->clear();
             };
         } else{
-            echo "new form";
             $form = new $formClass();
         }
 
