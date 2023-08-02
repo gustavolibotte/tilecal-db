@@ -19,15 +19,21 @@ class OperationLog extends Entity
     protected $msgIgnore = ['id', 'filedata'];
 
     protected function getMessage(){
-        if ($this->isInsert()){
-            return $this->insertMessage();
-        }elseif ($this->isUpdate()){
-            return $this->updateMessage();
-        }elseif ($this->isDelete()){
-            $msg = $this->deleteMessage();
-            return $this->makeDanger($msg);
-        }else {
-            return null;
+        helper('string');
+        $msgBuilder = sprintf(
+            '%s%sMessage',
+            $this->action, snake2CamelCase($this->table)
+        );
+        if (method_exists($this, $msgBuilder)){
+            echo "Found special message builder ";
+            return $this->$msgBuilder();
+        } else{
+            echo "Default Builder ";
+            $defaultMsgBuilder = sprintf(
+                'default%sMessage',
+                ucfirst($this->action)
+            );
+            return $this->$defaultMsgBuilder();
         }
     }
     public function isInsert(){
@@ -47,13 +53,71 @@ class OperationLog extends Entity
     }
 
     protected function getMessageStart(){
-        $msg = sprintf('<b>%s</b> - ', $this->createdAt);
+        $msg = sprintf('<b>%s</b> - <b>%s</b> - ', $this->createdAt, $this->user);
         return $msg;
     }
 
-    protected function insertMessage(){
+    protected function insertEquipmentsToFilesMessage(){
         $msg = $this->getMessageStart();
-        $msg .= sprintf('<b>%s</b> created this entry with values:', $this->user);
+        $fileLink = sprintf(
+            '<a type="button" class="link-primary" href="%s">file</a>',
+            base_url(sprintf('files/view/%s', $this->changes['file_id']))
+        );
+        $equipmentLink = sprintf(
+            '<a type="button" class="link-primary" href="%s">equipment</a>',
+            base_url(sprintf('equipments/view/%s', $this->changes['equipment_id']))
+        );
+        $msg .= sprintf('Link between %s and %s', $fileLink, $equipmentLink);
+        return $msg;
+    }
+
+    protected function deleteEquipmentsToFilesMessage(){
+        $msg = $this->getMessageStart();
+        $fileLink = sprintf(
+            '<a type="button" class="link-primary" href="%s">file</a>',
+            base_url(sprintf('files/view/%s', $this->changes['file_id']))
+        );
+        $equipmentLink = sprintf(
+            '<a type="button" class="link-primary" href="%s">equipment</a>',
+            base_url(sprintf('equipments/view/%s', $this->changes['equipment_id']))
+        );
+        $msg .= sprintf('Link between %s and %s removed', $fileLink, $equipmentLink);
+        return $msg;
+    }
+
+    protected function defaultInsertMessage(){
+        $msg = $this->getMessageStart();
+        $msg .= 'Entry created with values:';
+        $msg .= '<ul>';
+        foreach ($this->changes as $name=>$value){
+            if (!in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s </li>', ucfirst($name), $value);
+            }
+        }
+        $msg .= '</ul>';
+        return $msg;
+    }
+
+    protected function defaultUpdateMessage(){
+        $msg = $this->getMessageStart();
+        if (is_null($this->changes)){
+            $msg .= 'submited update with no changes';
+            return $msg;
+        }
+        $msg .= 'Entry updated with values:';
+        $msg .= '<ul>';
+        foreach ($this->changes as $name=>$value){
+            if (!in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', ucfirst($name), $value->old, $value->new);
+            }
+        }
+        $msg .= '</ul>';
+        return $msg;
+    }
+
+    protected function defaultDeleteMessage(){
+        $msg = $this->getMessageStart();
+        $msg .= 'Entry deleted with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
             if (!in_array($name, $this->msgIgnore)){
@@ -61,30 +125,6 @@ class OperationLog extends Entity
             }
         }
         $msg .= '</ul>';
-        return $msg;
-    }
-
-    protected function updateMessage(){
-        $msg = $this->getMessageStart();
-        if (is_null($this->changes)){
-            $msg .= sprintf('<b>%s</b> submited update with no changes', $this->user,);
-            return $msg;
-        }
-        $msg .= sprintf('<b>%s</b> updated this entry with values:', $this->user);
-        $msg .= '<ul>';
-        sort($this->changes);
-        foreach ($this->changes as $name=>$value){
-            if (!in_array($name, $this->msgIgnore)){
-                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', $name, $value->old, $value->new);
-            }
-        }
-        $msg .= '</ul>';
-        return $msg;
-    }
-
-    protected function deleteMessage(){
-        $msg = $this->getMessageStart();
-        $msg .= sprintf('<b>%s</b> deleted this entry', $this->user);
         return $msg;
     }
 

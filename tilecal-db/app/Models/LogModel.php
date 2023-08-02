@@ -11,6 +11,7 @@ abstract class LogModel extends Model{
     protected bool $isMigration = false;
     protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at'];
     protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at'];
+    protected $deleteLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'filedata'];
 
     public function __construct(bool $isMigration=false)
     {   
@@ -84,15 +85,22 @@ abstract class LogModel extends Model{
     }
 
     protected function logDelete($deleteInfo){
-        helper('authentication');
-        $deleteLog = new OperationLog([
-            "record_id" => $deleteInfo["id"],
-            "action" => "delete",
-            "changes" => null, // No need to register changes since the app uses soft delete
-            "table" => $this->table
-        ]);
         $histModel = new HistModel($this->isMigration);
-        $histModel->insert($deleteLog);
+        foreach ($this->find($deleteInfo['id']) as $entity){
+            $changes = array();
+            foreach ($entity->toRawArray() as $name=>$value){
+                if (!in_array($name, $this->deleteLogIgnore)){
+                    $changes[$name] = $value;
+                }
+            }
+            $deleteLog = new OperationLog([
+                "record_id" => $entity->id,
+                "action" => "delete",
+                "changes" => $changes,
+                "table" => $this->table
+            ]);
+            $histModel->insert($deleteLog);
+        }
 
         return $deleteInfo;
     }
