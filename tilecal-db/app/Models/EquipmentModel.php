@@ -13,7 +13,16 @@ class EquipmentModel extends LogModel
     protected $returnType       = \App\Entities\Equipment::class;
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['barcode', 'model_id', 'location_id', 'status_id', 'parent_id', 'comments', 'serial', 'model_params'];
+    protected $allowedFields    = [
+        'barcode',
+        'model_id',
+        'location_id',
+        'status_id',
+        'parent_id',
+        'comments',
+        'serial',
+        'model_params'
+    ];
 
     // Dates
     protected $useTimestamps = true;
@@ -54,7 +63,7 @@ class EquipmentModel extends LogModel
         $this->allowedFields = array_merge($this->allowedFields, $this->utilityFields, $this->pmtFields);
 
         $this->baseJoinedColumns = 'equipments.id, ';
-        $this->baseJoinedColumns = 'equipments.barcode, ';
+        $this->baseJoinedColumns .= 'equipments.barcode, ';
         $this->baseJoinedColumns .= 'models.label as model_label, ';
         $this->baseJoinedColumns .= 'models.name as model_name, ';
         $this->baseJoinedColumns .= 'locations.name as location, ';

@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/table_index') ?>
+<?= $this->extend('layouts/table') ?>
 
 <?= $this->section('content') ?>
   <h1>Equipment Index</h1>
