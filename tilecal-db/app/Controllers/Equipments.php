@@ -23,12 +23,10 @@ class Equipments extends BaseController
     }
 
     public function deletedIndex(){
-        $headerData = $this->getHeaderData(pageTitle: 'Deleted Equipment Index');
         $equipmentModel = new EquipmentModel();
         $indexData['equipments'] = $equipmentModel->getEquipment(searchDeleted: true);
-        return view('templates/header', $headerData)
-              .view('equipment/index', $indexData)
-              .view('templates/footer');
+        $indexData['pageTitle'] = 'Deleted Equipment Index';
+        return view('equipment/index', $indexData);
     }
 
     public function view($equipmentId){
