@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class LocationModel extends LogModel
+class LocationModel extends DimModel
 {
     protected $DBGroup          = 'default';
     protected $table            = 'locations';
