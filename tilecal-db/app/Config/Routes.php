@@ -41,7 +41,7 @@ $routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1');
 
 // Equipment register views
 // $routes->get('equipments/fenics/register', 'Fenics::registerGet');
-$routes->get('equipments/pmt/register', 'PMT::registerGet');
+$routes->get('equipments/pmt/register', 'Equipments::register');
 $routes->post('equipments/pmt/register', 'PMT::registerPost');
 $routes->get('equipments/edit/(:segment)/(:alphanum)', 'PMT::edit/$1/$2');
 $routes->post('equipments/edit/(:segment)/(:alphanum)', 'PMT::edit/$1/$2');

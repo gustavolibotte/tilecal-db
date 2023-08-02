@@ -7,15 +7,16 @@ class EquipmentForm extends Form{
     public $validationRules;
     public $fields;
 
-    protected function initalize()
+    public function __construct($formValues=null)
     {
+        parent::__construct($formValues);
         $this->fields = [
             'barcode' => [
                 'id' => 'barcode',
                 'required' => true,
                 'helpText' => "Equipment's barcode value",
                 'fieldType' => 'input',
-                'fieldParam' => [
+                'fieldParams' => [
                     'maxlength' => 7,
                     'placeholder' => 'XXXXXXX'
                 ]
@@ -25,7 +26,7 @@ class EquipmentForm extends Form{
                 'label' => 'Model',
                 'required' => true,
                 'fieldType' => 'input',
-                'fieldParam' => [
+                'fieldParams' => [
                     'readOnly' => null
                 ]
             ],
@@ -33,7 +34,7 @@ class EquipmentForm extends Form{
                 'id' => 'location',
                 'required' => true,
                 'fieldType' => 'dropdown',
-                'fieldParam' => [
+                'fieldParams' => [
                     'options' => (new \App\Models\LocationModel())->getFormDropdownOptions()
                 ]
             ],
@@ -41,7 +42,7 @@ class EquipmentForm extends Form{
                 'id' => 'status',
                 'required' => true,
                 'fieldType' => 'dropdown',
-                'fieldParam' => [
+                'fieldParams' => [
                     'options' => (new \App\Models\StatusModel())->getFormDropdownOptions()
                 ]
             ],
@@ -49,7 +50,7 @@ class EquipmentForm extends Form{
                 'id' => 'serial',
                 'required' => false,
                 'fieldType' => 'input',
-                'fieldParam' => [
+                'fieldParams' => [
                     'maxlength' => 20
                 ]
             ],
@@ -57,8 +58,8 @@ class EquipmentForm extends Form{
                 'id' => 'status',
                 'required' => false,
                 'fieldType' => 'textarea',
-                'fieldParam' => [
-                    'maxlength' => 65535   //MySQL max text size
+                'fieldParams' => [
+                    'rows' => 3
                 ]
             ],
         ];
@@ -118,7 +119,7 @@ class EquipmentForm extends Form{
             ],
             "comments" => [
                 "rules" => [
-                    "max_length[65535]"
+                    "max_length[65535]" //MySQL max text size
                 ],
                 "errors" => [
                     "max_length" => "Comments max size is 65535 characthers",

@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\Equipment2FileModel;
 use App\Models\EquipmentModel;
 use App\Models\FileModel;
+use App\Models\ModelModel;
 
 class Equipments extends BaseController
 {   
@@ -42,6 +43,21 @@ class Equipments extends BaseController
         $viewData['pageTitle'] = sprintf('Equipment %s', $equipmentInfo->barcode);
 
         return view('equipment/view', $viewData);
+    }
+
+    public function register($modelName='pmt'){
+        helper('form');
+        $modelModel = new ModelModel();
+        $model = $modelModel->where(sprintf("name = '%s'", $modelName))->first();
+        $registerData['model'] = $model;
+        $title = sprintf('Register %s', $model->label);
+        $registerData['pageTitle'] = $title;
+        $registerData['viewHeader'] = $title;
+        $equipmentModel = new EquipmentModel();
+        $registerData['equipments'] = $equipmentModel->getEquipment(limit:30);
+        $registerData['equipmentForm'] = new \App\Library\Forms\EquipmentForm(['model_label' => $model->label]);
+        $registerData['enableFileLink'] = false;
+        return view('equipment/register', $registerData);
     }
 
     public function getEquipmentInputs(

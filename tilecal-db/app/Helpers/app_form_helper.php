@@ -13,7 +13,7 @@ function user_input_field($id, $value, $fieldType, $fieldParams){
     $fieldParams['id'] = $id;
     $fieldParams['name'] = $id;
     $fieldParams['value'] = $value;
-    $fieldParams['class'] = 'col-form-label';
+    $fieldParams['class'] = 'form-control';
     $inputStr = call_user_func(sprintf('form_%s', $fieldType), $fieldParams);
     return $inputStr;
 }
@@ -26,6 +26,13 @@ function form_help($id, $helpText){
     return $helpStr;
 }
 
+function form_alert($message){
+    $alert = '<div class="alert alert-primary" role="alert">';
+    $alert .= $message;
+    $alert .= '</div>';
+    return $alert;
+}
+
 function form_field(string $id,
                     string $fieldType,
                     array $fieldParams,
@@ -36,7 +43,7 @@ function form_field(string $id,
     helper('form');
     helper('string');
     if (is_null($label)){
-        $label = snake2Capitalized($label);
+        $label = snake2Capitalized($id);
     }
     if (is_null($helpText)){
         $helpText = "";
