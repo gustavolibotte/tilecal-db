@@ -15,38 +15,28 @@
     <table class="table table-bordered" id="equipments-table">
       <thead>
         <tr>
-          <th>ID</th>
+          <th>Barcode</th>
           <th>Model</th>
           <th>Location</th>
           <th>Status</th>
-          <th>Parent ID</th>
+          <th>Parent</th>
           <th>Comments</th>
           <th>Created at</th>
           <th>Updated at</th>
-          <th>Deleted</th>
         </tr>
       </thead>
       <tbody>
           <?php if($equipments): ?>
           <?php foreach($equipments as $equipment): ?>
           <tr>
-            <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->id; ?></a></td>
-            <td><?php echo $equipment->modelLabel; ?></td>
+            <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->barcode; ?></a></td>
+            <td><?php echo $equipment->model_label; ?></td>
             <td><?php echo $equipment->location; ?></td>
             <td><?php echo $equipment->status; ?></td>
-            <?php if (is_null($equipment->parentID)): ?>
-              <td><?php echo $equipment->parentID; ?></td>
-            <?php else: ?>
-              <td><a type="button" class="btn btn-secondary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->parentID)); ?>"><?php echo $equipment->parentID; ?></a></td>
-            <?php endif; ?>
+            <td><a type="button" class="btn btn-secondary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->parent_id)); ?>"><?php echo $equipment->parent_model_label; ?></a></td>
             <td><?php echo $equipment->comments; ?></td>
             <td><?php echo $equipment->createdAt; ?></td>
             <td><?php echo $equipment->updatedAt; ?></td>
-            <?php if (is_null($equipment->deletedAt)): ?>
-              <td>False</td>
-            <?php else: ?>
-              <td><?php echo $equipment->deletedAt; ?></td>
-            <?php endif; ?>
           </tr>
          <?php endforeach; ?>
          <?php endif; ?>

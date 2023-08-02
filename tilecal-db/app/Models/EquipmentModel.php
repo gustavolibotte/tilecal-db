@@ -55,10 +55,13 @@ class EquipmentModel extends LogModel
         $this->allowedFields = array_merge($this->allowedFields, $this->utilityFields, $this->pmtFields);
 
         $this->baseJoinedColumns = 'equipments.id, ';
-        $this->baseJoinedColumns .= 'models.formatted_name as model_label, ';
+        $this->baseJoinedColumns = 'equipments.barcode, ';
+        $this->baseJoinedColumns .= 'models.label as model_label, ';
         $this->baseJoinedColumns .= 'models.name as model_name, ';
-        $this->baseJoinedColumns .= 'equipments.location, ';
-        $this->baseJoinedColumns .= 'equipments.status, ';
+        $this->baseJoinedColumns .= 'locations.name as location, ';
+        $this->baseJoinedColumns .= 'statuses.name as status, ';
+        $this->baseJoinedColumns .= 'parent_models.label as parent_model_label, ';
+        $this->baseJoinedColumns .= 'parent_models.name as parent_model_name, ';
         $this->baseJoinedColumns .= 'equipments.parent_id, ';
         $this->baseJoinedColumns .= 'equipments.serial, ';
         $this->baseJoinedColumns .= 'equipments.comments, ';
@@ -68,27 +71,18 @@ class EquipmentModel extends LogModel
         $this->baseJoinedColumns .= 'equipments.deleted_at ';
 
         $this->selectSideTable = 'equipments.id, ';
-        $this->selectSideTable .= 'models.formatted_name as model_label ';
+        $this->selectSideTable .= 'models.label as model_label ';
 
         parent::initialize();
     }
 
-    public function getEquipmentRaw($id=null, $columns='*', $searchDeleted=false){
-        $query = $this->select($columns);
-        $query = $this->searchDeleted($query, $searchDeleted);
-
-        if (is_null($id)){
-            $result = $query->findAll();
-        }
-        else{
-            $result = $query->find($id);
-        }
-        return $result;
-    }
-
     public function getEquipment($id=null, $searchDeleted=false){
         $query = $this->select($this->baseJoinedColumns)
-                      ->join('models', 'equipments.model_id = models.id');
+                      ->join('models', 'equipments.model_id = models.id')
+                      ->join('locations', 'equipments.location_id = locations.id')
+                      ->join('statuses', 'equipments.status_id = statuses.id')
+                      ->join('equipments parents', 'equipments.parent_id = parents.id')
+                      ->join('models parent_models', 'parents.model_id = parent_models.id');
         
         if (is_null($id)){
             $query = $this->searchDeleted($query, $searchDeleted);
@@ -133,7 +127,11 @@ class EquipmentModel extends LogModel
     public function getEquipmentsWhereModel($modelName, $searchDeleted=false){
         $query = $this->select($this->baseJoinedColumns)
                       ->where(sprintf("models.name = '%s'", $modelName))
-                      ->join('models', 'equipments.model_id = models.id');
+                      ->join('models', 'equipments.model_id = models.id')
+                      ->join('locations', 'equipments.location_id = locations.id')
+                      ->join('statuses', 'equipments.status_id = statuses.id')
+                      ->join('equipments parents', 'equipments.parent_id = parents.id')
+                      ->join('models parent_models', 'parents.model_id = parent_models.id');
         $query = $this->searchDeleted($query, $searchDeleted);
         $result = $query->findAll();
         return $result;
