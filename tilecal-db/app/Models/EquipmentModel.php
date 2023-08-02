@@ -45,7 +45,6 @@ class EquipmentModel extends LogModel
     protected $generalFields    = ['created_at', 'updated_at', 'deleted_at'];
     protected $utilityFields    = ['model_name'];
     protected $pmtFields        = ['beta', 'nominal_hv', 'qe', 'type'];
-    protected $histModelClass = EquipmentHistModel::class;
     protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'model_params'];
     protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'model_params'];
 
@@ -205,8 +204,9 @@ class EquipmentModel extends LogModel
                 $changes[$name] = $value;
             }
         }
+        // d($insertInfo);
         $insertLog = new OperationLog([
-            "record_id" => $insertInfo["data"]["id"],
+            "record_id" => $insertInfo["id"],
             "action" => "insert",
             "changes" => $changes
         ]);

@@ -40,7 +40,6 @@ class ModelModel extends LogModel
     protected $afterDelete    = [];
 
     // Custom
-    protected $histModelClass = ModelHistModel::class;
 
     protected function getUpdateLog($updateInfo){
         $id = $updateInfo["id"][0];

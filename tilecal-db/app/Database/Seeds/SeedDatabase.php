@@ -16,33 +16,40 @@ class SeedDatabase extends BaseSeeder
     }
 
     public function seedModels(){
+        echo "Seeding Models\n";
         $jsonData = $this->readJSON('models.json');
         $modelModel = new \App\Models\ModelModel(isMigration: true);
         foreach ($jsonData as $row){
             $row["params"] = json_encode($row['params']);
             $modelModel->insert($row);
         }
+        echo "Seeded Models\n";
     }
 
     public function seedStatuses(){
+        echo "Seeding Statuses";
         $jsonData = $this->readJSON('statuses.json');
         $statusModel = new \App\Models\StatusModel(isMigration: true);
         foreach ($jsonData as $row){
             $status = new \App\Entities\Status($row);
             $statusModel->insert($status);
         }
+        echo "Seeded Models\n";
     }
 
     public function seedLocations(){
+        echo "Seeding Locations\n";
         $jsonData = $this->readJSON('locations.json');
         $locationModel = new \App\Models\LocationModel(isMigration: true);
         foreach ($jsonData as $row){
             $location = new \App\Entities\Location($row);
             $locationModel->insert($location);
         }
+        echo "Seeded Locations\n";
     }
 
     public function seedFiles(){
+        echo "Seeding Files\n";
         $jsonData = $this->readJSON('files.json');
         // d($jsonData);
         foreach ($jsonData as $fileData){
@@ -55,9 +62,11 @@ class SeedDatabase extends BaseSeeder
                 $fileModel->delete($file->id);
             }
         }
+        echo "Seeded Files\n";
     }
 
     public function seedEquipments(){
+        echo "Seeding Equipments\n";
         $modelModel = new \App\Models\ModelModel(isMigration: true);
         $models = $modelModel->findAll();
 
@@ -76,8 +85,6 @@ class SeedDatabase extends BaseSeeder
             "qe" => 123123123,
             "type" => 'R11187'
         ];
-
-        $i = 0;
         foreach ($jsonData as $row) {
             $equipment = new \App\Entities\Equipment($row);
             $model = random_choice($models);
@@ -92,9 +99,11 @@ class SeedDatabase extends BaseSeeder
                 $equipmentModel->delete($equipment->id);
             }
         }
+        echo "Seeded Equipments\n";
     }
 
     public function seedEquipments2Files(){
+        echo "Seeding Equipments2Files\n";
         $equipmentModel = new \App\Models\EquipmentModel(isMigration: true);
         $equipments = $equipmentModel->findAll();
         $fileModel = new \App\Models\FileModel(isMigration: true);
@@ -110,6 +119,7 @@ class SeedDatabase extends BaseSeeder
             $equipment2File = new \App\Entities\Equipment2File($data);
             $equipments2FileModel->insert($equipment2File);
         }
+        echo "Seeded Equipments2Files\n";
     }
 
 }

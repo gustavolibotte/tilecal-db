@@ -40,7 +40,6 @@ class FileModel extends LogModel
     protected $afterDelete    = [];
 
     // Custom
-    protected $histModelClass = FileHistModel::class;
     protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'filedata'];
     protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'filedata'];
 

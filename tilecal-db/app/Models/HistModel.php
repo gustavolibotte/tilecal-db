@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
-class HistModel extends Model
+class HistModel extends BaseModel
 {
     protected $DBGroup          = 'default';
     protected $table            = 'hist';
@@ -30,7 +28,7 @@ class HistModel extends Model
 
     // Callbacks
     protected $allowCallbacks = true;
-    protected $beforeInsert   = [];
+    protected $beforeInsert   = ['addUser'];
     protected $afterInsert    = [];
     protected $beforeUpdate   = [];
     protected $afterUpdate    = [];
@@ -39,18 +37,13 @@ class HistModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    // Custom
-    protected bool $isMigration = false;
-
-    public function __construct(bool $isMigration=false)
-    {   
-        parent::__construct();
-        $this->isMigration = $isMigration;
+    public function initialize()
+    {
+        helper('authentication');
     }
 
-    public function writeHist($data){
-        helper('authentication');
-        $data->user = ($this->isMigration)? 'root': getUser()->username;
-        $this->insert($data);
+    public function addUser($operationInfo){
+        $operationInfo['data']['user'] = ($this->isMigration)? 'root': getUser()->username;
+        return $operationInfo;
     }
 }

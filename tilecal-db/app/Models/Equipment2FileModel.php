@@ -38,5 +38,4 @@ class Equipment2FileModel extends LogModel
     protected $afterDelete    = [];
     
     // Custom
-    protected $histModelClass = Equipment2FileHistModel::class;
 }

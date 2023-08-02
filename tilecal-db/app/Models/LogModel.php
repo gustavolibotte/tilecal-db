@@ -7,7 +7,7 @@ use CodeIgniter\Model;
 
 abstract class LogModel extends Model{
 
-    protected $histModelClass;
+    protected $table;
     protected bool $isMigration = false;
     protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at'];
     protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at'];
@@ -19,24 +19,23 @@ abstract class LogModel extends Model{
     }
 
     protected function initialize(){
-        helper('auhtentication');
-        // $this->afterInsert[] = 'logInsert';
-        // $this->beforeUpdate[] = 'logUpdate';
-        // $this->beforeDelete[] = 'logDelete';
+        $this->afterInsert[] = 'logInsert';
+        $this->beforeUpdate[] = 'logUpdate';
+        $this->beforeDelete[] = 'logDelete';
     }
 
     protected function logInsert($insertInfo){
         $insertLog = $this->getInsertLog($insertInfo);
-        $insertLog->user = $this->getUsername();
-        $histModel = new $this->histModelClass();
+        $insertLog->table = $this->table;
+        $histModel = new HistModel($this->isMigration);
         $histModel->insert($insertLog);
         return $insertInfo;
     }
 
     protected function logUpdate($updateInfo){
         $updateLog = $this->getUpdateLog($updateInfo);
-        $updateLog->user = $this->getUsername();
-        $histModel = new $this->histModelClass();
+        $updateLog->table = $this->table;
+        $histModel = new HistModel($this->isMigration);
         $histModel->insert($updateLog);
         return $updateInfo;
     }
@@ -89,10 +88,10 @@ abstract class LogModel extends Model{
         $deleteLog = new OperationLog([
             "record_id" => $deleteInfo["id"],
             "action" => "delete",
-            "user" => $this->getUsername(),
-            "changes" => null // No need to register changes since the app uses soft delete
+            "changes" => null, // No need to register changes since the app uses soft delete
+            "table" => $this->table
         ]);
-        $histModel = new $this->histModelClass();
+        $histModel = new HistModel($this->isMigration);
         $histModel->insert($deleteLog);
 
         return $deleteInfo;
