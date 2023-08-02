@@ -1,4 +1,9 @@
-<?= $this->extend('layouts/table') ?>
+<?= $this->extend('layouts/base') ?>
+
+<?= $this->section('css') ?>
+  <link href="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/b-2.3.6/datatables.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet"/>
+<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
   <h1>Equipment Index</h1>
@@ -37,5 +42,10 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript') ?>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/b-2.3.6/datatables.min.js"></script>
+  <script src="https://cdn.datatables.net/plug-ins/1.13.4/features/scrollResize/dataTables.scrollResize.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <script type="text/javascript" src="<?=base_url('assets/js/equipment/index.js')?>" ></script> 
 <?= $this->endSection() ?>
