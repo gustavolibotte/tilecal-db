@@ -8,27 +8,45 @@ function div_wrap($divClass, $labelStr, $inputStr, $helpStr){
     return $wrapped;
 }
 
-function user_input_field($id, $inputInfo){
+function user_input_field($id, $value, $fieldType, $fieldParams){
     helper('form');
-    $inputStr = call_user_func(sprintf('form_%s', $inputInfo['formType']), $inputInfo['helperParams']);
+    $fieldParams['id'] = $id;
+    $fieldParams['name'] = $id;
+    $fieldParams['value'] = $value;
+    $fieldParams['class'] = 'col-form-label';
+    $inputStr = call_user_func(sprintf('form_%s', $fieldType), $fieldParams);
     return $inputStr;
 }
 
-function form_help($id, $helpInfo){
+function form_help($id, $helpText){
     $helpStr = sprintf(
         '<div id="%s-help" class="form-text"> %s </div>',
-        $id, $helpInfo['text']
+        $id, $helpText
     );
     return $helpStr;
 }
 
-function form_field($fieldInfo){
+function form_field(string $id,
+                    string $fieldType,
+                    array $fieldParams,
+                    mixed $value=null,
+                    bool $required=false,
+                    string $helpText=null,
+                    string $label=null){
     helper('form');
+    helper('string');
+    if (is_null($label)){
+        $label = snake2Capitalized($label);
+    }
+    if (is_null($helpText)){
+        $helpText = "";
+    }
+    $labelText = ($required)? $label . '*:': $label . ':';
     $fieldStr = div_wrap(
         'mb-3',
-        form_label($fieldInfo['labelInfo']['text'], $fieldInfo['id'], ['class' => 'col-form-label']),
-        user_input_field($fieldInfo['id'], $fieldInfo['inputInfo']),
-        form_help($fieldInfo['id'], $fieldInfo['helpInfo'])
+        form_label($labelText, $id, ['class' => 'col-form-label']),
+        user_input_field($id, $value, $fieldType, $fieldParams),
+        form_help($id, $helpText)
     );
     return $fieldStr;
 }
