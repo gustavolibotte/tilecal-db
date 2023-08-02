@@ -41,7 +41,7 @@ class Equipments extends BaseController
         $viewData['viewHeader'] = sprintf('Equipment: %s', $equipmentInfo->barcode);
         $viewData['pageTitle'] = sprintf('Equipment %s', $equipmentInfo->barcode);
 
-        return view('equipment/new_view', $viewData);
+        return view('equipment/view', $viewData);
     }
 
     public function getEquipmentInputs(

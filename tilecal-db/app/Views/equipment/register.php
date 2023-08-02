@@ -1,0 +1,1 @@
+<?= $this->extend('layouts/content_with_side_table') ?>
