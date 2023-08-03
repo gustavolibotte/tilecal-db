@@ -50,11 +50,15 @@ class Equipments extends BaseController
         helper('string');
 
         $formClass = sprintf('\App\Library\Forms\%sForm', snake2LowerCamelCase($modelName));
+        $session = \Config\Services::session();
 
         if ($this->request->is('post')){
             $form = new $formClass($this->request->getPost());
             if ($form->validate()){
-                $form->clear();
+                echo "Success";
+                $equipment = $form->getEntity();
+                $session->setFlashdata('success', true);
+                return redirect(sprintf('equipments/%s/register', $modelName),'refresh');
             };
         } else{
             $form = new $formClass();
@@ -70,6 +74,8 @@ class Equipments extends BaseController
         $registerData['equipments'] = $equipmentModel->getEquipment(limit:30);
         $registerData['equipmentForm'] = $form;
         $registerData['enableFileLink'] = false;
+        $registerData['successMessage'] = $session->getFlashdata('success');
+
 
         return view('equipment/register', $registerData);
     }

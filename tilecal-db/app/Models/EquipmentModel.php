@@ -39,28 +39,23 @@ class EquipmentModel extends LogModel
 
     // Callbacks
     protected $allowCallbacks = true;
-    protected $beforeInsert   = ['makeJSON', 'addModelID'];
+    protected $beforeInsert   = [];
     protected $afterInsert    = [];
-    protected $beforeUpdate   = ['makeJSON', 'addModelID'];
+    protected $beforeUpdate   = [];
     protected $afterUpdate    = [];
     protected $beforeFind     = [];
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
-    protected $baseJoinedColumns = null;
-    protected $selectSideTable = null;
+    protected $baseJoinedColumns;
+    protected $selectSideTable;
 
     // Custom
-    protected $generalFields    = ['created_at', 'updated_at', 'deleted_at'];
-    protected $utilityFields    = ['model_name'];
-    protected $pmtFields        = ['beta', 'nominal_hv', 'qe', 'type'];
     protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'model_params'];
     protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'model_params'];
 
     public function initialize(){
-        
-        $this->generalFields = array_merge($this->generalFields, $this->allowedFields, $this->utilityFields);
-        $this->allowedFields = array_merge($this->allowedFields, $this->utilityFields, $this->pmtFields);
+
 
         $this->baseJoinedColumns = 'equipments.id, ';
         $this->baseJoinedColumns .= 'equipments.barcode, ';
@@ -146,35 +141,6 @@ class EquipmentModel extends LogModel
         $query = $this->searchDeleted($query, $searchDeleted);
         $result = $query->findAll();
         return $result;
-    }
-
-    protected function makeJSON($data){
-        if (array_key_exists('model_params', $data['data'])){
-            return $data;
-        }
-
-        $extraData = null;
-        foreach ($data['data'] as $field=>$value){
-            if (! in_array($field, $this->generalFields)){
-                $extraData[$field] = $value;
-                unset($data['data'][$field]);
-            }
-        }
-        if (! is_null($extraData)){
-            $data['data']['model_params'] = json_encode($extraData);
-        }
-        return $data;
-    }
-
-    protected function addModelID($data){
-        if (! array_key_exists('model_id', $data['data'])){
-            $modelName = $data['data']['model_name'];
-            unset($data['data']['model_name']);
-            $modelModel = new ModelModel();
-            $modelData = $modelModel->select('id')->where(sprintf("name = '%s'", $modelName))->first();
-            $data['data']['model_id'] = $modelData['id'];
-        }
-        return $data;
     }
 
     protected function searchDeleted($query, $searchDeleted){

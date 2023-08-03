@@ -22,6 +22,6 @@ class Equipment extends Entity
     protected $casts   = [
         "id" => "integer",
         "parent_id" => "?integer",  // Allows null values
-        "model_params" => "?json"
+        "model_params" => "json"
     ];
 }

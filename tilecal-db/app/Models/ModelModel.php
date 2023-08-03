@@ -40,6 +40,7 @@ class ModelModel extends DimModel
     protected $afterDelete    = [];
 
     // Custom
+    protected $allowedModelParams = [];
 
     protected function getUpdateLog($updateInfo){
         $id = $updateInfo["id"][0];
@@ -77,5 +78,15 @@ class ModelModel extends DimModel
         ]);
 
         return $insertLog;
+    }
+
+    protected function getAllowedModelParams(){
+        if (empty($this->allowedModelParams)){
+            $models = $this->findAll();
+            foreach ($models as $model){
+                $this->allowedModelParams[$model->name] = $model->params;
+            }
+        }
+        return $this->allowedModelParams;
     }
 }

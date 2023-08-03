@@ -47,6 +47,12 @@
             <div class="row">
               <div class="col mt-4" id="equipment-info-row">
                 <h4>Equipment info</h4>
+                <? if($successMessage): ?>
+                  <div class="alert alert-success alert-dismissible" role="alert">
+                    <div>Register success</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                <? endif; ?>
                 <? echo $equipmentForm->toHTML(); ?>
             </div>
             <?php if($enableFileLink): ?>

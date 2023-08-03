@@ -14,6 +14,7 @@ class PmtForm extends EquipmentForm{
     }
 
     public function clear(){
+        parent::clear();
         $this->formValues['model_label'] = 'PMT';
     }
 }

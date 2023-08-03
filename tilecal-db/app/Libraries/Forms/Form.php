@@ -8,7 +8,9 @@ abstract class Form{
     public $validator;
     public $fields;
     public $validationRules;
-    public $isValid = false;
+    protected $isValid = false;
+
+    public abstract function getEntity();
 
     public function __construct($formValues=null)
     {
@@ -29,22 +31,17 @@ abstract class Form{
         return $this->validator->getErrors();
     }
 
+
     public function toHTML(){
         helper('app_form');
         helper('array');
         $str = '';
-        if (!is_null($this->isValid)){
-            $str .= '<div>';
-            if ($this->isValid){
-                $alert = form_alert('Register success', 'success');
-                $str .= $alert;
-            } else{
-                foreach ($this->getErrors() as $errorMsg){
-                    $alert = form_alert($errorMsg, 'danger');
-                    $str .= $alert;
-                }
+        if (!$this->isValid){
+            foreach ($this->getErrors() as $errorMsg){
+                $str .= form_alert($errorMsg, 'danger');
             }
         }
+        
         
         foreach ($this->fields as $name=>$field) {
             $str .= form_field(
@@ -60,6 +57,7 @@ abstract class Form{
     }
 
     public function clear(){
+        $this->isValid = false;
         $this->formValues = [];
     }
 }

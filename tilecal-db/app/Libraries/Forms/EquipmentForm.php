@@ -1,11 +1,17 @@
 <?php
 
 namespace App\Library\Forms;
+use App\Models\DimModel;
+
+use Exception;
 
 class EquipmentForm extends Form{
 
-    public $validationRules;
+    public $formValues;
+    public $validator;
     public $fields;
+    public $validationRules;
+    public $isValid = false;
 
     public function initialize()
     {
@@ -125,5 +131,40 @@ class EquipmentForm extends Form{
                 ]
             ],
         ];
+    }
+
+    public function getEntity(){
+        helper('array');
+        if (!$this->isValid){
+            throw new Exception('To get the equipment you must validate the form first');
+        }
+        $equipment = new \App\Entities\Equipment([
+            'barcode' => $this->formValues['barcode'],
+            'serial' => $this->formValues['serial'],
+            'comments' => $this->formValues['comments']
+        ]);
+        $equipment->locationId = $this->getId(
+            'name',
+            $this->formValues['location'],
+            new \App\Models\LocationModel()
+        );
+        $equipment->statusId = $this->getId(
+            'name',
+            $this->formValues['status'],
+            new \App\Models\StatusModel()
+        );
+        $modelLabel = $this->formValues['model_label'];
+        $model = (new \App\Models\ModelModel())->where(sprintf("label = '%s'", $modelLabel))->first();
+        $equipment->modelId = $model->id;
+        foreach ($model->params as $param){
+            $modelParams[$param] = dot_array_search($param, $this->formValues);
+        }
+        $equipment->modelParams = $modelParams;
+        return $equipment;
+    }
+
+    protected function getId(string $fieldName, string $value, DimModel $model){
+        $entity = $model->where(sprintf("%s = '%s'", $fieldName, $value))->first();
+        return $entity->id;
     }
 }
