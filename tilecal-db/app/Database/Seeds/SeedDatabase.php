@@ -77,12 +77,7 @@ class SeedDatabase extends BaseSeeder
         $jsonData = $this->readJSON('equipments.json');
 
         $equipmentModel = new \App\Models\EquipmentModel(isMigration: true);
-        $randomModelParams = [
-            "beta" => 123123,
-            "nominal_hv" => 123123123,
-            "qe" => 123123123,
-            "type" => 'R11187'
-        ];
+        
         foreach ($jsonData as $row) {
             $equipment = new \App\Entities\Equipment($row);
             $model = random_choice($models);
@@ -91,7 +86,7 @@ class SeedDatabase extends BaseSeeder
             $equipment->location_id = $location->id;
             $status = random_choice($statuses);
             $equipment->status_id = $status->id;
-            $equipment->model_params = $randomModelParams;
+            $equipment->model_params = array_fill_keys($model->params, null);
             $equipmentModel->insert($equipment);
             if ($this->probDecision(0.03)){
                 $equipmentModel->delete($equipment->id);
