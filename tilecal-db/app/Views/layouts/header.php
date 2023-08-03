@@ -98,6 +98,9 @@
             <li><a class="dropdown-item" href="<? echo base_url('files/deleted'); ?>">Deleted</a></li>
           </ul>
         </li>
+        <a class="nav-link active" href="<? echo base_url('help') ?>" style="color: #ffffff;">
+          Help
+        </a>
       </ul>
     </div>
   </div>

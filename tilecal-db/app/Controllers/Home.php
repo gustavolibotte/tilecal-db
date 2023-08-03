@@ -7,7 +7,8 @@ namespace App\Controllers;
 class Home extends BaseController
 {
     public function index()
-    {
-        return view('welcome');
+    {   
+        $welcomeData['pageTitle'] = 'Welcome to the Tilecal Database';
+        return view('welcome', $welcomeData);
     }
 }
