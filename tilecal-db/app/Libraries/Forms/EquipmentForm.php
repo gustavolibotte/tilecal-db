@@ -167,4 +167,10 @@ class EquipmentForm extends Form{
         $entity = $model->where(sprintf("%s = '%s'", $fieldName, $value))->first();
         return $entity->id;
     }
+
+    protected function commentsEnd(){
+        $commentsField = $this->fields['comments'];
+        unset($this->fields['comments']);
+        $this->fields['comments'] = $commentsField;
+    }
 }

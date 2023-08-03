@@ -13,7 +13,7 @@
 <?= $this->include('layouts/header') ?>
 
 <body>
-  <div class="container mt-4">
+  <div class="container mt-4 mb-4">
     <?= $this->renderSection('content') ?>
   </div>
 
