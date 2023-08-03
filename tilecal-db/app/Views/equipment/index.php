@@ -5,7 +5,6 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-  <h1>Equipment Index</h1>
   <div class="mt-3">
     <table class="table table-bordered" id="equipments-table">
       <thead>

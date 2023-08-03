@@ -43,11 +43,9 @@ class FileModel extends LogModel
     protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'filedata'];
     protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'filedata'];
 
-    public function getBindedFilesInfo($id){
-        $query = $this->select('file_id as id, name, description')
-                      ->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
+    public function getEquipmentRelated($id){
+        $query = $this->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
                       ->where(sprintf("equipments_to_files.equipment_id = '%s'", $id));
-        $query = $this->searchDeleted($query, false);
         $result = $query->findAll();
         return $result;
     }

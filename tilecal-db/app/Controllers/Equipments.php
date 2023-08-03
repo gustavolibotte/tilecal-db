@@ -20,6 +20,7 @@ class Equipments extends BaseController
             $indexData['equipments'] = $equipmentModel->getEquipmentsWhereModel($modelName, searchDeleted: $searchDeleted);
         }
         $indexData['pageTitle'] = 'Equipment Index';
+        $indexData['pageHeader'] = 'Equipment Index';
         return view('equipment/index', $indexData);
     }
 
@@ -33,16 +34,12 @@ class Equipments extends BaseController
     public function view($equipmentId){
         $equipmentModel = new EquipmentModel();
         $equipmentInfo = $equipmentModel->getEquipment($equipmentId);
-        $viewData['sideTableHeader'] = 'Related Equipments';
-        $viewData['equipments'] = $equipmentModel->getRelatedEquipments($equipmentId);
+        $viewData['infoHeader'] = 'Equipment Info';
         $viewData['equipmentInfo'] = $equipmentInfo;
-        $fileModel = new FileModel();
-        $viewData['files'] = $fileModel->getBindedFilesInfo($equipmentId);
         $histModel = new \App\Models\HistModel();
-        $viewData["equipmentHist"] = $histModel->getEquipmentHist($equipmentId);
-        $viewData['viewHeader'] = sprintf('Equipment: %s', $equipmentInfo->barcode);
+        $viewData["histories"] = $histModel->getEquipmentHist($equipmentId);
+        $viewData['pageHeader'] = sprintf('Equipment: %s', $equipmentInfo->barcode);
         $viewData['pageTitle'] = sprintf('Equipment %s', $equipmentInfo->barcode);
-
         return view('equipment/view', $viewData);
     }
 
@@ -72,7 +69,7 @@ class Equipments extends BaseController
         $registerData['model'] = $model;
         $title = sprintf('Register %s', $model->label);
         $registerData['pageTitle'] = $title;
-        $registerData['viewHeader'] = $title;
+        $registerData['pageHeader'] = $title;
         $registerData['sideTableHeader'] = 'Registered Equipments';
         $registerData['equipments'] = $equipmentModel->getEquipment(limit:30);
         $registerData['equipmentForm'] = $form;

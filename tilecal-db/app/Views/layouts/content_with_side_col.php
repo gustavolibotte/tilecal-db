@@ -7,11 +7,6 @@
 
 <?= $this->section('content') ?>
   <div class="row">
-    <div class="jumbotron text-left">
-      <h1><? echo $viewHeader ?></h1>
-    </div>
-  </div>
-  <div class="row">
     <div class="col-3 mt-4" id="side-table-col">
       <?= $this->renderSection('sideContent') ?>
     </div>

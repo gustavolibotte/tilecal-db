@@ -14,6 +14,11 @@
 
 <body>
   <div class="container mt-4 mb-4">
+    <div class="row">
+      <div class="jumbotron text-left">
+        <h1><? echo $pageHeader ?></h1>
+      </div>
+    </div>
     <?= $this->renderSection('content') ?>
   </div>
 
