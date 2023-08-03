@@ -33,7 +33,8 @@ class Equipments extends BaseController
     public function view($equipmentId){
         $equipmentModel = new EquipmentModel();
         $equipmentInfo = $equipmentModel->getEquipment($equipmentId);
-        $viewData['relatedEquipments'] = $equipmentModel->getRelatedEquipments($equipmentId);
+        $viewData['sideTableHeader'] = 'Related Equipments';
+        $viewData['equipments'] = $equipmentModel->getRelatedEquipments($equipmentId);
         $viewData['equipmentInfo'] = $equipmentInfo;
         $fileModel = new FileModel();
         $viewData['files'] = $fileModel->getBindedFilesInfo($equipmentId);
@@ -72,6 +73,7 @@ class Equipments extends BaseController
         $title = sprintf('Register %s', $model->label);
         $registerData['pageTitle'] = $title;
         $registerData['viewHeader'] = $title;
+        $registerData['sideTableHeader'] = 'Registered Equipments';
         $registerData['equipments'] = $equipmentModel->getEquipment(limit:30);
         $registerData['equipmentForm'] = $form;
         $registerData['enableFileLink'] = false;
