@@ -51,7 +51,7 @@ class Equipments extends BaseController
         $equipmentModel = new EquipmentModel();
 
         if ($this->request->is('post')){
-            $form = new $formClass($this->request->getPost());
+            $form = new $formClass($this->request);
             if ($form->validate()){
                 echo "Success";
                 $equipment = $form->getEntity();

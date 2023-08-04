@@ -49,8 +49,8 @@ $routes->post('equipments/edit/(:segment)/(:alphanum)', 'Equipments::edit/$1/$2'
 $routes->get('files', 'Files::index');
 $routes->get('files/deleted', 'Files::deletedIndex');
 $routes->get('files/view/(:alphanum)', 'Files::view/$1');
-$routes->get('files/upload', 'Files::uploadGet');
-$routes->post('files/upload', 'Files::uploadPost');
+$routes->get('files/upload', 'Files::upload');
+$routes->post('files/upload', 'Files::upload');
 $routes->get('files/(:alphanum)', 'Files::download/$1');
 
 /*

@@ -7,12 +7,6 @@ use Exception;
 
 class EquipmentForm extends Form{
 
-    public $formValues;
-    public $validator;
-    public $fields;
-    public $validationRules;
-    public $isValid = false;
-
     public function initialize()
     {
         $this->fields = [
@@ -139,25 +133,26 @@ class EquipmentForm extends Form{
             throw new Exception('To get the equipment you must validate the form first');
         }
         $equipment = new \App\Entities\Equipment([
-            'barcode' => $this->formValues['barcode'],
-            'serial' => $this->formValues['serial'],
-            'comments' => $this->formValues['comments']
+            'barcode' => $this->request->getVar('barcode'),
+            'serial' => $this->request->getVar('serial'),
+            'comments' => $this->request->getVar('comments')
         ]);
         $equipment->locationId = $this->getId(
             'name',
-            $this->formValues['location'],
+            $this->request->getVar('location'),
             new \App\Models\LocationModel()
         );
         $equipment->statusId = $this->getId(
             'name',
-            $this->formValues['status'],
+            $this->request->getVar('status'),
             new \App\Models\StatusModel()
         );
-        $modelLabel = $this->formValues['model_label'];
+        $modelLabel = $this->request->getVar('model_label');
         $model = (new \App\Models\ModelModel())->where(sprintf("label = '%s'", $modelLabel))->first();
         $equipment->modelId = $model->id;
+        $modelParams = [];
         foreach ($model->params as $param){
-            $modelParams[$param] = dot_array_search($param, $this->formValues);
+            $modelParams[$param] = $this->request->getVar($param);
         }
         $equipment->modelParams = $modelParams;
         return $equipment;

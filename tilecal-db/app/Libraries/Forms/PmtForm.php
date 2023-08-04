@@ -4,11 +4,6 @@ namespace App\Library\Forms;
 
 class PmtForm extends EquipmentForm{
 
-    public $formValues;
-    public $validator;
-    public $fields;
-    public $validationRules;
-    public $isValid = false;
     public $pmtTypeOptions = [
         'null' => 'Select an option',
         'R11187' => 'R11187',
@@ -22,7 +17,7 @@ class PmtForm extends EquipmentForm{
     public function initialize()
     {   
         parent::initialize();
-        $this->formValues['model_label'] = 'PMT';
+        $this->fields['model_label']['value'] = 'PMT';
 
         $this->fields['beta'] = [
             'id' => 'beta',
@@ -110,10 +105,5 @@ class PmtForm extends EquipmentForm{
         ];
 
         $this->commentsEnd();
-    }
-
-    public function clear(){
-        parent::clear();
-        $this->formValues['model_label'] = 'PMT';
     }
 }

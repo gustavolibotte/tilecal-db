@@ -4,10 +4,8 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\FileModel;
-use App\Models\EquipmentModel;
-use ValidationRules\DBFileRules;
+use App\Library\Forms\FileForm;
 use App\Models\HistModel;
-use App\Entities\OperationLog;
 
 class Files extends BaseController
 {
@@ -56,88 +54,31 @@ class Files extends BaseController
         echo $file->filedata;
     }
 
-    public function getRegisterData($validationErrors=null, $preFilledValues=null){
+    public function upload(){
+        helper(['form', 'string', 'url']);
+        $session = \Config\Services::session();
 
-        $fileModel = new FileModel();
-        $registerData['files'] = $fileModel->getFile(columns: 'id, name');
-        $registerData['validationErrors'] = $validationErrors;
-        $registerData['formPlaceholders'] = [
-            'name' => '2023_07_30_pmt_block_5628_test',
-            'description' => 'Useful info about the file'
-        ];
-        $registerData['formRestrictions'] = [
-            'name' => sprintf('Max %d characters', DBFileRules::$maxFilenameSize),
-            'file' => sprintf('File max size is %d kB', DBFileRules::$maxFileSize),
-            'description' => sprintf('Min %d characters and max %d characters',
-                                     DBFileRules::$minDescriptionSize,
-                                     DBFileRules::$maxDescriptionSize)
-        ];
-        $registerData['maxDescriptionLength'] = DBFileRules::$maxDescriptionSize;
-        if (is_null($preFilledValues)){
-            $registerData['preFilledValues'] = [
-                'name' => null,
-                'description' => null
-            ];
+        if ($this->request->is('post')){
+            $form = new FileForm($this->request);
+            if ($form->validate()){
+                $file = $form->getEntity();
+                $fileModel = new FileModel();
+                $fileModel->insert($file);
+                $session->setFlashdata('success', true);
+                return redirect('files/upload');
+            };
+        } else{
+            $form = new FileForm();
         }
-        else{
-            $registerData['preFilledValues'] = $preFilledValues;
-        }
-
-        return $registerData;
-    }
-
-    public function uploadGet(){
-
-        if(!$this->currentUser->canAlter()){
-            return $this->httpErrorView(401);
-        }
-        helper('form');
-
-        $headerData = $this->getHeaderData(pageTitle: 'File Upload');
-        $registerData = $this->getRegisterData();
-
-        return view('templates/header', $headerData)
-              .view('files/register', $registerData)
-              .view('templates/footer');
-    }
-
-    public function uploadPost(){
-
-        if(!$this->currentUser->canAlter()){
-            return $this->httpErrorView(401);
-        }
-        helper('form');
-
-        $uploadedFile = $this->request->getFile('file');
-        $formNonFileInputs = $this->request->getPost(['name', 'description']);
-        $filepath = $uploadedFile->getPathname();
-
-        if ($this->validate('fileUploadRules')){
-            $registerData = $this->getRegisterData();
-            $fileData = [
-                "name" => $formNonFileInputs['name'],
-                "mime" => $uploadedFile->getMimeType(),
-                "extension"=> $uploadedFile->guessExtension(),
-                "filedata" => file_get_contents($filepath),
-                "description" => $formNonFileInputs['description'],
-            ];
-            $file = new \App\Entities\File($fileData);
-            $fileModel = new FileModel();
-            $fileModel->insert($file);
-        }
-        else{
-            $validationErrors = $this->validator->getErrors();
-            $registerData = $this->getRegisterData(
-                $validationErrors,
-                $formNonFileInputs
-            );
-        }
-
-        $headerData = $this->getHeaderData(pageTitle: 'File Upload');
-
-        return view('templates/header', $headerData)
-        .view('files/register', $registerData)
-        .view('templates/footer');
+        
+        $title = 'Upload File';
+        $registerData['pageTitle'] = $title;
+        $registerData['pageHeader'] = $title;
+        $registerData['forms'] = ['File Info'=> $form];
+        $registerData['successMessage'] = $session->getFlashdata('success');
+        $registerData['formUrl'] = uri_string();
+        $registerData['cancelUrl'] = base_url('files');
+        return view('files/register', $registerData);
     }
 
 }

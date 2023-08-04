@@ -4,7 +4,7 @@
       <th>Filename</th>
       <th>Description</th>
       <th>Created</th>
-      <th>Updated</th>
+      <th>Last update</th>
       <th>Download</th>
     </tr>
   </thead>
