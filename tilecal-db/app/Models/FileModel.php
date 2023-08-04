@@ -51,13 +51,9 @@ class FileModel extends LogModel
         return $result;
     }
 
-    public function getFile($id=null, $columns=null, $searchDeleted=false)
+    public function getFile($id=null, $searchDeleted=false)
     {
-        if (is_null($columns)){
-            $columns = 'id, name, description, created_at, updated_at, deleted_at';
-        }
-        $query = $this->select($columns);
-        
+        $query = $this->select('id, name, mime, description, created_at, updated_at, deleted_at');
         if (is_null($id)){
             $query = $this->searchDeleted($query, $searchDeleted);
             $result = $query->findAll();

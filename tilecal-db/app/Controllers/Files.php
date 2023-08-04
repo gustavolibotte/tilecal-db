@@ -24,24 +24,19 @@ class Files extends BaseController
         $viewData['pageHeader'] = sprintf('File %s', $fileInfo->name);
         $viewData['infoHeader'] = 'File Info';
         $viewData['histories'] = (new HistModel())->getFileHist($fileInfo->id);
-
         return view('files/view', $viewData);
     }
 
-    public function download($id){
-
+    public function download($fileId){
         $fileModel = new FileModel();
-        $file = $fileModel->getFile($id, 'name, mime, extension, filedata');
-        $filename = $file->name . '.' . $file->extension;
-
+        $file = $fileModel->find($fileId);
         header('Content-Description: File Transfer');
         header(sprintf('Content-Type: %s', $file->mime));
-        header(sprintf('Content-Disposition: attachment; filename="%s"', $filename));
+        header(sprintf('Content-Disposition: attachment; filename="%s"', $file->name));
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
         header('Content-Length: ' . strlen($file->filedata));
-
         echo $file->filedata;
     }
 
