@@ -2,7 +2,7 @@
 
 namespace App\Cells;
 
-class EquipmentTableCell
+class EquipmentTableCell extends BaseCell
 {
     public function side(int $equipmentId=null): string
     {
@@ -17,8 +17,18 @@ class EquipmentTableCell
 
     public function sidejs()
     {
-        $jsUrl = base_url('assets/js/cells/equipment_table_side.js');
-        $script = sprintf('<script type="text/javascript" src="%s" ></script>', $jsUrl);
-        return $script;
+        return $this->getJs('equipment_table_side.js');
+    }
+
+    public function sideFileRelated($fileId)
+    {
+        $equipmentModel = new \App\Models\EquipmentModel();
+        $viewData['equipments'] = $equipmentModel->getFileRelated($fileId);
+        return view('cells/equipment_table_side', $viewData);
+    }
+
+    public function sideFileRelatedjs()
+    {
+        return $this->getJs('equipment_table_side.js');
     }
 }

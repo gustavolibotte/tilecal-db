@@ -6,8 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\FileModel;
 use App\Models\EquipmentModel;
 use ValidationRules\DBFileRules;
-use App\Models\FileHistModel;
-use App\Models\Equipment2FileHistModel;
+use App\Models\HistModel;
 use App\Entities\OperationLog;
 
 class Files extends BaseController
@@ -28,34 +27,16 @@ class Files extends BaseController
               .view('templates/footer');
     }
 
-    public function getFileHist($fileID){
-        $fileHistModel = new FileHistModel();
-        $fileHist = $fileHistModel->getHistWithoutData($fileID, 100);
-        $equipment2FileHistModel = new Equipment2FileHistModel();
-        $fileLinkHist = $equipment2FileHistModel
-            ->where(sprintf('JSON_EXTRACT(changes, "$.file_id") = %s', $fileID))
-            ->findAll();
-        $hist = array_merge($fileHist, $fileLinkHist);
-        usort($hist, [OperationLog::class, "cmp_obj"]);
-        return $hist;
-    }
-
-    public function getViewData($fileID){
+    public function view($fileId){
         $fileModel = new FileModel();
-        $viewData['fileInfo'] = $fileModel->getFile($fileID);
-        $equipmentModel = new EquipmentModel();
-        $viewData['relatedEquipments'] = $equipmentModel->getFileRelatedEquipments($fileID, limit:100);
-        $viewData['fileHist'] = array_reverse($this->getFileHist($fileID))
-;        return $viewData;
-    }
+        $fileInfo = $fileModel->getFile($fileId);
+        $viewData['fileInfo'] = $fileInfo;
+        $viewData['pageTitle'] = 'File view';
+        $viewData['pageHeader'] = sprintf('File %s', $fileInfo->name);
+        $viewData['infoHeader'] = 'File Info';
+        $viewData['histories'] = (new HistModel())->getFileHist($fileInfo->id);
 
-    public function view($id){
-        $viewData = $this->getViewData($id);
-        $headerData['pageTitle'] = sprintf('File %s', $id);
-
-        return view('templates/header', $headerData)
-              .view('files/view', $viewData)
-              .view('templates/footer');
+        return view('files/view', $viewData);
     }
 
     public function download($id){

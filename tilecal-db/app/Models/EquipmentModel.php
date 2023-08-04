@@ -47,7 +47,6 @@ class EquipmentModel extends LogModel
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
-    protected $baseJoinedColumns;
     protected $selectSideTable;
 
     // Custom
@@ -55,37 +54,41 @@ class EquipmentModel extends LogModel
     protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'model_params'];
 
     public function initialize(){
-
-
-        $this->baseJoinedColumns = 'equipments.id, ';
-        $this->baseJoinedColumns .= 'equipments.barcode, ';
-        $this->baseJoinedColumns .= 'models.label as model_label, ';
-        $this->baseJoinedColumns .= 'models.name as model_name, ';
-        $this->baseJoinedColumns .= 'locations.name as location, ';
-        $this->baseJoinedColumns .= 'statuses.name as status, ';
-        $this->baseJoinedColumns .= 'parent_models.label as parent_model_label, ';
-        $this->baseJoinedColumns .= 'parent_models.name as parent_model_name, ';
-        $this->baseJoinedColumns .= 'equipments.parent_id, ';
-        $this->baseJoinedColumns .= 'equipments.serial, ';
-        $this->baseJoinedColumns .= 'equipments.comments, ';
-        $this->baseJoinedColumns .= 'equipments.model_params, ';
-        $this->baseJoinedColumns .= 'equipments.updated_at, ';
-        $this->baseJoinedColumns .= 'equipments.created_at, ';
-        $this->baseJoinedColumns .= 'equipments.deleted_at ';
-
         $this->selectSideTable = 'equipments.id, ';
         $this->selectSideTable .= 'models.label as model_label ';
 
         parent::initialize();
     }
 
-    public function getEquipment($id=null, $searchDeleted=false, $limit=null){
-        $query = $this->select($this->baseJoinedColumns)
+    protected function fullQuery(){
+        $selectColumns = 'equipments.id, ';
+        $selectColumns .= 'equipments.barcode, ';
+        $selectColumns .= 'models.label as model_label, ';
+        $selectColumns .= 'models.name as model_name, ';
+        $selectColumns .= 'locations.name as location, ';
+        $selectColumns .= 'statuses.name as status, ';
+        $selectColumns .= 'parent_models.label as parent_model_label, ';
+        $selectColumns .= 'parent_models.name as parent_model_name, ';
+        $selectColumns .= 'parents.barcode as parent_barcode, ';
+        $selectColumns .= 'equipments.parent_id, ';
+        $selectColumns .= 'equipments.serial, ';
+        $selectColumns .= 'equipments.comments, ';
+        $selectColumns .= 'equipments.model_params, ';
+        $selectColumns .= 'equipments.updated_at, ';
+        $selectColumns .= 'equipments.created_at, ';
+        $selectColumns .= 'equipments.deleted_at ';
+        $query = $this->select($selectColumns)
                       ->join('models', 'equipments.model_id = models.id')
                       ->join('locations', 'equipments.location_id = locations.id')
                       ->join('statuses', 'equipments.status_id = statuses.id')
                       ->join('equipments parents', 'equipments.parent_id = parents.id')
                       ->join('models parent_models', 'parents.model_id = parent_models.id');
+        return $query;
+
+    }
+
+    public function getEquipment($id=null, $searchDeleted=false, $limit=null){
+        $query = $this->fullQuery();
         if (is_null($id)){
             $query = $this->searchDeleted($query, $searchDeleted);
             $result = ($limit)? $query->findAll($limit): $query->findAll();
@@ -96,11 +99,26 @@ class EquipmentModel extends LogModel
         return $result;
     }
 
-    public function getFileRelatedEquipments($fileID, $limit=null){
-        $query = $this->select($this->baseJoinedColumns)
+    public function getFileRelated($fileId, $limit=null){
+        $selectColumns = 'equipments.id, ';
+        $selectColumns .= 'equipments.barcode, ';
+        $selectColumns .= 'models.label as model_label, ';
+        $selectColumns .= 'models.name as model_name, ';
+        $selectColumns .= 'locations.name as location, ';
+        $selectColumns .= 'statuses.name as status, ';
+        $selectColumns .= 'equipments.parent_id, ';
+        $selectColumns .= 'equipments.serial, ';
+        $selectColumns .= 'equipments.comments, ';
+        $selectColumns .= 'equipments.model_params, ';
+        $selectColumns .= 'equipments.updated_at, ';
+        $selectColumns .= 'equipments.created_at, ';
+        $selectColumns .= 'equipments.deleted_at ';
+        $query = $this->select($selectColumns)
                       ->join('models', 'equipments.model_id = models.id')
+                      ->join('locations', 'equipments.location_id = locations.id')
+                      ->join('statuses', 'equipments.status_id = statuses.id')
                       ->join('equipments_to_files', 'equipments.id = equipments_to_files.equipment_id')
-                      ->where(sprintf('equipments_to_files.file_id = %s', $fileID));
+                      ->where(sprintf('equipments_to_files.file_id = %s', $fileId));
         $result = is_null($limit)? $query->findAll(): $query->findAll($limit);
         return $result;
     }
@@ -131,13 +149,7 @@ class EquipmentModel extends LogModel
      * @return array The query results
      */ 
     public function getEquipmentsWhereModel($modelName, $searchDeleted=false){
-        $query = $this->select($this->baseJoinedColumns)
-                      ->where(sprintf("models.name = '%s'", $modelName))
-                      ->join('models', 'equipments.model_id = models.id')
-                      ->join('locations', 'equipments.location_id = locations.id')
-                      ->join('statuses', 'equipments.status_id = statuses.id')
-                      ->join('equipments parents', 'equipments.parent_id = parents.id')
-                      ->join('models parent_models', 'parents.model_id = parent_models.id');
+        $query = $this->fullQuery();
         $query = $this->searchDeleted($query, $searchDeleted);
         $result = $query->findAll();
         return $result;

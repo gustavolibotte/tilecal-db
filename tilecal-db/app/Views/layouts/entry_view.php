@@ -12,14 +12,14 @@
 <?= $this->section('content') ?>
   <ul class="nav nav-tabs" id="myTab" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="equip-info-tab" data-bs-toggle="tab" data-bs-target="#equip-info-pane" type="button" role="tab" aria-controls="equip-info-pane" aria-selected="true">Info</button>
+      <button class="nav-link active" id="entry-info-tab" data-bs-toggle="tab" data-bs-target="#entry-info-pane" type="button" role="tab" aria-controls="entry-info-pane" aria-selected="true">Info</button>
     </li>
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="history-info-tab" data-bs-toggle="tab" data-bs-target="#history-info-pane" type="button" role="tab" aria-controls="history-info-pane" aria-selected="true">History</button>
     </li>
   </ul>
   <div class="tab-content" id="myTabContent">
-    <div class="tab-pane fade show active" id="equip-info-pane" role="tabpanel" tabindex="0">
+    <div class="tab-pane fade show active" id="entry-info-pane" role="tabpanel" tabindex="0">
       <div class="row">
         <div class="col mt-4" id="data-info-col">
           <div class="row">

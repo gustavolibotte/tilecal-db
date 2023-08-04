@@ -44,7 +44,8 @@ class FileModel extends LogModel
     protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'filedata'];
 
     public function getEquipmentRelated($id){
-        $query = $this->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
+        $query = $this->select('files.id, files.name, files.description, files.created_at, files.deleted_at')
+                      ->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
                       ->where(sprintf("equipments_to_files.equipment_id = '%s'", $id));
         $result = $query->findAll();
         return $result;

@@ -58,4 +58,16 @@ class HistModel extends BaseModel
         usort($hist, [$this->returnType, "orderByCreationReverse"]);
         return $hist;
     }
+
+    public function getFileHist($fileId){
+        $fileHist = $this->where("table = 'equipments'")
+                         ->where(sprintf("record_id = %s", $fileId))
+                         ->findAll();
+        $equipLinkHist = $this->where("table = 'equipments_to_files'")
+                             ->where(sprintf('JSON_EXTRACT(changes, "$.file_id") = %s', $fileId))
+                             ->findAll();
+        $hist = array_merge($fileHist, $equipLinkHist);
+        usort($hist, [$this->returnType, "orderByCreationReverse"]);
+        return $hist;
+    }
 }
