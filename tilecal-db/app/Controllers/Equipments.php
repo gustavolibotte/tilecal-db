@@ -44,8 +44,7 @@ class Equipments extends BaseController
     }
 
     public function register($modelName='pmt'){
-        helper('form');
-        helper('string');
+        helper(['form', 'string', 'url']);
 
         $formClass = sprintf('\App\Library\Forms\%sForm', snake2LowerCamelCase($modelName));
         $session = \Config\Services::session();
@@ -63,20 +62,17 @@ class Equipments extends BaseController
         } else{
             $form = new $formClass();
         }
-
+        
         $modelModel = new ModelModel();
         $model = $modelModel->where(sprintf("name = '%s'", $modelName))->first();
         $registerData['model'] = $model;
         $title = sprintf('Register %s', $model->label);
         $registerData['pageTitle'] = $title;
         $registerData['pageHeader'] = $title;
-        $registerData['sideTableHeader'] = 'Registered Equipments';
-        $registerData['equipments'] = $equipmentModel->getEquipment(limit:30);
-        $registerData['equipmentForm'] = $form;
-        $registerData['enableFileLink'] = false;
+        $registerData['forms'] = ['Equipment Info'=> $form];
         $registerData['successMessage'] = $session->getFlashdata('success');
-
-
+        $registerData['formUrl'] = uri_string();
+        $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $modelName));
         return view('equipment/register', $registerData);
     }
 

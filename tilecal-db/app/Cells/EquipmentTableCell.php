@@ -4,7 +4,7 @@ namespace App\Cells;
 
 class EquipmentTableCell extends BaseCell
 {
-    public function side(int $equipmentId=null): string
+    public function side($equipmentId=null)
     {
         $equipmentModel = new \App\Models\EquipmentModel();
         if (is_null($equipmentId)){

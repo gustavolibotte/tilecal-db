@@ -17,8 +17,20 @@ class FileTableCell extends BaseCell
         return view('cells/file_table_full', $viewData);
     }
 
+    public function side()
+    {
+        $fileModel = new \App\Models\FileModel();
+        $viewData['files'] = $fileModel->findAll();
+        return view('cells/file_table_side', $viewData);
+    }
+
     public function fulljs()
     {
         return $this->getJs('file_table_full.js');
+    }
+
+    public function sidejs()
+    {
+        return $this->getJs('file_table_side.js');
     }
 }
