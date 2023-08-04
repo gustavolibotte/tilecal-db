@@ -42,8 +42,8 @@ $routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1');
 // Equipment register views
 $routes->get('equipments/pmt/register', 'Equipments::register');
 $routes->post('equipments/pmt/register', 'Equipments::register');
-$routes->get('equipments/edit/(:segment)/(:alphanum)', 'Equipments::edit/$1/$2');
-$routes->post('equipments/edit/(:segment)/(:alphanum)', 'Equipments::edit/$1/$2');
+// $routes->get('equipments/edit/(:segment)/(:alphanum)', 'Equipments::edit/$1/$2');
+// $routes->post('equipments/edit/(:segment)/(:alphanum)', 'Equipments::edit/$1/$2');
 
 // File routes
 $routes->get('files', 'Files::index');

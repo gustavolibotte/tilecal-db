@@ -16,15 +16,6 @@ class Files extends BaseController
         return view('files/index', $indexData);
     }
 
-    public function deletedIndex(){
-        $headerData = $this->getHeaderData(pageTitle: 'Deleted File Index');
-        $fileModel = new FileModel();
-        $indexData['files'] = $fileModel->getFile(searchDeleted: true);
-        return view('templates/header', $headerData)
-              .view('files/index', $indexData)
-              .view('templates/footer');
-    }
-
     public function view($fileId){
         $fileModel = new FileModel();
         $fileInfo = $fileModel->getFile($fileId);
