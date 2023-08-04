@@ -2,26 +2,23 @@
 
 namespace App\Cells;
 
-class FileTableCell
+class FileTableCell extends BaseCell
 {
-    public function all()
+    public function full($params=[])
     {
+        helper('array');
+        $equipmentId = dot_array_search('equipmentId', $params);
         $fileModel = new \App\Models\FileModel();
-        $viewData['files'] = $fileModel->findAll();
-        return view('cells/file_index', $viewData);
+        if (is_null($equipmentId)){
+            $viewData['files'] = $fileModel->findAll();
+        } else{
+            $viewData['files'] = $fileModel->getEquipmentRelated($equipmentId);
+        }
+        return view('cells/file_table_full', $viewData);
     }
 
-    public function equipmentRelated($params): string
+    public function fulljs()
     {
-        $fileModel = new \App\Models\FileModel();
-        $viewData['files'] = $fileModel->getEquipmentRelated($params['equipmentId']);
-        return view('cells/file_table', $viewData);
-    }
-
-    public function equipmentRelatedjs()
-    {
-        $jsUrl = base_url('assets/js/cells/file_table_equipment_related.js');
-        $script = sprintf('<script type="text/javascript" src="%s" ></script>', $jsUrl);
-        return $script;
+        return $this->getJs('file_table_full.js');
     }
 }

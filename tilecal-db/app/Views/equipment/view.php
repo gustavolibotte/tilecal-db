@@ -24,10 +24,10 @@
 <?= $this->section('relatedContent') ?>
   <h4> Related Files </h4>
   <hr>
-  <? echo view_cell('FileTableCell::equipmentRelated', ['equipmentId' => $equipmentInfo->id]);?>
+  <? echo view_cell('FileTableCell::full', ['equipmentId' => $equipmentInfo->id]);?>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript')?>
   <? echo view_cell('EquipmentTableCell::sidejs'); ?> 
-  <? echo view_cell('FileTableCell::equipmentRelatedjs'); ?> 
+  <? echo view_cell('FileTableCell::fulljs'); ?> 
 <?= $this->endSection() ?>

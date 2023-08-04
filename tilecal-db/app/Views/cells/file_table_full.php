@@ -1,4 +1,4 @@
-<table class="table table-bordered" id="file-table">
+<table class="table table-bordered" id="file-table-full">
   <thead>
     <tr>
       <th>Filename</th>

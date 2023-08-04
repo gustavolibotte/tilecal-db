@@ -12,18 +12,11 @@ use App\Entities\OperationLog;
 
 class Files extends BaseController
 {
-
-
     public function index()
     {
-        $fileModel = new FileModel();
-        $indexData['files'] = $fileModel->getFile();
-        
-        $headerData['pageTitle'] = 'File Index';
-
-        return view('templates/header', $headerData)
-              .view('files/index', $indexData)
-              .view('templates/footer');
+        $indexData['pageTitle'] = 'File Index';
+        $indexData['pageHeader'] = 'File Index';
+        return view('files/index', $indexData);
     }
 
     public function deletedIndex(){

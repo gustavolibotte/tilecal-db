@@ -1,5 +1,5 @@
 $(document).ready(function(){
-    $('#file-table').DataTable({
+    $('#file-table-full').DataTable({
         searching: true,
         scrollColapse: true,
         scrollY: '55vh',
