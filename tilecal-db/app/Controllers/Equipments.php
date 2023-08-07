@@ -30,9 +30,9 @@ class Equipments extends BaseController
         $viewData['equipmentInfo'] = $equipment;
         $histModel = new \App\Models\HistModel();
         $viewData["histories"] = $histModel->getEquipmentHist($equipmentId);
-        $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->barcode);
-        $viewData['pageTitle'] = sprintf('Equipment %s', $equipment->barcode);
-        $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%d', $equipment->modelName, $equipment->id));
+        $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->id);
+        $viewData['pageTitle'] = sprintf('Equipment %s', $equipment->id);
+        $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->modelName, $equipment->id));
         // $formClass = $this->getFormClass($equipment->modelName);
         $viewData['editForm'] = new \App\Library\Forms\EquipmentForm();
         $viewData['editForm']->asEdit();
@@ -89,7 +89,7 @@ class Equipments extends BaseController
                 $equipment = $form->getEntity();
                 $equipmentModel->update($equipmentId, $equipment);
                 $messages[] = [
-                    'message' => sprintf('Edited equipment %s with success', $equipment->barcode),
+                    'message' => sprintf('Edited equipment %s with success', $equipment->id),
                     'type' => 'success'
                 ];
                 $session->setFlashdata('messages', $messages);

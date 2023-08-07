@@ -36,8 +36,8 @@ $routes->get('/', 'Home::index');
 $routes->get('equipments', 'Equipments::index');
 $routes->get('equipments/deleted', 'Equipments::deletedIndex');
 $routes->post('equipments/delete/(:alphanum)', 'Equipments::delete/$1');
-$routes->get('equipments/(:segment)', 'Equipments::index/$1');
 $routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1');
+$routes->get('equipments/(:segment)', 'Equipments::index/$1');
 
 // Equipment register views
 $routes->get('equipments/pmt/register', 'Equipments::register');

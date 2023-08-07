@@ -49,10 +49,10 @@ class HistModel extends BaseModel
 
     public function getEquipmentHist($equipmentId){
         $equipmentHist = $this->where("table = 'equipments'")
-                       ->where(sprintf("record_id = %s", $equipmentId))
+                       ->where(sprintf("record_id = '%s'", $equipmentId))
                        ->findAll();
         $fileLinkHist = $this->where("table = 'equipments_to_files'")
-                             ->where(sprintf('JSON_EXTRACT(changes, "$.equipment_id") = %s', $equipmentId))
+                             ->where(sprintf('JSON_EXTRACT(changes, "$.equipment_id") = \'%s\'', $equipmentId))
                              ->findAll();
         $hist = array_merge($equipmentHist, $fileLinkHist);
         usort($hist, [$this->returnType, "orderByCreationReverse"]);

@@ -9,7 +9,7 @@
     <table class="table table-bordered" id="equipments-table">
       <thead>
         <tr>
-          <th>Barcode</th>
+          <th>ID</th>
           <th>Model</th>
           <th>Location</th>
           <th>Status</th>
@@ -23,7 +23,7 @@
           <?php if($equipments): ?>
           <?php foreach($equipments as $equipment): ?>
           <tr>
-            <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->barcode; ?></a></td>
+            <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->id; ?></a></td>
             <td><?php echo $equipment->model_label; ?></td>
             <td><?php echo $equipment->location; ?></td>
             <td><?php echo $equipment->status; ?></td>

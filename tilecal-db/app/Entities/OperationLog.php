@@ -12,11 +12,10 @@ class OperationLog extends Entity
     ];
     protected $dates   = ['created_at'];
     protected $casts   = [
-         "changes" => "json-array",
-         "record_id" => "integer"
+         "changes" => "json-array"
     ];
 
-    protected $msgIgnore = ['id', 'filedata'];
+    protected $msgIgnore = ['filedata'];
 
     protected function getMessage(){
         helper('string');

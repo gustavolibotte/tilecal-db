@@ -10,8 +10,8 @@ class EquipmentForm extends Form{
     public function initialize()
     {
         $this->fields = [
-            'barcode' => [
-                'id' => 'barcode',
+            'id' => [
+                'id' => 'id',
                 'required' => true,
                 'helpText' => "Equipment's barcode value",
                 'fieldType' => 'input',
@@ -24,6 +24,7 @@ class EquipmentForm extends Form{
                 'id' => 'model_label',
                 'label' => 'Model',
                 'required' => true,
+                'helpText' => "Equipment's model",
                 'fieldType' => 'input',
                 'fieldParams' => [
                     'readOnly' => null
@@ -33,6 +34,7 @@ class EquipmentForm extends Form{
                 'id' => 'location',
                 'required' => true,
                 'fieldType' => 'dropdown',
+                'helpText' => "Current equipment location",
                 'fieldParams' => [
                     'options' => (new \App\Models\LocationModel())->getFormDropdownOptions()
                 ]
@@ -41,6 +43,7 @@ class EquipmentForm extends Form{
                 'id' => 'status',
                 'required' => true,
                 'fieldType' => 'dropdown',
+                'helpText' => "Current equipment status",
                 'fieldParams' => [
                     'options' => (new \App\Models\StatusModel())->getFormDropdownOptions()
                 ]
@@ -49,6 +52,7 @@ class EquipmentForm extends Form{
                 'id' => 'serial',
                 'required' => false,
                 'fieldType' => 'input',
+                'helpText' => "Equipment serial number",
                 'fieldParams' => [
                     'maxlength' => 20
                 ]
@@ -57,6 +61,7 @@ class EquipmentForm extends Form{
                 'id' => 'comments',
                 'required' => false,
                 'fieldType' => 'textarea',
+                'helpText' => "Possible necessary comments on the equipment situtation.",
                 'fieldParams' => [
                     'rows' => 3
                 ]
@@ -64,24 +69,24 @@ class EquipmentForm extends Form{
         ];
 
         $this->validationRules = [
-            "barcode" => [
+            "id" => [
                 "rules" => [
                     "required",
                     "alpha_numeric",
                     "exact_length[7]",
-                    "is_unique[equipments.barcode]"
+                    "is_unique[equipments.id]"
                 ],
                 "errors" => [
-                    "required" => "You must supply a barcode for the equipment.",
-                    "alpha_numeric" => "The barcode must be alphanumeric.",
-                    "exact_length" => "The barcode must have 7 characthers.",
-                    "is_unique" => "This barcode already exists."
+                    "required" => "You must supply an id for the equipment.",
+                    "alpha_numeric" => "The id must be alphanumeric.",
+                    "exact_length" => "The id must have 7 characthers.",
+                    "is_unique" => "This id already exists."
                 ]
             ],
             "model_label" => [
                 "rules" => [
                     "required",
-                    "is_not_unique[models.name]",
+                    "is_not_unique[models.label]",
                 ],
                 "errors" => [
                     "required" => "You must supply a model for the equipment.",
@@ -133,7 +138,7 @@ class EquipmentForm extends Form{
             throw new Exception('To get the equipment you must validate the form first');
         }
         $equipment = new \App\Entities\Equipment([
-            'barcode' => $this->request->getVar('barcode'),
+            'id' => $this->request->getVar('id'),
             'serial' => $this->request->getVar('serial'),
             'comments' => $this->request->getVar('comments')
         ]);
@@ -170,21 +175,21 @@ class EquipmentForm extends Form{
     }
 
     public function asEdit(){
-        $this->validationRules['barcode'] = [
+        $this->validationRules['id'] = [
             "rules" => [
                 "required",
                 "alpha_numeric",
                 "exact_length[7]",
-                "is_not_unique[equipments.barcode]"
+                "is_not_unique[equipments.id]"
             ],
             "errors" => [
-                "required" => "You must supply a barcode for the equipment.",
-                "alpha_numeric" => "The barcode must be alphanumeric.",
-                "exact_length" => "The barcode must have 7 characthers.",
-                "is_not_unique" => "The given barcode doesn't exist."
+                "required" => "You must supply an id for the equipment.",
+                "alpha_numeric" => "The id must be alphanumeric.",
+                "exact_length" => "The id must have 7 characthers.",
+                "is_not_unique" => "The given id doesn't exist."
             ]
         ];
         $this->validator->setRules($this->validationRules);
-        $this->fields['barcode']['fieldParams']['readOnly'] = null;
+        $this->fields['id']['fieldParams']['readOnly'] = null;
     }
 }

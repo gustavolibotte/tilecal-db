@@ -62,14 +62,12 @@ class EquipmentModel extends LogModel
 
     protected function fullQuery(){
         $selectColumns = 'equipments.id, ';
-        $selectColumns .= 'equipments.barcode, ';
         $selectColumns .= 'models.label as model_label, ';
         $selectColumns .= 'models.name as model_name, ';
         $selectColumns .= 'locations.name as location, ';
         $selectColumns .= 'statuses.name as status, ';
         $selectColumns .= 'parent_models.label as parent_model_label, ';
         $selectColumns .= 'parent_models.name as parent_model_name, ';
-        $selectColumns .= 'parents.barcode as parent_barcode, ';
         $selectColumns .= 'equipments.parent_id, ';
         $selectColumns .= 'equipments.serial, ';
         $selectColumns .= 'equipments.comments, ';
@@ -78,11 +76,11 @@ class EquipmentModel extends LogModel
         $selectColumns .= 'equipments.created_at, ';
         $selectColumns .= 'equipments.deleted_at ';
         $query = $this->select($selectColumns)
-                      ->join('models', 'equipments.model_id = models.id')
-                      ->join('locations', 'equipments.location_id = locations.id')
-                      ->join('statuses', 'equipments.status_id = statuses.id')
-                      ->join('equipments parents', 'equipments.parent_id = parents.id')
-                      ->join('models parent_models', 'parents.model_id = parent_models.id');
+                      ->join('models', 'equipments.model_id = models.id', 'left')
+                      ->join('locations', 'equipments.location_id = locations.id', 'left')
+                      ->join('statuses', 'equipments.status_id = statuses.id', 'left')
+                      ->join('equipments parents', 'equipments.parent_id = parents.id', 'left')
+                      ->join('models parent_models', 'parents.model_id = parent_models.id', 'left');
         return $query;
 
     }
@@ -101,7 +99,6 @@ class EquipmentModel extends LogModel
 
     public function getFileRelated($fileId, $limit=null){
         $selectColumns = 'equipments.id, ';
-        $selectColumns .= 'equipments.barcode, ';
         $selectColumns .= 'models.label as model_label, ';
         $selectColumns .= 'models.name as model_name, ';
         $selectColumns .= 'locations.name as location, ';
@@ -195,7 +192,7 @@ class EquipmentModel extends LogModel
             }
         }
         $insertLog = new OperationLog([
-            "record_id" => $insertInfo["id"],
+            "record_id" => $insertInfo["data"]["id"],
             "action" => "insert",
             "changes" => $changes
         ]);
