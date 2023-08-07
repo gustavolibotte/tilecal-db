@@ -65,19 +65,26 @@
   <div class="modal fade" id="edit-modal" tabindex="-1" aria-labelledby="edit-modal-label" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="edit-modal-label">Edit info</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <? echo form_open_multipart($editUrl, 'id="edit-form"'); ?>
-        <div class="modal-body">
-          <? echo $editForm->toHTML();?>
+      <? if ($editable):?>
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="edit-modal-label">Edit info</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Save</button>
+        <? echo form_open_multipart($editUrl, 'id="edit-form"'); ?>
+          <div class="modal-body">
+            <? echo $editForm->toHTML();?>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      <? else: ?>
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="edit-modal-label">You can't edit this, if you think this an error contact an admin.</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-      </form>
+      <? endif; ?>
     </div>
   </div>
 </div>

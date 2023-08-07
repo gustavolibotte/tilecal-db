@@ -37,6 +37,7 @@ class Equipments extends BaseController
         $viewData['editForm'] = new \App\Library\Forms\EquipmentForm();
         $viewData['editForm']->asEdit();
         $viewData['editForm']->setFieldValues($equipment->toRawArray());
+        $viewData['editable'] = true;
         return view('equipment/view', $viewData);
     }
 

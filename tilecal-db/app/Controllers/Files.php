@@ -24,6 +24,7 @@ class Files extends BaseController
         $viewData['pageHeader'] = sprintf('File %s', $fileInfo->name);
         $viewData['infoHeader'] = 'File Info';
         $viewData['histories'] = (new HistModel())->getFileHist($fileInfo->id);
+        $viewData['editable'] = false;
         return view('files/view', $viewData);
     }
 
