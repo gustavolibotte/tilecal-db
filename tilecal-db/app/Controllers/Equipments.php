@@ -87,7 +87,7 @@ class Equipments extends BaseController
             if ($form->validate()){
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
-                // $equipmentModel->update($equipmentId, $equipment);
+                $equipmentModel->update($equipmentId, $equipment);
                 $messages[] = [
                     'message' => sprintf('Edited equipment %s with success', $equipment->barcode),
                     'type' => 'success'

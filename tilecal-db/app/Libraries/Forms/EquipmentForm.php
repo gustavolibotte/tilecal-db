@@ -170,7 +170,20 @@ class EquipmentForm extends Form{
     }
 
     public function asEdit(){
-        unset($this->validationRules['barcode']);
+        $this->validationRules['barcode'] = [
+            "rules" => [
+                "required",
+                "alpha_numeric",
+                "exact_length[7]",
+                "is_not_unique[equipments.barcode]"
+            ],
+            "errors" => [
+                "required" => "You must supply a barcode for the equipment.",
+                "alpha_numeric" => "The barcode must be alphanumeric.",
+                "exact_length" => "The barcode must have 7 characthers.",
+                "is_not_unique" => "The given barcode doesn't exist."
+            ]
+        ];
         $this->validator->setRules($this->validationRules);
         $this->fields['barcode']['fieldParams']['readOnly'] = null;
     }

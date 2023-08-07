@@ -53,7 +53,7 @@ abstract class LogModel extends Model{
         if (isset($changes)){
             return $changes;
         }else{
-            return null;
+            return [];
         }
     }
 
