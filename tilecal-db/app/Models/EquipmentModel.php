@@ -14,7 +14,7 @@ class EquipmentModel extends LogModel
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'barcode',
+        'id',
         'model_id',
         'location_id',
         'status_id',

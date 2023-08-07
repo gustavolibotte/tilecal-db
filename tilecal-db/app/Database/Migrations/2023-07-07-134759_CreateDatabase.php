@@ -129,13 +129,10 @@ class CreateDatabase extends Migration
     }
 
     public function createEquipments(){
-        $this->addId();
         $this->forge->addField([
-            'barcode' => [
+            'id' => [
                 'type' => 'CHAR',
                 'constraint' => 7,
-                'unique' => true,
-                'null' => false
             ],
             'model_id' => [
                 'type' => 'INT',
@@ -153,8 +150,8 @@ class CreateDatabase extends Migration
                 'null' => false
             ],
             'parent_id' => [
-                'type' => 'INT',
-                'unsigned' => true,
+                'type' => 'CHAR',
+                'constraint' => 7,
                 'null' => true
             ],
             'serial' => [
@@ -189,8 +186,8 @@ class CreateDatabase extends Migration
                 'null' => false
             ],
             'equipment_id' => [
-                'type' => 'INT',
-                'unsigned' => true,
+                'type' => 'CHAR',
+                'constraint' => 7,
                 'null' => false
             ]
         ]);
@@ -220,8 +217,8 @@ class CreateDatabase extends Migration
                 'null' => false
             ],
             'record_id' => [
-                'type' => 'INT',
-                'unsigned' => true,
+                'type' => 'VARCHAR',
+                'constraint' => 10,
                 'null' => false
             ],
             'changes' => [
