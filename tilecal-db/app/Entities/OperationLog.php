@@ -88,7 +88,7 @@ class OperationLog extends Entity
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
             if (!in_array($name, $this->msgIgnore)){
-                $msg .= sprintf('<li> <b>%s</b> - %s </li>', ucfirst($name), $value);
+                $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
             }
         }
         $msg .= '</ul>';
@@ -105,7 +105,7 @@ class OperationLog extends Entity
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
             if (!in_array($name, $this->msgIgnore)){
-                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', ucfirst($name), $value['old'], $value['new']);
+                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', snake2Capitalized($name), $value['old'], $value['new']);
             }
         }
         $msg .= '</ul>';
