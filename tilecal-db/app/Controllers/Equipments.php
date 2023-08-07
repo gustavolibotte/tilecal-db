@@ -48,10 +48,9 @@ class Equipments extends BaseController
     }
 
     public function register($modelName='pmt'){
-        helper(['form', 'url']);
+        helper(['form', 'url', 'message']);
 
         $formClass = $this->getFormClass($modelName);
-        $session = \Config\Services::session();
         $equipmentModel = new EquipmentModel();
 
         if ($this->request->is('post')){
@@ -60,8 +59,20 @@ class Equipments extends BaseController
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
                 $equipmentModel->insert($equipment);
-                $session->setFlashdata('success', true);
+                $messages[] = [
+                    'message' => 'Register success',
+                    'type' => 'success'
+                ];
+                addMessages($messages);
                 return redirect(sprintf('equipments/%s/register', $modelName));
+            } else {
+                foreach ($form->getErrors() as $errorMsg){
+                    $messages[] = [
+                        'message' => $errorMsg,
+                        'type' => 'danger'
+                    ];
+                    addMessages($messages);
+                }
             };
         } else{
             $form = new $formClass();
@@ -74,35 +85,36 @@ class Equipments extends BaseController
         $registerData['pageTitle'] = $title;
         $registerData['pageHeader'] = $title;
         $registerData['forms'] = ['Equipment Info'=> $form];
-        $registerData['successMessage'] = $session->getFlashdata('success');
         $registerData['formUrl'] = uri_string();
+        $registerData['successMessage'] = false;
         $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $modelName));
+        
         return view('equipment/register', $registerData);
     }
 
     public function edit($equipmentId, $modelName){
+        helper('message');
         $formClass = '\App\Library\Forms\EquipmentForm';
-        $session = \Config\Services::session();
         $form = new $formClass($this->request);
         $form->asEdit();
-            if ($form->validate()){
-                $equipmentModel = new EquipmentModel();
-                $equipment = $form->getEntity();
-                $equipmentModel->update($equipmentId, $equipment);
+        if ($form->validate()){
+            $equipmentModel = new EquipmentModel();
+            $equipment = $form->getEntity();
+            $equipmentModel->update($equipmentId, $equipment);
+            $messages[] = [
+                'message' => sprintf('Edited equipment %s with success', $equipment->id),
+                'type' => 'success'
+            ];
+            addMessages($messages);
+        } else{
+            foreach ($form->getErrors() as $errorMsg){
                 $messages[] = [
-                    'message' => sprintf('Edited equipment %s with success', $equipment->id),
-                    'type' => 'success'
+                    'message' => $errorMsg,
+                    'type' => 'danger'
                 ];
-                $session->setFlashdata('messages', $messages);
-            } else{
-                foreach ($form->getErrors() as $errMsg){
-                    $messages[] = [
-                        'message' => $errMsg,
-                        'type' => 'danger'
-                    ];
-                }
-                $session->setFlashdata('messages', $messages);
+                addMessages($messages);
             }
+        }
             return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+        }
     }
-}

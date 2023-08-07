@@ -7,3 +7,22 @@ function make_message(string $message, string $type='danger'){
     $alert .= '</div>';
     return $alert;
 }
+
+
+function addMessages(array $messages , string $type='danger'){
+    $session = \Config\Services::session();
+    $session->set('messages', $messages);
+    return true;
+}
+
+
+function getMessagesArray(){
+    $session = \Config\Services::session();
+    if ($session->has('messages')){
+        $messages = $session->get('messages');
+        $session->remove('messages');
+    } else {
+        $messages = [];
+    }
+    return $messages;
+}

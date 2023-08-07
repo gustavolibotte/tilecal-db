@@ -154,7 +154,6 @@ class EquipmentForm extends Form{
         );
         $modelLabel = $this->request->getVar('model_label');
         $model = (new \App\Models\ModelModel())->where(sprintf("label = '%s'", $modelLabel))->first();
-        d($model);
         $equipment->model_id = $model->id;
         $modelParams = [];
         foreach ($model->params as $param){
