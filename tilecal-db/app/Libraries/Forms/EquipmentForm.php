@@ -168,4 +168,10 @@ class EquipmentForm extends Form{
         unset($this->fields['comments']);
         $this->fields['comments'] = $commentsField;
     }
+
+    public function asEdit(){
+        unset($this->validationRules['barcode']);
+        $this->validator->setRules($this->validationRules);
+        $this->fields['barcode']['fieldParams']['readOnly'] = null;
+    }
 }

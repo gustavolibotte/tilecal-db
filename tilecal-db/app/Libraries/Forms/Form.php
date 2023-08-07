@@ -24,6 +24,13 @@ abstract class Form{
 
     protected function initialize(){}
 
+    public function setFieldValues(array $data)
+    {
+        foreach (array_keys($this->fields) as $key){
+            $this->fields[$key]['value'] = $data[$key];
+        }
+    }
+
     public function validate(){
         if (is_null($this->request)){
             throw new \Exception('Cannot validate a form without a request associated to it');
@@ -72,5 +79,11 @@ abstract class Form{
         $this->isValid = false;
         $this->request = null;
         $this->calledValidate = false;
+    }
+
+    public function removeField(string $fieldName){
+        unset($this->fields[$fieldName]);
+        unset($this->validationRules[$fieldName]);
+        $this->validator->setRules($this->validationRules);
     }
 }

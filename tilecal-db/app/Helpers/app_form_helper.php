@@ -12,8 +12,12 @@ function user_input_field($id, $value, $fieldType, $fieldParams){
     helper('form');
     $fieldParams['id'] = $id;
     $fieldParams['name'] = $id;
-    $fieldParams['value'] = $value;
     $fieldParams['class'] = 'form-control';
+    if ($fieldType == 'dropdown'){
+        $fieldParams['selected'] = $value;
+    } else{
+        $fieldParams['value'] = $value;
+    }
     $inputStr = call_user_func(sprintf('form_%s', $fieldType), $fieldParams);
     return $inputStr;
 }

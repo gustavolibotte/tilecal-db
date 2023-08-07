@@ -27,7 +27,9 @@
               <h4><? echo $infoHeader; ?></h4>
             </div>
             <div class="col-1 text-right">
-              <a type="button"class="btn btn-primary" href="#">Edit</a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-modal">
+              Edit
+            </button>
             </div>
           </div>
           <div class="row">
@@ -60,6 +62,25 @@
       </div>
     </div>
   </div>
+  <div class="modal fade" id="edit-modal" tabindex="-1" aria-labelledby="edit-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="edit-modal-label">Edit info</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <? echo form_open_multipart($editUrl, 'id="edit-form"'); ?>
+        <div class="modal-body">
+          <? echo $editForm->toHTML();?>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript') ?>

@@ -3,9 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\Equipment2FileModel;
 use App\Models\EquipmentModel;
-use App\Models\FileModel;
 use App\Models\ModelModel;
 
 class Equipments extends BaseController
@@ -25,28 +23,40 @@ class Equipments extends BaseController
     }
 
     public function view($equipmentId){
+        helper('form');
         $equipmentModel = new EquipmentModel();
-        $equipmentInfo = $equipmentModel->getEquipment($equipmentId);
+        $equipment = $equipmentModel->getEquipment($equipmentId);
         $viewData['infoHeader'] = 'Equipment Info';
-        $viewData['equipmentInfo'] = $equipmentInfo;
+        $viewData['equipmentInfo'] = $equipment;
         $histModel = new \App\Models\HistModel();
         $viewData["histories"] = $histModel->getEquipmentHist($equipmentId);
-        $viewData['pageHeader'] = sprintf('Equipment: %s', $equipmentInfo->barcode);
-        $viewData['pageTitle'] = sprintf('Equipment %s', $equipmentInfo->barcode);
+        $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->barcode);
+        $viewData['pageTitle'] = sprintf('Equipment %s', $equipment->barcode);
+        $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%d', $equipment->modelName, $equipment->id));
+        // $formClass = $this->getFormClass($equipment->modelName);
+        $viewData['editForm'] = new \App\Library\Forms\EquipmentForm();
+        $viewData['editForm']->asEdit();
+        $viewData['editForm']->setFieldValues($equipment->toRawArray());
         return view('equipment/view', $viewData);
     }
 
-    public function register($modelName='pmt'){
-        helper(['form', 'string', 'url']);
-
+    protected function getFormClass($modelName){
+        helper('string');
         $formClass = sprintf('\App\Library\Forms\%sForm', snake2LowerCamelCase($modelName));
+        return $formClass;
+    }
+
+    public function register($modelName='pmt'){
+        helper(['form', 'url']);
+
+        $formClass = $this->getFormClass($modelName);
         $session = \Config\Services::session();
         $equipmentModel = new EquipmentModel();
 
         if ($this->request->is('post')){
             $form = new $formClass($this->request);
             if ($form->validate()){
-                echo "Success";
+                $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
                 $equipmentModel->insert($equipment);
                 $session->setFlashdata('success', true);
@@ -67,5 +77,31 @@ class Equipments extends BaseController
         $registerData['formUrl'] = uri_string();
         $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $modelName));
         return view('equipment/register', $registerData);
+    }
+
+    public function edit($equipmentId, $modelName){
+        $formClass = '\App\Library\Forms\EquipmentForm';
+        $session = \Config\Services::session();
+        $form = new $formClass($this->request);
+        $form->asEdit();
+            if ($form->validate()){
+                $equipmentModel = new EquipmentModel();
+                $equipment = $form->getEntity();
+                // $equipmentModel->update($equipmentId, $equipment);
+                $messages[] = [
+                    'message' => sprintf('Edited equipment %s with success', $equipment->barcode),
+                    'type' => 'success'
+                ];
+                $session->setFlashdata('messages', $messages);
+            } else{
+                foreach ($form->getErrors() as $errMsg){
+                    $messages[] = [
+                        'message' => $errMsg,
+                        'type' => 'danger'
+                    ];
+                }
+                $session->setFlashdata('messages', $messages);
+            }
+            return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
     }
 }

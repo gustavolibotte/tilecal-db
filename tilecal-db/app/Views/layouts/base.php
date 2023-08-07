@@ -19,6 +19,7 @@
       <div class="jumbotron text-left">
         <h1><? echo $pageHeader ?></h1>
       </div>
+      <? echo view_cell('MessagesCell::showMessages'); ?>
     </div>
     <?= $this->renderSection('content') ?>
   </div>
