@@ -164,14 +164,17 @@ class EquipmentModel extends LogModel
     protected function getUpdateLog($updateInfo){
         $id = $updateInfo["id"][0];
         $oldRow = $this->find($id)->toArray();
-        $changes = $this->getUpdateChanges($oldRow, $updateInfo["data"]);
-
-        // if (array_key_exists("model_params", $updateInfo["data"])){
-        //     $oldModelParams = json_decode($oldRow["model_params"], true);
-        //     $newModelParams = json_decode($updateInfo["data"]["model_params"], true);
-        //     $changes = array_merge($changes,
-        //                            $this->getUpdateChanges($oldModelParams, $newModelParams));
-        // }
+        if (array_key_exists("model_params", $updateInfo["data"])){ //Should always happen
+            // Makes stdClass to assosciative array
+            $oldModelParams = json_decode(json_encode($oldRow["model_params"]), true);
+            $newModelParams = json_decode($updateInfo["data"]["model_params"], true);
+            $changes = $this->getUpdateChanges($oldModelParams, $newModelParams);
+        } else{
+            $changes = [];
+        }
+        $changes = array_merge($changes,
+                               $this->getUpdateChanges($oldRow, $updateInfo["data"]));
+        
         foreach ($changes as $name=>$change){
             if ($name == 'model_id'){
                 $changes['model'] = $this->updateSubsIds('label', new ModelModel(), $change);
