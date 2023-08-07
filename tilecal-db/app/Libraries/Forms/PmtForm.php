@@ -3,15 +3,22 @@
 namespace App\Library\Forms;
 
 class PmtForm extends EquipmentForm{
-
     public $pmtTypeOptions = [
         'null' => 'Select an option',
         'R11187' => 'R11187',
-        'R7877' => 'R7877'
+        'R7877' => 'R7877',
+        'R7787' => 'R7787',
+        'R11187' => 'R11187',
+        'R11187-SEL' => 'R11187-SEL',
+        'R11187-A1' => 'R11187-A1'
     ];
     public $validPmtTypeValues = [
         'R11187',
-        'R7877'
+        'R7877',
+        'R7787',
+        'R11187',
+        'R11187-SEL',
+        'R11187-A1'
     ];
 
     public function initialize()
