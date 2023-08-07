@@ -7,13 +7,13 @@
 
 <?= $this->section('entryProperties') ?>
   <li class="list-group-item"><b>ID</b>: <? echo $equipmentInfo->id?> </li>
-  <li class="list-group-item"><b>Model</b>: <? echo $equipmentInfo->modelLabel?> </li>
-  <li class="list-group-item"><b>Location</b>: <? echo $equipmentInfo->location?> </li>
+  <li class="list-group-item"><b>Model</b>: <? echo $equipmentInfo->model_label?> </li>
+  <li class="list-group-item"><b>Location</b>: <? echo $equipmentInfo->location . ' - ' . $equipmentInfo->location_description?> </li>
   <li class="list-group-item"><b>Status</b>: <? echo $equipmentInfo->status?> </li>
-  <li class="list-group-item"><b>Parent ID</b>: <? echo $equipmentInfo->parentID?></li>
+  <li class="list-group-item"><b>Parent ID</b>: <? echo $equipmentInfo->parent_id?></li>
   <li class="list-group-item"><b>Serial</b>: <? echo $equipmentInfo->serial?> </li>
-  <?php if($equipmentInfo->modelParams): ?>
-    <?php foreach($equipmentInfo->modelParams as $name=>$value): ?>
+  <?php if($equipmentInfo->model_params): ?>
+    <?php foreach($equipmentInfo->model_params as $name=>$value): ?>
       <li class="list-group-item"><b><? echo ucwords(str_replace('_', ' ', $name)); ?></b>: <? echo $value; ?> </li>
     <?php endforeach; ?>
   <?php endif; ?>

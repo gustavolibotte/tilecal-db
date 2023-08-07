@@ -65,6 +65,7 @@ class EquipmentModel extends LogModel
         $selectColumns .= 'models.label as model_label, ';
         $selectColumns .= 'models.name as model_name, ';
         $selectColumns .= 'locations.name as location, ';
+        $selectColumns .= 'locations.description as location_description, ';
         $selectColumns .= 'statuses.name as status, ';
         $selectColumns .= 'parent_models.label as parent_model_label, ';
         $selectColumns .= 'parent_models.name as parent_model_name, ';
@@ -102,6 +103,7 @@ class EquipmentModel extends LogModel
         $selectColumns .= 'models.label as model_label, ';
         $selectColumns .= 'models.name as model_name, ';
         $selectColumns .= 'locations.name as location, ';
+        $selectColumns .= 'locations.description as location_description, ';
         $selectColumns .= 'statuses.name as status, ';
         $selectColumns .= 'equipments.parent_id, ';
         $selectColumns .= 'equipments.serial, ';
@@ -161,14 +163,23 @@ class EquipmentModel extends LogModel
 
     protected function getUpdateLog($updateInfo){
         $id = $updateInfo["id"][0];
-        $oldRow = $this->find($id)->toRawArray();
+        $oldRow = $this->find($id)->toArray();
         $changes = $this->getUpdateChanges($oldRow, $updateInfo["data"]);
 
-        if (array_key_exists("model_params", $updateInfo["data"])){
-            $oldModelParams = json_decode($oldRow["model_params"]);
-            $newModelParams = json_decode($updateInfo["data"]["model_params"]);
-            $changes = array_merge($changes,
-                                   $this->getUpdateChanges($oldModelParams, $newModelParams));
+        // if (array_key_exists("model_params", $updateInfo["data"])){
+        //     $oldModelParams = json_decode($oldRow["model_params"], true);
+        //     $newModelParams = json_decode($updateInfo["data"]["model_params"], true);
+        //     $changes = array_merge($changes,
+        //                            $this->getUpdateChanges($oldModelParams, $newModelParams));
+        // }
+        foreach ($changes as $name=>$change){
+            if ($name == 'model_id'){
+                $changes['model'] = $this->updateSubsIds('label', new ModelModel(), $change);
+            } elseif ($name == 'location_id'){
+                $changes['location'] = $this->updateSubsIds('name', new LocationModel(), $change);
+            } elseif ($name == 'status_id'){
+                $changes['status'] = $this->updateSubsIds('name', new StatusModel(), $change);
+            }
         }
         $updateLog = new OperationLog([
             "record_id" => $id,
@@ -176,6 +187,15 @@ class EquipmentModel extends LogModel
             "changes" => $changes
         ]);
         return $updateLog;
+    }
+
+    protected function updateSubsIds(string $key, BaseModel $model, array $change){
+        $entities = $model->getIdArray([$change['old'], $change['new']]);
+        $newChange = [
+            'old' => $entities[$change['old']]->toArray()[$key],
+            'new' => $entities[$change['new']]->toArray()[$key],
+        ];
+        return $newChange;
     }
 
     protected function getInsertLog($insertInfo){
@@ -191,6 +211,12 @@ class EquipmentModel extends LogModel
                 $changes[$name] = $value;
             }
         }
+        $model = (new \App\Models\ModelModel())->find($insertInfo['data']['model_id']);
+        $changes['model'] = $model->label;
+        $location = (new \App\Models\LocationModel())->find($insertInfo['data']['location_id']);
+        $changes['location'] = $location->name;
+        $status = (new \App\Models\StatusModel())->find($insertInfo['data']['status_id']);
+        $changes['status'] = $status->name;
         $insertLog = new OperationLog([
             "record_id" => $insertInfo["data"]["id"],
             "action" => "insert",

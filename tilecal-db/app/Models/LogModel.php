@@ -3,9 +3,8 @@
 namespace App\Models;
 
 use App\Entities\OperationLog;
-use CodeIgniter\Model;
 
-abstract class LogModel extends Model{
+abstract class LogModel extends BaseModel{
 
     protected $table;
     protected bool $isMigration = false;
@@ -41,7 +40,7 @@ abstract class LogModel extends Model{
         return $updateInfo;
     }
 
-    protected function getUpdateChanges($old, $new){
+    protected function getUpdateChanges(array $old, array $new){
         foreach ($new as $name=>$newValue){
             if ((!in_array($name, $this->updateLogIgnore)) and ($old[$name] != $newValue)){
                 $changes[$name] = [
@@ -59,7 +58,7 @@ abstract class LogModel extends Model{
 
     protected function getUpdateLog($updateInfo){
         $id = $updateInfo["id"][0];
-        $oldRow = $this->find($id)->toRawArray();
+        $oldRow = $this->find($id)->toArray();
         $changes = $this->getUpdateChanges($oldRow, $updateInfo["data"]);
         $updateLog = new OperationLog([
             "record_id" => $id,

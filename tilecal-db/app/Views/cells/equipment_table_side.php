@@ -10,7 +10,7 @@
         <?php foreach($equipments as $equipment): ?>
         <tr>
             <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->id; ?></a></td>
-            <td><? echo $equipment->modelLabel; ?></td>
+            <td><? echo $equipment->model_label; ?></td>
         </tr>
         <?php endforeach; ?>
         <?php endif; ?>

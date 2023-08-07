@@ -142,24 +142,25 @@ class EquipmentForm extends Form{
             'serial' => $this->request->getVar('serial'),
             'comments' => $this->request->getVar('comments')
         ]);
-        $equipment->locationId = $this->getId(
+        $equipment->location_id = $this->getId(
             'name',
             $this->request->getVar('location'),
             new \App\Models\LocationModel()
         );
-        $equipment->statusId = $this->getId(
+        $equipment->status_id = $this->getId(
             'name',
             $this->request->getVar('status'),
             new \App\Models\StatusModel()
         );
         $modelLabel = $this->request->getVar('model_label');
         $model = (new \App\Models\ModelModel())->where(sprintf("label = '%s'", $modelLabel))->first();
-        $equipment->modelId = $model->id;
+        d($model);
+        $equipment->model_id = $model->id;
         $modelParams = [];
         foreach ($model->params as $param){
             $modelParams[$param] = $this->request->getVar($param);
         }
-        $equipment->modelParams = $modelParams;
+        $equipment->model_params = $modelParams;
         return $equipment;
     }
 

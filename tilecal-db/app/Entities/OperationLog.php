@@ -6,17 +6,14 @@ use CodeIgniter\Entity\Entity;
 
 class OperationLog extends Entity
 {
-    protected $datamap = [
-        'createdAt' => 'created_at',
-        'recordId' => 'record_id',
-    ];
+    protected $datamap = [];
     protected $dates   = ['created_at'];
     protected $casts   = [
          "changes" => "json-array"
     ];
 
     protected $msgIgnore = ['filedata'];
-
+    
     protected function getMessage(){
         helper('string');
         $msgBuilder = sprintf(
@@ -50,7 +47,7 @@ class OperationLog extends Entity
     }
 
     protected function getMessageStart(){
-        $msg = sprintf('<b>%s</b> - <b>%s</b> - ', $this->createdAt, $this->user);
+        $msg = sprintf('<b>%s</b> - <b>%s</b> - ', $this->created_at, $this->user);
         return $msg;
     }
 
@@ -79,6 +76,36 @@ class OperationLog extends Entity
             base_url(sprintf('equipments/view/%s', $this->changes['equipment_id']))
         );
         $msg .= sprintf('Link between %s and %s removed', $fileLink, $equipmentLink);
+        return $msg;
+    }
+
+    protected function insertEquipmentsMessage(){
+        $msg = $this->getMessageStart();
+        $msg .= 'Entry created with values:';
+        $msg .= '<ul>';
+        foreach ($this->changes as $name=>$value){
+            if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
+            }
+        }
+        $msg .= '</ul>';
+        return $msg;
+    }
+
+    protected function updateEquipmentsMessage(){
+        $msg = $this->getMessageStart();
+        if (is_null($this->changes)){
+            $msg .= 'submited update with no changes';
+            return $msg;
+        }
+        $msg .= 'Entry updated with values:';
+        $msg .= '<ul>';
+        foreach ($this->changes as $name=>$value){
+            if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', snake2Capitalized($name), $value['old'], $value['new']);
+            }
+        }
+        $msg .= '</ul>';
         return $msg;
     }
 
@@ -126,10 +153,10 @@ class OperationLog extends Entity
     }
 
     static function orderByCreation($a, $b){
-        return $a->createdAt <=> $b->createdAt;
+        return $a->created_at <=> $b->created_at;
     }
 
     static function orderByCreationReverse($a, $b){
-        return $b->createdAt <=> $a->createdAt;
+        return $b->created_at <=> $a->created_at;
     }
 }

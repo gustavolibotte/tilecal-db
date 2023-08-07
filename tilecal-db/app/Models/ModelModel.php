@@ -44,7 +44,7 @@ class ModelModel extends DimModel
 
     protected function getUpdateLog($updateInfo){
         $id = $updateInfo["id"][0];
-        $oldRow = $this->find($id)->toRawArray();
+        $oldRow = $this->find($id)->toArray();
         $changes = $this->getUpdateChanges($oldRow, $updateInfo["data"]);
 
         if (array_key_exists("params", $changes)){
