@@ -6,26 +6,28 @@ use CodeIgniter\Entity\Entity;
 
 class OperationLog extends Entity
 {
-    protected $datamap = [
-        'createdAt' => 'created_at',
-        'recordId' => 'record_id',
-    ];
+    protected $datamap = [];
     protected $dates   = ['created_at'];
     protected $casts   = [
-         "changes" => "json",
-         "record_id" => "integer"
+         "changes" => "json-array"
     ];
 
+    protected $msgIgnore = ['filedata'];
+    
     protected function getMessage(){
-        if ($this->isInsert()){
-            return $this->insertMessage();
-        }elseif ($this->isUpdate()){
-            return $this->updateMessage();
-        }elseif ($this->isDelete()){
-            $msg = $this->deleteMessage();
-            return $this->makeDanger($msg);
-        }else {
-            return null;
+        helper('string');
+        $msgBuilder = sprintf(
+            '%s%sMessage',
+            $this->action, snake2CamelCase($this->table)
+        );
+        if (method_exists($this, $msgBuilder)){
+            return $this->$msgBuilder();
+        } else{
+            $defaultMsgBuilder = sprintf(
+                'default%sMessage',
+                ucfirst($this->action)
+            );
+            return $this->$defaultMsgBuilder();
         }
     }
     public function isInsert(){
@@ -45,43 +47,116 @@ class OperationLog extends Entity
     }
 
     protected function getMessageStart(){
-        $msg = sprintf('<b>%s</b> - ', $this->createdAt);
+        $msg = sprintf('<b>%s</b> - <b>%s</b> - ', $this->created_at, $this->user);
         return $msg;
     }
 
-    protected function insertMessage(){
+    protected function insertEquipmentsToFilesMessage(){
         $msg = $this->getMessageStart();
-        $msg .= sprintf('<b>%s</b> created entry with ID %s with values:', $this->user, $this->recordId);
+        $fileLink = sprintf(
+            '<a type="button" class="link-primary" href="%s">file</a>',
+            base_url(sprintf('files/view/%s', $this->changes['file_id']))
+        );
+        $equipmentLink = sprintf(
+            '<a type="button" class="link-primary" href="%s">equipment</a>',
+            base_url(sprintf('equipments/view/%s', $this->changes['equipment_id']))
+        );
+        $msg .= sprintf('Link between %s and %s', $fileLink, $equipmentLink);
+        return $msg;
+    }
+
+    protected function deleteEquipmentsToFilesMessage(){
+        $msg = $this->getMessageStart();
+        $fileLink = sprintf(
+            '<a type="button" class="link-primary" href="%s">file</a>',
+            base_url(sprintf('files/view/%s', $this->changes['file_id']))
+        );
+        $equipmentLink = sprintf(
+            '<a type="button" class="link-primary" href="%s">equipment</a>',
+            base_url(sprintf('equipments/view/%s', $this->changes['equipment_id']))
+        );
+        $msg .= sprintf('Link between %s and %s removed', $fileLink, $equipmentLink);
+        return $msg;
+    }
+
+    protected function insertEquipmentsMessage(){
+        $msg = $this->getMessageStart();
+        $msg .= 'Entry created with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
-            $msg .= sprintf('<li> <b>%s</b> - %s </li>', $name, $value);
+            if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
+            }
         }
         $msg .= '</ul>';
         return $msg;
     }
 
-    protected function updateMessage(){
+    protected function updateEquipmentsMessage(){
         $msg = $this->getMessageStart();
         if (is_null($this->changes)){
-            $msg .= sprintf('<b>%s</b> submited update with no changes', $this->user,);
+            $msg .= 'submited update with no changes';
             return $msg;
         }
-        $msg .= sprintf('<b>%s</b> updated entry with ID <b>%s</b> with values:', $this->user, $this->recordId);
+        $msg .= 'Entry updated with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
-            $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', $name, $value->old, $value->new);
+            if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', snake2Capitalized($name), $value['old'], $value['new']);
+            }
         }
         $msg .= '</ul>';
         return $msg;
     }
 
-    protected function deleteMessage(){
+    protected function defaultInsertMessage(){
         $msg = $this->getMessageStart();
-        $msg .= sprintf('<b>%s</b> deleted entry with ID <b>%s</b>', $this->user, $this->recordID);
+        $msg .= 'Entry created with values:';
+        $msg .= '<ul>';
+        foreach ($this->changes as $name=>$value){
+            if (!in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
+            }
+        }
+        $msg .= '</ul>';
         return $msg;
     }
 
-    static function cmp_obj($a, $b){
-        return $a->createdAt <=> $b->createdAt;
+    protected function defaultUpdateMessage(){
+        $msg = $this->getMessageStart();
+        if (is_null($this->changes)){
+            $msg .= 'submited update with no changes';
+            return $msg;
+        }
+        $msg .= 'Entry updated with values:';
+        $msg .= '<ul>';
+        foreach ($this->changes as $name=>$value){
+            if (!in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', snake2Capitalized($name), $value['old'], $value['new']);
+            }
+        }
+        $msg .= '</ul>';
+        return $msg;
+    }
+
+    protected function defaultDeleteMessage(){
+        $msg = $this->getMessageStart();
+        $msg .= 'Entry deleted with values:';
+        $msg .= '<ul>';
+        foreach ($this->changes as $name=>$value){
+            if (!in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s </li>', $name, $value);
+            }
+        }
+        $msg .= '</ul>';
+        return $msg;
+    }
+
+    static function orderByCreation($a, $b){
+        return $a->created_at <=> $b->created_at;
+    }
+
+    static function orderByCreationReverse($a, $b){
+        return $b->created_at <=> $a->created_at;
     }
 }

@@ -19,8 +19,12 @@ class Authentication implements FilterInterface
      */
     public function before(RequestInterface $request, $arguments = null){
         helper('authentication');
-        // \App\Library\Authentication\Utils::getUser();
-        getUser();
+        helper('array');
+        $user = getUser();
+        $action = (is_null($arguments))? null: dot_array_search(0, $arguments);
+        if (!$user->isAuthorized($action)){
+            return redirect('unauthorized');
+        }
     }
 
     /**

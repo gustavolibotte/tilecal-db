@@ -4,19 +4,19 @@ namespace App\Models;
 
 use App\Entities\OperationLog;
 
-class ModelModel extends LogModel
+class ModelModel extends DimModel
 {
     protected $DBGroup          = 'default';
     protected $table            = 'models';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
+    protected $returnType       = \App\Entities\Model::class;
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'formatted_name', 'params', 'description'];
+    protected $allowedFields    = ['name', 'in_detector', 'label', 'params', 'description'];
 
     // Dates
-    protected $useTimestamps = true; //Already added by the SQL database
+    protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
@@ -40,11 +40,11 @@ class ModelModel extends LogModel
     protected $afterDelete    = [];
 
     // Custom
-    protected $histModelClass = ModelHistModel::class;
+    protected $allowedModelParams = [];
 
     protected function getUpdateLog($updateInfo){
         $id = $updateInfo["id"][0];
-        $oldRow = $this->find($id)->toRawArray();
+        $oldRow = $this->find($id)->toArray();
         $changes = $this->getUpdateChanges($oldRow, $updateInfo["data"]);
 
         if (array_key_exists("params", $changes)){
@@ -78,5 +78,15 @@ class ModelModel extends LogModel
         ]);
 
         return $insertLog;
+    }
+
+    protected function getAllowedModelParams(){
+        if (empty($this->allowedModelParams)){
+            $models = $this->findAll();
+            foreach ($models as $model){
+                $this->allowedModelParams[$model->name] = $model->params;
+            }
+        }
+        return $this->allowedModelParams;
     }
 }

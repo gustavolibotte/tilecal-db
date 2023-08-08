@@ -1,56 +1,65 @@
 [
     {
         "name": "pmt",
-        "formatted_name": "PMT",
+        "label": "PMT",
         "params": ["beta", "nominal_hv", "qe", "type"],
+        "in_detector": true,
         "description": null
     },
     {
         "name": "pmt_block",
-        "formatted_name": "PMT Block",
+        "label": "PMT Block",
         "params": [],
+        "in_detector": true,
         "description": null
     },
     {
         "name": "phase_2_hv_divider",
-        "formatted_name": "Phase 2 HV Divider",
+        "label": "Phase 2 HV Divider",
         "params": [],
+        "in_detector": true,
         "description": null
     },
     {
         "name": "super_drawer",
-        "formatted_name": "Super Drawer",
+        "label": "Super Drawer",
         "params": [],
+        "in_detector": true,
         "description": null
     },
     {
         "name": "mini_drawer",
-        "formatted_name": "Mini Drawer",
+        "label": "Mini Drawer",
         "params": [],
+        "in_detector": true,
         "description": null
     },
     {
         "name": "3_in_1_board",
-        "formatted_name": "3 in 1 Board",
+        "label": "3 in 1 Board",
         "params": [],
+        "in_detector": true,
         "description": null
     },
     {
         "name": "fenics",
-        "formatted_name": "FENICS",
+        "label": "FENICS",
         "params": [],
+        "in_detector": true,
         "description": null
     },
     {
         "name": "mainboard",
-        "formatted_name": "Mainboard",
+        "label": "Mainboard",
         "params": [],
+        "in_detector": true,
         "description": null
     },
     {
         "name": "daughterboard",
-        "formatted_name": "Daughterboard",
+        "label": "Daughterboard",
         "params": [],
+        "in_detector": true,
         "description": null
     }
 ]

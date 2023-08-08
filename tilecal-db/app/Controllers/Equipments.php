@@ -3,277 +3,124 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\Equipment2FileModel;
 use App\Models\EquipmentModel;
-use App\Models\FileModel;
-use App\Models\EquipmentHistModel;
-use App\Models\Equipment2FileHistModel;
-use App\Entities\OperationLog;
+use App\Models\ModelModel;
 
 class Equipments extends BaseController
 {   
     public function index($modelName=null, $searchDeleted=false)
     {   
         $equipmentModel = new EquipmentModel();
-        $headerData['pageTitle'] = 'Equipment Index';
         if (is_null($modelName)){
             $indexData['equipments'] = $equipmentModel->getEquipment(searchDeleted: $searchDeleted);
         }
         else{
             $indexData['equipments'] = $equipmentModel->getEquipmentsWhereModel($modelName, searchDeleted: $searchDeleted);
         }
-        return view('templates/header', $headerData)
-              .view('equipment/index', $indexData)
-              .view('templates/footer');
+        $indexData['pageTitle'] = 'Equipment Index';
+        $indexData['pageHeader'] = 'Equipment Index';
+        return view('equipment/index', $indexData);
     }
 
-    public function deletedIndex(){
-        $headerData = $this->getHeaderData(pageTitle: 'Deleted Equipment Index');
-        $equipmentModel = new EquipmentModel();
-        $indexData['equipments'] = $equipmentModel->getEquipment(searchDeleted: true);
-        return view('templates/header', $headerData)
-              .view('equipment/index', $indexData)
-              .view('templates/footer');
-    }
-
-    public function view($id){
-        $viewData = $this->getViewData($id);
-        $headerData['pageTitle'] = sprintf('Equipment %s', $id);
-        return view('templates/header', $headerData)
-              .view('equipment/view', $viewData)
-              .view('templates/footer');
-    }
-
-    public function getRelatedEquipments($equipmentID){
-        $equipmentModel = new EquipmentModel();
-        $relatedEquipments = $equipmentModel->getSideTable(30);
-        return $relatedEquipments;
-    }
-
-    public function getViewData($id){
-
-        $viewData['relatedEquipments'] = $this->getRelatedEquipments($id);
-        $equipmentModel = new EquipmentModel();
-        $viewData['equipmentInfo'] = $equipmentModel->getEquipment($id);
-        $viewData["equipmentHist"] = array_reverse($this->getEquipmentHist($id));
-        $fileModel = new FileModel();
-        $viewData['files'] = $fileModel->getBindedFilesInfo($id);
-
-        return $viewData;
-    }
-
-    public function getEquipmentHist($equipmentId){
-        $equipmentHistmodel = new EquipmentHistModel();
-        $equipmentHist = $equipmentHistmodel->where(sprintf('record_id = %s', $equipmentId))
-                                            ->findAll();
-        $equipment2FileHistModel = new Equipment2FileHistModel();
-        $fileLinkHist = $equipment2FileHistModel
-            ->where(sprintf('JSON_EXTRACT(changes, "$.equipment_id") = %s', $equipmentId))
-            ->findAll();
-        $hist = array_merge($equipmentHist, $fileLinkHist);
-        usort($hist, [OperationLog::class, "cmp_obj"]);
-        return $hist;
-    }
-
-    public function getEquipmentInputs(
-        $modelLabel,
-        $equipment=null,
-        $inculdeParent=false,
-        $readOnlyID=false){
-        
-        if (is_null($equipment)){
-            $equipment = new \App\Entities\Equipment();
-        }
-
-        $equipmentInputs = [
-            "id" => [
-                "label" => "ID",
-                "inputType" => "input",
-                "helperInput" => [
-                    "name" => "id",
-                    "id" => "id",
-                    "placeholder" => "Equipment barcode number",
-                    "class" => "form-control",
-                    "value" => $equipment->id
-                ],
-                "inputHelp" => null 
-            ],
-            "model_label" => [
-                "label" => "Model",
-                "inputType" => "input",
-                "helperInput" => [
-                    "name" => "model_label",
-                    "id" => "model_label",
-                    "placeholder" => "Equipment model",
-                    "value" => $modelLabel,
-                    "class" => "form-control",
-                    "readOnly" => null,
-                ],
-                "inputHelp" => null 
-            ],
-            "location" => [
-                "label" => "Location",
-                "inputType" => "input",
-                "helperInput" => [
-                    "name" => "location",
-                    "id" => "location",
-                    "placeholder" => "Equipment location",
-                    "class" => "form-control",
-                    "value" => $equipment->location
-                ],
-                "inputHelp" => null 
-            ],
-            "status" => [
-                "label" => "Status",
-                "inputType" => "input",
-                "helperInput" => [
-                    "name" => "status",
-                    "id" => "status",
-                    "placeholder" => "Installed, assembled, broken, etc",
-                    "class" => "form-control",
-                    "value" => $equipment->status
-                ],
-                "inputHelp" => null 
-            ],
-            "serial" => [
-                "label" => "Serial",
-                "inputType" => "input",
-                "helperInput" => [
-                    "name" => "serial",
-                    "id" => "serial",
-                    "placeholder" => "Equipment serial number",
-                    "class" => "form-control",
-                    "value" => $equipment->serial
-                ],
-                "inputHelp" => null 
-            ]
-        ];
-
-        if ($readOnlyID){
-            $equipmentInputs["id"]["helperInput"]["readOnly"] = null;
-        }
-
-        if ($inculdeParent){
-            $parentInput = [
-                "parent_id" => [
-                    "label" => "parent_id",
-                    "inputType" => "input",
-                    "helperInput" => [
-                        "name" => "parent_id",
-                        "id" => "parent_id",
-                        "placeholder" => "Parent equipment id",
-                        "class" => "form-control",
-                        "value" => $equipment->parent_id
-                    ],
-                    "inputHelp" => null 
-                ]
-            ];
-            $equipmentInputs = array_merge($equipmentInputs, $parentInput);
-        }
-
-        return $equipmentInputs;
-    }
-
-    public function getInputData($equipmentID,
-                                 $model,
-                                 $postUrl,
-                                 $cancelUrl,
-                                 $deleteUrl,
-                                 $pageTitle,
-                                 $equipmentInputs,
-                                 $validationErrors=null){
-        
-        $inputData['enableFileLink'] = false;
-        $inputData['relatedEquipments'] = $this->getRelatedEquipments($equipmentID);
-        $inputData['model'] = $model;
-        $inputData["validationErrors"] = $validationErrors;
-        $inputData["postUrl"] = $postUrl;
-        $inputData["cancelUrl"] = $cancelUrl;
-        $inputData['equipmentInputs'] = $equipmentInputs;
-        $inputData['pageTitle'] = $pageTitle;
-        $inputData['deleteUrl'] = $deleteUrl;
-
-        return $inputData;
-    }
-
-    public function edit($modelName, $id){
-
+    public function view($equipmentId){
         helper('form');
+        $equipmentModel = new EquipmentModel();
+        $equipment = $equipmentModel->getEquipment($equipmentId);
+        if (is_null($equipment)){
+            return redirect('notfound');
+        }
+        $viewData['infoHeader'] = 'Equipment Info';
+        $viewData['equipmentInfo'] = $equipment;
+        $histModel = new \App\Models\HistModel();
+        $viewData["histories"] = $histModel->getEquipmentHist($equipmentId);
+        $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->id);
+        $viewData['pageTitle'] = sprintf('Equipment %s', $equipment->id);
+        $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->model_name, $equipment->id));
+        if ($this->user->isAuthorized('edit')){
+            $viewData['editForm'] = new \App\Library\Forms\EquipmentForm();
+            $viewData['editForm']->asEdit();
+            $viewData['editForm']->setFieldValues($equipment->toArray());
+            $viewData['editable'] = true;
+        } else{
+            $viewData['editable'] = false;
+        }
+        return view('equipment/view', $viewData);
+    }
+
+    protected function getFormClass($modelName){
+        helper('string');
+        $formClass = sprintf('\App\Library\Forms\%sForm', snake2LowerCamelCase($modelName));
+        return $formClass;
+    }
+
+    public function register($modelName='pmt'){
+        helper(['form', 'url', 'message']);
+
+        $formClass = $this->getFormClass($modelName);
+        $equipmentModel = new EquipmentModel();
+
         if ($this->request->is('post')){
-            return $this->editPost($modelName, $id);
+            $form = new $formClass($this->request);
+            if ($form->validate()){
+                $equipmentModel = new EquipmentModel();
+                $equipment = $form->getEntity();
+                $equipmentModel->insert($equipment);
+                $messages[] = [
+                    'message' => 'Register success',
+                    'type' => 'success'
+                ];
+                addMessages($messages);
+                return redirect(sprintf('equipments/%s/register', $modelName));
+            } else {
+                foreach ($form->getErrors() as $errorMsg){
+                    $messages[] = [
+                        'message' => $errorMsg,
+                        'type' => 'danger'
+                    ];
+                    addMessages($messages);
+                }
+            };
+        } else{
+            $form = new $formClass();
         }
-        else{
-            return $this->editGet($modelName, $id);
-        }
+        
+        $modelModel = new ModelModel();
+        $model = $modelModel->where(sprintf("name = '%s'", $modelName))->first();
+        $registerData['model'] = $model;
+        $title = sprintf('Register %s', $model->label);
+        $registerData['pageTitle'] = $title;
+        $registerData['pageHeader'] = $title;
+        $registerData['forms'] = ['Equipment Info'=> $form];
+        $registerData['formUrl'] = uri_string();
+        $registerData['successMessage'] = false;
+        $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $modelName));
+        
+        return view('equipment/register', $registerData);
     }
 
-    public function editGet($modelName, $id, $validationErrors=null){
-
-        if(!$this->currentUser->canAlter()){
-            return $this->httpErrorView(401);
+    public function edit($equipmentId, $modelName){
+        helper('message');
+        $formClass = '\App\Library\Forms\EquipmentForm';
+        $form = new $formClass($this->request);
+        $form->asEdit();
+        if ($form->validate()){
+            $equipmentModel = new EquipmentModel();
+            $equipment = $form->getEntity();
+            $equipmentModel->update($equipmentId, $equipment);
+            $messages[] = [
+                'message' => sprintf('Edited equipment %s with success', $equipment->id),
+                'type' => 'success'
+            ];
+            addMessages($messages);
+        } else{
+            foreach ($form->getErrors() as $errorMsg){
+                $messages[] = [
+                    'message' => $errorMsg,
+                    'type' => 'danger'
+                ];
+                addMessages($messages);
+            }
         }
-        $equipmentModel = new EquipmentModel();
-        $equipment = $equipmentModel->getEquipment($id);
-        $model = [
-            "name" => $equipment->modelName,
-            "formatted_name" => $equipment->modelLabel
-        ];
-        $title = sprintf('Editing %s ID %s', $equipment->modelLabel, $equipment->id);
-        $headerData = $this->getHeaderData($title);
-        $postUrl = base_url(sprintf('equipments/edit/%s/%s', $equipment->modelName, $equipment->id));
-        $cancelUrl = base_url(sprintf('equipments/view/%s', $equipment->id));
-        $deleteUrl = base_url(sprintf('equipments/delete/%s', $equipment->id));
-        $equipmentInputs = $this->getEquipmentInputs(
-            modelLabel: $equipment->modelLabel,
-            equipment: $equipment,
-            inculdeParent: false,
-            readOnlyID: true
-        );
-        $inputData = $this->getInputData($id,
-                                         $model,
-                                         $postUrl,
-                                         $cancelUrl,
-                                         $deleteUrl,
-                                         $title,
-                                         $equipmentInputs,
-                                         $validationErrors);
-
-        return view('templates/header', $headerData)
-              .view('equipment/input', $inputData)
-              .view('templates/footer');
-    }
-
-    public function editPost($modelName, $id){
-
-        if(!$this->currentUser->canAlter()){
-            return $this->httpErrorView(401);
-        }
-        $formInputs = $this->request->getPost();
-        $formInputs['model_name'] = $this->toSnakeCase($formInputs['model_label']);
-        $formInputs['location'] = $this->toSnakeCase($formInputs['location']);
-        $formInputs['status'] = $this->toSnakeCase($formInputs['status']);
-
-        if ($this->validateData($formInputs, 'equipmentEditRules')){
-            $equipment = new \App\Entities\Equipment($formInputs);
-            (new EquipmentModel)->save($equipment);
-            return redirect()->to(sprintf("equipments/view/%s", $id));
-        }
-        else{
-            $validationErrors = $this->validator->getErrors();
-            return $this->editGet($modelName, $id, $validationErrors);
+            return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
         }
     }
-
-    public function delete($id){
-        $equipmentModel = new EquipmentModel();
-        $equipment = $equipmentModel->getEquipment($id);
-        $equipmentModel->delete($id);
-        $equipment2File = new Equipment2FileModel();
-        $fileReferences = $equipment2File->where(sprintf('equipment_id = %s', $id))->findAll();
-        foreach ($fileReferences as $reference){
-            $equipment2File->delete($reference->id);
-        }
-
-        return redirect()->to(sprintf("equipments/%s", $equipment->modelName));
-    }
-}

@@ -7,8 +7,6 @@ use CodeIgniter\Validation\StrictRules\CreditCardRules;
 use CodeIgniter\Validation\StrictRules\FileRules;
 use CodeIgniter\Validation\StrictRules\FormatRules;
 use CodeIgniter\Validation\StrictRules\Rules;
-use ValidationRules\DBFileRules;
-use ValidationRules\EquipmentRules;
 
 class Validation extends BaseConfig
 {
@@ -43,17 +41,4 @@ class Validation extends BaseConfig
     // --------------------------------------------------------------------
     // Rules
     // --------------------------------------------------------------------
-    public $fileUploadRules = [];
-    public $equipmentRegisterRules = [];
-    public $equipmentEditRules = [];
-    public $pmtRegisterRules = [];
-    
-    public function __construct(){
-        $this->fileUploadRules = DBFileRules::upload();
-        $equipmentRules = new EquipmentRules();
-
-        $this->equipmentRegisterRules = $equipmentRules->equipmentRegisterRules;
-        $this->pmtRegisterRules= $equipmentRules->pmtRegisterRules;
-        $this->equipmentEditRules = $equipmentRules->equipmentEditRules;
-    }
 }

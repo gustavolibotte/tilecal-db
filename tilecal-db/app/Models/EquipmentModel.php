@@ -13,7 +13,16 @@ class EquipmentModel extends LogModel
     protected $returnType       = \App\Entities\Equipment::class;
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id', 'model_id', 'location', 'status', 'parent_id', 'comments', 'serial', 'model_params'];
+    protected $allowedFields    = [
+        'id',
+        'model_id',
+        'location_id',
+        'status_id',
+        'parent_id',
+        'comments',
+        'serial',
+        'model_params'
+    ];
 
     // Dates
     protected $useTimestamps = true;
@@ -30,82 +39,85 @@ class EquipmentModel extends LogModel
 
     // Callbacks
     protected $allowCallbacks = true;
-    protected $beforeInsert   = ['makeJSON', 'addModelID'];
+    protected $beforeInsert   = [];
     protected $afterInsert    = [];
-    protected $beforeUpdate   = ['makeJSON', 'addModelID'];
+    protected $beforeUpdate   = [];
     protected $afterUpdate    = [];
     protected $beforeFind     = [];
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
-    protected $baseJoinedColumns = null;
-    protected $selectSideTable = null;
+    protected $selectSideTable;
 
     // Custom
-    protected $generalFields    = ['created_at', 'updated_at', 'deleted_at'];
-    protected $utilityFields    = ['model_name'];
-    protected $pmtFields        = ['beta', 'nominal_hv', 'qe', 'type'];
-    protected $histModelClass = EquipmentHistModel::class;
     protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'model_params'];
     protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'model_params'];
 
     public function initialize(){
-        
-        $this->generalFields = array_merge($this->generalFields, $this->allowedFields, $this->utilityFields);
-        $this->allowedFields = array_merge($this->allowedFields, $this->utilityFields, $this->pmtFields);
-
-        $this->baseJoinedColumns = 'equipments.id, ';
-        $this->baseJoinedColumns .= 'models.formatted_name as model_label, ';
-        $this->baseJoinedColumns .= 'models.name as model_name, ';
-        $this->baseJoinedColumns .= 'equipments.location, ';
-        $this->baseJoinedColumns .= 'equipments.status, ';
-        $this->baseJoinedColumns .= 'equipments.parent_id, ';
-        $this->baseJoinedColumns .= 'equipments.serial, ';
-        $this->baseJoinedColumns .= 'equipments.comments, ';
-        $this->baseJoinedColumns .= 'equipments.model_params, ';
-        $this->baseJoinedColumns .= 'equipments.updated_at, ';
-        $this->baseJoinedColumns .= 'equipments.created_at, ';
-        $this->baseJoinedColumns .= 'equipments.deleted_at ';
-
         $this->selectSideTable = 'equipments.id, ';
-        $this->selectSideTable .= 'models.formatted_name as model_label ';
+        $this->selectSideTable .= 'models.label as model_label ';
 
         parent::initialize();
     }
 
-    public function getEquipmentRaw($id=null, $columns='*', $searchDeleted=false){
-        $query = $this->select($columns);
-        $query = $this->searchDeleted($query, $searchDeleted);
+    protected function fullQuery(){
+        $selectColumns = 'equipments.id, ';
+        $selectColumns .= 'models.label as model_label, ';
+        $selectColumns .= 'models.name as model_name, ';
+        $selectColumns .= 'locations.name as location, ';
+        $selectColumns .= 'locations.description as location_description, ';
+        $selectColumns .= 'statuses.name as status, ';
+        $selectColumns .= 'parent_models.label as parent_model_label, ';
+        $selectColumns .= 'parent_models.name as parent_model_name, ';
+        $selectColumns .= 'equipments.parent_id, ';
+        $selectColumns .= 'equipments.serial, ';
+        $selectColumns .= 'equipments.comments, ';
+        $selectColumns .= 'equipments.model_params, ';
+        $selectColumns .= 'equipments.updated_at, ';
+        $selectColumns .= 'equipments.created_at, ';
+        $selectColumns .= 'equipments.deleted_at ';
+        $query = $this->select($selectColumns)
+                      ->join('models', 'equipments.model_id = models.id', 'left')
+                      ->join('locations', 'equipments.location_id = locations.id', 'left')
+                      ->join('statuses', 'equipments.status_id = statuses.id', 'left')
+                      ->join('equipments parents', 'equipments.parent_id = parents.id', 'left')
+                      ->join('models parent_models', 'parents.model_id = parent_models.id', 'left');
+        return $query;
 
-        if (is_null($id)){
-            $result = $query->findAll();
-        }
-        else{
-            $result = $query->find($id);
-        }
-        return $result;
     }
 
-    public function getEquipment($id=null, $searchDeleted=false){
-        $query = $this->select($this->baseJoinedColumns)
-                      ->join('models', 'equipments.model_id = models.id');
-        
+    public function getEquipment($id=null, $searchDeleted=false, $limit=null){
+        $query = $this->fullQuery();
         if (is_null($id)){
             $query = $this->searchDeleted($query, $searchDeleted);
-            $result = $query->findAll();
+            $result = ($limit)? $query->findAll($limit): $query->findAll();
         }
         else{
             $result = $query->withDeleted()->find($id);
         }
-
         return $result;
     }
 
-    public function getFileRelatedEquipments($fileID, $limit=null){
-        $query = $this->select($this->baseJoinedColumns)
+    public function getFileRelated($fileId, $limit=null){
+        $selectColumns = 'equipments.id, ';
+        $selectColumns .= 'models.label as model_label, ';
+        $selectColumns .= 'models.name as model_name, ';
+        $selectColumns .= 'locations.name as location, ';
+        $selectColumns .= 'locations.description as location_description, ';
+        $selectColumns .= 'statuses.name as status, ';
+        $selectColumns .= 'equipments.parent_id, ';
+        $selectColumns .= 'equipments.serial, ';
+        $selectColumns .= 'equipments.comments, ';
+        $selectColumns .= 'equipments.model_params, ';
+        $selectColumns .= 'equipments.updated_at, ';
+        $selectColumns .= 'equipments.created_at, ';
+        $selectColumns .= 'equipments.deleted_at ';
+        $query = $this->select($selectColumns)
                       ->join('models', 'equipments.model_id = models.id')
+                      ->join('locations', 'equipments.location_id = locations.id')
+                      ->join('statuses', 'equipments.status_id = statuses.id')
                       ->join('equipments_to_files', 'equipments.id = equipments_to_files.equipment_id')
-                      ->where(sprintf('equipments_to_files.file_id = %s', $fileID));
+                      ->where(sprintf('equipments_to_files.file_id = %s', $fileId));
         $result = is_null($limit)? $query->findAll(): $query->findAll($limit);
         return $result;
     }
@@ -123,6 +135,11 @@ class EquipmentModel extends LogModel
         }
         return $result;
     }
+
+    public function getRelatedEquipments($equipmentId){
+        $relatedEquipments = $this->getEquipment(limit:30);
+        return $relatedEquipments;
+    }
     /**
      * Returns all the equipments for a specific model name
      *
@@ -131,41 +148,10 @@ class EquipmentModel extends LogModel
      * @return array The query results
      */ 
     public function getEquipmentsWhereModel($modelName, $searchDeleted=false){
-        $query = $this->select($this->baseJoinedColumns)
-                      ->where(sprintf("models.name = '%s'", $modelName))
-                      ->join('models', 'equipments.model_id = models.id');
+        $query = $this->fullQuery();
         $query = $this->searchDeleted($query, $searchDeleted);
         $result = $query->findAll();
         return $result;
-    }
-
-    protected function makeJSON($data){
-        if (array_key_exists('model_params', $data['data'])){
-            return $data;
-        }
-
-        $extraData = null;
-        foreach ($data['data'] as $field=>$value){
-            if (! in_array($field, $this->generalFields)){
-                $extraData[$field] = $value;
-                unset($data['data'][$field]);
-            }
-        }
-        if (! is_null($extraData)){
-            $data['data']['model_params'] = json_encode($extraData);
-        }
-        return $data;
-    }
-
-    protected function addModelID($data){
-        if (! array_key_exists('model_id', $data['data'])){
-            $modelName = $data['data']['model_name'];
-            unset($data['data']['model_name']);
-            $modelModel = new ModelModel();
-            $modelData = $modelModel->select('id')->where(sprintf("name = '%s'", $modelName))->first();
-            $data['data']['model_id'] = $modelData['id'];
-        }
-        return $data;
     }
 
     protected function searchDeleted($query, $searchDeleted){
@@ -177,14 +163,26 @@ class EquipmentModel extends LogModel
 
     protected function getUpdateLog($updateInfo){
         $id = $updateInfo["id"][0];
-        $oldRow = $this->find($id)->toRawArray();
-        $changes = $this->getUpdateChanges($oldRow, $updateInfo["data"]);
-
-        if (array_key_exists("model_params", $updateInfo["data"])){
-            $oldModelParams = json_decode($oldRow["model_params"]);
-            $newModelParams = json_decode($updateInfo["data"]["model_params"]);
-            $changes = array_merge($changes,
-                                   $this->getUpdateChanges($oldModelParams, $newModelParams));
+        $oldRow = $this->find($id)->toArray();
+        if (array_key_exists("model_params", $updateInfo["data"])){ //Should always happen
+            // Makes stdClass to assosciative array
+            $oldModelParams = json_decode(json_encode($oldRow["model_params"]), true);
+            $newModelParams = json_decode($updateInfo["data"]["model_params"], true);
+            $changes = $this->getUpdateChanges($oldModelParams, $newModelParams);
+        } else{
+            $changes = [];
+        }
+        $changes = array_merge($changes,
+                               $this->getUpdateChanges($oldRow, $updateInfo["data"]));
+        
+        foreach ($changes as $name=>$change){
+            if ($name == 'model_id'){
+                $changes['model'] = $this->updateSubsIds('label', new ModelModel(), $change);
+            } elseif ($name == 'location_id'){
+                $changes['location'] = $this->updateSubsIds('name', new LocationModel(), $change);
+            } elseif ($name == 'status_id'){
+                $changes['status'] = $this->updateSubsIds('name', new StatusModel(), $change);
+            }
         }
         $updateLog = new OperationLog([
             "record_id" => $id,
@@ -192,6 +190,15 @@ class EquipmentModel extends LogModel
             "changes" => $changes
         ]);
         return $updateLog;
+    }
+
+    protected function updateSubsIds(string $key, BaseModel $model, array $change){
+        $entities = $model->getIdArray([$change['old'], $change['new']]);
+        $newChange = [
+            'old' => $entities[$change['old']]->toArray()[$key],
+            'new' => $entities[$change['new']]->toArray()[$key],
+        ];
+        return $newChange;
     }
 
     protected function getInsertLog($insertInfo){
@@ -207,6 +214,12 @@ class EquipmentModel extends LogModel
                 $changes[$name] = $value;
             }
         }
+        $model = (new \App\Models\ModelModel())->find($insertInfo['data']['model_id']);
+        $changes['model'] = $model->label;
+        $location = (new \App\Models\LocationModel())->find($insertInfo['data']['location_id']);
+        $changes['location'] = $location->name;
+        $status = (new \App\Models\StatusModel())->find($insertInfo['data']['status_id']);
+        $changes['status'] = $status->name;
         $insertLog = new OperationLog([
             "record_id" => $insertInfo["data"]["id"],
             "action" => "insert",

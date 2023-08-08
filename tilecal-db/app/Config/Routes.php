@@ -14,7 +14,7 @@ $routes->setDefaultNamespace('App\Controllers');
 $routes->setDefaultController('Home');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
-$routes->set404Override();
+$routes->set404Override('\App\Controllers\Errors::notFound');
 $routes->setAutoRoute(false);
 // The Auto Routing (Legacy) is very dangerous. It is easy to create vulnerable apps
 // where controller filters or CSRF protection are bypassed.
@@ -30,29 +30,29 @@ $routes->setAutoRoute(false);
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'Home::index');
+$routes->get('/', 'Home::index', ['filter' => 'auth:view']);
+$routes->get('unauthorized', 'Errors::unauthorized');
+$routes->get('notfound', 'Errors::notFound');
 
 // Equipments routes
-$routes->get('equipments', 'Equipments::index');
-$routes->get('equipments/deleted', 'Equipments::deletedIndex');
-$routes->post('equipments/delete/(:alphanum)', 'Equipments::delete/$1');
-$routes->get('equipments/(:segment)', 'Equipments::index/$1');
-$routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1');
+$routes->get('equipments', 'Equipments::index', ['filter' => 'auth:view']);
+$routes->get('equipments/deleted', 'Equipments::deletedIndex', ['filter' => 'auth:delete']);
+$routes->post('equipments/delete/(:alphanum)', 'Equipments::delete/$1', ['filter' => 'auth:delete']);
+$routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1', ['filter' => 'auth:view']);
+$routes->get('equipments/(:segment)', 'Equipments::index/$1', ['filter' => 'auth:view']);
 
 // Equipment register views
-// $routes->get('equipments/fenics/register', 'Fenics::registerGet');
-$routes->get('equipments/pmt/register', 'PMT::registerGet');
-$routes->post('equipments/pmt/register', 'PMT::registerPost');
-$routes->get('equipments/edit/(:segment)/(:alphanum)', 'PMT::edit/$1/$2');
-$routes->post('equipments/edit/(:segment)/(:alphanum)', 'PMT::edit/$1/$2');
+$routes->get('equipments/(:segment)/register', 'Equipments::register', ['filter' => 'auth:register']);
+$routes->post('equipments/pmt/register', 'Equipments::register', ['filter' => 'auth:reister']);
+$routes->post('equipments/(:segment)/edit/(:alphanum)','Equipments::edit/$2/$1', ['filter' => 'auth:edit']);
 
 // File routes
-$routes->get('files', 'Files::index');
-$routes->get('files/deleted', 'Files::deletedIndex');
-$routes->get('files/view/(:alphanum)', 'Files::view/$1');
-$routes->get('files/upload', 'Files::uploadGet');
-$routes->post('files/upload', 'Files::uploadPost');
-$routes->get('files/(:alphanum)', 'Files::download/$1');
+$routes->get('files', 'Files::index', ['filter' => 'auth:view']);
+$routes->get('files/deleted', 'Files::deletedIndex', ['filter' => 'auth:delete']);
+$routes->get('files/view/(:alphanum)', 'Files::view/$1', ['filter' => 'auth:view']);
+$routes->get('files/upload', 'Files::upload', ['filter' => 'auth:upload']);
+$routes->post('files/upload', 'Files::upload', ['filter' => 'auth:upload']);
+$routes->get('files/(:alphanum)', 'Files::download/$1', ['filter' => 'auth:download']);
 
 /*
  * --------------------------------------------------------------------
