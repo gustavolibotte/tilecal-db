@@ -42,8 +42,8 @@ $routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1', ['filter' => 
 $routes->get('equipments/(:segment)', 'Equipments::index/$1', ['filter' => 'auth:view']);
 
 // Equipment register views
-$routes->get('equipments/(:segment)/register', 'Equipments::register', ['filter' => 'auth:register']);
-$routes->post('equipments/pmt/register', 'Equipments::register', ['filter' => 'auth:reister']);
+$routes->get('equipments/pmt/register', 'Equipments::register', ['filter' => 'auth:register']);
+$routes->post('equipments/pmt/register', 'Equipments::register', ['filter' => 'auth:register']);
 $routes->post('equipments/(:segment)/edit/(:alphanum)','Equipments::edit/$2/$1', ['filter' => 'auth:edit']);
 
 // File routes
