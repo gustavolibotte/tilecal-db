@@ -32,6 +32,7 @@ $routes->setAutoRoute(false);
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index', ['filter' => 'auth:view']);
 $routes->get('unauthorized', 'Errors::unauthorized');
+$routes->get('notfound', 'Errors::notFound');
 
 // Equipments routes
 $routes->get('equipments', 'Equipments::index', ['filter' => 'auth:view']);

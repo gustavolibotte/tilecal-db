@@ -19,6 +19,9 @@ class Files extends BaseController
     public function view($fileId){
         $fileModel = new FileModel();
         $fileInfo = $fileModel->getFile($fileId);
+        if (is_null($fileInfo)){
+            return redirect('notfound');
+        }
         $viewData['fileInfo'] = $fileInfo;
         $viewData['pageTitle'] = 'File view';
         $viewData['pageHeader'] = sprintf('File %s', $fileInfo->name);

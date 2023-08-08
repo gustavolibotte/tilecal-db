@@ -26,6 +26,9 @@ class Equipments extends BaseController
         helper('form');
         $equipmentModel = new EquipmentModel();
         $equipment = $equipmentModel->getEquipment($equipmentId);
+        if (is_null($equipment)){
+            return redirect('notfound');
+        }
         $viewData['infoHeader'] = 'Equipment Info';
         $viewData['equipmentInfo'] = $equipment;
         $histModel = new \App\Models\HistModel();
