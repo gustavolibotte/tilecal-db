@@ -20,7 +20,7 @@ function getUser(){
                     'origEmail' => 'anakin.skywalker@cern.ch',
                     'language' => 'EN',
                     'sessionState' => 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX',
-                    'roles' => ['viewer', 'sith_lord', 'the_chosen_one'],
+                    'roles' => ['admin', 'sith_lord', 'the_chosen_one'],
                     'authTime' => time(),
                     'nonce' => 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
                 ];

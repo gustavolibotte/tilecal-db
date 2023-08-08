@@ -34,7 +34,7 @@ class SeedDatabase extends BaseSeeder
             $status = new \App\Entities\Status($row);
             $statusModel->insert($status);
         }
-        echo "Seeded Models\n";
+        echo "Seeded Statuses\n";
     }
 
     public function seedLocations(){
@@ -89,14 +89,14 @@ class SeedDatabase extends BaseSeeder
             $equipment->status_id = $status->id;
             $equipment->model_params = array_fill_keys($model->params, null);
             if (!$first){
-                $parentEquipment = $equipmentModel->findAll(limit:1)[0];
-                $equipment->parent_id = $parentEquipment->id;
+                $equipment->parent_id = $firstEquipment->id;
             }
             $equipmentModel->insert($equipment);
             if ($this->probDecision(0.03)){
                 $equipmentModel->delete($equipment->id);
             }
             if ($first){
+                $firstEquipment = $equipment;
                 $first = false;
             }
         }

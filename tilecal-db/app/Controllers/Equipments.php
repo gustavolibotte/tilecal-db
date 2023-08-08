@@ -49,7 +49,7 @@ class Equipments extends BaseController
 
     protected function getFormClass($modelName){
         helper('string');
-        $formClass = sprintf('\App\Library\Forms\%sForm', snake2LowerCamelCase($modelName));
+        $formClass = sprintf('\App\Library\Forms\%sForm', snake2CamelCase($modelName));
         return $formClass;
     }
 
