@@ -33,11 +33,14 @@ class Equipments extends BaseController
         $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->id);
         $viewData['pageTitle'] = sprintf('Equipment %s', $equipment->id);
         $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->model_name, $equipment->id));
-        // $formClass = $this->getFormClass($equipment->model_name);
-        $viewData['editForm'] = new \App\Library\Forms\EquipmentForm();
-        $viewData['editForm']->asEdit();
-        $viewData['editForm']->setFieldValues($equipment->toArray());
-        $viewData['editable'] = true;
+        if ($this->user->isAuthorized('edit')){
+            $viewData['editForm'] = new \App\Library\Forms\EquipmentForm();
+            $viewData['editForm']->asEdit();
+            $viewData['editForm']->setFieldValues($equipment->toArray());
+            $viewData['editable'] = true;
+        } else{
+            $viewData['editable'] = false;
+        }
         return view('equipment/view', $viewData);
     }
 

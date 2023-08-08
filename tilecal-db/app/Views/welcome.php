@@ -28,5 +28,3 @@
     </div>
   </div>
   <?= $this->endSection() ?>
-
-</html>

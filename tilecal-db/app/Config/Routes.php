@@ -30,27 +30,28 @@ $routes->setAutoRoute(false);
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'Home::index');
+$routes->get('/', 'Home::index', ['filter' => 'auth:view']);
+$routes->get('unauthorized', 'Errors::unauthorized');
 
 // Equipments routes
-$routes->get('equipments', 'Equipments::index');
-$routes->get('equipments/deleted', 'Equipments::deletedIndex');
-$routes->post('equipments/delete/(:alphanum)', 'Equipments::delete/$1');
-$routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1');
-$routes->get('equipments/(:segment)', 'Equipments::index/$1');
+$routes->get('equipments', 'Equipments::index', ['filter' => 'auth:view']);
+$routes->get('equipments/deleted', 'Equipments::deletedIndex', ['filter' => 'auth:delete']);
+$routes->post('equipments/delete/(:alphanum)', 'Equipments::delete/$1', ['filter' => 'auth:delete']);
+$routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1', ['filter' => 'auth:view']);
+$routes->get('equipments/(:segment)', 'Equipments::index/$1', ['filter' => 'auth:view']);
 
 // Equipment register views
-$routes->get('equipments/pmt/register', 'Equipments::register');
-$routes->post('equipments/pmt/register', 'Equipments::register');
-$routes->post('equipments/(:segment)/edit/(:alphanum)','Equipments::edit/$2/$1');
+$routes->get('equipments/(:segment)/register', 'Equipments::register', ['filter' => 'auth:register']);
+$routes->post('equipments/pmt/register', 'Equipments::register', ['filter' => 'auth:reister']);
+$routes->post('equipments/(:segment)/edit/(:alphanum)','Equipments::edit/$2/$1', ['filter' => 'auth:edit']);
 
 // File routes
-$routes->get('files', 'Files::index');
-$routes->get('files/deleted', 'Files::deletedIndex');
-$routes->get('files/view/(:alphanum)', 'Files::view/$1');
-$routes->get('files/upload', 'Files::upload');
-$routes->post('files/upload', 'Files::upload');
-$routes->get('files/(:alphanum)', 'Files::download/$1');
+$routes->get('files', 'Files::index', ['filter' => 'auth:view']);
+$routes->get('files/deleted', 'Files::deletedIndex', ['filter' => 'auth:delete']);
+$routes->get('files/view/(:alphanum)', 'Files::view/$1', ['filter' => 'auth:view']);
+$routes->get('files/upload', 'Files::upload', ['filter' => 'auth:upload']);
+$routes->post('files/upload', 'Files::upload', ['filter' => 'auth:upload']);
+$routes->get('files/(:alphanum)', 'Files::download/$1', ['filter' => 'auth:download']);
 
 /*
  * --------------------------------------------------------------------

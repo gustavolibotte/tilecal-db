@@ -1,4 +1,6 @@
 <?php
+
+use CodeIgniter\HTTP\Exceptions\HTTPException;
 use Jumbojett\OpenIDConnectClient;
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
@@ -18,7 +20,7 @@ function getUser(){
                     'origEmail' => 'anakin.skywalker@cern.ch',
                     'language' => 'EN',
                     'sessionState' => 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX',
-                    'roles' => ['admin', 'sith_lord', 'the_chosen_one'],
+                    'roles' => ['viewer', 'sith_lord', 'the_chosen_one'],
                     'authTime' => time(),
                     'nonce' => 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
                 ];
