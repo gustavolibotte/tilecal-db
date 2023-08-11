@@ -100,23 +100,7 @@ class EquipmentModel extends LogModel
     }
 
     public function getFileRelated($fileId, $limit=null){
-        $selectColumns = 'equipments.id, ';
-        $selectColumns .= 'models.label as model_label, ';
-        $selectColumns .= 'models.name as model_name, ';
-        $selectColumns .= 'locations.name as location, ';
-        $selectColumns .= 'locations.description as location_description, ';
-        $selectColumns .= 'statuses.name as status, ';
-        $selectColumns .= 'equipments.parent_id, ';
-        $selectColumns .= 'equipments.serial, ';
-        $selectColumns .= 'equipments.comments, ';
-        $selectColumns .= 'equipments.model_params, ';
-        $selectColumns .= 'equipments.updated_at, ';
-        $selectColumns .= 'equipments.created_at, ';
-        $selectColumns .= 'equipments.deleted_at ';
-        $query = $this->select($selectColumns)
-                      ->join('models', 'equipments.model_id = models.id')
-                      ->join('locations', 'equipments.location_id = locations.id')
-                      ->join('statuses', 'equipments.status_id = statuses.id')
+        $query = $this->fullQuery()
                       ->join('equipments_to_files', 'equipments.id = equipments_to_files.equipment_id')
                       ->where(sprintf('equipments_to_files.file_id = %s', $fileId));
         $result = is_null($limit)? $query->findAll(): $query->findAll($limit);

@@ -1,10 +1,5 @@
 <?= $this->extend('layouts/entry_view') ?>
 
-<?= $this->section('table') ?>
-  <h4 class="text-center">Related Equipments</h4>
-  <? echo view_cell('EquipmentTableCell::sideFileRelated', ['fileId' => $fileInfo->id]);?>
-<?= $this->endSection() ?>
-
 <?= $this->section('entryProperties') ?>
   <li class="list-group-item">Name: <? echo $fileInfo->name?> </li>
   <li class="list-group-item">Description: <? echo $fileInfo->description?> </li>
@@ -13,8 +8,10 @@
 
 <?= $this->section('relatedContent') ?>
   <hr>
+  <h4>Related Equipments</h4>
+  <? echo view_cell('EquipmentTableCell::fullFileRelated', ['fileId' => $fileInfo->id]);?>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript')?>
-  <? echo view_cell('EquipmentTableCell::sideFileRelatedjs'); ?> 
+  <? echo view_cell('EquipmentTableCell::fullFileRelatedjs'); ?> 
 <?= $this->endSection() ?>
