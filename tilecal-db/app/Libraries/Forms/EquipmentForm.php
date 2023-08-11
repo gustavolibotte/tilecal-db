@@ -13,11 +13,11 @@ class EquipmentForm extends Form{
             'id' => [
                 'id' => 'id',
                 'required' => true,
-                'helpText' => "Equipment's barcode value",
+                'helpText' => "Equipment's barcode value following ATLAS identification rules.",
                 'fieldType' => 'input',
                 'fieldParams' => [
-                    'maxlength' => 7,
-                    'placeholder' => 'XXXXXXX'
+                    'maxlength' => 14,
+                    'placeholder' => 'XXXXXXXXXXXXXX'
                 ]
             ],
             'model_label' => [
@@ -73,14 +73,18 @@ class EquipmentForm extends Form{
                 "rules" => [
                     "required",
                     "alpha_numeric",
-                    "exact_length[7]",
+                    "exact_length[14]",
+                    "id_is_project[20]",
+                    "id_has_valid_institute[institutes.mne]",
                     "is_unique[equipments.id]"
                 ],
                 "errors" => [
                     "required" => "You must supply an id for the equipment.",
                     "alpha_numeric" => "The id must be alphanumeric.",
                     "exact_length" => "The id must have 7 characthers.",
-                    "is_unique" => "This id already exists."
+                    "is_unique" => "This id already exists.",
+                    "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
+                    "id_has_valid_institute" => "The barcode doesn't have a valid institute value"
                 ]
             ],
             "model_label" => [

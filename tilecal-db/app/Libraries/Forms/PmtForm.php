@@ -25,6 +25,8 @@ class PmtForm extends EquipmentForm{
     {   
         parent::initialize();
         $this->fields['model_label']['value'] = 'PMT';
+        $this->validationRules['id']['rules'][] = 'id_is_system[LO]';
+        $this->validationRules['id']['errors']['id_is_system'] = 'The barcode must have LO on positions 3 and 4. (LO is for optics and PMT is an optics equipment)';
 
         $this->fields['beta'] = [
             'id' => 'beta',

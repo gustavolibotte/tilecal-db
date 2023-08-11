@@ -64,7 +64,7 @@ class Equipments extends BaseController
             if ($form->validate()){
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
-                $equipmentModel->insert($equipment);
+                // $equipmentModel->insert($equipment);
                 $messages[] = [
                     'message' => 'Register success',
                     'type' => 'success'
@@ -77,8 +77,8 @@ class Equipments extends BaseController
                         'message' => $errorMsg,
                         'type' => 'danger'
                     ];
-                    addMessages($messages);
                 }
+                addMessages($messages);
             };
         } else{
             $form = new $formClass();
