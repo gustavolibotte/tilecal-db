@@ -7,45 +7,9 @@ class SeedDatabase extends BaseSeeder
     public function run()
     {   
         helper('random');
-        $this->seedModels();
-        $this->seedStatuses();
-        $this->seedLocations();
         $this->seedFiles();
         $this->seedEquipments();
         $this->seedEquipments2Files();
-    }
-
-    public function seedModels(){
-        echo "Seeding Models\n";
-        $jsonData = $this->readJSON('models.json');
-        $modelModel = new \App\Models\ModelModel(isMigration: true);
-        foreach ($jsonData as $row){
-            $row["params"] = json_encode($row['params']);
-            $modelModel->insert($row);
-        }
-        echo "Seeded Models\n";
-    }
-
-    public function seedStatuses(){
-        echo "Seeding Statuses";
-        $jsonData = $this->readJSON('statuses.json');
-        $statusModel = new \App\Models\StatusModel(isMigration: true);
-        foreach ($jsonData as $row){
-            $status = new \App\Entities\Status($row);
-            $statusModel->insert($status);
-        }
-        echo "Seeded Statuses\n";
-    }
-
-    public function seedLocations(){
-        echo "Seeding Locations\n";
-        $jsonData = $this->readJSON('locations.json');
-        $locationModel = new \App\Models\LocationModel(isMigration: true);
-        foreach ($jsonData as $row){
-            $location = new \App\Entities\Location($row);
-            $locationModel->insert($location);
-        }
-        echo "Seeded Locations\n";
     }
 
     public function seedFiles(){
@@ -73,7 +37,10 @@ class SeedDatabase extends BaseSeeder
 
         $statusModel = new \App\Models\StatusModel(isMigration: true);
         $statuses = $statusModel->findAll();
-        
+
+        $instituteModel = new \App\Models\InstituteModel(isMigration: true);
+        $institutes = $instituteModel->findAll();
+
         $jsonData = $this->readJSON('equipments.json');
 
         $equipmentModel = new \App\Models\EquipmentModel(isMigration: true);
@@ -81,12 +48,21 @@ class SeedDatabase extends BaseSeeder
         
         foreach ($jsonData as $row) {
             $equipment = new \App\Entities\Equipment($row);
+
             $model = random_choice($models);
             $equipment->model_id = $model->id;
             $location = random_choice($locations);
             $equipment->location_id = $location->id;
             $status = random_choice($statuses);
             $equipment->status_id = $status->id;
+            $institute = random_choice($institutes);
+            $equipment->owner_id = $institute->id;
+
+            $equipment->id = sprintf(
+                '20%s%s%s',
+                $model->system, $institute->mne, $equipment->id
+            );
+
             $equipment->model_params = array_fill_keys($model->params, null);
             if (!$first){
                 $equipment->parent_id = $firstEquipment->id;

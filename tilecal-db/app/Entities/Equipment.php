@@ -12,6 +12,7 @@ class Equipment extends Entity
         "model_params" => "json-array",
         "location_id" => "integer",
         "status_id" => "integer",
-        "model_id" => "integer"
+        "model_id" => "integer",
+        "institute_id" => "integer"
     ];
 }

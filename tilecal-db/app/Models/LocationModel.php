@@ -11,7 +11,7 @@ class LocationModel extends DimModel
     protected $returnType       = \App\Entities\Location::class;
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'description'];
+    protected $allowedFields    = ['name', 'institute_id', 'description'];
 
     // Dates
     protected $useTimestamps = true;

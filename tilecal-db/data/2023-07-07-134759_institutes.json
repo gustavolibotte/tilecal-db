@@ -1,0 +1,1080 @@
+[
+  {
+    "name": "A.Alikhanyan National Science Laboratory",
+    "mne": "YER",
+    "num": "063",
+    "place": "YEREVAN",
+    "country": "ARMENIA"
+  },
+  {
+    "name": "University of Melbourne",
+    "mne": "MEL",
+    "num": "025",
+    "place": "MELBOURNE",
+    "country": "AUSTRALIA"
+  },
+  {
+    "name": "University of Sydney",
+    "mne": "SYD",
+    "num": "035",
+    "place": "SYDNEY",
+    "country": "AUSTRALIA"
+  },
+  {
+    "name": "Universitat Innsbruck",
+    "mne": "IBK",
+    "num": 110,
+    "place": "INNSBRUCK",
+    "country": "AUSTRIA"
+  },
+  {
+    "name": "Azerbaijan National Academy of Sciences (ANAS)",
+    "mne": "PAZ",
+    "num": "060",
+    "place": "BAKU",
+    "country": "AZERBAIJAN"
+  },
+  {
+    "name": "Byelorussian State University\nNat. Sci. Educ. Cen. of Part. & HEP (NCPHEP)",
+    "mne": "CPM",
+    "num": 137,
+    "place": "MINSK",
+    "country": "BELARUS"
+  },
+  {
+    "name": "The national Academy of Sciences of Belarus\nBI Stepanov Institute of physics",
+    "mne": "BEM",
+    "num": 171,
+    "place": "MINSK",
+    "country": "BELARUS"
+  },
+  {
+    "name": "Universidade Federal do Rio de Janeiro (UFRJ)",
+    "mne": "RIO",
+    "num": "088",
+    "place": "RIO DE JANEIRO",
+    "country": "BRAZIL"
+  },
+  {
+    "name": "Carleton University\nCentre for Research in Part. Phys. (CRPP)",
+    "mne": "CAR",
+    "num": 140,
+    "place": "OTTAWA",
+    "country": "CANADA"
+  },
+  {
+    "name": "TRIUMF",
+    "mne": "TRI",
+    "num": 151,
+    "place": "VANCOUVER",
+    "country": "CANADA"
+  },
+  {
+    "name": "University of Alberta",
+    "mne": "UAL",
+    "num": "077",
+    "place": "EDMONTON",
+    "country": "CANADA"
+  },
+  {
+    "name": "University of British Columbia",
+    "mne": "BCV",
+    "num": 113,
+    "place": "VANCOUVER",
+    "country": "CANADA"
+  },
+  {
+    "name": "University of Toronto",
+    "mne": "TOR",
+    "num": 138,
+    "place": "TORONTO",
+    "country": "CANADA"
+  },
+  {
+    "name": "University of Victoria",
+    "mne": "VIC",
+    "num": "053",
+    "place": "VICTORIA",
+    "country": "CANADA"
+  },
+  {
+    "name": "Universite de Montreal",
+    "mne": "MON",
+    "num": "081",
+    "place": "MONTREAL",
+    "country": "CANADA"
+  },
+  {
+    "name": "Chinese Academy of Sciences\nInstitute of High Energy Physics (IHEP)",
+    "mne": "EPB",
+    "num": 116,
+    "place": "BEIJING",
+    "country": "CHINA"
+  },
+  {
+    "name": "Nanjing University",
+    "mne": "NAN",
+    "num": "059",
+    "place": "NANJING",
+    "country": "CHINA"
+  },
+  {
+    "name": "Shandong University",
+    "mne": "SHA",
+    "num": "052",
+    "place": "JINAN",
+    "country": "CHINA"
+  },
+  {
+    "name": "University of Science and Technology of China",
+    "mne": "STH",
+    "num": 136,
+    "place": "HEFEI",
+    "country": "CHINA"
+  },
+  {
+    "name": "Akademie vid Eeske republiky \nInstitute of Physics of the Czech Academy of Sciences",
+    "mne": "EPS",
+    "num": "043",
+    "place": "PRAGUE",
+    "country": "CZECH REPUBLIC"
+  },
+  {
+    "name": "Charles University",
+    "mne": "CHP",
+    "num": "044",
+    "place": "PRAGUE",
+    "country": "CZECH REPUBLIC"
+  },
+  {
+    "name": "Czech Technical University in Prague",
+    "mne": "UTP",
+    "num": "042",
+    "place": "PRAGUE",
+    "country": "CZECH REPUBLIC"
+  },
+  {
+    "name": "University of Copenhagen\nNiels Bohr Institute",
+    "mne": "NBI",
+    "num": "046",
+    "place": "COPENHAGEN",
+    "country": "DENMARK"
+  },
+  {
+    "name": "University of Helsinki",
+    "mne": "HEL",
+    "num": 170,
+    "place": "HELSINKI",
+    "country": "FINLAND"
+  },
+  {
+    "name": "Aix - Marseille Universite",
+    "mne": "PPM",
+    "num": 125,
+    "place": "MARSEILLE",
+    "country": "FRANCE"
+  },
+  {
+    "name": "Centre National de la Recherche Scientifique (CNRS)\nInstitut National de Physique Nucléaire et de Physique des Particules (IN2P3)\nLAPP-Laboratoire d'Annecy de Physique des Particules (LAPP)",
+    "mne": "LAP",
+    "num": "056",
+    "place": "ANNECY-LE-VIEUX",
+    "country": "FRANCE"
+  },
+  {
+    "name": "Centre National de la Recherche Scientifique (CNRS)\nInstitut National de Physique Nucléaire et de Physique des Particules (IN2P3)\nLaboratoire de Physique Subatomique et de Cosmologie (LPSC)",
+    "mne": "ISN",
+    "num": "066",
+    "place": "GRENOBLE",
+    "country": "FRANCE"
+  },
+  {
+    "name": "Centre National de la Recherche Scientifique (CNRS)\nSorbonne Universite",
+    "mne": "LPN",
+    "num": 108,
+    "place": "PARIS 05",
+    "country": "FRANCE"
+  },
+  {
+    "name": "Universite Clermont Auvergne",
+    "mne": "LPC",
+    "num": "086",
+    "place": "CLERMONT-FERRAND",
+    "country": "FRANCE"
+  },
+  {
+    "name": "Universite Paris-Saclay\nCommissariat a l'energie atomique et aux energies alternatives (CEA)\nIRFU",
+    "mne": "CEA",
+    "num": 134,
+    "place": "GIF-SUR-YVETTE",
+    "country": "FRANCE"
+  },
+  {
+    "name": "Universite Paris-Saclay\nInstitut National de Physique Nucleaire et de Physique des Particules (CNRS/IN2P3)\nLaboratoire de l'Accélérateur Linéaire (LAL)",
+    "mne": "LAL",
+    "num": "048",
+    "place": "ORSAY",
+    "country": "FRANCE"
+  },
+  {
+    "name": "Ivane Javakhishvili Tbilisi State University",
+    "mne": "TBI",
+    "num": 163,
+    "place": "TBILISI",
+    "country": "GEORGIA"
+  },
+  {
+    "name": "Ivane Javakhishvili Tbilisi State University\nElevter Andronikashvili Institute of Physics",
+    "mne": "PAG",
+    "num": 147,
+    "place": "TBILISI",
+    "country": "GEORGIA"
+  },
+  {
+    "name": "Albert-Ludwigs-Universität Freiburg",
+    "mne": "ALU",
+    "num": "012",
+    "place": "FREIBURG",
+    "country": "GERMANY"
+  },
+  {
+    "name": "Bergische Universitat Wuppertal",
+    "mne": "WUP",
+    "num": 117,
+    "place": "WUPPERTAL",
+    "country": "GERMANY"
+  },
+  {
+    "name": "Johannes-Gutenberg-Universitat Mainz",
+    "mne": "MAI",
+    "num": "064",
+    "place": "MAINZ",
+    "country": "GERMANY"
+  },
+  {
+    "name": "Ludwig-Maximilians-Universität München",
+    "mne": "LMM",
+    "num": 112,
+    "place": "MUNICH",
+    "country": "GERMANY"
+  },
+  {
+    "name": "Max-Planck-Gesellschaft (MPG)\nMax-Planck-Institut fur Physik",
+    "mne": "MPI",
+    "num": "027",
+    "place": "MUNICH",
+    "country": "GERMANY"
+  },
+  {
+    "name": "Ruprecht-Karls-Universität Heidelberg",
+    "mne": "HEI",
+    "num": 104,
+    "place": "HEIDELBERG",
+    "country": "GERMANY"
+  },
+  {
+    "name": "Technische Universitaet Dortmund",
+    "mne": "DOR",
+    "num": "011",
+    "place": "DORTMUND",
+    "country": "GERMANY"
+  },
+  {
+    "name": "Universitaet Bonn Rheinische Friedrich-Wilhelms",
+    "mne": "BON",
+    "num": 166,
+    "place": "BONN",
+    "country": "GERMANY"
+  },
+  {
+    "name": "Universitat Mannheim",
+    "mne": "UMA",
+    "num": "084",
+    "place": "MANNHEIM",
+    "country": "GERMANY"
+  },
+  {
+    "name": "Universitat Siegen",
+    "mne": "SIE",
+    "num": "079",
+    "place": "SIEGEN",
+    "country": "GERMANY"
+  },
+  {
+    "name": "Aristotle University of Thessaloníki (AUTh)",
+    "mne": "THE",
+    "num": 131,
+    "place": "THESSALONIKI",
+    "country": "GREECE"
+  },
+  {
+    "name": "National Technical University of Athens (NTUA)",
+    "mne": "NTU",
+    "num": 127,
+    "place": "ATHENS",
+    "country": "GREECE"
+  },
+  {
+    "name": "National and Kapodistrian University of Athens",
+    "mne": "ATH",
+    "num": 168,
+    "place": "ATHENS",
+    "country": "GREECE"
+  },
+  {
+    "name": "Technion- Israel Institute of Technology",
+    "mne": "ITH",
+    "num": 152,
+    "place": "HAIFA",
+    "country": "ISRAEL"
+  },
+  {
+    "name": "Tel Aviv University",
+    "mne": "TEL",
+    "num": 103,
+    "place": "TEL AVIV",
+    "country": "ISRAEL"
+  },
+  {
+    "name": "Weizmann Institute of Science",
+    "mne": "WEI",
+    "num": 121,
+    "place": "REHOVOT",
+    "country": "ISRAEL"
+  },
+  {
+    "name": "Istituto Nazionale di Fisica Nucleare (INFN)\nLaboratori Nazionali di Frascati (LNF)",
+    "mne": "LNF",
+    "num": 155,
+    "place": "FRASCATI",
+    "country": "ITALY"
+  },
+  {
+    "name": "Pavia University and INFN\nUniversità degli Studi di Pavia",
+    "mne": "PAV",
+    "num": 133,
+    "place": "PAVIA",
+    "country": "ITALY"
+  },
+  {
+    "name": "Roma Tre Universita Degli Studi",
+    "mne": "RM3",
+    "num": "057",
+    "place": "ROME",
+    "country": "ITALY"
+  },
+  {
+    "name": "Università degli Studi della Calabria",
+    "mne": "CAL",
+    "num": 160,
+    "place": "RENDE",
+    "country": "ITALY"
+  },
+  {
+    "name": "Università degli Studi di Udine",
+    "mne": "DIN",
+    "num": 124,
+    "place": "UDINE",
+    "country": "ITALY"
+  },
+  {
+    "name": "Universita & INFN, Pisa",
+    "mne": "PIS",
+    "num": 169,
+    "place": "PISA",
+    "country": "ITALY"
+  },
+  {
+    "name": "Universita e INFN Roma Tor Vergata",
+    "mne": "RM2",
+    "num": 146,
+    "place": "ROME",
+    "country": "ITALY"
+  },
+  {
+    "name": "Universita del Salento",
+    "mne": "LEC",
+    "num": 122,
+    "place": "LECCE",
+    "country": "ITALY"
+  },
+  {
+    "name": "Universita di Napoli 'Federico II'",
+    "mne": "NAP",
+    "num": "051",
+    "place": "NAPLES",
+    "country": "ITALY"
+  },
+  {
+    "name": "Universita e INFN",
+    "mne": "GEN",
+    "num": 162,
+    "place": "GENOA",
+    "country": "ITALY"
+  },
+  {
+    "name": "Universita e INFN, Roma I\nUniversita di Roma I 'La Sapienza'",
+    "mne": "RM1",
+    "num": 143,
+    "place": "ROME",
+    "country": "ITALY"
+  },
+  {
+    "name": "Universita e INFN\nUniversità degli Studi di Milano",
+    "mne": "MIL",
+    "num": "047",
+    "place": "MILAN",
+    "country": "ITALY"
+  },
+  {
+    "name": "Fukui University",
+    "mne": "FUK",
+    "num": 101,
+    "place": "FUKUI",
+    "country": "JAPAN"
+  },
+  {
+    "name": "High Energy Accelerator Research Organization (KEK)",
+    "mne": "KEK",
+    "num": "017",
+    "place": "TSUKUBA",
+    "country": "JAPAN"
+  },
+  {
+    "name": "Hiroshima Institute of Technology",
+    "mne": "HIT",
+    "num": 123,
+    "place": "HIROSHIMA",
+    "country": "JAPAN"
+  },
+  {
+    "name": "Hiroshima University",
+    "mne": "HIR",
+    "num": "016",
+    "place": "HIGASHI-HIROSHIMA",
+    "country": "JAPAN"
+  },
+  {
+    "name": "Kobe University",
+    "mne": "KOB",
+    "num": "068",
+    "place": "KOBE",
+    "country": "JAPAN"
+  },
+  {
+    "name": "Kyoto University",
+    "mne": "UKY",
+    "num": "054",
+    "place": "KYOTO",
+    "country": "JAPAN"
+  },
+  {
+    "name": "Kyoto University of Education",
+    "mne": "EKY",
+    "num": "018",
+    "place": "KYOTO",
+    "country": "JAPAN"
+  },
+  {
+    "name": "Nagasaki Institute of Applied Science (NiAS)",
+    "mne": "NAG",
+    "num": 165,
+    "place": "NAGASAKI",
+    "country": "JAPAN"
+  },
+  {
+    "name": "Naruto University of Education",
+    "mne": "NAR",
+    "num": "073",
+    "place": "TOKUSHIMA",
+    "country": "JAPAN"
+  },
+  {
+    "name": "Okayama University\nDepartment of Physics",
+    "mne": "OKA",
+    "num": 173,
+    "place": "OKAYAMA",
+    "country": "JAPAN"
+  },
+  {
+    "name": "Shinshu University",
+    "mne": "SHI",
+    "num": "087",
+    "place": "MATSUMOTO",
+    "country": "JAPAN"
+  },
+  {
+    "name": "Tokyo University of Agriculture and Technology",
+    "mne": "ATT",
+    "num": 161,
+    "place": "TOKYO",
+    "country": "JAPAN"
+  },
+  {
+    "name": "Tokyo metropolitan University Department of physics",
+    "mne": "MPT",
+    "num": 105,
+    "place": "TOKYO",
+    "country": "JAPAN"
+  },
+  {
+    "name": "University of Tokyo\nGraduate School of Science\nDepartment of Physics",
+    "mne": "CEP",
+    "num": 148,
+    "place": "TOKYO",
+    "country": "JAPAN"
+  },
+  {
+    "name": "University of Tsukuba\nFaculty / Graduate School of Pure and Applied Sciences",
+    "mne": "TSU",
+    "num": 174,
+    "place": "TSUKUBA",
+    "country": "JAPAN"
+  },
+  {
+    "name": "Université Mohommed V",
+    "mne": "RAB",
+    "num": 128,
+    "place": "RABAT",
+    "country": "MOROCCO"
+  },
+  {
+    "name": "Universite Hassan II, Ain Chock\nFaculte des Sciences Ain Chock, Universite Hassan II",
+    "mne": "CAS",
+    "num": "085",
+    "place": "CASABLANCA",
+    "country": "MOROCCO"
+  },
+  {
+    "name": "Nikhef National institute for subatomic physics",
+    "mne": "FIA",
+    "num": "028",
+    "place": "AMSTERDAM",
+    "country": "NETHERLANDS"
+  },
+  {
+    "name": "Nikhef National institute for subatomic physics\nRadboud University Nijmegen\nHigh Energy Physics Institute (HEFIN)",
+    "mne": "FIN",
+    "num": 153,
+    "place": "NIJMEGEN",
+    "country": "NETHERLANDS"
+  },
+  {
+    "name": "University of Bergen",
+    "mne": "BER",
+    "num": "003",
+    "place": "BERGEN",
+    "country": "NORWAY"
+  },
+  {
+    "name": "University of Oslo",
+    "mne": "OSL",
+    "num": "029",
+    "place": "OSLO",
+    "country": "NORWAY"
+  },
+  {
+    "name": "AGH University of Krakow\nFaculty of Physics and Applied Computer Science",
+    "mne": "PNT",
+    "num": "009",
+    "place": "CRACOW",
+    "country": "POLAND"
+  },
+  {
+    "name": "Laboratorio de Instrumentac?o e Fisica Experimental de Particulas (LIP)\nLIP Lisboa",
+    "mne": "LIP",
+    "num": 119,
+    "place": "LISBON",
+    "country": "PORTUGAL"
+  },
+  {
+    "name": "Budker Institute of Nuclear Physics SB RAS (BINP)",
+    "mne": "BIN",
+    "num": "065",
+    "place": "NOVOSIBIRSK",
+    "country": "RUSSIA"
+  },
+  {
+    "name": "Institute for Theoritical and Experimental Physics",
+    "mne": "TEP",
+    "num": "069",
+    "place": "MOSCOW",
+    "country": "RUSSIA"
+  },
+  {
+    "name": "Joint Institute for Nuclear Research (JINR)",
+    "mne": "JNR",
+    "num": 157,
+    "place": "DUBNA",
+    "country": "RUSSIA"
+  },
+  {
+    "name": "M.V. Lomonosov Moscow State University",
+    "mne": "MOS",
+    "num": "026",
+    "place": "MOSCOW",
+    "country": "RUSSIA"
+  },
+  {
+    "name": "Ministry of the Russian Federation for Atomic Energy\nInstitute for High Energy Physics (IHEP)",
+    "mne": "HEP",
+    "num": "032",
+    "place": "MOSCOW",
+    "country": "RUSSIA"
+  },
+  {
+    "name": "NRC Kurchatov Institute PNPI",
+    "mne": "PNP",
+    "num": 111,
+    "place": "GATCHINA",
+    "country": "RUSSIA"
+  },
+  {
+    "name": "National Research Nuclear University MEPhI",
+    "mne": "MEP",
+    "num": 129,
+    "place": "MOSCOW",
+    "country": "RUSSIA"
+  },
+  {
+    "name": "Russian Academy of Sciences\nP.N. Lebedev Institute of Physics (FIAN)",
+    "mne": "LPI",
+    "num": "074",
+    "place": "MOSCOW",
+    "country": "RUSSIA"
+  },
+  {
+    "name": "Comenius University Bratislava",
+    "mne": "BRA",
+    "num": "089",
+    "place": "BRATISLAVA",
+    "country": "SLOVAKIA"
+  },
+  {
+    "name": "Slovak Academy of Sciences (SAS)\nInstitute of Experimental Physics (IEP)",
+    "mne": "KOS",
+    "num": 102,
+    "place": "KOSICE",
+    "country": "SLOVAKIA"
+  },
+  {
+    "name": "Jozef Stefan Institute",
+    "mne": "LJU",
+    "num": "021",
+    "place": "LJUBLJANA",
+    "country": "SLOVENIA"
+  },
+  {
+    "name": "Univ. of Valencia and CSIC",
+    "mne": "FIC",
+    "num": "039",
+    "place": "VALENCIA",
+    "country": "SPAIN"
+  },
+  {
+    "name": "Universidad Autónoma de Madrid",
+    "mne": "ADM",
+    "num": "075",
+    "place": "MADRID",
+    "country": "SPAIN"
+  },
+  {
+    "name": "Universitat Autonoma de Barcelona",
+    "mne": "FAE",
+    "num": 115,
+    "place": "BELLATERRA",
+    "country": "SPAIN"
+  },
+  {
+    "name": "KTH Kungliga Tekniska Hogskolan",
+    "mne": "KTH",
+    "num": 141,
+    "place": "STOCKHOLM",
+    "country": "SWEDEN"
+  },
+  {
+    "name": "Lund University",
+    "mne": "LUN",
+    "num": "067",
+    "place": "LUND",
+    "country": "SWEDEN"
+  },
+  {
+    "name": "Stockholms Universitet",
+    "mne": "STO",
+    "num": "050",
+    "place": "STOCKHOLM",
+    "country": "SWEDEN"
+  },
+  {
+    "name": "Uppsala Universitet",
+    "mne": "ISV",
+    "num": "038",
+    "place": "UPPSALA",
+    "country": "SWEDEN"
+  },
+  {
+    "name": "Conseil Européen pour la Recherche Nucléaire (CERN)",
+    "mne": "CER",
+    "num": "008",
+    "place": "GENEVA",
+    "country": "SWITZERLAND"
+  },
+  {
+    "name": "Universität Bern",
+    "mne": "UBE",
+    "num": "005",
+    "place": "BERN",
+    "country": "SWITZERLAND"
+  },
+  {
+    "name": "Université de Genève",
+    "mne": "UGE",
+    "num": "013",
+    "place": "GENEVE",
+    "country": "SWITZERLAND"
+  },
+  {
+    "name": "Academia Sinica",
+    "mne": "AST",
+    "num": 175,
+    "place": "TAIPEI",
+    "country": "TAIWAN"
+  },
+  {
+    "name": "Ankara University",
+    "mne": "ANK",
+    "num": 120,
+    "place": "ANKARA",
+    "country": "Turkiye"
+  },
+  {
+    "name": "Bogazici University",
+    "mne": "BOG",
+    "num": "080",
+    "place": "ISTANBUL",
+    "country": "Turkiye"
+  },
+  {
+    "name": "Lancaster University",
+    "mne": "LAN",
+    "num": "019",
+    "place": "LANCASTER",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "Science and Technology Facilities Council STFC\nRutherford Appleton Laboratory",
+    "mne": "RAL",
+    "num": "033",
+    "place": "DIDCOT",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "The University of Edinburgh",
+    "mne": "EDI",
+    "num": 114,
+    "place": "EDINBURGH",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "University of Birmingham",
+    "mne": "BIR",
+    "num": "006",
+    "place": "BIRMINGHAM",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "University of Cambridge",
+    "mne": "CAM",
+    "num": "007",
+    "place": "CAMBRIDGE",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "University of Glasgow",
+    "mne": "GLA",
+    "num": "014",
+    "place": "GLASGOW",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "University of Liverpool",
+    "mne": "LIV",
+    "num": "020",
+    "place": "LIVERPOOL",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "University of London\nQueen Mary University of London (QMUL)",
+    "mne": "QMW",
+    "num": "022",
+    "place": "LONDON",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "University of London\nRoyal Holloway College",
+    "mne": "RHB",
+    "num": "082",
+    "place": "EGHAM",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "University of London\nUniversity College London",
+    "mne": "UCL",
+    "num": "023",
+    "place": "LONDON",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "University of Manchester\nDepartment of Physics",
+    "mne": "MAN",
+    "num": "024",
+    "place": "MANCHESTER",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "University of Oxford",
+    "mne": "OXF",
+    "num": "030",
+    "place": "OXFORD",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "University of Sheffield",
+    "mne": "SHE",
+    "num": "034",
+    "place": "SHEFFIELD",
+    "country": "UNITED KINGDOM"
+  },
+  {
+    "name": "Argonne National Laboratory",
+    "mne": "ANL",
+    "num": 118,
+    "place": "ARGONNE",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Boston University",
+    "mne": "BOS",
+    "num": 159,
+    "place": "BOSTON",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Brandeis University",
+    "mne": "BND",
+    "num": 109,
+    "place": "WALTHAM",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Brookhaven National Laboratory (BNL)",
+    "mne": "BNL",
+    "num": "078",
+    "place": "UPTON",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Columbia University",
+    "mne": "COL",
+    "num": 135,
+    "place": "NEW YORK",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Duke University",
+    "mne": "DUK",
+    "num": 145,
+    "place": "DURHAM",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Hampton University\nDepartment of Physics",
+    "mne": "HAM",
+    "num": "062",
+    "place": "HAMPTON",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Harvard University",
+    "mne": "HAR",
+    "num": "055",
+    "place": "CAMBRIDGE",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Indiana University",
+    "mne": "IND",
+    "num": "049",
+    "place": "BLOOMINGTON",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Lawrence Berkeley National Laboratory (LBNL)",
+    "mne": "LBL",
+    "num": "004",
+    "place": "BERKELEY",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Massachusetts Institute of Technology (MIT)",
+    "mne": "MIT",
+    "num": 106,
+    "place": "CAMBRIDGE",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Michigan State University",
+    "mne": "MSU",
+    "num": "072",
+    "place": "EAST LANSING",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Northern Illinois University",
+    "mne": "NIL",
+    "num": "076",
+    "place": "DEKALB",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Ohio State University",
+    "mne": "OSU",
+    "num": "058",
+    "place": "COLUMBUS",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Southern Methodist University (SMU)",
+    "mne": "SMU",
+    "num": "083",
+    "place": "DALLAS",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Stony Brook University (SUNY)",
+    "mne": "USB",
+    "num": 158,
+    "place": "STONY BROOK",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "The State University of New York SUNY\nUniversity at Albany",
+    "mne": "ALB",
+    "num": 107,
+    "place": "ALBANY",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "Tufts University",
+    "mne": "MED",
+    "num": 132,
+    "place": "MEDFORD",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of Arizona",
+    "mne": "UAZ",
+    "num": "070",
+    "place": "TUCSON",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of California Irvine",
+    "mne": "UCI",
+    "num": "036",
+    "place": "IRVINE",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of California,Santa Cruz (UCSC)",
+    "mne": "CSC",
+    "num": "037",
+    "place": "SANTA CRUZ",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of Chicago",
+    "mne": "EFI",
+    "num": "061",
+    "place": "CHICAGO",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of Illinois at Urbana-Champaign",
+    "mne": "ILL",
+    "num": "093",
+    "place": "URBANA",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of Iowa\nPhysics and Astronomy Department",
+    "mne": "IOW",
+    "num": 172,
+    "place": "IOWA CITY",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of Michigan",
+    "mne": "MIC",
+    "num": 167,
+    "place": "ANN ARBOR",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of New Mexico",
+    "mne": "UNM",
+    "num": "041",
+    "place": "ALBUQUERQUE",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of Oklahoma",
+    "mne": "OKL",
+    "num": 150,
+    "place": "NORMAN",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of Pennsylvania",
+    "mne": "PHI",
+    "num": "071",
+    "place": "PHILADELPHIA",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of Pittsburgh",
+    "mne": "PIT",
+    "num": 142,
+    "place": "PITTSBURGH",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of Rochester\nDepartment of Physics and Astronomy",
+    "mne": "ROC",
+    "num": 154,
+    "place": "ROCHESTER",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of Texas at Arlington",
+    "mne": "UTA",
+    "num": 156,
+    "place": "ARLINGTON",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of Washington",
+    "mne": "WAS",
+    "num": 126,
+    "place": "SEATTLE",
+    "country": "UNITED STATES"
+  },
+  {
+    "name": "University of Wisconsin Madison",
+    "mne": "WIS",
+    "num": "040",
+    "place": "MADISON",
+    "country": "UNITED STATES"
+  }
+]

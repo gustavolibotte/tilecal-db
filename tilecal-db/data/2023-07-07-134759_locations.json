@@ -1,0 +1,84 @@
+[
+    {
+        "name": "B175",
+        "description": "CERN Building 175",
+        "institute_mne": "CER"
+    },
+    {
+        "name": "B174",
+        "description": "CERN Building 174",
+        "institute_mne": "CER"
+
+    },
+    {
+        "name": "B171",
+        "description": "CERN Building 171",
+        "institute_mne": "CER"
+    },
+    {
+        "name": "LHCb",
+        "description": "LHCb experiment",
+        "institute_mne": "CER"
+    },
+    {
+        "name": "Testbeam",
+        "description": "Tile's testbeam building",
+        "institute_mne": "CER"
+    },
+    {
+        "name": "Universita & INFN, Pisa",
+        "description": null,
+        "institute_mne": "PIS"
+    },
+    {
+        "name": "UX15",
+        "description": "ATLAS UX15 area",
+        "institute_mne": "CER"
+
+    },
+    {
+        "name": "USA15",
+        "description": "ATLAS USA15 area",
+        "institute_mne": "CER"
+    },
+    {
+        "name": "Stockholms Universitet",
+        "description": null,
+        "institute_mne": "STO"
+    },
+    {
+        "name": "University of Chicago",
+        "description": null,
+        "institute_mne": "EFI"
+    },
+    {
+        "name": "University of Texas at Arlington",
+        "description": null,
+        "institute_mne": "UTA"
+    },
+    {
+        "name": "Laboratorio de Instrumentação e Fisica Experimental de Particulas (LIP) - LIP Lisboa",
+        "description": null,
+        "institute_mne": "LIP"
+    },
+    {
+        "name": "Univ. of Valencia and CSIC",
+        "description": null,
+        "institute_mne": "FIC"
+    },
+    {
+        "name": "Ruprecht-Karls-Universität Heidelberg",
+        "description": null,
+        "institute_mne": "HEI"
+    },
+    {
+        "name": "University of Witwatersand",
+        "description": null,
+        "institute_mne": null
+    },
+    {
+        "name": "Michigan State University",
+        "description": null,
+        "institute_mne": "MSU"
+    }
+]

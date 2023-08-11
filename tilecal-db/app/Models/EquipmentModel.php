@@ -16,6 +16,7 @@ class EquipmentModel extends LogModel
     protected $allowedFields    = [
         'id',
         'model_id',
+        'owner_id',
         'location_id',
         'status_id',
         'parent_id',
