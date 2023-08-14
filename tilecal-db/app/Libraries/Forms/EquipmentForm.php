@@ -4,6 +4,7 @@ namespace App\Library\Forms;
 
 use Exception;
 use \App\Models\BaseModel;
+use \App\Entities\Equipment;
 
 class EquipmentForm extends Form{
 
@@ -140,12 +141,13 @@ class EquipmentForm extends Form{
         ];
     }
 
-    public function getEntity(){
+    public function getEntity(): Equipment
+    {
         helper(['array', 'atlas_id']);
         if (!$this->isValid){
             throw new Exception('To get the equipment you must validate the form first');
         }
-        $equipment = new \App\Entities\Equipment([
+        $equipment = new Equipment([
             'id' => $this->request->getVar('id'),
             'serial' => $this->request->getVar('serial'),
             'comments' => $this->request->getVar('comments'),
