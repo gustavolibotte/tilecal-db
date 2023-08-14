@@ -7,6 +7,8 @@ use Exception;
 
 class EquipmentForm extends Form{
 
+    public int $serialMaxSize = 36;
+
     public function initialize()
     {
         $this->fields = [
@@ -54,7 +56,7 @@ class EquipmentForm extends Form{
                 'fieldType' => 'input',
                 'helpText' => "Equipment serial number",
                 'fieldParams' => [
-                    'maxlength' => 20
+                    'maxlength' => $this->serialMaxSize
                 ]
             ],
             'comments' => [
@@ -119,10 +121,10 @@ class EquipmentForm extends Form{
             ],
             "serial" => [
                 "rules" => [
-                    "max_length[20]"
+                    sprintf("max_length[%d]", $this->serialMaxSize)
                 ],
                 "errors" => [
-                    "max_length" => "Serial max size is 20 characthers",
+                    "max_length" => sprintf("Serial max size is %d characters", $this->serialMaxSize),
                 ]
             ],
             "comments" => [

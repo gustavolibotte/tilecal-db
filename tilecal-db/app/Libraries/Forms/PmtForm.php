@@ -20,13 +20,48 @@ class PmtForm extends EquipmentForm{
         'R11187-SEL',
         'R11187-A1'
     ];
+    public string $validSerialRegex = '/^[A-Z]{2}[0-9]{4}/';
+    public int $serialMaxSize = 6;
 
     public function initialize()
     {   
         parent::initialize();
         $this->fields['model_label']['value'] = 'PMT';
-        $this->validationRules['id']['rules'][] = 'id_is_system[LO]';
-        $this->validationRules['id']['errors']['id_is_system'] = 'The barcode must have LO on positions 3 and 4. (LO is for optics and PMT is an optics equipment)';
+
+        // Alter id and serial rules to follow custom PMT rules
+        $this->fields['id']['required'] = false;
+        $this->fields['id']['helpText'] .= ' (If blank, is built from serial code)';
+        $this->validationRules['id']['rules'] = [
+            "permit_empty",
+            "if_exist",
+            "alpha_numeric",
+            "exact_length[14]",
+            "id_is_project[20]",
+            "id_has_valid_institute[institutes.mne]",
+            "id_is_system[LO]",
+            "is_unique[equipments.id]"
+        ];
+        $this->validationRules['id']['errors'] = [
+            "alpha_numeric" => "The id must be alphanumeric.",
+            "exact_length" => "The id must have 14 characters.",
+            "is_unique" => "This id already exists.",
+            "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
+            "id_has_valid_institute" => "The barcode doesn't have a valid institute value",
+            'id_is_system' => 'The barcode must have LO on positions 3 and 4. (LO is for optics and PMT is an optics equipment)'
+        ];
+
+        $this->fields['serial']['required'] = true;
+        $this->fields['serial']['helpText'] .= sprintf(' (Max size of %d characters)', $this->serialMaxSize);
+        $this->validationRules['serial']['rules'] = [
+            "required",
+            sprintf("max_length[%d]", $this->serialMaxSize),
+            sprintf('regex_match[%s]', $this->validSerialRegex)
+        ];
+        $this->validationRules['serial']['errors'] = [
+            "required" => "A serial code is required",
+            "max_length" => sprintf("Serial max size is %d characters", $this->serialMaxSize),
+            'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.'
+        ];
 
         $this->fields['beta'] = [
             'id' => 'beta',
