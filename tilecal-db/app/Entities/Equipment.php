@@ -15,4 +15,13 @@ class Equipment extends Entity
         "model_id" => "integer",
         "institute_id" => "integer"
     ];
+
+    public function toArrayWithModelParams(): array
+    {
+        $array = $this->toArray();
+        foreach ($array['model_params'] as $key=>$value){
+            $array[$key] = $value;
+        }
+        return $array;
+    }
 }

@@ -68,9 +68,8 @@ class PmtForm extends EquipmentForm{
             'id' => 'beta',
             'required' => true,
             'fieldType' => 'input',
-            'fieldParams' => [
-                'placeholder' => 'Positive number'
-            ]
+            'helpText' => 'Beta must be a postive number',
+            'fieldParams' => []
         ];
         $this->validationRules['beta'] = [
             "rules" => [
@@ -90,9 +89,8 @@ class PmtForm extends EquipmentForm{
             'label' => 'Nominal HV',
             'required' => true,
             'fieldType' => 'input',
-            'fieldParams' => [
-                'placeholder' => 'Positive number'
-            ]
+            'helpText' => 'Nominal HV must be a postive number',
+            'fieldParams' => []
         ];
         $this->validationRules['nominal_hv'] = [
             "rules" => [
@@ -112,9 +110,8 @@ class PmtForm extends EquipmentForm{
             'label' => 'QE',
             'required' => true,
             'fieldType' => 'input',
-            'fieldParams' => [
-                'placeholder' => 'Positive number'
-            ]
+            'helpText' => 'QE must be a postive number',
+            'fieldParams' => []
         ];
         $this->validationRules['qe'] = [
             "rules" => [

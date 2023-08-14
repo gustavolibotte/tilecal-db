@@ -23,7 +23,7 @@ class Equipments extends BaseController
     }
 
     public function view($equipmentId){
-        helper('form');
+        helper(['app_form', 'form']);
         $equipmentModel = new EquipmentModel();
         $equipment = $equipmentModel->getEquipment($equipmentId);
         if (is_null($equipment)){
@@ -37,9 +37,9 @@ class Equipments extends BaseController
         $viewData['pageTitle'] = sprintf('Equipment %s', $equipment->id);
         $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->model_name, $equipment->id));
         if ($this->user->isAuthorized('edit')){
-            $viewData['editForm'] = new \App\Library\Forms\EquipmentForm();
+            $viewData['editForm'] = new (get_model_form_class($equipment->model_name))();
             $viewData['editForm']->asEdit();
-            $viewData['editForm']->setFieldValues($equipment->toArray());
+            $viewData['editForm']->setFieldValues($equipment->toArrayWithModelParams());
             $viewData['editable'] = true;
         } else{
             $viewData['editable'] = false;
@@ -47,16 +47,10 @@ class Equipments extends BaseController
         return view('equipment/view', $viewData);
     }
 
-    protected function getFormClass($modelName){
-        helper('string');
-        $formClass = sprintf('\App\Library\Forms\%sForm', snake2CamelCase($modelName));
-        return $formClass;
-    }
-
     public function register($modelName='pmt'){
-        helper(['form', 'url', 'message']);
+        helper(['form', 'url', 'message', 'app_form']);
 
-        $formClass = $this->getFormClass($modelName);
+        $formClass = get_model_form_class($modelName);
         $equipmentModel = new EquipmentModel();
 
         if ($this->request->is('post')){
@@ -99,8 +93,8 @@ class Equipments extends BaseController
     }
 
     public function edit($equipmentId, $modelName){
-        helper('message');
-        $formClass = '\App\Library\Forms\EquipmentForm';
+        helper(['message', 'app_form']);
+        $formClass = get_model_form_class($modelName);
         $form = new $formClass($this->request);
         $form->asEdit();
         if ($form->validate()){

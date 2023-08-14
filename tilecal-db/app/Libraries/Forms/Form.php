@@ -51,11 +51,6 @@ abstract class Form{
         helper('app_form');
         helper('array');
         $str = '';
-        // if ($this->calledValidate and !$this->isValid){
-        //     foreach ($this->getErrors() as $errorMsg){
-        //         $str .= form_alert($errorMsg, 'danger');
-        //     }
-        // }
         
         foreach ($this->fields as $name=>$field) {
             if (is_null($this->request)){
