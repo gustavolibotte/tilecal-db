@@ -20,12 +20,13 @@ class AtlasId {
 
     public function id_has_valid_institute($value, string $params, array $data, ?string &$error): bool
     {   
+        helper('atlas_id');
         $tableColumn = explode('.', $params);
         $table = $tableColumn[0];
         $column = $tableColumn[1];
-        $idInstitute = substr($value, 4, 3);
+        $instituteMne = getInstituteMne($value);
         $db = db_connect();
-        $queryText = sprintf("SELECT * FROM `%s` WHERE `%s` = '%s' LIMIT 1", $table, $column, $idInstitute);
+        $queryText = sprintf("SELECT * FROM `%s` WHERE `%s` = '%s' LIMIT 1", $table, $column, $instituteMne);
         $query = $db->query($queryText);
         $results = $query->getFirstRow();
         return isset($results);

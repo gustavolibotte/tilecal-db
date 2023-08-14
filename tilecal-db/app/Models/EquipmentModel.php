@@ -70,6 +70,9 @@ class EquipmentModel extends LogModel
         $selectColumns .= 'locations.description as location_description, ';
         $selectColumns .= 'equipments.status_id as status_id, ';
         $selectColumns .= 'statuses.name as status, ';
+        $selectColumns .= 'equipments.owner_id as owner_id, ';
+        $selectColumns .= 'institutes.name as owner_name, ';
+        $selectColumns .= 'statuses.name as status, ';
         $selectColumns .= 'parent_models.label as parent_model_label, ';
         $selectColumns .= 'parent_models.name as parent_model_name, ';
         $selectColumns .= 'equipments.parent_id, ';
@@ -84,7 +87,8 @@ class EquipmentModel extends LogModel
                       ->join('locations', 'equipments.location_id = locations.id', 'left')
                       ->join('statuses', 'equipments.status_id = statuses.id', 'left')
                       ->join('equipments parents', 'equipments.parent_id = parents.id', 'left')
-                      ->join('models parent_models', 'parents.model_id = parent_models.id', 'left');
+                      ->join('models parent_models', 'parents.model_id = parent_models.id', 'left')
+                      ->join('institutes', 'equipments.owner_id = institutes.id');
         return $query;
 
     }

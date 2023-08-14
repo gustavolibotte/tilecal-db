@@ -5,6 +5,7 @@
       <th>Model</th>
       <th>Location</th>
       <th>Status</th>
+      <th>Owner</th>
       <th>Parent</th>
       <th>Serial</th>
       <th>Comments</th>
@@ -20,6 +21,7 @@
         <td><?php echo $equipment->model_label; ?></td>
         <td><?php echo $equipment->location; ?></td>
         <td><?php echo $equipment->status; ?></td>
+        <td><?php echo $equipment->owner_name; ?></td>
         <td><a type="button" class="btn btn-secondary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->parent_id)); ?>"><?php echo $equipment->parent_model_label; ?></a></td>
         <td><?php echo $equipment->serial; ?></td>
         <td><?php echo $equipment->comments; ?></td>

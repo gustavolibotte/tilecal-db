@@ -9,6 +9,7 @@
     <li class="list-group-item"><b>Location</b>: <? echo $equipmentInfo->location?> </li>
   <? endif; ?>
   <li class="list-group-item"><b>Status</b>: <? echo $equipmentInfo->status?> </li>
+  <li class="list-group-item"><b>Owner</b>: <? echo $equipmentInfo->owner_name?> </li>
   <li class="list-group-item"><b>Parent ID</b>: <? echo $equipmentInfo->parent_id?></li>
   <li class="list-group-item"><b>Serial</b>: <? echo $equipmentInfo->serial?> </li>
   <?php if($equipmentInfo->model_params): ?>

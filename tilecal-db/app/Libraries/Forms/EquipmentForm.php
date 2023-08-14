@@ -141,7 +141,7 @@ class EquipmentForm extends Form{
     }
 
     public function getEntity(){
-        helper('array');
+        helper(['array', 'atlas_id']);
         if (!$this->isValid){
             throw new Exception('To get the equipment you must validate the form first');
         }
@@ -152,6 +152,9 @@ class EquipmentForm extends Form{
             'location_id' => $this->request->getVar('location_id'),
             'status_id' => $this->request->getVar('status_id')
         ]);
+        $instituteMne = getInstituteMne($equipment->id);
+        $owner = (new \App\Models\InstituteModel())->where(sprintf("mne = '%s'", $instituteMne))->first();
+        $equipment->owner_id = $owner->id;
         $modelLabel = $this->request->getVar('model_label');
         $model = (new \App\Models\ModelModel())->where(sprintf("label = '%s'", $modelLabel))->first();
         $equipment->model_id = $model->id;
