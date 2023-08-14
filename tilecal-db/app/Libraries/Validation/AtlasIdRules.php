@@ -2,7 +2,7 @@
 
 namespace App\Library\Validation;
 
-class AtlasId {
+class AtlasIdRules {
 
     public function id_is_system($value, string $params, array $data, ?string &$error): bool
     {   

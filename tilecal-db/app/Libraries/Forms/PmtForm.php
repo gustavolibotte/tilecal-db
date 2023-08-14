@@ -22,6 +22,7 @@ class PmtForm extends EquipmentForm{
     ];
     public string $validSerialRegex = '/^[A-Z]{2}[0-9]{4}/';
     public int $serialMaxSize = 6;
+    public int $pmtId = 1;
 
     public function initialize()
     {   
@@ -36,18 +37,16 @@ class PmtForm extends EquipmentForm{
             "if_exist",
             "alpha_numeric",
             "exact_length[14]",
-            "id_is_project[20]",
-            "id_has_valid_institute[institutes.mne]",
-            "id_is_system[LO]",
+            "string_starts_with[20LOCER0]",
+            "string_ends_with[{serial}]",
             "is_unique[equipments.id]"
         ];
         $this->validationRules['id']['errors'] = [
             "alpha_numeric" => "The id must be alphanumeric.",
             "exact_length" => "The id must have 14 characters.",
             "is_unique" => "This id already exists.",
-            "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
-            "id_has_valid_institute" => "The barcode doesn't have a valid institute value",
-            'id_is_system' => 'The barcode must have LO on positions 3 and 4. (LO is for optics and PMT is an optics equipment)'
+            "string_starts_with" => "PMT ID must start with 20LOCER0. (20 for ATLAS peoject, LO for optics equipment and CER for CERN).",
+            "string_ends_with" => "The final 6 characters of a PMT barcode must be its serial code."
         ];
 
         $this->fields['serial']['required'] = true;
@@ -55,12 +54,14 @@ class PmtForm extends EquipmentForm{
         $this->validationRules['serial']['rules'] = [
             "required",
             sprintf("max_length[%d]", $this->serialMaxSize),
-            sprintf('regex_match[%s]', $this->validSerialRegex)
+            sprintf('regex_match[%s]', $this->validSerialRegex),
+            "is_model_unique[serial,{$this->pmtId}]"
         ];
         $this->validationRules['serial']['errors'] = [
             "required" => "A serial code is required",
             "max_length" => sprintf("Serial max size is %d characters", $this->serialMaxSize),
-            'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.'
+            'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
+            "is_model_unique" => "There is already a PMT registered with the serial {value}"
         ];
 
         $this->fields['beta'] = [
