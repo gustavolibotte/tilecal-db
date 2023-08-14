@@ -199,7 +199,7 @@ class EquipmentForm extends Form{
                 "id_has_valid_institute" => "The barcode doesn't have a valid institute value"
             ]
         ];
-        $this->validator->setRules($this->validationRules);
+        $this->resetRules();
         $this->fields['id']['fieldParams']['readOnly'] = null;
     }
 }

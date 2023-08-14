@@ -181,4 +181,41 @@ class PmtForm extends EquipmentForm{
         $equipment->model_params = $modelParams;
         return $equipment;
     }
+
+    public function asEdit(){
+
+        $this->fields['id']['fieldParams']['readOnly'] = null;
+        $this->validationRules['id']['rules'] = [
+            "permit_empty",
+            "if_exist",
+            "alpha_numeric",
+            "exact_length[14]",
+            "string_starts_with[20LOCER0]",
+            "string_ends_with[{serial}]",
+            "is_not_unique[equipments.id]"
+        ];
+        $this->validationRules['id']['errors'] = [
+            "alpha_numeric" => "The id must be alphanumeric.",
+            "exact_length" => "The id must have 14 characters.",
+            "is_not_unique" => "This id doesn't exists.",
+            "string_starts_with" => "PMT ID must start with 20LOCER0. (20 for ATLAS peoject, LO for optics equipment and CER for CERN).",
+            "string_ends_with" => "The final 6 characters of a PMT barcode must be its serial code."
+        ];
+
+        $this->fields['serial']['fieldParams']['readOnly'] = null;
+        $this->validationRules['serial']['rules'] = [
+            "required",
+            sprintf("max_length[%d]", $this->serialMaxSize),
+            sprintf('regex_match[%s]', $this->validSerialRegex),
+            "is_model_not_unique[serial,{$this->pmtId}]"
+        ];
+        $this->validationRules['serial']['errors'] = [
+            "required" => "A serial code is required",
+            "max_length" => sprintf("Serial max size is %d characters", $this->serialMaxSize),
+            'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
+            "is_model_not_unique" => "There is no PMT with the serial {value}"
+        ];
+
+        $this->resetRules();
+    }
 }

@@ -79,6 +79,11 @@ abstract class Form{
     public function removeField(string $fieldName){
         unset($this->fields[$fieldName]);
         unset($this->validationRules[$fieldName]);
+        $this->resetRules();
+    }
+
+    protected function resetRules(){
+        $this->validator->reset();
         $this->validator->setRules($this->validationRules);
     }
 }
