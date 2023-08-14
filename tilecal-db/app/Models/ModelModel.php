@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Entities\OperationLog;
 
-class ModelModel extends DimModel
+class ModelModel extends BaseModel
 {
     protected $DBGroup          = 'default';
     protected $table            = 'models';

@@ -65,8 +65,10 @@ class EquipmentModel extends LogModel
         $selectColumns = 'equipments.id, ';
         $selectColumns .= 'models.label as model_label, ';
         $selectColumns .= 'models.name as model_name, ';
+        $selectColumns .= 'equipments.location_id as location_id, ';
         $selectColumns .= 'locations.name as location, ';
         $selectColumns .= 'locations.description as location_description, ';
+        $selectColumns .= 'equipments.status_id as status_id, ';
         $selectColumns .= 'statuses.name as status, ';
         $selectColumns .= 'parent_models.label as parent_model_label, ';
         $selectColumns .= 'parent_models.name as parent_model_name, ';

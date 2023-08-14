@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Library\Forms;
-use App\Models\DimModel;
 
 use Exception;
+use \App\Models\BaseModel;
 
 class EquipmentForm extends Form{
 
@@ -32,22 +32,24 @@ class EquipmentForm extends Form{
                     'readOnly' => null
                 ]
             ],
-            'location' => [
-                'id' => 'location',
+            'location_id' => [
+                'id' => 'location_id',
+                'label' => 'Location',
                 'required' => true,
                 'fieldType' => 'dropdown',
                 'helpText' => "Current equipment location",
                 'fieldParams' => [
-                    'options' => (new \App\Models\LocationModel())->getFormDropdownOptions()
+                    'options' => (new \App\Models\LocationModel())->getFormDropdownOptions(['name', 'description'])
                 ]
             ],
-            'status' => [
-                'id' => 'status',
+            'status_id' => [
+                'id' => 'status_id',
+                'label' => 'Status',
                 'required' => true,
                 'fieldType' => 'dropdown',
                 'helpText' => "Current equipment status",
                 'fieldParams' => [
-                    'options' => (new \App\Models\StatusModel())->getFormDropdownOptions()
+                    'options' => (new \App\Models\StatusModel())->getFormDropdownOptions(['name', 'description'])
                 ]
             ],
             'serial' => [
@@ -99,20 +101,20 @@ class EquipmentForm extends Form{
                     "is_not_unique" => "The given model doesn't exist.",
                 ]
             ],
-            "location" => [
+            "location_id" => [
                 "rules" => [
                     "required",
-                    "is_not_unique[locations.name]",
+                    "is_not_unique[locations.id]",
                 ],
                 "errors" => [
                     "required" => "You must supply a location for the equipment.",
                     "is_not_unique" => "The inserted location is not valid",
                 ]
             ],
-            "status" => [
+            "status_id" => [
                 "rules" => [
                     "required",
-                    "is_not_unique[statuses.name]",
+                    "is_not_unique[statuses.id]",
                 ],
                 "errors" => [
                     "required" => "You must supply a status for the equipment.",
@@ -146,18 +148,10 @@ class EquipmentForm extends Form{
         $equipment = new \App\Entities\Equipment([
             'id' => $this->request->getVar('id'),
             'serial' => $this->request->getVar('serial'),
-            'comments' => $this->request->getVar('comments')
+            'comments' => $this->request->getVar('comments'),
+            'location_id' => $this->request->getVar('location_id'),
+            'status_id' => $this->request->getVar('status_id')
         ]);
-        $equipment->location_id = $this->getId(
-            'name',
-            $this->request->getVar('location'),
-            new \App\Models\LocationModel()
-        );
-        $equipment->status_id = $this->getId(
-            'name',
-            $this->request->getVar('status'),
-            new \App\Models\StatusModel()
-        );
         $modelLabel = $this->request->getVar('model_label');
         $model = (new \App\Models\ModelModel())->where(sprintf("label = '%s'", $modelLabel))->first();
         $equipment->model_id = $model->id;
@@ -169,7 +163,7 @@ class EquipmentForm extends Form{
         return $equipment;
     }
 
-    protected function getId(string $fieldName, string $value, DimModel $model){
+    protected function getId(string $fieldName, string $value, BaseModel $model){
         $entity = $model->where(sprintf("%s = '%s'", $fieldName, $value))->first();
         return $entity->id;
     }

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-class StatusModel extends DimModel
+class StatusModel extends BaseModel
 {
     protected $DBGroup          = 'default';
     protected $table            = 'statuses';
