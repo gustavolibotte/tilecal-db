@@ -94,8 +94,8 @@ class OperationLog extends Entity
 
     protected function updateEquipmentsMessage(){
         $msg = $this->getMessageStart();
-        if (is_null($this->changes)){
-            $msg .= 'submited update with no changes';
+        if (is_null($this->changes) or (count($this->changes) == 0)){
+            $msg .= 'Submited update with no changes';
             return $msg;
         }
         $msg .= 'Entry updated with values:';

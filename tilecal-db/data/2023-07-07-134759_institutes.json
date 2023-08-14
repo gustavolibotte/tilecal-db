@@ -35,14 +35,14 @@
     "country": "AZERBAIJAN"
   },
   {
-    "name": "Byelorussian State University\nNat. Sci. Educ. Cen. of Part. & HEP (NCPHEP)",
+    "name": "Byelorussian State University - Nat. Sci. Educ. Cen. of Part. & HEP (NCPHEP)",
     "mne": "CPM",
     "num": 137,
     "place": "MINSK",
     "country": "BELARUS"
   },
   {
-    "name": "The national Academy of Sciences of Belarus\nBI Stepanov Institute of physics",
+    "name": "The national Academy of Sciences of Belarus - BI Stepanov Institute of physics",
     "mne": "BEM",
     "num": 171,
     "place": "MINSK",
@@ -56,7 +56,7 @@
     "country": "BRAZIL"
   },
   {
-    "name": "Carleton University\nCentre for Research in Part. Phys. (CRPP)",
+    "name": "Carleton University - Centre for Research in Part. Phys. (CRPP)",
     "mne": "CAR",
     "num": 140,
     "place": "OTTAWA",
@@ -105,7 +105,7 @@
     "country": "CANADA"
   },
   {
-    "name": "Chinese Academy of Sciences\nInstitute of High Energy Physics (IHEP)",
+    "name": "Chinese Academy of Sciences - Institute of High Energy Physics (IHEP)",
     "mne": "EPB",
     "num": 116,
     "place": "BEIJING",
@@ -133,7 +133,7 @@
     "country": "CHINA"
   },
   {
-    "name": "Akademie vid Eeske republiky \nInstitute of Physics of the Czech Academy of Sciences",
+    "name": "Akademie vid Eeske republiky  - Institute of Physics of the Czech Academy of Sciences",
     "mne": "EPS",
     "num": "043",
     "place": "PRAGUE",
@@ -154,7 +154,7 @@
     "country": "CZECH REPUBLIC"
   },
   {
-    "name": "University of Copenhagen\nNiels Bohr Institute",
+    "name": "University of Copenhagen - Niels Bohr Institute",
     "mne": "NBI",
     "num": "046",
     "place": "COPENHAGEN",
@@ -175,21 +175,21 @@
     "country": "FRANCE"
   },
   {
-    "name": "Centre National de la Recherche Scientifique (CNRS)\nInstitut National de Physique Nucléaire et de Physique des Particules (IN2P3)\nLAPP-Laboratoire d'Annecy de Physique des Particules (LAPP)",
+    "name": "Centre National de la Recherche Scientifique (CNRS) - Institut National de Physique Nucléaire et de Physique des Particules (IN2P3) - LAPP-Laboratoire d'Annecy de Physique des Particules (LAPP)",
     "mne": "LAP",
     "num": "056",
     "place": "ANNECY-LE-VIEUX",
     "country": "FRANCE"
   },
   {
-    "name": "Centre National de la Recherche Scientifique (CNRS)\nInstitut National de Physique Nucléaire et de Physique des Particules (IN2P3)\nLaboratoire de Physique Subatomique et de Cosmologie (LPSC)",
+    "name": "Centre National de la Recherche Scientifique (CNRS) - Institut National de Physique Nucléaire et de Physique des Particules (IN2P3) - Laboratoire de Physique Subatomique et de Cosmologie (LPSC)",
     "mne": "ISN",
     "num": "066",
     "place": "GRENOBLE",
     "country": "FRANCE"
   },
   {
-    "name": "Centre National de la Recherche Scientifique (CNRS)\nSorbonne Universite",
+    "name": "Centre National de la Recherche Scientifique (CNRS) - Sorbonne Universite",
     "mne": "LPN",
     "num": 108,
     "place": "PARIS 05",
@@ -203,14 +203,14 @@
     "country": "FRANCE"
   },
   {
-    "name": "Universite Paris-Saclay\nCommissariat a l'energie atomique et aux energies alternatives (CEA)\nIRFU",
+    "name": "Universite Paris-Saclay - Commissariat a l'energie atomique et aux energies alternatives (CEA) - IRFU",
     "mne": "CEA",
     "num": 134,
     "place": "GIF-SUR-YVETTE",
     "country": "FRANCE"
   },
   {
-    "name": "Universite Paris-Saclay\nInstitut National de Physique Nucleaire et de Physique des Particules (CNRS/IN2P3)\nLaboratoire de l'Accélérateur Linéaire (LAL)",
+    "name": "Universite Paris-Saclay - Institut National de Physique Nucleaire et de Physique des Particules (CNRS/IN2P3) - Laboratoire de l'Accélérateur Linéaire (LAL)",
     "mne": "LAL",
     "num": "048",
     "place": "ORSAY",
@@ -224,7 +224,7 @@
     "country": "GEORGIA"
   },
   {
-    "name": "Ivane Javakhishvili Tbilisi State University\nElevter Andronikashvili Institute of Physics",
+    "name": "Ivane Javakhishvili Tbilisi State University - Elevter Andronikashvili Institute of Physics",
     "mne": "PAG",
     "num": 147,
     "place": "TBILISI",
@@ -259,7 +259,7 @@
     "country": "GERMANY"
   },
   {
-    "name": "Max-Planck-Gesellschaft (MPG)\nMax-Planck-Institut fur Physik",
+    "name": "Max-Planck-Gesellschaft (MPG) - Max-Planck-Institut fur Physik",
     "mne": "MPI",
     "num": "027",
     "place": "MUNICH",
@@ -343,14 +343,14 @@
     "country": "ISRAEL"
   },
   {
-    "name": "Istituto Nazionale di Fisica Nucleare (INFN)\nLaboratori Nazionali di Frascati (LNF)",
+    "name": "Istituto Nazionale di Fisica Nucleare (INFN) - Laboratori Nazionali di Frascati (LNF)",
     "mne": "LNF",
     "num": 155,
     "place": "FRASCATI",
     "country": "ITALY"
   },
   {
-    "name": "Pavia University and INFN\nUniversità degli Studi di Pavia",
+    "name": "Pavia University and INFN - Università degli Studi di Pavia",
     "mne": "PAV",
     "num": 133,
     "place": "PAVIA",
@@ -413,14 +413,14 @@
     "country": "ITALY"
   },
   {
-    "name": "Universita e INFN, Roma I\nUniversita di Roma I 'La Sapienza'",
+    "name": "Universita e INFN, Roma I - Universita di Roma I 'La Sapienza'",
     "mne": "RM1",
     "num": 143,
     "place": "ROME",
     "country": "ITALY"
   },
   {
-    "name": "Universita e INFN\nUniversità degli Studi di Milano",
+    "name": "Universita e INFN - Università degli Studi di Milano",
     "mne": "MIL",
     "num": "047",
     "place": "MILAN",
@@ -490,7 +490,7 @@
     "country": "JAPAN"
   },
   {
-    "name": "Okayama University\nDepartment of Physics",
+    "name": "Okayama University - Department of Physics",
     "mne": "OKA",
     "num": 173,
     "place": "OKAYAMA",
@@ -518,14 +518,14 @@
     "country": "JAPAN"
   },
   {
-    "name": "University of Tokyo\nGraduate School of Science\nDepartment of Physics",
+    "name": "University of Tokyo - Graduate School of Science - Department of Physics",
     "mne": "CEP",
     "num": 148,
     "place": "TOKYO",
     "country": "JAPAN"
   },
   {
-    "name": "University of Tsukuba\nFaculty / Graduate School of Pure and Applied Sciences",
+    "name": "University of Tsukuba - Faculty / Graduate School of Pure and Applied Sciences",
     "mne": "TSU",
     "num": 174,
     "place": "TSUKUBA",
@@ -539,7 +539,7 @@
     "country": "MOROCCO"
   },
   {
-    "name": "Universite Hassan II, Ain Chock\nFaculte des Sciences Ain Chock, Universite Hassan II",
+    "name": "Universite Hassan II, Ain Chock - Faculte des Sciences Ain Chock, Universite Hassan II",
     "mne": "CAS",
     "num": "085",
     "place": "CASABLANCA",
@@ -553,7 +553,7 @@
     "country": "NETHERLANDS"
   },
   {
-    "name": "Nikhef National institute for subatomic physics\nRadboud University Nijmegen\nHigh Energy Physics Institute (HEFIN)",
+    "name": "Nikhef National institute for subatomic physics - Radboud University Nijmegen - High Energy Physics Institute (HEFIN)",
     "mne": "FIN",
     "num": 153,
     "place": "NIJMEGEN",
@@ -574,14 +574,14 @@
     "country": "NORWAY"
   },
   {
-    "name": "AGH University of Krakow\nFaculty of Physics and Applied Computer Science",
+    "name": "AGH University of Krakow - Faculty of Physics and Applied Computer Science",
     "mne": "PNT",
     "num": "009",
     "place": "CRACOW",
     "country": "POLAND"
   },
   {
-    "name": "Laboratorio de Instrumentac?o e Fisica Experimental de Particulas (LIP)\nLIP Lisboa",
+    "name": "Laboratorio de Instrumentação e Fisica Experimental de Particulas (LIP) - LIP Lisboa",
     "mne": "LIP",
     "num": 119,
     "place": "LISBON",
@@ -616,7 +616,7 @@
     "country": "RUSSIA"
   },
   {
-    "name": "Ministry of the Russian Federation for Atomic Energy\nInstitute for High Energy Physics (IHEP)",
+    "name": "Ministry of the Russian Federation for Atomic Energy - Institute for High Energy Physics (IHEP)",
     "mne": "HEP",
     "num": "032",
     "place": "MOSCOW",
@@ -637,7 +637,7 @@
     "country": "RUSSIA"
   },
   {
-    "name": "Russian Academy of Sciences\nP.N. Lebedev Institute of Physics (FIAN)",
+    "name": "Russian Academy of Sciences - P.N. Lebedev Institute of Physics (FIAN)",
     "mne": "LPI",
     "num": "074",
     "place": "MOSCOW",
@@ -651,7 +651,7 @@
     "country": "SLOVAKIA"
   },
   {
-    "name": "Slovak Academy of Sciences (SAS)\nInstitute of Experimental Physics (IEP)",
+    "name": "Slovak Academy of Sciences (SAS) - Institute of Experimental Physics (IEP)",
     "mne": "KOS",
     "num": 102,
     "place": "KOSICE",
@@ -763,7 +763,7 @@
     "country": "UNITED KINGDOM"
   },
   {
-    "name": "Science and Technology Facilities Council STFC\nRutherford Appleton Laboratory",
+    "name": "Science and Technology Facilities Council STFC - Rutherford Appleton Laboratory",
     "mne": "RAL",
     "num": "033",
     "place": "DIDCOT",
@@ -805,28 +805,28 @@
     "country": "UNITED KINGDOM"
   },
   {
-    "name": "University of London\nQueen Mary University of London (QMUL)",
+    "name": "University of London - Queen Mary University of London (QMUL)",
     "mne": "QMW",
     "num": "022",
     "place": "LONDON",
     "country": "UNITED KINGDOM"
   },
   {
-    "name": "University of London\nRoyal Holloway College",
+    "name": "University of London - Royal Holloway College",
     "mne": "RHB",
     "num": "082",
     "place": "EGHAM",
     "country": "UNITED KINGDOM"
   },
   {
-    "name": "University of London\nUniversity College London",
+    "name": "University of London - University College London",
     "mne": "UCL",
     "num": "023",
     "place": "LONDON",
     "country": "UNITED KINGDOM"
   },
   {
-    "name": "University of Manchester\nDepartment of Physics",
+    "name": "University of Manchester - Department of Physics",
     "mne": "MAN",
     "num": "024",
     "place": "MANCHESTER",
@@ -889,7 +889,7 @@
     "country": "UNITED STATES"
   },
   {
-    "name": "Hampton University\nDepartment of Physics",
+    "name": "Hampton University - Department of Physics",
     "mne": "HAM",
     "num": "062",
     "place": "HAMPTON",
@@ -959,7 +959,7 @@
     "country": "UNITED STATES"
   },
   {
-    "name": "The State University of New York SUNY\nUniversity at Albany",
+    "name": "The State University of New York SUNY - University at Albany",
     "mne": "ALB",
     "num": 107,
     "place": "ALBANY",
@@ -1008,7 +1008,7 @@
     "country": "UNITED STATES"
   },
   {
-    "name": "University of Iowa\nPhysics and Astronomy Department",
+    "name": "University of Iowa - Physics and Astronomy Department",
     "mne": "IOW",
     "num": 172,
     "place": "IOWA CITY",
@@ -1050,7 +1050,7 @@
     "country": "UNITED STATES"
   },
   {
-    "name": "University of Rochester\nDepartment of Physics and Astronomy",
+    "name": "University of Rochester - Department of Physics and Astronomy",
     "mne": "ROC",
     "num": 154,
     "place": "ROCHESTER",

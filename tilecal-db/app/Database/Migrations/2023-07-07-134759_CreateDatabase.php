@@ -332,7 +332,7 @@ class CreateDatabase extends Migration
             ],
             'record_id' => [
                 'type' => 'VARCHAR',
-                'constraint' => 10,
+                'constraint' => 14,
                 'null' => false
             ],
             'changes' => [

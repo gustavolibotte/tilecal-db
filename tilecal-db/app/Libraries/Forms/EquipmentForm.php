@@ -81,7 +81,7 @@ class EquipmentForm extends Form{
                 "errors" => [
                     "required" => "You must supply an id for the equipment.",
                     "alpha_numeric" => "The id must be alphanumeric.",
-                    "exact_length" => "The id must have 7 characthers.",
+                    "exact_length" => "The id must have 14 characters.",
                     "is_unique" => "This id already exists.",
                     "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
                     "id_has_valid_institute" => "The barcode doesn't have a valid institute value"
@@ -179,18 +179,23 @@ class EquipmentForm extends Form{
     }
 
     public function asEdit(){
+        
         $this->validationRules['id'] = [
             "rules" => [
                 "required",
                 "alpha_numeric",
-                "exact_length[7]",
+                "exact_length[14]",
+                "id_is_project[20]",
+                "id_has_valid_institute[institutes.mne]",
                 "is_not_unique[equipments.id]"
             ],
             "errors" => [
                 "required" => "You must supply an id for the equipment.",
                 "alpha_numeric" => "The id must be alphanumeric.",
-                "exact_length" => "The id must have 7 characthers.",
-                "is_not_unique" => "The given id doesn't exist."
+                "exact_length" => "The id must have 14 characters.",
+                "is_not_unique" => "This id doesn't exist.",
+                "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
+                "id_has_valid_institute" => "The barcode doesn't have a valid institute value"
             ]
         ];
         $this->validator->setRules($this->validationRules);
