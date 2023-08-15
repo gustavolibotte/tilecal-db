@@ -2,9 +2,7 @@
 
 namespace App\Entities;
 
-use CodeIgniter\Entity\Entity;
-
-class OperationLog extends Entity
+class OperationLog extends BaseEntity
 {
     protected $datamap = [];
     protected $dates   = ['created_at'];

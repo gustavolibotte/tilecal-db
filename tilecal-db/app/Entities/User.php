@@ -2,10 +2,7 @@
 
 namespace App\Entities;
 
-use CodeIgniter\Entity\Entity;
-use PDO;
-
-class User extends Entity
+class User extends BaseEntity
 {
     protected $datamap = [];
     protected $dates   = ['authTime'];

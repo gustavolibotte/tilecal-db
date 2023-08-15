@@ -2,9 +2,7 @@
 
 namespace App\Entities;
 
-use CodeIgniter\Entity\Entity;
-
-class Equipment extends Entity
+class Equipment extends BaseEntity
 {
     protected $datamap = [];
     protected $dates   = ['created_at', 'updated_at', 'deleted_at'];
@@ -23,10 +21,5 @@ class Equipment extends Entity
             $array[$key] = $value;
         }
         return $array;
-    }
-
-    public function isDeleted(): bool
-    {
-        return !empty($this->deleted_at);
     }
 }
