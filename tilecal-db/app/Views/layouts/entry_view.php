@@ -1,12 +1,8 @@
-<?= $this->extend('layouts/content_with_side_col') ?>
+<?= $this->extend('layouts/base') ?>
 
 <?= $this->section('css') ?>
   <link href="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/b-2.3.6/datatables.min.css" rel="stylesheet"/>
   <?= $this->renderSection('css') ?>
-<?= $this->endSection() ?>
-
-<?= $this->section('sideContent') ?>
-  <? $this->renderSection('table') ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>

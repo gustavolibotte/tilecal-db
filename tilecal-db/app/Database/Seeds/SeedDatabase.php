@@ -2,50 +2,17 @@
 
 namespace App\Database\Seeds;
 
+use Tests\Support\Models\EquipmentFabricator;
+use CodeIgniter\Test\Fabricator;
+
 class SeedDatabase extends BaseSeeder
 {
     public function run()
     {   
         helper('random');
-        $this->seedModels();
-        $this->seedStatuses();
-        $this->seedLocations();
         $this->seedFiles();
-        $this->seedEquipments();
+        $this->seedEquipments(1000);
         $this->seedEquipments2Files();
-    }
-
-    public function seedModels(){
-        echo "Seeding Models\n";
-        $jsonData = $this->readJSON('models.json');
-        $modelModel = new \App\Models\ModelModel(isMigration: true);
-        foreach ($jsonData as $row){
-            $row["params"] = json_encode($row['params']);
-            $modelModel->insert($row);
-        }
-        echo "Seeded Models\n";
-    }
-
-    public function seedStatuses(){
-        echo "Seeding Statuses";
-        $jsonData = $this->readJSON('statuses.json');
-        $statusModel = new \App\Models\StatusModel(isMigration: true);
-        foreach ($jsonData as $row){
-            $status = new \App\Entities\Status($row);
-            $statusModel->insert($status);
-        }
-        echo "Seeded Statuses\n";
-    }
-
-    public function seedLocations(){
-        echo "Seeding Locations\n";
-        $jsonData = $this->readJSON('locations.json');
-        $locationModel = new \App\Models\LocationModel(isMigration: true);
-        foreach ($jsonData as $row){
-            $location = new \App\Entities\Location($row);
-            $locationModel->insert($location);
-        }
-        echo "Seeded Locations\n";
     }
 
     public function seedFiles(){
@@ -63,42 +30,13 @@ class SeedDatabase extends BaseSeeder
         echo "Seeded Files\n";
     }
 
-    public function seedEquipments(){
+    public function seedEquipments(int $numEntries){
         echo "Seeding Equipments\n";
-        $modelModel = new \App\Models\ModelModel(isMigration: true);
-        $models = $modelModel->findAll();
 
-        $locationModel = new \App\Models\LocationModel(isMigration: true);
-        $locations = $locationModel->findAll();
-
-        $statusModel = new \App\Models\StatusModel(isMigration: true);
-        $statuses = $statusModel->findAll();
-        
-        $jsonData = $this->readJSON('equipments.json');
-
-        $equipmentModel = new \App\Models\EquipmentModel(isMigration: true);
-        $first = true;
-        
-        foreach ($jsonData as $row) {
-            $equipment = new \App\Entities\Equipment($row);
-            $model = random_choice($models);
-            $equipment->model_id = $model->id;
-            $location = random_choice($locations);
-            $equipment->location_id = $location->id;
-            $status = random_choice($statuses);
-            $equipment->status_id = $status->id;
-            $equipment->model_params = array_fill_keys($model->params, null);
-            if (!$first){
-                $equipment->parent_id = $firstEquipment->id;
-            }
-            $equipmentModel->insert($equipment);
-            if ($this->probDecision(0.03)){
-                $equipmentModel->delete($equipment->id);
-            }
-            if ($first){
-                $firstEquipment = $equipment;
-                $first = false;
-            }
+        $fabricatorModel = new EquipmentFabricator(isMigration: true);
+        $fabricator = new Fabricator($fabricatorModel);
+        foreach ($fabricator->make($numEntries) as $equipment){
+            $fabricatorModel->insert($equipment);
         }
         echo "Seeded Equipments\n";
     }

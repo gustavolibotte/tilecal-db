@@ -62,3 +62,14 @@ function form_field(string $id,
     );
     return $fieldStr;
 }
+
+function get_model_form_class(string $modelName): string
+{
+    helper('string');
+    if ($modelName != 'pmt'){
+        return '\App\Library\Forms\EquipmentForm';
+    }
+    $modelName = snake2CamelCase($modelName);
+    $formClass = sprintf('\App\Library\Forms\%sForm', $modelName);
+    return $formClass;
+}

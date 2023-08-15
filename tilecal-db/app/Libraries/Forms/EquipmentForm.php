@@ -1,11 +1,14 @@
 <?php
 
 namespace App\Library\Forms;
-use App\Models\DimModel;
 
 use Exception;
+use \App\Models\BaseModel;
+use \App\Entities\Equipment;
 
 class EquipmentForm extends Form{
+
+    public static int $serialMaxSize = 36;
 
     public function initialize()
     {
@@ -13,11 +16,11 @@ class EquipmentForm extends Form{
             'id' => [
                 'id' => 'id',
                 'required' => true,
-                'helpText' => "Equipment's barcode value",
+                'helpText' => "Equipment's barcode value following ATLAS identification rules.",
                 'fieldType' => 'input',
                 'fieldParams' => [
-                    'maxlength' => 7,
-                    'placeholder' => 'XXXXXXX'
+                    'maxlength' => 14,
+                    'placeholder' => 'XXXXXXXXXXXXXX'
                 ]
             ],
             'model_label' => [
@@ -30,22 +33,24 @@ class EquipmentForm extends Form{
                     'readOnly' => null
                 ]
             ],
-            'location' => [
-                'id' => 'location',
+            'location_id' => [
+                'id' => 'location_id',
+                'label' => 'Location',
                 'required' => true,
                 'fieldType' => 'dropdown',
                 'helpText' => "Current equipment location",
                 'fieldParams' => [
-                    'options' => (new \App\Models\LocationModel())->getFormDropdownOptions()
+                    'options' => (new \App\Models\LocationModel())->getFormDropdownOptions(['name', 'description'])
                 ]
             ],
-            'status' => [
-                'id' => 'status',
+            'status_id' => [
+                'id' => 'status_id',
+                'label' => 'Status',
                 'required' => true,
                 'fieldType' => 'dropdown',
                 'helpText' => "Current equipment status",
                 'fieldParams' => [
-                    'options' => (new \App\Models\StatusModel())->getFormDropdownOptions()
+                    'options' => (new \App\Models\StatusModel())->getFormDropdownOptions(['name', 'description'])
                 ]
             ],
             'serial' => [
@@ -54,7 +59,7 @@ class EquipmentForm extends Form{
                 'fieldType' => 'input',
                 'helpText' => "Equipment serial number",
                 'fieldParams' => [
-                    'maxlength' => 20
+                    'maxlength' => self::$serialMaxSize
                 ]
             ],
             'comments' => [
@@ -73,14 +78,18 @@ class EquipmentForm extends Form{
                 "rules" => [
                     "required",
                     "alpha_numeric",
-                    "exact_length[7]",
+                    "exact_length[14]",
+                    "id_is_project[20]",
+                    "id_has_valid_institute[institutes.mne]",
                     "is_unique[equipments.id]"
                 ],
                 "errors" => [
                     "required" => "You must supply an id for the equipment.",
                     "alpha_numeric" => "The id must be alphanumeric.",
-                    "exact_length" => "The id must have 7 characthers.",
-                    "is_unique" => "This id already exists."
+                    "exact_length" => "The id must have 14 characters.",
+                    "is_unique" => "This id already exists.",
+                    "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
+                    "id_has_valid_institute" => "The barcode doesn't have a valid institute value"
                 ]
             ],
             "model_label" => [
@@ -93,20 +102,20 @@ class EquipmentForm extends Form{
                     "is_not_unique" => "The given model doesn't exist.",
                 ]
             ],
-            "location" => [
+            "location_id" => [
                 "rules" => [
                     "required",
-                    "is_not_unique[locations.name]",
+                    "is_not_unique[locations.id]",
                 ],
                 "errors" => [
                     "required" => "You must supply a location for the equipment.",
                     "is_not_unique" => "The inserted location is not valid",
                 ]
             ],
-            "status" => [
+            "status_id" => [
                 "rules" => [
                     "required",
-                    "is_not_unique[statuses.name]",
+                    "is_not_unique[statuses.id]",
                 ],
                 "errors" => [
                     "required" => "You must supply a status for the equipment.",
@@ -115,10 +124,10 @@ class EquipmentForm extends Form{
             ],
             "serial" => [
                 "rules" => [
-                    "max_length[20]"
+                    sprintf("max_length[%d]", self::$serialMaxSize)
                 ],
                 "errors" => [
-                    "max_length" => "Serial max size is 20 characthers",
+                    "max_length" => "Serial max size is {param} characters",
                 ]
             ],
             "comments" => [
@@ -132,26 +141,22 @@ class EquipmentForm extends Form{
         ];
     }
 
-    public function getEntity(){
-        helper('array');
+    public function getEntity(): Equipment
+    {
+        helper(['array', 'atlas_id']);
         if (!$this->isValid){
             throw new Exception('To get the equipment you must validate the form first');
         }
-        $equipment = new \App\Entities\Equipment([
+        $equipment = new Equipment([
             'id' => $this->request->getVar('id'),
             'serial' => $this->request->getVar('serial'),
-            'comments' => $this->request->getVar('comments')
+            'comments' => $this->request->getVar('comments'),
+            'location_id' => $this->request->getVar('location_id'),
+            'status_id' => $this->request->getVar('status_id')
         ]);
-        $equipment->location_id = $this->getId(
-            'name',
-            $this->request->getVar('location'),
-            new \App\Models\LocationModel()
-        );
-        $equipment->status_id = $this->getId(
-            'name',
-            $this->request->getVar('status'),
-            new \App\Models\StatusModel()
-        );
+        $instituteMne = getInstituteMne($equipment->id);
+        $owner = (new \App\Models\InstituteModel())->where(sprintf("mne = '%s'", $instituteMne))->first();
+        $equipment->owner_id = $owner->id;
         $modelLabel = $this->request->getVar('model_label');
         $model = (new \App\Models\ModelModel())->where(sprintf("label = '%s'", $modelLabel))->first();
         $equipment->model_id = $model->id;
@@ -163,7 +168,7 @@ class EquipmentForm extends Form{
         return $equipment;
     }
 
-    protected function getId(string $fieldName, string $value, DimModel $model){
+    protected function getId(string $fieldName, string $value, BaseModel $model){
         $entity = $model->where(sprintf("%s = '%s'", $fieldName, $value))->first();
         return $entity->id;
     }
@@ -175,21 +180,26 @@ class EquipmentForm extends Form{
     }
 
     public function asEdit(){
+        
         $this->validationRules['id'] = [
             "rules" => [
                 "required",
                 "alpha_numeric",
-                "exact_length[7]",
+                "exact_length[14]",
+                "id_is_project[20]",
+                "id_has_valid_institute[institutes.mne]",
                 "is_not_unique[equipments.id]"
             ],
             "errors" => [
                 "required" => "You must supply an id for the equipment.",
                 "alpha_numeric" => "The id must be alphanumeric.",
-                "exact_length" => "The id must have 7 characthers.",
-                "is_not_unique" => "The given id doesn't exist."
+                "exact_length" => "The id must have 14 characters.",
+                "is_not_unique" => "This id doesn't exist.",
+                "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
+                "id_has_valid_institute" => "The barcode doesn't have a valid institute value"
             ]
         ];
-        $this->validator->setRules($this->validationRules);
+        $this->resetRules();
         $this->fields['id']['fieldParams']['readOnly'] = null;
     }
 }

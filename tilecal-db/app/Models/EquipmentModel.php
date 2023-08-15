@@ -16,6 +16,7 @@ class EquipmentModel extends LogModel
     protected $allowedFields    = [
         'id',
         'model_id',
+        'owner_id',
         'location_id',
         'status_id',
         'parent_id',
@@ -64,8 +65,13 @@ class EquipmentModel extends LogModel
         $selectColumns = 'equipments.id, ';
         $selectColumns .= 'models.label as model_label, ';
         $selectColumns .= 'models.name as model_name, ';
+        $selectColumns .= 'equipments.location_id as location_id, ';
         $selectColumns .= 'locations.name as location, ';
         $selectColumns .= 'locations.description as location_description, ';
+        $selectColumns .= 'equipments.status_id as status_id, ';
+        $selectColumns .= 'statuses.name as status, ';
+        $selectColumns .= 'equipments.owner_id as owner_id, ';
+        $selectColumns .= 'institutes.name as owner_name, ';
         $selectColumns .= 'statuses.name as status, ';
         $selectColumns .= 'parent_models.label as parent_model_label, ';
         $selectColumns .= 'parent_models.name as parent_model_name, ';
@@ -81,7 +87,8 @@ class EquipmentModel extends LogModel
                       ->join('locations', 'equipments.location_id = locations.id', 'left')
                       ->join('statuses', 'equipments.status_id = statuses.id', 'left')
                       ->join('equipments parents', 'equipments.parent_id = parents.id', 'left')
-                      ->join('models parent_models', 'parents.model_id = parent_models.id', 'left');
+                      ->join('models parent_models', 'parents.model_id = parent_models.id', 'left')
+                      ->join('institutes', 'equipments.owner_id = institutes.id');
         return $query;
 
     }
@@ -99,23 +106,7 @@ class EquipmentModel extends LogModel
     }
 
     public function getFileRelated($fileId, $limit=null){
-        $selectColumns = 'equipments.id, ';
-        $selectColumns .= 'models.label as model_label, ';
-        $selectColumns .= 'models.name as model_name, ';
-        $selectColumns .= 'locations.name as location, ';
-        $selectColumns .= 'locations.description as location_description, ';
-        $selectColumns .= 'statuses.name as status, ';
-        $selectColumns .= 'equipments.parent_id, ';
-        $selectColumns .= 'equipments.serial, ';
-        $selectColumns .= 'equipments.comments, ';
-        $selectColumns .= 'equipments.model_params, ';
-        $selectColumns .= 'equipments.updated_at, ';
-        $selectColumns .= 'equipments.created_at, ';
-        $selectColumns .= 'equipments.deleted_at ';
-        $query = $this->select($selectColumns)
-                      ->join('models', 'equipments.model_id = models.id')
-                      ->join('locations', 'equipments.location_id = locations.id')
-                      ->join('statuses', 'equipments.status_id = statuses.id')
+        $query = $this->fullQuery()
                       ->join('equipments_to_files', 'equipments.id = equipments_to_files.equipment_id')
                       ->where(sprintf('equipments_to_files.file_id = %s', $fileId));
         $result = is_null($limit)? $query->findAll(): $query->findAll($limit);

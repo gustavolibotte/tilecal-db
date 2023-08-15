@@ -30,3 +30,21 @@ function makeLowerCamelCase($array){
     }
     return $str;
 }
+
+function implodeWithouEmpty(string $separator, array $array): string
+{   
+    $first = true;
+    $newStr = '';
+    foreach ($array as $str){
+        if (!empty($str)){
+            if ($first){
+                $newStr = $str;
+                $first = false;
+            } else{
+                $newStr .= $separator;
+                $newStr .= $str;
+            }
+        }
+    }
+    return $newStr;
+}

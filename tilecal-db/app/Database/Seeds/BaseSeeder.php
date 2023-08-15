@@ -13,7 +13,8 @@ class BaseSeeder extends Seeder
     }
 
     protected function readFile($filepath){
-        $fullpath = ROOTPATH . 'app/Database/Seeds/seed_data/' . $filepath;
+        helper('path');
+        $fullpath = joinPaths([ROOTPATH, 'data', 'seed_data', $filepath]);
         $filedata = file_get_contents($fullpath);
         return $filedata;
     }
