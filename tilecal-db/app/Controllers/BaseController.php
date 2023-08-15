@@ -8,6 +8,7 @@ use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use App\Entities\User;
 
 
 /**
@@ -22,7 +23,7 @@ use Psr\Log\LoggerInterface;
  */
 abstract class BaseController extends Controller
 {
-    protected $user;
+    protected User $user;
     /**
      * Instance of the main Request object.
      *
@@ -62,15 +63,5 @@ abstract class BaseController extends Controller
         $response['data'] = $data;
         $response['recordsFiltered'] = count($data);
         return json_encode($response);
-    }
-
-    public function getHeaderData($pageTitle){
-        $headerData['pageTitle'] = $pageTitle;
-        return $headerData;
-    }
-
-    public function toSnakeCase($input){
-        $output = strtolower(str_replace(' ', '_', $input));
-        return $output;
     }
 }

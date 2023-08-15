@@ -4,38 +4,50 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\EquipmentModel;
+use App\Models\Equipment2FileModel;
 use App\Models\ModelModel;
 
 class Equipments extends BaseController
 {   
-    public function index($modelName=null, $searchDeleted=false)
+    public function index($modelName=null)
     {   
-        $equipmentModel = new EquipmentModel();
-        if (is_null($modelName)){
-            $indexData['equipments'] = $equipmentModel->getEquipment(searchDeleted: $searchDeleted);
-        }
-        else{
-            $indexData['equipments'] = $equipmentModel->getEquipmentsWhereModel($modelName, searchDeleted: $searchDeleted);
-        }
         $indexData['pageTitle'] = 'Equipment Index';
         $indexData['pageHeader'] = 'Equipment Index';
         return view('equipment/index', $indexData);
     }
 
+    public function deletedIndex()
+    {   
+        $indexData['pageTitle'] = 'Deleted Equipment Index';
+        $indexData['pageHeader'] = 'Deleted Equipment Index';
+        $indexData['headerClass'] = 'text-danger';
+        return view('equipment/deleted_index', $indexData);
+    }
+
     public function view($equipmentId){
         helper(['app_form', 'form']);
         $equipmentModel = new EquipmentModel();
-        $equipment = $equipmentModel->getEquipment($equipmentId);
+        $equipment = $equipmentModel->withDeleted()->getEquipment($equipmentId);
+
         if (is_null($equipment)){
             return redirect('notfound');
+        } elseif ($equipment->isDeleted() and !$this->user->isAuthorized('delete')){
+            return redirect('unauthorized');
         }
+
         $viewData['infoHeader'] = 'Equipment Info';
         $viewData['equipmentInfo'] = $equipment;
         $histModel = new \App\Models\HistModel();
         $viewData["histories"] = $histModel->getEquipmentHist($equipmentId);
         $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->id);
-        $viewData['pageTitle'] = sprintf('Equipment %s', $equipment->id);
+        $viewData['isDeleted'] = $equipment->isDeleted();
+        if ($viewData['isDeleted']){
+            $viewData['pageHeader'] = 'Deleted ' . $viewData['pageHeader'];
+            $viewData['headerClass'] = 'text-danger';
+        }
+        $viewData['pageTitle'] = $viewData['pageHeader'];
         $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->model_name, $equipment->id));
+
         if ($this->user->isAuthorized('edit')){
             $viewData['editForm'] = new (get_model_form_class($equipment->model_name))();
             $viewData['editForm']->asEdit();
@@ -44,6 +56,14 @@ class Equipments extends BaseController
         } else{
             $viewData['editable'] = false;
         }
+
+        if ($this->user->isAuthorized('delete')){
+            $viewData['deleteUrl'] = base_url(sprintf('equipments/delete/%s', $equipment->id));
+            $viewData['deletable'] = true;
+        } else{
+            $viewData['deletable'] = false;
+        }
+
         return view('equipment/view', $viewData);
     }
 
@@ -92,7 +112,8 @@ class Equipments extends BaseController
         return view('equipment/register', $registerData);
     }
 
-    public function edit($equipmentId, $modelName){
+    public function edit($equipmentId, $modelName)
+    {
         helper(['message', 'app_form']);
         $formClass = get_model_form_class($modelName);
         $form = new $formClass($this->request);
@@ -115,6 +136,19 @@ class Equipments extends BaseController
                 addMessages($messages);
             }
         }
-            return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
-        }
+        return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
     }
+
+    public function delete($equipmentId)
+    {
+        helper('message');
+        $equipmentModel = new EquipmentModel();
+        $equipmentModel->deleteEquipment($equipmentId);
+        $messages[] = [
+            'message' => 'Deleted with success',
+            'type' => 'success'
+        ];
+        addMessages($messages);
+        return redirect('equipments');
+    }
+}

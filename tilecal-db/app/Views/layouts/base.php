@@ -17,7 +17,11 @@
   <div class="container mt-4 mb-4">
     <div class="row">
       <div class="jumbotron text-left">
-        <h1><? echo $pageHeader ?></h1>
+        <? if (empty($headerClass)):?>
+          <h1><? echo $pageHeader ?></h1>
+        <? else: ?>
+          <? echo sprintf('<h1 class="%s">%s</h1>', $headerClass, $pageHeader);?>
+        <?endif; ?>
       </div>
       <? echo view_cell('MessagesCell::showMessages'); ?>
     </div>

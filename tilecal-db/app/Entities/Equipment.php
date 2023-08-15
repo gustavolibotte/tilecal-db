@@ -24,4 +24,9 @@ class Equipment extends Entity
         }
         return $array;
     }
+
+    public function isDeleted(): bool
+    {
+        return !empty($this->deleted_at);
+    }
 }

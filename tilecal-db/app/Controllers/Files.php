@@ -28,6 +28,7 @@ class Files extends BaseController
         $viewData['infoHeader'] = 'File Info';
         $viewData['histories'] = (new HistModel())->getFileHist($fileInfo->id);
         $viewData['editable'] = false;
+        $viewData['deletable'] = false;
         return view('files/view', $viewData);
     }
 

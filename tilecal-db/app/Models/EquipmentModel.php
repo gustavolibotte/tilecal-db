@@ -93,14 +93,13 @@ class EquipmentModel extends LogModel
 
     }
 
-    public function getEquipment($id=null, $searchDeleted=false, $limit=null){
+    public function getEquipment($id=null, $limit=null){
         $query = $this->fullQuery();
         if (is_null($id)){
-            $query = $this->searchDeleted($query, $searchDeleted);
             $result = ($limit)? $query->findAll($limit): $query->findAll();
         }
         else{
-            $result = $query->withDeleted()->find($id);
+            $result = $query->find($id);
         }
         return $result;
     }
@@ -113,43 +112,9 @@ class EquipmentModel extends LogModel
         return $result;
     }
 
-    public function getSideTable($searchDeleted=false, $limit=null){
-        $query = $this->select($this->selectSideTable)
-                      ->join('models', 'equipments.model_id = models.id');
-        $query = $this->searchDeleted($query, $searchDeleted);
-        
-        if (!is_null($limit)){
-            $result = $query->findAll($limit);
-        }
-        else{
-            $result = $query->findAll();
-        }
-        return $result;
-    }
-
     public function getRelatedEquipments($equipmentId){
         $relatedEquipments = $this->getEquipment(limit:30);
         return $relatedEquipments;
-    }
-    /**
-     * Returns all the equipments for a specific model name
-     *
-     * @param string $modelName Model's name to query for equipments
-     *
-     * @return array The query results
-     */ 
-    public function getEquipmentsWhereModel($modelName, $searchDeleted=false){
-        $query = $this->fullQuery();
-        $query = $this->searchDeleted($query, $searchDeleted);
-        $result = $query->findAll();
-        return $result;
-    }
-
-    protected function searchDeleted($query, $searchDeleted){
-        if ($searchDeleted){
-            return $query->withDeleted()->where("equipments.deleted_at IS NOT NULL");
-        }
-        return $query;
     }
 
     protected function getUpdateLog($updateInfo){
@@ -218,5 +183,19 @@ class EquipmentModel extends LogModel
         ]);
 
         return $insertLog;
+    }
+
+    protected function getDeleteLog($deleteLog){
+        return $this->getInsertLog($deleteLog);
+    }
+
+    public function deleteEquipment(string $equipmentId)
+    {
+        $equipments2FilesModel = new Equipment2FileModel();
+        $equipments2FilesModel->where('equipment_id', $equipmentId)->findAll();
+        foreach($equipments2FilesModel->where('equipment_id', $equipmentId)->findAll() as $entity){
+            $equipments2FilesModel->delete($entity->id);
+        }
+        return $this->delete($equipmentId);
     }
 }

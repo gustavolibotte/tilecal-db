@@ -51,25 +51,17 @@ class FileModel extends LogModel
         return $result;
     }
 
-    public function getFile($id=null, $searchDeleted=false)
+    public function getFile($id=null)
     {
         $query = $this->select('id, name, mime, description, created_at, updated_at, deleted_at');
         if (is_null($id)){
-            $query = $this->searchDeleted($query, $searchDeleted);
             $result = $query->findAll();
         }
         else{
-            $result = $query->withDeleted()->find($id);
+            $result = $query->find($id);
         }
 
         return $result;
-    }
-
-    protected function searchDeleted($query, $searchDeleted){
-        if ($searchDeleted){
-            return $query->withDeleted()->where("files.deleted_at IS NOT NULL");
-        }
-        return $query;
     }
 
     protected function getUpdateLog($updateInfo){

@@ -24,13 +24,13 @@
 <?= $this->section('relatedContent') ?>
   <hr>
   <h4> Related Equipments </h4>
-  <? echo view_cell('EquipmentTableCell::fullEquipmentRelated', ['equipmentId' => $equipmentInfo->id]);?>
+  <? echo view_cell('EquipmentTableCell::fullEquipmentRelated', ['equipmentId' => $equipmentInfo->id, 'withDeleted' =>  $equipmentInfo->isDeleted]);?>
   <hr>
   <h4> Related Files </h4>
-  <? echo view_cell('FileTableCell::full', ['equipmentId' => $equipmentInfo->id]);?>
+  <? echo view_cell('FileTableCell::fullEquipmentRelated', ['equipmentId' => $equipmentInfo->id, 'withDeleted' =>  $equipmentInfo->isDeleted]);?>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript')?>
   <? echo view_cell('EquipmentTableCell::fullEquipmentRelatedjs'); ?> 
-  <? echo view_cell('FileTableCell::fulljs'); ?> 
+  <? echo view_cell('FileTableCell::fullEquipmentRelatedjs'); ?> 
 <?= $this->endSection() ?>
