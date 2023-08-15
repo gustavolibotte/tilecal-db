@@ -22,7 +22,11 @@
         <td><?php echo $equipment->location; ?></td>
         <td><?php echo $equipment->status; ?></td>
         <td><?php echo $equipment->owner_name; ?></td>
-        <td><a type="button" class="btn btn-secondary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->parent_id)); ?>"><?php echo $equipment->parent_model_label; ?></a></td>
+        <? if (empty($equipment->parent_id)):?>
+          <td><? echo $equipment->parent_id?></td>
+        <? else: ?>
+          <td><a type="button" class="btn btn-secondary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->parent_id)); ?>"><?php echo $equipment->parent_model_label; ?></a></td>
+        <?endif; ?>
         <td><?php echo $equipment->serial; ?></td>
         <td><?php echo $equipment->comments; ?></td>
         <td><?php echo $equipment->created_at; ?></td>

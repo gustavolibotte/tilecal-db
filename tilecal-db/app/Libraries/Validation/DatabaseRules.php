@@ -15,7 +15,7 @@ class DatabaseRules{
         $column = $params[0];
         $modelId = $params[1];
         $db = db_connect();
-        $queryText = "SELECT {$column} FROM `equipments` WHERE `{$column}` = '{$value}' AND model_id = {$modelId} LIMIT 1";
+        $queryText = sprintf("SELECT {$column} FROM `equipments` WHERE `{$column}` = '{$value}' AND model_id = %d LIMIT 1", $modelId);
         $query = $db->query($queryText);
         $results = $query->getFirstRow();
         return isset($results);
