@@ -27,7 +27,6 @@
   <? echo view_cell('EquipmentTableCell::fullEquipmentRelated', ['equipmentId' => $equipmentInfo->id]);?>
   <hr>
   <h4> Related Files </h4>
-  <hr>
   <? echo view_cell('FileTableCell::full', ['equipmentId' => $equipmentInfo->id]);?>
 <?= $this->endSection() ?>
 

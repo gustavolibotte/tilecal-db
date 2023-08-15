@@ -1,9 +1,11 @@
 <?= $this->extend('layouts/entry_view') ?>
 
 <?= $this->section('entryProperties') ?>
-  <li class="list-group-item">Name: <? echo $fileInfo->name?> </li>
-  <li class="list-group-item">Description: <? echo $fileInfo->description?> </li>
-  <li class="list-group-item">Download: <a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $fileInfo->id)); ?>"><i class="bi bi-download"></i></a> </li>
+  <li class="list-group-item"><b>Name</b>: <? echo $fileInfo->name?> </li>
+  <li class="list-group-item"><b>Description</b>: <? echo $fileInfo->description?> </li>
+  <li class="list-group-item"><b>First Upload</b>: <? echo $fileInfo->created_at?> </li>
+  <li class="list-group-item"><b>Last Update</b>: <? echo $fileInfo->updated_at?> </li>
+  <li class="list-group-item"><b>Download</b>: <a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $fileInfo->id)); ?>"><i class="bi bi-download"></i></a> </li>
 <?= $this->endSection() ?>
 
 <?= $this->section('relatedContent') ?>

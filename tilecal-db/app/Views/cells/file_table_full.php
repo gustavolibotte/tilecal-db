@@ -14,8 +14,8 @@
       <tr>
         <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('files/view/%s', $file->id)); ?>"><?php echo $file->name; ?></a></td>
         <td><?php echo $file->description; ?></td>
-        <td><?php echo $file->createdAt; ?></td>
-        <td><?php echo $file->updatedAt; ?></td>
+        <td><?php echo $file->created_at; ?></td>
+        <td><?php echo $file->updated_at; ?></td>
         <td><a type="button" class="btn btn-secondary" href="<? echo base_url(sprintf('files/%s', $file->id)); ?>"><i class="bi bi-download"></i></a></td>
       </tr>
       <?php endforeach; ?>

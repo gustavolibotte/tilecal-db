@@ -16,7 +16,7 @@ class CreateDatabase extends Migration
             ],
             'updated_at' => [
                 'type' => 'TIMESTAMP',
-                'null' => true,
+                'null' => false,
                 'default' => new RawSql('CURRENT_TIMESTAMP')
             ],
             'deleted_at' => [

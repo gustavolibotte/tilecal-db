@@ -32,6 +32,18 @@ class EquipmentTableCell extends BaseCell
         return $this->getJs('equipment_table_side.js');
     }
 
+    public function full(): string
+    {
+        $equipmentModel = new \App\Models\EquipmentModel();
+        $viewData['equipments'] = $equipmentModel->getEquipment();
+        return view('cells/equipment_table_full', $viewData);
+    }
+
+    public function fulljs(): string
+    {
+        return $this->getJs('equipment_table_full.js');
+    }
+
     public function fullEquipmentRelated(string $equipmentId): string
     {
         $equipmentModel = new \App\Models\EquipmentModel();

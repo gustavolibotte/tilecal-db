@@ -131,10 +131,10 @@ class PmtForm extends EquipmentForm{
             'required' => true,
             'fieldType' => 'dropdown',
             'fieldParams' => [
-                'options' => $this->pmtTypeOptions
+                'options' => self::$pmtTypeOptions
             ]
         ];
-        $validPMTTypesString = implode(', ', $this->validPmtTypeValues);
+        $validPMTTypesString = implode(', ', self::$validPmtTypeValues);
         $this->validationRules['type'] = [
             "rules" => [
                 "required",
