@@ -16,6 +16,18 @@ class FileTableCell extends BaseCell
         return $this->getJs('file_table_full.js');
     }
 
+    public function fullDeleted()
+    {
+        $fileModel = new \App\Models\FileModel();
+        $viewData['files'] = $fileModel->onlyDeleted()->findAll();
+        return default_view('cells/file_table_full', $viewData);
+    }
+
+    public function fullDeletedjs()
+    {
+        return $this->getJs('file_table_full.js');
+    }
+
     public function fullEquipmentRelated(array $params): string
     {
         helper('array');

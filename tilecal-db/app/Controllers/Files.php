@@ -16,20 +16,35 @@ class Files extends BaseController
         return default_view('files/index', $indexData);
     }
 
+    public function deletedIndex(): string
+    {
+        $indexData['pageTitle'] = 'Deleted File Index';
+        $indexData['pageHeader'] = 'Deleted File Index';
+        $indexData['headerClass'] = 'text-danger';
+        return default_view('files/deleted_index', $indexData);
+    }
+
     public function view($fileId){
+        helper('form');
         $fileModel = new FileModel();
-        $fileInfo = $fileModel->getFile($fileId);
+        $fileInfo = $fileModel->withDeleted()->getFile($fileId);
+        $viewData['isDeleted'] = $fileInfo->isDeleted();
+        $viewData['deletable'] = $this->user->isAuthorized('delete');
         if (is_null($fileInfo)){
             return redirect('notfound');
+        } elseif ($viewData['isDeleted'] and !$viewData['deletable']){
+            return redirect ('unauthorized');
         }
+
         $viewData['fileInfo'] = $fileInfo;
         $viewData['pageTitle'] = 'File view';
         $viewData['pageHeader'] = sprintf('File %s', $fileInfo->name);
         $viewData['infoHeader'] = 'File Info';
         $viewData['histories'] = (new HistModel())->getFileHist($fileInfo->id);
         $viewData['editable'] = false;
-        $viewData['deletable'] = true;
-        $viewData['isDeleted'] = $fileInfo->isDeleted();
+        if($viewData['deletable']){
+            $viewData['deleteUrl'] = base_url(sprintf('files/delete/%d', $fileInfo->id));
+        }
         return default_view('files/view', $viewData);
     }
 
@@ -81,4 +96,16 @@ class Files extends BaseController
         return default_view('files/upload', $registerData);
     }
 
+    public function delete($fileId)
+    {
+        helper('message');
+        $fileModel = new FileModel();
+        $fileModel->deleteFile($fileId);
+        $messages[] = [
+            'message' => 'Deleted with success',
+            'type' => 'success'
+        ];
+        addMessages($messages);
+        return redirect('equipments');
+    }
 }

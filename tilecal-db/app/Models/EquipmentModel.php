@@ -192,7 +192,6 @@ class EquipmentModel extends LogModel
     public function deleteEquipment(string $equipmentId)
     {
         $equipments2FilesModel = new Equipment2FileModel();
-        $equipments2FilesModel->where('equipment_id', $equipmentId)->findAll();
         foreach($equipments2FilesModel->where('equipment_id', $equipmentId)->findAll() as $entity){
             $equipments2FilesModel->delete($entity->id);
         }

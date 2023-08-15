@@ -93,4 +93,13 @@ class FileModel extends LogModel
 
         return $insertLog;
     }
+
+    public function deleteFile(string|int $fileId)
+    {
+        $equipments2FilesModel = new Equipment2FileModel();
+        foreach($equipments2FilesModel->where('equipment_id', $fileId)->findAll() as $entity){
+            $equipments2FilesModel->delete($entity->id);
+        }
+        return $this->delete($fileId);
+    }
 }
