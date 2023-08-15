@@ -8,7 +8,7 @@ class FileTableCell extends BaseCell
     {
         $fileModel = new \App\Models\FileModel();
         $viewData['files'] = $fileModel->findAll();
-        return view('cells/file_table_full', $viewData);
+        return default_view('cells/file_table_full', $viewData);
     }
 
     public function fulljs()
@@ -26,7 +26,7 @@ class FileTableCell extends BaseCell
             $fileModel = $fileModel->withDeleted();
         }
         $viewData['files'] = $fileModel->getEquipmentRelated($equipmentId);
-        return view('cells/file_table_full', $viewData);
+        return default_view('cells/file_table_full', $viewData);
     }
 
     public function fullEquipmentRelatedjs(): string
@@ -38,7 +38,7 @@ class FileTableCell extends BaseCell
     {
         $fileModel = new \App\Models\FileModel();
         $viewData['files'] = $fileModel->findAll();
-        return view('cells/file_table_side', $viewData);
+        return default_view('cells/file_table_side', $viewData);
     }
 
     public function sidejs()

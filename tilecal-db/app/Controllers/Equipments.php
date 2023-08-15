@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\EquipmentModel;
-use App\Models\Equipment2FileModel;
 use App\Models\ModelModel;
 
 class Equipments extends BaseController
@@ -13,7 +12,7 @@ class Equipments extends BaseController
     {   
         $indexData['pageTitle'] = 'Equipment Index';
         $indexData['pageHeader'] = 'Equipment Index';
-        return view('equipment/index', $indexData);
+        return default_view('equipment/index', $indexData);
     }
 
     public function deletedIndex()
@@ -21,7 +20,7 @@ class Equipments extends BaseController
         $indexData['pageTitle'] = 'Deleted Equipment Index';
         $indexData['pageHeader'] = 'Deleted Equipment Index';
         $indexData['headerClass'] = 'text-danger';
-        return view('equipment/deleted_index', $indexData);
+        return default_view('equipment/deleted_index', $indexData);
     }
 
     public function view($equipmentId){
@@ -64,7 +63,7 @@ class Equipments extends BaseController
             $viewData['deletable'] = false;
         }
 
-        return view('equipment/view', $viewData);
+        return default_view('equipment/view', $viewData);
     }
 
     public function register($modelName='pmt'){
@@ -109,7 +108,7 @@ class Equipments extends BaseController
         $registerData['successMessage'] = false;
         $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $modelName));
         
-        return view('equipment/register', $registerData);
+        return default_view('equipment/register', $registerData);
     }
 
     public function edit($equipmentId, $modelName)

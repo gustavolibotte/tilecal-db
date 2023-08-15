@@ -13,7 +13,7 @@ class Files extends BaseController
     {
         $indexData['pageTitle'] = 'File Index';
         $indexData['pageHeader'] = 'File Index';
-        return view('files/index', $indexData);
+        return default_view('files/index', $indexData);
     }
 
     public function view($fileId){
@@ -29,7 +29,7 @@ class Files extends BaseController
         $viewData['histories'] = (new HistModel())->getFileHist($fileInfo->id);
         $viewData['editable'] = false;
         $viewData['deletable'] = false;
-        return view('files/view', $viewData);
+        return default_view('files/view', $viewData);
     }
 
     public function download($fileId){
@@ -77,7 +77,7 @@ class Files extends BaseController
         $registerData['successMessage'] = $session->getFlashdata('success');
         $registerData['formUrl'] = uri_string();
         $registerData['cancelUrl'] = base_url('files');
-        return view('files/upload', $registerData);
+        return default_view('files/upload', $registerData);
     }
 
 }

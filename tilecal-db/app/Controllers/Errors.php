@@ -15,7 +15,7 @@ class Errors extends BaseController
             'pageTitle' => 'Unauthorized',
             'pageHeader' => ''
         ];
-        return view('errors/http_error', $viewData);
+        return default_view('errors/http_error', $viewData);
     }
 
     public function notFound(){
@@ -27,6 +27,6 @@ class Errors extends BaseController
             'pageTitle' => 'Not Found',
             'pageHeader' => ''
         ];
-        return view('errors/http_error', $viewData);
+        return default_view('errors/http_error', $viewData);
     }
 }

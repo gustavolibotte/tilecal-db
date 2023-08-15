@@ -14,7 +14,7 @@ class EquipmentTableCell extends BaseCell
         } else{
            $viewData['equipments'] = $equipmentModel->getRelatedEquipments($equipmentId);
         }
-        return view('cells/equipment_table_side', $viewData);
+        return default_view('cells/equipment_table_side', $viewData);
     }
 
     public function sidejs()
@@ -28,7 +28,7 @@ class EquipmentTableCell extends BaseCell
         $fileId = dot_array_search('fileId', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
         $viewData['equipments'] = $equipmentModel->getFileRelated($fileId, limit:30);
-        return view('cells/equipment_table_side', $viewData);
+        return default_view('cells/equipment_table_side', $viewData);
     }
 
     public function sideFileRelatedjs()
@@ -40,7 +40,7 @@ class EquipmentTableCell extends BaseCell
     {
         $equipmentModel = new \App\Models\EquipmentModel();
         $viewData['equipments'] = $equipmentModel->getEquipment();
-        return view('cells/equipment_table_full', $viewData);
+        return default_view('cells/equipment_table_full', $viewData);
     }
 
     public function fulljs(): string
@@ -52,7 +52,7 @@ class EquipmentTableCell extends BaseCell
     {
         $equipmentModel = new \App\Models\EquipmentModel();
         $viewData['equipments'] = $equipmentModel->onlyDeleted()->getEquipment();
-        return view('cells/equipment_table_full_deleted', $viewData);
+        return default_view('cells/equipment_table_full_deleted', $viewData);
     }
 
     public function fullDeletedjs(): string
@@ -70,7 +70,7 @@ class EquipmentTableCell extends BaseCell
             $equipmentModel->withDeleted();
         }
         $viewData['equipments'] = $equipmentModel->getRelatedEquipments($equipmentId);
-        return view('cells/equipment_table_full', $viewData);
+        return default_view('cells/equipment_table_full', $viewData);
     }
 
     public function fullEquipmentRelatedjs(): string
@@ -84,7 +84,7 @@ class EquipmentTableCell extends BaseCell
         $fileId = dot_array_search('fileId', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
         $viewData['equipments'] = $equipmentModel->getFileRelated($fileId);
-        return view('cells/equipment_table_full', $viewData);
+        return default_view('cells/equipment_table_full', $viewData);
     }
 
     public function fullFileRelatedjs(): string
