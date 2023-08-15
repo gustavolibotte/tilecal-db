@@ -45,7 +45,7 @@ class Files extends BaseController
     }
 
     public function upload(){
-        helper(['form', 'string', 'url']);
+        helper(['form', 'string', 'url', 'message']);
         $session = \Config\Services::session();
 
         if ($this->request->is('post')){
@@ -56,6 +56,14 @@ class Files extends BaseController
                 $fileModel->insert($file);
                 $session->setFlashdata('success', true);
                 return redirect('files/upload');
+            } else {
+                foreach ($form->getErrors() as $errorMsg){
+                    $messages[] = [
+                        'message' => $errorMsg,
+                        'type' => 'danger'
+                    ];
+                }
+                addMessages($messages);
             };
         } else{
             $form = new FileForm();
@@ -68,7 +76,7 @@ class Files extends BaseController
         $registerData['successMessage'] = $session->getFlashdata('success');
         $registerData['formUrl'] = uri_string();
         $registerData['cancelUrl'] = base_url('files');
-        return view('files/register', $registerData);
+        return view('files/upload', $registerData);
     }
 
 }

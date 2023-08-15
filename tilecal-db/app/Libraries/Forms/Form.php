@@ -5,12 +5,13 @@ use \CodeIgniter\HTTP\IncomingRequest;
 
 abstract class Form{
 
-    public ?IncomingRequest $request;
+    protected ?IncomingRequest $request;
     public $validator;
     public $fields;
     public $validationRules;
     protected bool $isValid = false;
     protected bool $calledValidate= false;
+    protected array $fieldValues = [];
 
     public abstract function getEntity();
 
@@ -19,23 +20,42 @@ abstract class Form{
         $this->request = $request;
         $this->validator = \Config\Services::validation();
         $this->initialize();
+        if(is_null($request)){
+            $this->fieldValues = array_fill_keys(array_keys($this->fields), null);
+        } else{
+            $this->fieldValues = $this->processRequest();
+        }
         $this->validator->setRules($this->validationRules);
     }
 
     protected function initialize(){}
 
-    public function setFieldValues(array $data)
+    protected function processRequest(): array
     {
         foreach (array_keys($this->fields) as $key){
-            $this->fields[$key]['value'] = $data[$key];
+            $values[$key] = $this->request->getVar($key);
+        }
+        return $values;
+    }
+
+    public function getFieldValues(): array
+    {
+        return $this->fieldValues;
+    }
+
+    public function setFieldValues(array $data)
+    {
+        $dataKeys = array_keys($data);
+        foreach (array_keys($this->fields) as $key){
+            if (in_array($key, $dataKeys)){
+                $this->fieldValues[$key] = $data[$key];
+            }
         }
     }
 
     public function validate(){
-        if (is_null($this->request)){
-            throw new \Exception('Cannot validate a form without a request associated to it');
-        }
-        $this->isValid = $this->validator->withRequest($this->request)->run();
+        $this->isValid = $this->validator->run($this->getFieldValues());
+        d($this->getFieldValues());
         $this->calledValidate = true;
         return $this->isValid;
     }
@@ -53,16 +73,11 @@ abstract class Form{
         $str = '';
         
         foreach ($this->fields as $name=>$field) {
-            if (is_null($this->request)){
-                $fieldValue = dot_array_search('value', $field);
-            } else{
-                $fieldValue = $this->request->getVar($name);
-            }
             $str .= form_field(
                 dot_array_search('id', $field),
                 dot_array_search('fieldType', $field),
                 dot_array_search('fieldParams', $field),
-                $fieldValue,
+                $this->fieldValues[$name],
                 dot_array_search('required', $field),
                 dot_array_search('helpText', $field),
                 dot_array_search('label', $field));

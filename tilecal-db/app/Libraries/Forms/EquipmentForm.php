@@ -12,6 +12,7 @@ class EquipmentForm extends Form{
 
     public function initialize()
     {
+        parent::initialize();
         $this->fields = [
             'id' => [
                 'id' => 'id',
@@ -147,13 +148,7 @@ class EquipmentForm extends Form{
         if (!$this->isValid){
             throw new Exception('To get the equipment you must validate the form first');
         }
-        $equipment = new Equipment([
-            'id' => $this->request->getVar('id'),
-            'serial' => $this->request->getVar('serial'),
-            'comments' => $this->request->getVar('comments'),
-            'location_id' => $this->request->getVar('location_id'),
-            'status_id' => $this->request->getVar('status_id')
-        ]);
+        $equipment = new Equipment($this->getFieldValues());
         $instituteMne = getInstituteMne($equipment->id);
         $owner = (new \App\Models\InstituteModel())->where(sprintf("mne = '%s'", $instituteMne))->first();
         $equipment->owner_id = $owner->id;

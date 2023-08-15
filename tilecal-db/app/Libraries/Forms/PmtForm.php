@@ -27,14 +27,11 @@ class PmtForm extends EquipmentForm{
     public function initialize()
     {   
         parent::initialize();
-        $this->fields['model_label']['value'] = 'PMT';
-
         // Alter id and serial rules to follow custom PMT rules
         $this->fields['id']['required'] = false;
         $this->fields['id']['helpText'] .= ' (If blank, is built from serial code)';
         $this->validationRules['id']['rules'] = [
-            "permit_empty",
-            "if_exist",
+            "required",
             "alpha_numeric",
             "exact_length[14]",
             "string_starts_with[20LOCER0]",
@@ -42,6 +39,7 @@ class PmtForm extends EquipmentForm{
             "is_unique[equipments.id]"
         ];
         $this->validationRules['id']['errors'] = [
+            "required" => "You must supply an id for the equipment.",
             "alpha_numeric" => "The id must be alphanumeric.",
             "exact_length" => "The id must have 14 characters.",
             "is_unique" => "This id already exists.",
@@ -149,29 +147,26 @@ class PmtForm extends EquipmentForm{
         $this->commentsEnd();
     }
 
+    protected function processRequest(): array
+    {
+        $values = parent::processRequest();
+        $values['id'] = "20LOCER0{$values['serial']}";
+        $values['model_label'] = 'pmt';
+        return $values;
+    }
+
     public function getEntity(): Equipment
     {
         helper(['array', 'atlas_id']);
         if (!$this->isValid){
             throw new \Exception('To get the equipment you must validate the form first');
         }
-        $id = $this->request->getVar('id');
-        $serial = $this->request->getVar('serial');
-        if (empty($id)){
-            $id = "20LOCER0{$serial}";
-        }
-        $equipment = new Equipment([
-            'id' => $id,
-            'serial' => $serial,
-            'comments' => $this->request->getVar('comments'),
-            'location_id' => $this->request->getVar('location_id'),
-            'status_id' => $this->request->getVar('status_id')
-        ]);
+        $fieldValues = $this->getFieldValues();
+        $equipment = new Equipment($fieldValues);
         $instituteMne = getInstituteMne($equipment->id);
         $owner = (new \App\Models\InstituteModel())->where(sprintf("mne = '%s'", $instituteMne))->first();
         $equipment->owner_id = $owner->id;
-        $modelLabel = $this->request->getVar('model_label');
-        $model = (new \App\Models\ModelModel())->where(sprintf("label = '%s'", $modelLabel))->first();
+        $model = (new \App\Models\ModelModel())->where(sprintf("label = '%s'", $fieldValues['model_label']))->first();
         $equipment->model_id = $model->id;
         $modelParams = [];
         foreach ($model->params as $param){
