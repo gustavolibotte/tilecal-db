@@ -8,7 +8,7 @@ use \App\Entities\Equipment;
 
 class EquipmentForm extends Form{
 
-    public int $serialMaxSize = 36;
+    public static int $serialMaxSize = 36;
 
     public function initialize()
     {
@@ -59,7 +59,7 @@ class EquipmentForm extends Form{
                 'fieldType' => 'input',
                 'helpText' => "Equipment serial number",
                 'fieldParams' => [
-                    'maxlength' => $this->serialMaxSize
+                    'maxlength' => self::$serialMaxSize
                 ]
             ],
             'comments' => [
@@ -124,10 +124,10 @@ class EquipmentForm extends Form{
             ],
             "serial" => [
                 "rules" => [
-                    sprintf("max_length[%d]", $this->serialMaxSize)
+                    sprintf("max_length[%d]", self::$serialMaxSize)
                 ],
                 "errors" => [
-                    "max_length" => sprintf("Serial max size is %d characters", $this->serialMaxSize),
+                    "max_length" => "Serial max size is {param} characters",
                 ]
             ],
             "comments" => [

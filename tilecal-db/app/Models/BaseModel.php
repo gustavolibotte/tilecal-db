@@ -15,9 +15,10 @@ class BaseModel extends Model
         $this->isMigration = $isMigration;
     }
 
-    public function getIdArray(array $ids){
+    public function getIdArray(?array $ids=null){
         $results = [];
-        foreach($this->find($ids) as $entity){
+        $iterator = (is_null($ids))? $this->findAll(): $this->find($ids);
+        foreach($iterator as $entity){
             $results[$entity->id] = $entity;
         }
         return $results;

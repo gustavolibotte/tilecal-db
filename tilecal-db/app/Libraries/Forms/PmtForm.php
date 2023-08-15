@@ -4,26 +4,25 @@ namespace App\Library\Forms;
 use \App\Entities\Equipment;
 
 class PmtForm extends EquipmentForm{
-    public $pmtTypeOptions = [
+    public static array $pmtTypeOptions = [
         'null' => 'Select an option',
         'R11187' => 'R11187',
         'R7877' => 'R7877',
         'R7787' => 'R7787',
-        'R11187' => 'R11187',
         'R11187-SEL' => 'R11187-SEL',
         'R11187-A1' => 'R11187-A1'
     ];
-    public $validPmtTypeValues = [
+    public static array $validPmtTypeValues = [
         'R11187',
         'R7877',
         'R7787',
-        'R11187',
         'R11187-SEL',
         'R11187-A1'
     ];
-    public string $validSerialRegex = '/^[A-Z]{2}[0-9]{4}/';
-    public int $serialMaxSize = 6;
-    public int $pmtId = 1;
+    public static string $validSerialRegex = '/^[A-Z]{2}[0-9]{4}/';
+    public static int $serialMaxSize = 6;
+    public static int $pmtId = 1;
+    public static int $pmtOwnerId = 103;
 
     public function initialize()
     {   
@@ -51,16 +50,16 @@ class PmtForm extends EquipmentForm{
         ];
 
         $this->fields['serial']['required'] = true;
-        $this->fields['serial']['helpText'] .= sprintf(' (Max size of %d characters)', $this->serialMaxSize);
+        $this->fields['serial']['helpText'] .= sprintf(' (Max size of %d characters)', self::$serialMaxSize);
         $this->validationRules['serial']['rules'] = [
             "required",
-            sprintf("max_length[%d]", $this->serialMaxSize),
-            sprintf('regex_match[%s]', $this->validSerialRegex),
-            "is_model_unique[serial,{$this->pmtId}]"
+            sprintf("max_length[%d]", self::$serialMaxSize),
+            sprintf('regex_match[%s]', self::$validSerialRegex),
+            sprintf("is_model_unique[serial,{%s}]", self::$pmtId)
         ];
         $this->validationRules['serial']['errors'] = [
             "required" => "A serial code is required",
-            "max_length" => sprintf("Serial max size is %d characters", $this->serialMaxSize),
+            "max_length" => "Serial max size is {param} characters",
             'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
             "is_model_unique" => "There is already a PMT registered with the serial {value}"
         ];
@@ -205,13 +204,13 @@ class PmtForm extends EquipmentForm{
         $this->fields['serial']['fieldParams']['readOnly'] = null;
         $this->validationRules['serial']['rules'] = [
             "required",
-            sprintf("max_length[%d]", $this->serialMaxSize),
-            sprintf('regex_match[%s]', $this->validSerialRegex),
-            "is_model_not_unique[serial,{$this->pmtId}]"
+            sprintf("max_length[%d]", self::$serialMaxSize),
+            sprintf('regex_match[%s]', self::$validSerialRegex),
+            sprintf("is_model_not_unique[serial,{%s}]", self::$pmtId)
         ];
         $this->validationRules['serial']['errors'] = [
             "required" => "A serial code is required",
-            "max_length" => sprintf("Serial max size is %d characters", $this->serialMaxSize),
+            "max_length" => "Serial max size is {param} characters",
             'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
             "is_model_not_unique" => "There is no PMT with the serial {value}"
         ];

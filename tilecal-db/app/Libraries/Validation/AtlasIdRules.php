@@ -4,6 +4,19 @@ namespace App\Library\Validation;
 
 class AtlasIdRules {
 
+    public static array $validSystems = [
+        'LB' => 'Barrel',
+        'LE' => 'Extended',
+        'LL' => 'Optics',
+        'LO' => 'Electronics',
+        'LC' => 'Control'
+    ];
+    public static array $validProjects = [
+        '20' => 'ATLAS Detector'
+    ];
+
+    public static string $sequentialNumberRegex = '^[A-Z0-9]{7}';
+
     public function id_is_system($value, string $params, array $data, ?string &$error): bool
     {   
         $correctSystem = $params;
