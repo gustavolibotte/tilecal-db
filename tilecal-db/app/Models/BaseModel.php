@@ -4,21 +4,49 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class BaseModel extends Model
+abstract class BaseModel extends Model
 {
+
+    protected $DBGroup          = 'default';
+    protected $table;
+    protected $primaryKey       = 'id';
+    protected $useAutoIncrement = false;
+    protected $returnType       = 'array';
+    protected $useSoftDeletes   = false;
+    protected $protectFields    = true;
+    protected $allowedFields    = [];
+
+    // Dates
+    protected $useTimestamps = false;
+    protected $dateFormat    = 'datetime';
+    protected $createdField  = 'created_at';
+    protected $updatedField  = 'updated_at';
+    protected $deletedField  = 'deleted_at';
+
+    // Validation
+    protected $validationRules      = [];
+    protected $validationMessages   = [];
+    protected $skipValidation       = true;
+    protected $cleanValidationRules = true;
+
+    // Callbacks
+    protected $allowCallbacks = true;
+    protected $beforeInsert   = [];
+    protected $afterInsert    = [];
+    protected $beforeUpdate   = [];
+    protected $afterUpdate    = [];
+    protected $beforeFind     = [];
+    protected $afterFind      = [];
+    protected $beforeDelete   = [];
+    protected $afterDelete    = [];
+
     // Custom
     protected bool $isMigration = false;
-    protected $useSoftDeletes = true;
-    protected $allowedFields = [];
 
     public function __construct(bool $isMigration=false)
     {   
         parent::__construct();
         $this->isMigration = $isMigration;
-    }
-
-    protected function initialize(){
-        $this->allowedFields[] = 'deleted_at';
     }
 
     public function getIdArray(?array $ids=null){
@@ -50,10 +78,5 @@ class BaseModel extends Model
             }
         }
         return $options;
-    }
-
-    public function restore($id): bool
-    {
-        return $this->withDeleted()->update($id, ['deleted_at' => null]);
     }
 }
