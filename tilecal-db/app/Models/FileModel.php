@@ -38,9 +38,12 @@ class FileModel extends LogModel
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    // Custom
-    protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'filedata'];
-    protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'filedata'];
+    public function initialize(){
+        parent::initialize();
+        $this->insertLogIgnore[] = 'filedata';
+        $this->updateLogIgnore[] = 'filedata';
+        $this->deleteLogIgnore[] = 'filedata';
+    }
 
     public function getEquipmentRelated($id){
         $query = $this->select('files.id, files.name, files.description, files.created_at, files.deleted_at')

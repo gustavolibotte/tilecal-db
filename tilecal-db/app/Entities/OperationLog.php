@@ -100,7 +100,9 @@ class OperationLog extends BaseEntity
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
             if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
-                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', snake2Capitalized($name), $value['old'], $value['new']);
+                $old = (is_array($value['old']))? print_r($value['old'], true): $value['old'];
+                $new = (is_array($value['new']))? print_r($value['new'], true): $value['new'];
+                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', snake2Capitalized($name), $old, $new);
             }
         }
         $msg .= '</ul>';

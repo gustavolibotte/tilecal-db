@@ -47,16 +47,15 @@ class EquipmentModel extends LogModel
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
-    protected $selectSideTable;
-
-    // Custom
-    protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'model_params'];
-    protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'model_params'];
+    protected $selectSideTable = '';
 
     public function initialize(){
         parent::initialize();
-        $this->selectSideTable = 'equipments.id, ';
+        $this->selectSideTable .= 'equipments.id, ';
         $this->selectSideTable .= 'models.label as model_label ';
+        $this->insertLogIgnore[] = 'model_params';
+        $this->updateLogIgnore[] = 'model_params';
+        $this->deleteLogIgnore[] = 'model_params';
     }
 
     public function fullQuery(){

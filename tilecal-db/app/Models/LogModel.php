@@ -8,9 +8,9 @@ abstract class LogModel extends BaseModel{
 
     protected $table;
     protected bool $isMigration = false;
-    protected $insertLogIgnore = ['created_at', 'updated_at', 'deleted_at'];
-    protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at'];
-    protected $deleteLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'filedata'];
+    protected $insertLogIgnore = ['created_at', 'updated_at'];
+    protected $updateLogIgnore = ['created_at', 'updated_at'];
+    protected $deleteLogIgnore = ['created_at', 'updated_at'];
 
     public function __construct(bool $isMigration=false)
     {   
