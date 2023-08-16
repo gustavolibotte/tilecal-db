@@ -56,7 +56,11 @@ class Equipments extends BaseController
         $viewData['deletable'] = $this->user->isAuthorized('delete') && !$equipment->isDeleted();
         if ($viewData['deletable']){
             $viewData['deleteUrl'] = base_url(sprintf('equipments/delete/%s', $equipment->id));
-            $viewData['deletable'] = true;
+        }
+
+        $viewData['restorable'] = $this->user->isAuthorized('delete') && $equipment->isDeleted();
+        if ($viewData['restorable']){
+            $viewData['restoreUrl'] = base_url(sprintf('equipments/restore/%s', $equipment->id));
         }
 
         return default_view('equipment/view', $viewData);
@@ -134,16 +138,33 @@ class Equipments extends BaseController
         return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
     }
 
-    public function delete($equipmentId)
+    public function delete(string $equipmentId)
     {
         helper('message');
         $equipmentModel = new EquipmentModel();
-        $equipmentModel->deleteEquipment($equipmentId);
+        $equipmentModel->delete($equipmentId);
         $messages[] = [
             'message' => 'Deleted with success',
             'type' => 'success'
         ];
         addMessages($messages);
-        return redirect('equipments');
+        if ($this->user->isAuthorized('delete')){
+            return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+        } else {
+            return redirect('equipments');
+        }
+    }
+
+    public function restore(string $equipmentId)
+    {
+        helper('message');
+        $equipmentModel = new EquipmentModel();
+        $equipmentModel->restore($equipmentId);
+        $messages[] = [
+            'message' => 'Restored with success',
+            'type' => 'success'
+        ];
+        addMessages($messages);
+        return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
     }
 }

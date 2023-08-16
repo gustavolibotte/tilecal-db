@@ -33,6 +33,11 @@
                   Delete
                 </button>
               <? endif;?>
+              <? if ($restorable): ?>
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#restore-modal">
+                  Restore
+                </button>
+              <? endif;?>
             </div>
           </div>
           <div class="row">
@@ -103,6 +108,25 @@
             <? echo form_open_multipart($deleteUrl, 'id="edit-form"'); ?>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
               <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  <? endif;?>
+
+  <? if($restorable): ?>
+    <div class="modal fade" id="restore-modal" tabindex="-1" aria-labelledby="restore-modal-label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="restore-modal-label">Confirm Restore</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-footer">
+            <? echo form_open_multipart($restoreUrl, 'id="edit-form"'); ?>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-success">Restore</button>
             </form>
           </div>
         </div>

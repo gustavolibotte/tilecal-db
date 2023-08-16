@@ -8,11 +8,17 @@ class BaseModel extends Model
 {
     // Custom
     protected bool $isMigration = false;
+    protected $useSoftDeletes = true;
+    protected $allowedFields = [];
 
     public function __construct(bool $isMigration=false)
     {   
         parent::__construct();
         $this->isMigration = $isMigration;
+    }
+
+    protected function initialize(){
+        $this->allowedFields[] = 'deleted_at';
     }
 
     public function getIdArray(?array $ids=null){
@@ -44,5 +50,10 @@ class BaseModel extends Model
             }
         }
         return $options;
+    }
+
+    public function restore($id): bool
+    {
+        return $this->withDeleted()->update($id, ['deleted_at' => null]);
     }
 }

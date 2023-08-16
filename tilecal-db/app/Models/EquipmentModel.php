@@ -11,7 +11,6 @@ class EquipmentModel extends LogModel
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = \App\Entities\Equipment::class;
-    protected $useSoftDeletes   = true;
     protected $protectFields    = true;
     protected $allowedFields    = [
         'id',
@@ -55,10 +54,9 @@ class EquipmentModel extends LogModel
     protected $updateLogIgnore = ['created_at', 'updated_at', 'deleted_at', 'model_params'];
 
     public function initialize(){
+        parent::initialize();
         $this->selectSideTable = 'equipments.id, ';
         $this->selectSideTable .= 'models.label as model_label ';
-
-        parent::initialize();
     }
 
     protected function fullQuery(){
@@ -189,12 +187,49 @@ class EquipmentModel extends LogModel
         return $this->getInsertLog($deleteLog);
     }
 
-    public function deleteEquipment(string $equipmentId)
+    public function delete($id=null, bool $purge = false)
     {
+        // The trans methods gauarantee that all database operations are made on the same transaction
+        // This is important since we are writing in 2 tables to handle many to many relationships
         $equipments2FilesModel = new Equipment2FileModel();
-        foreach($equipments2FilesModel->where('equipment_id', $equipmentId)->findAll() as $entity){
-            $equipments2FilesModel->delete($entity->id);
+        $relations = $equipments2FilesModel->select('id')->where('equipment_id', $id)->findAll();
+        array_walk($relations, function(&$value, $key){ $value=$value->id;});
+        $this->db->transStart();
+        if (!empty($relations)){
+            $equipments2FilesModel->delete($relations, $purge);
         }
-        return $this->delete($equipmentId);
+        $res =  parent::delete($id, $purge);
+        $this->db->transComplete();
+        return $res;
+    }
+
+    public function restore($equipmentId): bool
+    {
+        // The trans methods gauarantee that all database operations are made on the same transaction
+        // This is important since we are writing in 2 tables to handle many to many relationships
+        d($equipmentId);
+        $equipment = $this->onlyDeleted()->select('deleted_at')->find($equipmentId);
+        d($equipment);
+        $equipments2FilesModel = new Equipment2FileModel();
+        // Gets the relations that were deleted at the same time as equipment deletion
+        // from files that are not deleted
+        $relations = $equipments2FilesModel->withDeleted()
+                                           ->select('equipments_to_files.id')
+                                           ->join('files', 'equipments_to_files.file_id = files.id')
+                                           ->where('files.deleted_at IS NULL')
+                                           ->where('equipment_id', $equipmentId)
+                                           ->where('equipments_to_files.deleted_at', $equipment->deleted_at)
+                                           ->findAll();
+        d($relations);
+        array_walk($relations, function(&$value, $key){ $value=$value->id;});
+        d($relations);
+        $this->db->transStart();
+        if (!empty($relations)){
+            $equipments2FilesModel->onlyDeleted()->update($relations, ['deleted_at'=>null]);
+        }
+        // $res = $this->withDeleted()->update($equipmentId, ['deleted_at' => null]);
+        $res = parent::restore($equipmentId);
+        $this->db->transComplete();
+        return $res;
     }
 }

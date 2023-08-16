@@ -9,7 +9,6 @@ class InstituteModel extends LogModel
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = \App\Entities\Institute::class;
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = ['name', 'mne', 'num', 'place', 'country'];
 

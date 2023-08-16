@@ -9,7 +9,6 @@ class LocationModel extends BaseModel
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = \App\Entities\Location::class;
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = ['name', 'institute_id', 'description'];
 

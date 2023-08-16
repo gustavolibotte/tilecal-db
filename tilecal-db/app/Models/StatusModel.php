@@ -9,7 +9,6 @@ class StatusModel extends BaseModel
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = \App\Entities\Status::class;
-    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = ['name', 'description'];
 

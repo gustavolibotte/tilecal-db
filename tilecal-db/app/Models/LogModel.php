@@ -19,6 +19,7 @@ abstract class LogModel extends BaseModel{
     }
 
     protected function initialize(){
+        parent::initialize();
         $this->afterInsert[] = 'logInsert';
         $this->beforeUpdate[] = 'logUpdate';
         $this->beforeDelete[] = 'logDelete';
