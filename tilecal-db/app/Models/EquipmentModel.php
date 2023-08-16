@@ -61,7 +61,7 @@ class EquipmentModel extends LogModel
         parent::initialize();
     }
 
-    protected function fullQuery(){
+    public function fullQuery(){
         $selectColumns = 'equipments.id, ';
         $selectColumns .= 'models.label as model_label, ';
         $selectColumns .= 'models.name as model_name, ';

@@ -8,17 +8,11 @@ use App\Models\ModelModel;
 
 class Equipments extends BaseController
 {   
-    public function index($modelName=null, $searchDeleted=false)
+    public function index($modelName=null)
     {   
-        $equipmentModel = new EquipmentModel();
-        if (is_null($modelName)){
-            $indexData['equipments'] = $equipmentModel->getEquipment(searchDeleted: $searchDeleted);
-        }
-        else{
-            $indexData['equipments'] = $equipmentModel->getEquipmentsWhereModel($modelName, searchDeleted: $searchDeleted);
-        }
         $indexData['pageTitle'] = 'Equipment Index';
         $indexData['pageHeader'] = 'Equipment Index';
+        $indexData['modelName'] = $modelName;
         return view('equipment/index', $indexData);
     }
 

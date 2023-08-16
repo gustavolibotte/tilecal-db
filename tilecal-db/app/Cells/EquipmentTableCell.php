@@ -32,10 +32,17 @@ class EquipmentTableCell extends BaseCell
         return $this->getJs('equipment_table_side.js');
     }
 
-    public function full(): string
+    public function full(array $params=[]): string
     {
+        helper('array');
+        $modelName = dot_array_search('modelName', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
-        $viewData['equipments'] = $equipmentModel->getEquipment();
+        if (empty($modelName)){
+            $viewData['equipments'] = $equipmentModel->fullQuery()->findAll();
+        } else{
+            $viewData['equipments'] = $equipmentModel->fullQuery()->where('models.name', $modelName)->findAll();
+        }
+        
         return view('cells/equipment_table_full', $viewData);
     }
 
