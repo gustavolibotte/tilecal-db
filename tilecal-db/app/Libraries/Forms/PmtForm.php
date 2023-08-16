@@ -29,7 +29,7 @@ class PmtForm extends EquipmentForm{
         parent::initialize();
         // Alter id and serial rules to follow custom PMT rules
         $this->fields['id']['required'] = false;
-        $this->fields['id']['helpText'] .= ' (If blank, is built from serial code)';
+        $this->fields['id']['helpText'] .= ' For PMTs the id is automatically built if left blank';
         $this->validationRules['id']['rules'] = [
             "required",
             "alpha_numeric",
@@ -143,16 +143,18 @@ class PmtForm extends EquipmentForm{
                 "in_list" => "The PMT type value is not valid",
             ]
         ];
-
         $this->commentsEnd();
+        $values = $this->getFieldValues();
+        $values['model_label'] = 'PMT';
+        $this->setFieldValues($values);
     }
 
-    protected function processRequest(): array
+    protected function processRequest()
     {
-        $values = parent::processRequest();
+        parent::processRequest();
+        $values = $this->getFieldValues();
         $values['id'] = "20LOCER0{$values['serial']}";
-        $values['model_label'] = 'pmt';
-        return $values;
+        $this->setFieldValues($values);
     }
 
     public function getEntity(): Equipment

@@ -12,6 +12,7 @@ class Equipments extends BaseController
     {   
         $indexData['pageTitle'] = 'Equipment Index';
         $indexData['pageHeader'] = 'Equipment Index';
+        $indexData['modelName'] = $modelName;
         return default_view('equipment/index', $indexData);
     }
 

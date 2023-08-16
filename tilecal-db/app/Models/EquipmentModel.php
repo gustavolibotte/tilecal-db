@@ -59,7 +59,7 @@ class EquipmentModel extends LogModel
         $this->selectSideTable .= 'models.label as model_label ';
     }
 
-    protected function fullQuery(){
+    public function fullQuery(){
         $selectColumns = 'equipments.id, ';
         $selectColumns .= 'models.label as model_label, ';
         $selectColumns .= 'models.name as model_name, ';
