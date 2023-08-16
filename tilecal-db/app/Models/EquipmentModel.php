@@ -6,12 +6,8 @@ use App\Entities\OperationLog;
 
 class EquipmentModel extends LogModel
 {
-    protected $DBGroup          = 'default';
     protected $table            = 'equipments';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
     protected $returnType       = \App\Entities\Equipment::class;
-    protected $protectFields    = true;
     protected $allowedFields    = [
         'id',
         'model_id',
@@ -24,38 +20,13 @@ class EquipmentModel extends LogModel
         'model_params'
     ];
 
-    // Dates
-    protected $useTimestamps = true;
-    protected $dateFormat    = 'datetime';
-    protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
-    protected $deletedField  = 'deleted_at';
-
-    // Validation
-    protected $validationRules      = [];
-    protected $validationMessages   = [];
-    protected $skipValidation       = false;
-    protected $cleanValidationRules = true;
-
-    // Callbacks
-    protected $allowCallbacks = true;
-    protected $beforeInsert   = [];
-    protected $afterInsert    = [];
-    protected $beforeUpdate   = [];
-    protected $afterUpdate    = [];
-    protected $beforeFind     = [];
-    protected $afterFind      = [];
-    protected $beforeDelete   = [];
-    protected $afterDelete    = [];
+    // Custom
     protected $selectSideTable = '';
 
     public function initialize(){
         parent::initialize();
         $this->selectSideTable .= 'equipments.id, ';
         $this->selectSideTable .= 'models.label as model_label ';
-        $this->insertLogIgnore[] = 'model_params';
-        $this->updateLogIgnore[] = 'model_params';
-        $this->deleteLogIgnore[] = 'model_params';
     }
 
     public function fullQuery(){
@@ -197,6 +168,7 @@ class EquipmentModel extends LogModel
         if (!empty($relations)){
             $equipments2FilesModel->delete($relations, $purge);
         }
+        sleep(2);
         $res =  parent::delete($id, $purge);
         $this->db->transComplete();
         return $res;

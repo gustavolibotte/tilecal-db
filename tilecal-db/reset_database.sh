@@ -1,3 +1,3 @@
 php spark migrate:rollback
 php spark migrate
-php spark db:seed SeedDatabase
+# php spark db:seed SeedDatabase

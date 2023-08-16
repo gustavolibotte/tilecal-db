@@ -9,6 +9,7 @@ use CodeIgniter\Entity\Entity;
 abstract class LogModel extends BaseModel{
 
     protected bool $isMigration = false;
+    protected $useSoftDeletes = true;
     protected $insertChangesIgnore = ['created_at', 'updated_at'];
     protected $updateChangesIgnore = ['created_at', 'updated_at'];
     protected $deleteChangesIgnore = ['created_at', 'updated_at'];
@@ -53,7 +54,7 @@ abstract class LogModel extends BaseModel{
     {
         $changes = $data->toArray();
         $changes['id'] = $id;
-        unset_array_keys($changes, $this->insertChangesIgnore);
+        $changes = unset_array_keys($changes, $this->insertChangesIgnore);
         return $changes;
     }
 
@@ -83,7 +84,7 @@ abstract class LogModel extends BaseModel{
     {
         $new = $data->toArray();
         $old = $this->find($id)->toArray();
-        unset_array_keys($new, $this->updateChangesIgnore);
+        $changes = unset_array_keys($new, $this->updateChangesIgnore);
         $changes = $this->getChangedFields($old, $new);
         return $changes;
     }
@@ -120,7 +121,9 @@ abstract class LogModel extends BaseModel{
 
     protected function getDeleteChanges(int|string $id): array
     {
-        return $this->find($id)->toArray();
+        $data = $this->find($id)->toArray();
+        $changes = unset_array_keys($data, $this->deleteChangesIgnore);
+        return $changes;
 
     }
 
