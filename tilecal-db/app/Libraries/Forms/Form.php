@@ -11,7 +11,7 @@ abstract class Form{
     public $validationRules;
     protected bool $isValid = false;
     protected bool $calledValidate= false;
-    protected array $fieldValues = [];
+    private array $fieldValues = [];
 
     public abstract function getEntity();
 
@@ -20,34 +20,30 @@ abstract class Form{
         $this->request = $request;
         $this->validator = \Config\Services::validation();
         $this->initialize();
-        if(is_null($request)){
-            $this->fieldValues = array_fill_keys(array_keys($this->fields), null);
-        } else{
-            $this->fieldValues = $this->processRequest();
+        if (!is_null($this->request)){
+            $this->processRequest();
         }
         $this->validator->setRules($this->validationRules);
     }
 
     protected function initialize(){}
 
-    protected function processRequest(): array
-    {
+    protected function processRequest(){
         foreach (array_keys($this->fields) as $key){
-            $values[$key] = $this->request->getVar($key);
+            $this->fieldValues[$key] = $this->request->getVar($key);
         }
-        return $values;
     }
 
     public function getFieldValues(): array
-    {
+    {   
         return $this->fieldValues;
     }
 
     public function setFieldValues(array $data)
     {
-        $dataKeys = array_keys($data);
-        foreach (array_keys($this->fields) as $key){
-            if (in_array($key, $dataKeys)){
+        $validKeys = array_keys($this->fields);
+        foreach (array_keys($data) as $key){
+            if (in_array($key, $validKeys)){
                 $this->fieldValues[$key] = $data[$key];
             }
         }
@@ -71,13 +67,13 @@ abstract class Form{
         helper('app_form');
         helper('array');
         $str = '';
-        
+        $fieldValues = $this->getFieldValues();
         foreach ($this->fields as $name=>$field) {
             $str .= form_field(
                 dot_array_search('id', $field),
                 dot_array_search('fieldType', $field),
                 dot_array_search('fieldParams', $field),
-                $this->fieldValues[$name],
+                dot_array_search($name, $fieldValues),
                 dot_array_search('required', $field),
                 dot_array_search('helpText', $field),
                 dot_array_search('label', $field));
