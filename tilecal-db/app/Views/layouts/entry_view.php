@@ -23,12 +23,12 @@
               <h4><? echo $infoHeader; ?></h4>
             </div>
             <div class="col-2 text-end">
-              <? if ($editable and !$isDeleted): ?>
+              <? if ($editable): ?>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-modal">
                   Edit
                 </button>
               <?endif; ?>
-              <? if ($deletable and !$isDeleted): ?>
+              <? if ($deletable): ?>
                 <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-modal">
                   Delete
                 </button>
@@ -69,7 +69,7 @@
       </div>
     </div>
   </div>
-  <? if ($editable and !$isDeleted): ?>
+  <? if ($editable): ?>
     <div class="modal fade" id="edit-modal" tabindex="-1" aria-labelledby="edit-modal-label" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">

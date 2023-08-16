@@ -1,33 +1,33 @@
 <?= $this->extend('layouts/entry_view') ?>
 
 <?= $this->section('entryProperties') ?>
-  <li class="list-group-item"><b>ID</b>: <? echo $equipmentInfo->id?> </li>
-  <li class="list-group-item"><b>Model</b>: <? echo $equipmentInfo->model_label?> </li>
-  <? if ($equipmentInfo->location_description): ?>
-    <li class="list-group-item"><b>Location</b>: <? echo $equipmentInfo->location . ' - ' . $equipmentInfo->location_description?> </li>
+  <li class="list-group-item"><b>ID</b>: <? echo $entity->id?> </li>
+  <li class="list-group-item"><b>Model</b>: <? echo $entity->model_label?> </li>
+  <? if ($entity->location_description): ?>
+    <li class="list-group-item"><b>Location</b>: <? echo $entity->location . ' - ' . $entity->location_description?> </li>
   <? else: ?>
-    <li class="list-group-item"><b>Location</b>: <? echo $equipmentInfo->location?> </li>
+    <li class="list-group-item"><b>Location</b>: <? echo $entity->location?> </li>
   <? endif; ?>
-  <li class="list-group-item"><b>Status</b>: <? echo $equipmentInfo->status?> </li>
-  <li class="list-group-item"><b>Owner</b>: <? echo $equipmentInfo->owner_name?> </li>
-  <li class="list-group-item"><b>Parent ID</b>: <? echo $equipmentInfo->parent_id?></li>
-  <li class="list-group-item"><b>Serial</b>: <? echo $equipmentInfo->serial?> </li>
-  <?php if($equipmentInfo->model_params): ?>
-    <?php foreach($equipmentInfo->model_params as $name=>$value): ?>
+  <li class="list-group-item"><b>Status</b>: <? echo $entity->status?> </li>
+  <li class="list-group-item"><b>Owner</b>: <? echo $entity->owner_name?> </li>
+  <li class="list-group-item"><b>Parent ID</b>: <? echo $entity->parent_id?></li>
+  <li class="list-group-item"><b>Serial</b>: <? echo $entity->serial?> </li>
+  <?php if($entity->model_params): ?>
+    <?php foreach($entity->model_params as $name=>$value): ?>
       <li class="list-group-item"><b><? echo ucwords(str_replace('_', ' ', $name)); ?></b>: <? echo $value; ?> </li>
     <?php endforeach; ?>
   <?php endif; ?>
-  <li class="list-group-item"><b>Deleted</b>: <?php if($equipmentInfo->deletedAt): ?> <? echo $equipmentInfo->deletedAt?> <?php else: ?> No <?php endif; ?></li> 
-  <li class="list-group-item"><b>Comments</b>: <? echo $equipmentInfo->comments?></li>
+  <li class="list-group-item"><b>Deleted</b>: <?php if($entity->deletedAt): ?> <? echo $entity->deletedAt?> <?php else: ?> No <?php endif; ?></li> 
+  <li class="list-group-item"><b>Comments</b>: <? echo $entity->comments?></li>
 <?= $this->endSection() ?>
 
 <?= $this->section('relatedContent') ?>
   <hr>
   <h4> Related Equipments </h4>
-  <? echo view_cell('EquipmentTableCell::fullEquipmentRelated', ['equipmentId' => $equipmentInfo->id, 'withDeleted' =>  $equipmentInfo->isDeleted]);?>
+  <? echo view_cell('EquipmentTableCell::fullEquipmentRelated', ['equipmentId' => $entity->id, 'withDeleted' =>  $entity->isDeleted]);?>
   <hr>
   <h4> Related Files </h4>
-  <? echo view_cell('FileTableCell::fullEquipmentRelated', ['equipmentId' => $equipmentInfo->id, 'withDeleted' =>  $equipmentInfo->isDeleted]);?>
+  <? echo view_cell('FileTableCell::fullEquipmentRelated', ['equipmentId' => $entity->id, 'withDeleted' =>  $entity->isDeleted]);?>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript')?>

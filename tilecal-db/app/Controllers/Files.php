@@ -27,23 +27,35 @@ class Files extends BaseController
     public function view($fileId){
         helper('form');
         $fileModel = new FileModel();
-        $fileInfo = $fileModel->withDeleted()->getFile($fileId);
-        $viewData['isDeleted'] = $fileInfo->isDeleted();
-        $viewData['deletable'] = $this->user->isAuthorized('delete');
-        if (is_null($fileInfo)){
+        $file = $fileModel->withDeleted()->getFile($fileId);
+        if (is_null($file)){
             return redirect('notfound');
-        } elseif ($viewData['isDeleted'] and !$viewData['deletable']){
+        } elseif ($file->isDeleted() && !$this->user->isAuthorized('delete')){
             return redirect ('unauthorized');
         }
 
-        $viewData['fileInfo'] = $fileInfo;
-        $viewData['pageTitle'] = 'File view';
-        $viewData['pageHeader'] = sprintf('File %s', $fileInfo->name);
+        $viewData['entity'] = $file;
+        $viewData['pageHeader'] = sprintf('File %s', $file->name);
         $viewData['infoHeader'] = 'File Info';
-        $viewData['histories'] = (new HistModel())->getFileHist($fileInfo->id);
+        $viewData['histories'] = (new HistModel())->getFileHist($file->id);
+
+        if ($file->isDeleted()){
+            $viewData['pageHeader'] = 'Deleted ' . $viewData['pageHeader'];
+            $viewData['headerClass'] = 'text-danger';
+        }
+        $viewData['pageTitle'] = $viewData['pageHeader'];
+
+        // $viewData['editable'] = $this->user->isAuthorized('edit') && !$file->isDeleted();
         $viewData['editable'] = false;
-        if($viewData['deletable']){
-            $viewData['deleteUrl'] = base_url(sprintf('files/delete/%d', $fileInfo->id));
+        if ($viewData['editable']){
+            $viewData['editForm'] = new FileForm();
+            $viewData['editForm']->asEdit();
+            $viewData['editForm']->setFieldValues($file->toArray());
+            $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $file->model_name, $file->id));
+        }
+        $viewData['deletable'] = $this->user->isAuthorized('delete') && (!$file->isDeleted());
+        if ($viewData['deletable']){
+            $viewData['deleteUrl'] = base_url(sprintf('files/delete/%d', $file->id));
         }
         return default_view('files/view', $viewData);
     }

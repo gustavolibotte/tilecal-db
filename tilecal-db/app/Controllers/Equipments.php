@@ -30,37 +30,33 @@ class Equipments extends BaseController
 
         if (is_null($equipment)){
             return redirect('notfound');
-        } elseif ($equipment->isDeleted() and !$this->user->isAuthorized('delete')){
+        } elseif ($equipment->isDeleted() && !$this->user->isAuthorized('delete')){
             return redirect('unauthorized');
         }
 
         $viewData['infoHeader'] = 'Equipment Info';
-        $viewData['equipmentInfo'] = $equipment;
-        $histModel = new \App\Models\HistModel();
-        $viewData["histories"] = $histModel->getEquipmentHist($equipmentId);
+        $viewData['entity'] = $equipment;
+        $viewData["histories"] = (new \App\Models\HistModel())->getEquipmentHist($equipmentId);
         $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->id);
-        $viewData['isDeleted'] = $equipment->isDeleted();
-        if ($viewData['isDeleted']){
+
+        if ($equipment->isDeleted()){
             $viewData['pageHeader'] = 'Deleted ' . $viewData['pageHeader'];
             $viewData['headerClass'] = 'text-danger';
         }
         $viewData['pageTitle'] = $viewData['pageHeader'];
-        $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->model_name, $equipment->id));
 
-        if ($this->user->isAuthorized('edit')){
+        $viewData['editable'] = $this->user->isAuthorized('edit') && !$equipment->isDeleted();
+        if ($viewData['editable']){
             $viewData['editForm'] = new (get_model_form_class($equipment->model_name))();
             $viewData['editForm']->asEdit();
             $viewData['editForm']->setFieldValues($equipment->toArrayWithModelParams());
-            $viewData['editable'] = true;
-        } else{
-            $viewData['editable'] = false;
+            $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->model_name, $equipment->id));
         }
 
-        if ($this->user->isAuthorized('delete')){
+        $viewData['deletable'] = $this->user->isAuthorized('delete') && !$equipment->isDeleted();
+        if ($viewData['deletable']){
             $viewData['deleteUrl'] = base_url(sprintf('equipments/delete/%s', $equipment->id));
             $viewData['deletable'] = true;
-        } else{
-            $viewData['deletable'] = false;
         }
 
         return default_view('equipment/view', $viewData);
