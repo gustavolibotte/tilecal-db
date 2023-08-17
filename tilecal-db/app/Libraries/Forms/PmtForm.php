@@ -49,6 +49,7 @@ class PmtForm extends EquipmentForm{
 
         $this->fields['serial']['required'] = true;
         $this->fields['serial']['helpText'] .= sprintf(' (Max size of %d characters)', self::$serialMaxSize);
+        $this->fields['serial']['maxlength'] = self::$serialMaxSize;
         $this->validationRules['serial']['rules'] = [
             "required",
             sprintf("max_length[%d]", self::$serialMaxSize),
