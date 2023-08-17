@@ -135,10 +135,6 @@ abstract class LogModel extends BaseModel{
     {
         $changes = $this->withDeleted()->find($id)->toArray();
         unset_array_keys($changes, $this->deleteChangesIgnore);
-        if (empty($changes)){
-            d($changes);
-            throw new \Exception();
-        }
         $operationLog = new OperationLog([
             'changes' => $changes,
             'record_id' => $id,
