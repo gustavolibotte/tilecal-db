@@ -145,7 +145,7 @@ class EquipmentModel extends LogModel
         return $operationLog;
     }
 
-    public function delete($id=null, bool $purge = false)
+    public function deleteWithLog($id=null, bool $purge = false)
     {
         if (is_array($id)){
             foreach($id as $sampleId){
@@ -153,17 +153,22 @@ class EquipmentModel extends LogModel
             }
             return $res;
         }
-        $histModel = new HistModel();
+        $histModel = new HistModel($this->isMigration);
         $opTimestamp = Time::now();
         $data = $this->find($id);
         $data->deleted_at = $opTimestamp;
         $operationLog = $this->getDeleteLog($opTimestamp, $id);
         $equipments2FilesModel = new Equipment2FileModel();
         $relations = $equipments2FilesModel->select('id')->where('equipment_id', $id)->findAll();
-        array_walk($relations, function(&$value, $key){ $value=$value->id;});
+        $relationTable = $this->builder($equipments2FilesModel->table);
         $this->db->transStart();
-        $res = parent::delete($id, $purge);
-        $equipments2FilesModel->delete($relations, $purge);
+        $res = $this->delete($id, $purge);
+        foreach($relations as $relation){
+            $relationTable->where('id', $relation->id)->set('deleted_at', $opTimestamp)->update();
+            $relationLog = $equipments2FilesModel->getDeleteLog($opTimestamp, $relation->id);
+            $histModel->insert($relationLog);
+        }
+        // $equipments2FilesModel->delete($relations, $purge);
         $histModel->insert($operationLog);
         $this->db->transComplete();
         return $res;
@@ -185,7 +190,7 @@ class EquipmentModel extends LogModel
         return $operationLog;
     }
 
-    public function restore(int|string|array $id): bool
+    public function restoreWithData(int|string|array $id): bool
     {
         if (is_array($id)){
             foreach($id as $sampleId){
@@ -193,7 +198,7 @@ class EquipmentModel extends LogModel
             }
             return $res;
         }
-        $histModel = new HistModel();
+        $histModel = new HistModel($this->isMigration);
         $opTimestamp = Time::now();
         $data = $this->onlyDeleted()->find($id);
         if (is_null($data)){

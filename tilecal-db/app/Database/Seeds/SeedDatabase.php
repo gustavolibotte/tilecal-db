@@ -11,8 +11,11 @@ class SeedDatabase extends BaseSeeder
     {   
         helper('random');
         // $this->seedFiles();
-        $this->seedEquipments(1000);
+        $this->seedEquipments(10);
         // $this->seedEquipments2Files();
+        $locationModel = new \App\Models\LocationModel(isMigration: true);
+        $locationModel->delete(1);
+        $locationModel->restore(1);
     }
 
     public function seedFiles(){

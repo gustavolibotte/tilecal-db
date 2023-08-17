@@ -32,7 +32,7 @@ abstract class LogModel extends BaseModel{
         $this->allowedFields[] = 'deleted_at';
     }
 
-    public function insert($data = null, bool $returnID = true)
+    public function insertWithLog($data = null, bool $returnID = true)
     {
         if (is_array($data)){
             foreach($data as $sample){
@@ -40,7 +40,7 @@ abstract class LogModel extends BaseModel{
             }
             return $res;
         }
-        $histModel = new HistModel();
+        $histModel = new HistModel($this->isMigration);
         $opTimestamp = Time::now();
         if (!($data instanceof Entity)){
             throw new \TypeError('$data must be instance of Entity class');
@@ -48,7 +48,7 @@ abstract class LogModel extends BaseModel{
         $data->created_at = $opTimestamp;
         $data->updated_at = $opTimestamp;
         $this->db->transStart();
-        $res = parent::insert($data, $returnID);
+        $res = $this->insert($data, $returnID);
         $id = $this->getInsertID();
         $operationLog = $this->getInsertLog($opTimestamp, $id, $data);
         $histModel->insert($operationLog);
@@ -70,9 +70,9 @@ abstract class LogModel extends BaseModel{
         return $operationLog;
     }
 
-    public function update($id = null, $data = null): bool
+    public function updateWithLog($id = null, $data = null): bool
     {
-        $histModel = new HistModel();
+        $histModel = new HistModel($this->isMigration);
         $opTimestamp = Time::now();
         if (!($data instanceof Entity)){
             throw new \TypeError('$data must be instance of Entity class');
@@ -80,7 +80,7 @@ abstract class LogModel extends BaseModel{
         $data->updated_at = $opTimestamp;
         $operationLog = $this->getUpdateLog($opTimestamp, $id, $data);
         $this->db->transStart();
-        $res = parent::update($id, $data);
+        $res = $this->update($id, $data);
         $histModel->insert($operationLog);
         $this->db->transComplete();
         return $res;
@@ -112,7 +112,7 @@ abstract class LogModel extends BaseModel{
         return (isset($changes))? $changes: [];
     }
 
-    public function delete($id = null, bool $purge = false)
+    public function deleteWithLog($id = null, bool $purge = false)
     {
         if (is_array($id)){
             foreach($id as $sampleId){
@@ -120,14 +120,13 @@ abstract class LogModel extends BaseModel{
             }
             return $res;
         }
-        $histModel = new HistModel();
+        $histModel = new HistModel($this->isMigration);
         $opTimestamp = Time::now();
         $data = $this->find($id);
         $data->deleted_at = $opTimestamp;
         $operationLog = $this->getDeleteLog($opTimestamp, $id);
-        $operationLog = 
         $this->db->transStart();
-        $res = parent::delete($id, $purge);
+        $res = $this->update($id, ['deleted_at' => $opTimestamp]);
         $histModel->insert($operationLog);
         $this->db->transComplete();
         return $res;
@@ -149,7 +148,7 @@ abstract class LogModel extends BaseModel{
 
     }
 
-    public function restore(int|string|array $id): bool
+    public function restoreWithData(int|string|array $id): bool
     {
         if (is_array($id)){
             foreach($id as $sampleId){
@@ -157,7 +156,7 @@ abstract class LogModel extends BaseModel{
             }
             return $res;
         }
-        $histModel = new HistModel();
+        $histModel = new HistModel($this->isMigration);
         $opTimestamp = Time::now();
         $data = $this->onlyDeleted()->find($id);
         if (is_null($data)){
@@ -165,7 +164,7 @@ abstract class LogModel extends BaseModel{
         }
         $operationLog = $this->getRestoreLog($opTimestamp, $id, $data);
         $this->db->transStart();
-        $this->withDeleted()->update($id, ['deleted_at' => null]);
+        $this->update($id, ['deleted_at' => null]);
         $histModel->insert($operationLog);
         $this->db->transComplete();
 
