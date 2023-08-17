@@ -10,12 +10,9 @@ class SeedDatabase extends BaseSeeder
     public function run()
     {   
         helper('random');
-        // $this->seedFiles();
-        $this->seedEquipments(10);
-        // $this->seedEquipments2Files();
-        $locationModel = new \App\Models\LocationModel(isMigration: true);
-        $locationModel->deleteWithLog(1);
-        $locationModel->restoreWithLog(1);
+        $this->seedFiles();
+        $this->seedEquipments(1000);
+        $this->seedEquipments2Files();
     }
 
     public function seedFiles(){
@@ -38,9 +35,8 @@ class SeedDatabase extends BaseSeeder
 
         $fabricatorModel = new EquipmentFabricator(isMigration: true);
         $fabricator = new Fabricator($fabricatorModel);
-        foreach ($fabricator->make($numEntries) as $equipment){
-            $fabricatorModel->insertWithLog($equipment);
-        }
+        $equipments = $fabricator->make($numEntries);
+        $fabricatorModel->insertWithLog($equipments);
         echo "Seeded Equipments\n";
     }
 

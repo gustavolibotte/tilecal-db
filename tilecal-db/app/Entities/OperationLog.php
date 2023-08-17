@@ -28,15 +28,21 @@ class OperationLog extends BaseEntity
             return $this->$defaultMsgBuilder();
         }
     }
+
     public function isInsert(){
         return ($this->action == 'insert');
     }
+
     public function isUpdate(){
         return ($this->action == 'update');
     }
 
     public function isDelete(){
         return ($this->action == 'delete');
+    }
+
+    public function isRestore(){
+        return ($this->action == 'restore');
     }
 
     protected function makeDanger($msg){
@@ -109,6 +115,19 @@ class OperationLog extends BaseEntity
         return $msg;
     }
 
+    protected function deleteEquipmentsMessage(){
+        $msg = $this->getMessageStart();
+        $msg .= 'Deleted entry with values:';
+        $msg .= '<ul>';
+        foreach ($this->changes as $name=>$value){
+            if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
+            }
+        }
+        $msg .= '</ul>';
+        return $msg;
+    }
+
     protected function defaultInsertMessage(){
         $msg = $this->getMessageStart();
         $msg .= 'Entry created with values:';
@@ -149,6 +168,12 @@ class OperationLog extends BaseEntity
             }
         }
         $msg .= '</ul>';
+        return $msg;
+    }
+
+    protected function defaultRestoreMessage(){
+        $msg = $this->getMessageStart();
+        $msg .= 'Deleted entry was restored';
         return $msg;
     }
 

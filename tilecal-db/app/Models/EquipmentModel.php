@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Entities\OperationLog;
+use App\Entities\Equipment;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Database\Exceptions\DataException;
@@ -31,9 +32,6 @@ class EquipmentModel extends LogModel
         parent::initialize();
         $this->selectSideTable .= 'equipments.id, ';
         $this->selectSideTable .= 'models.label as model_label ';
-        $this->insertChangesIgnore[] = 'model_params';
-        $this->updateChangesIgnore[] = 'model_params';
-        $this->deleteChangesIgnore[] = 'model_params';
     }
 
     public function fullQuery(){
@@ -94,10 +92,24 @@ class EquipmentModel extends LogModel
 
     protected function getInsertLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
     {
-        $operationLog = parent::getInsertLog($opTimestamp, $id, $data);
-        $changes = $operationLog->changes;
-        foreach ($data->model_params as $key=>$value){
-            $hanges[$key] = $value;
+        $changes = $this->getFullChanges($data);
+        unset_array_keys($changes, $this->insertChangesIgnore);
+        $operationLog = new OperationLog([
+            'record_id' => $id,
+            'table' => $this->table,
+            'changes' => $changes,
+            'action' => 'insert',
+            'created_at' => $opTimestamp
+        ]);
+        return $operationLog;
+    }
+
+    protected function getFullChanges(Equipment $equipment): array
+    {
+        $changes = $equipment->toArray();
+        $modelParams = remove_value('model_params', $changes);
+        foreach ($modelParams as $key=>$value){
+            $changes[$key] = $value;
         }
         $model = (new \App\Models\ModelModel())->find($changes['model_id']);
         $changes['model'] = $model->label;
@@ -105,32 +117,33 @@ class EquipmentModel extends LogModel
         $changes['location'] = $location->name;
         $status = (new \App\Models\StatusModel())->find($changes['status_id']);
         $changes['status'] = $status->name;
-        $operationLog->changes = $changes;
-        return $operationLog;
+        return $changes;
     }
 
     protected function getUpdateLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
     {
         $new = $data->toArray();
         $old = $this->find($id)->toArray();
-        $new = unset_array_keys($new, $this->updateChangesIgnore);
-        $oldModelParams = remove_value('model_params', $old);
-        $newModelParams = remove_value('model_params', $new);
-        $changes = $this->getChangedFields($old, $new);
-        $modelParamsChanges = $this->getChangedFields($oldModelParams, $newModelParams);
-        if (!empty($modelParamsChanges)){
-            $changes = array_merge($changes, $modelParamsChanges);
+        unset_array_keys($old, $this->updateChangesIgnore);
+        unset_array_keys($new, $this->updateChangesIgnore);
+        if (array_key_exists('model_params', $new)){
+            $oldModelParams = remove_value('model_params', $old);
+            $newModelParams = remove_value('model_params', $new);
+            $changes = $this->getChangedFields($old, $new);
+            $modelParamsChanges = $this->getChangedFields($oldModelParams, $newModelParams);
+            if (!empty($modelParamsChanges)){
+                $changes = array_merge($changes, $modelParamsChanges);
+            }
         }
-        $changesKeys = array_keys($changes);
-        if (in_array('model_id', $changesKeys)){
+        if (array_key_exists('model_id', $changes)){
             $model = (new \App\Models\ModelModel())->find($changes['model_id']);
             $changes['model'] = $model->label;
         }
-        if (in_array('location_id', $changesKeys)){
+        if (array_key_exists('location_id', $changes)){
             $location = (new \App\Models\LocationModel())->find($changes['location_id']);
             $changes['location'] = $location->name;
         }
-        if (in_array('status_id', $changesKeys)){
+        if (array_key_exists('status_id', $changes)){
             $status = (new \App\Models\StatusModel())->find($changes['status_id']);
             $changes['status'] = $status->name;
         }
@@ -160,15 +173,13 @@ class EquipmentModel extends LogModel
         $operationLog = $this->getDeleteLog($opTimestamp, $id);
         $equipments2FilesModel = new Equipment2FileModel();
         $relations = $equipments2FilesModel->select('id')->where('equipment_id', $id)->findAll();
-        $relationTable = $this->builder($equipments2FilesModel->table);
         $this->db->transStart();
         $res = $this->delete($id, $purge);
         foreach($relations as $relation){
-            $relationTable->where('id', $relation->id)->set('deleted_at', $opTimestamp)->update();
             $relationLog = $equipments2FilesModel->getDeleteLog($opTimestamp, $relation->id);
+            $equipments2FilesModel->delete($relation->id);
             $histModel->insert($relationLog);
         }
-        // $equipments2FilesModel->delete($relations, $purge);
         $histModel->insert($operationLog);
         $this->db->transComplete();
         return $res;
@@ -176,30 +187,29 @@ class EquipmentModel extends LogModel
 
     protected function getDeleteLog(Time $opTimestamp, int|string $id): OperationLog|array
     {
-        $operationLog = parent::getDeleteLog($opTimestamp, $id);
-        $modelParams = remove_value('model_params', $operationLog->changes);
-        foreach ($modelParams as $key=>$value){
-            $changes[$key] = $value;
-        }
-        $model = (new \App\Models\ModelModel())->find($operationLog->changes['model_id']);
-        $operationLog->changes['model'] = $model->label;
-        $location = (new \App\Models\LocationModel())->find($operationLog->changes['location_id']);
-        $operationLog->changes['location'] = $location->name;
-        $status = (new \App\Models\StatusModel())->find($operationLog->changes['status_id']);
-        $operationLog->changes['status'] = $status->name;
+        $equipment = $this->find($id);
+        $changes = $this->getFullChanges($equipment);
+        unset_array_keys($changes, $this->deleteChangesIgnore);
+        $operationLog = new OperationLog([
+            'record_id' => $id,
+            'table' => $this->table,
+            'changes' => $changes,
+            'action' => 'delete',
+            'created_at' => $opTimestamp
+        ]);
         return $operationLog;
     }
 
-    public function restoreWithData(int|string|array $id): bool
+    public function restoreWithLog(int|string|array $id): bool
     {
+        $opTimestamp = Time::now();
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->restore($sampleId);
+                $res[] = $this->restore($sampleId, $opTimestamp);
             }
             return $res;
         }
         $histModel = new HistModel($this->isMigration);
-        $opTimestamp = Time::now();
         $data = $this->onlyDeleted()->find($id);
         if (is_null($data)){
             throw new DataException('Called restore on a non deleted row.');
@@ -209,16 +219,18 @@ class EquipmentModel extends LogModel
 
         $equipments2FilesModel = new Equipment2FileModel();
         $relations = $equipments2FilesModel->withDeleted()
-                                           ->select('equipments_to_files.id')
                                            ->join('files', 'equipments_to_files.file_id = files.id')
                                            ->where('files.deleted_at IS NULL')
                                            ->where('equipment_id', $id)
                                            ->where('equipments_to_files.deleted_at', $equipment->deleted_at)
                                            ->findAll();
-        $relationsQueryBuilder = $this->builder($equipments2FilesModel->table);
-        array_walk($relations, function(&$value, $key){ $value=$value->id;});
         $this->db->transStart();
-        $this->withDeleted()->update($id, ['deleted_at' => null]);
+        $this->restore($id, $opTimestamp);
+        foreach($relations as $relation){
+            $relationLog = $equipments2FilesModel->getRestoreLog($opTimestamp, $relation->id, $relation);
+            $res = $equipments2FilesModel->restore($relation->id, $opTimestamp);
+            $histModel->insert($relationLog);
+        }
         $histModel->insert($operationLog);
         $this->db->transComplete();
 
