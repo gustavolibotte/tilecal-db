@@ -14,8 +14,8 @@ class SeedDatabase extends BaseSeeder
         $this->seedEquipments(10);
         // $this->seedEquipments2Files();
         $locationModel = new \App\Models\LocationModel(isMigration: true);
-        $locationModel->delete(1);
-        $locationModel->restore(1);
+        $locationModel->deleteWithLog(1);
+        $locationModel->restoreWithLog(1);
     }
 
     public function seedFiles(){
@@ -39,7 +39,7 @@ class SeedDatabase extends BaseSeeder
         $fabricatorModel = new EquipmentFabricator(isMigration: true);
         $fabricator = new Fabricator($fabricatorModel);
         foreach ($fabricator->make($numEntries) as $equipment){
-            $fabricatorModel->insert($equipment);
+            $fabricatorModel->insertWithLog($equipment);
         }
         echo "Seeded Equipments\n";
     }
@@ -59,7 +59,7 @@ class SeedDatabase extends BaseSeeder
                 'file_id' => $file->id
             ];
             $equipment2File = new \App\Entities\Equipment2File($data);
-            $equipments2FileModel->insert($equipment2File);
+            $equipments2FileModel->insertWithLog($equipment2File);
         }
         echo "Seeded Equipments2Files\n";
     }

@@ -82,7 +82,7 @@ class Files extends BaseController
             if ($form->validate()){
                 $file = $form->getEntity();
                 $fileModel = new FileModel();
-                $fileModel->insert($file);
+                $fileModel->insertWithLog($file);
                 $session->setFlashdata('success', true);
                 return redirect('files/upload');
             } else {
@@ -112,7 +112,7 @@ class Files extends BaseController
     {
         helper('message');
         $fileModel = new FileModel();
-        $fileModel->deleteFile($fileId);
+        $fileModel->deleteWithLog($fileId);
         $messages[] = [
             'message' => 'Deleted with success',
             'type' => 'success'

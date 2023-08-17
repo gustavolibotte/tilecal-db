@@ -10,7 +10,6 @@ use App\Entities\OperationLog;
 use CodeIgniter\Database\Exceptions\DataException;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Entity\Entity;
-use Exception;
 
 abstract class LogModel extends BaseModel{
 
@@ -148,7 +147,7 @@ abstract class LogModel extends BaseModel{
 
     }
 
-    public function restoreWithData(int|string|array $id): bool
+    public function restoreWithLog(int|string|array $id): bool
     {
         if (is_array($id)){
             foreach($id as $sampleId){
