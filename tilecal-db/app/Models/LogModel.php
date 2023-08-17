@@ -1,18 +1,24 @@
 <?php
 
+// This model re implements CRUD with trans methods so all database operations are made on the same transaction
+// This is important since we are writing in more than one table
+// This also ensures that each operation timestamps are equal
+
 namespace App\Models;
 
 use App\Entities\OperationLog;
+use CodeIgniter\Database\Exceptions\DataException;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Entity\Entity;
+use Exception;
 
 abstract class LogModel extends BaseModel{
 
     protected bool $isMigration = false;
     protected $useSoftDeletes = true;
-    protected $insertChangesIgnore = ['created_at', 'updated_at'];
-    protected $updateChangesIgnore = ['created_at', 'updated_at'];
-    protected $deleteChangesIgnore = ['created_at', 'updated_at'];
+    protected $insertChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
+    protected $updateChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
+    protected $deleteChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
 
     public function __construct(bool $isMigration=false)
     {   
@@ -28,6 +34,12 @@ abstract class LogModel extends BaseModel{
 
     public function insert($data = null, bool $returnID = true)
     {
+        if (is_array($data)){
+            foreach($data as $sample){
+                $res[] = $this->insert($sample, $returnID);
+            }
+            return $res;
+        }
         $histModel = new HistModel();
         $opTimestamp = Time::now();
         if (!($data instanceof Entity)){
@@ -38,24 +50,24 @@ abstract class LogModel extends BaseModel{
         $this->db->transStart();
         $res = parent::insert($data, $returnID);
         $id = $this->getInsertID();
-        $operationLog = new OperationLog([
-            'changes' => $this->getInsertChanges($id, $data),
-            'id' => $id,
-            'action' =>'delete',
-            'table' => $this->table,
-            'created_at' => $opTimestamp
-        ]);
+        $operationLog = $this->getInsertLog($opTimestamp, $id, $data);
         $histModel->insert($operationLog);
         $this->db->transComplete();
         return $res;
     }
 
-    protected function getInsertChanges(int|string $id, Entity $data): array
+    protected function getInsertLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
     {
         $changes = $data->toArray();
-        $changes['id'] = $id;
         $changes = unset_array_keys($changes, $this->insertChangesIgnore);
-        return $changes;
+        $operationLog = new OperationLog([
+            'changes' => $changes,
+            'record_id' => $id,
+            'action' =>'insert',
+            'table' => $this->table,
+            'created_at' => $opTimestamp
+        ]);
+        return $operationLog;
     }
 
     public function update($id = null, $data = null): bool
@@ -66,13 +78,7 @@ abstract class LogModel extends BaseModel{
             throw new \TypeError('$data must be instance of Entity class');
         }
         $data->updated_at = $opTimestamp;
-        $operationLog = new OperationLog([
-            'changes' => $this->getUpdateChanges($id, $data),
-            'record_id' => $id,
-            'action' =>'delete',
-            'table' => $this->table,
-            'created_at' => $opTimestamp
-        ]);
+        $operationLog = $this->getUpdateLog($opTimestamp, $id, $data);
         $this->db->transStart();
         $res = parent::update($id, $data);
         $histModel->insert($operationLog);
@@ -80,38 +86,46 @@ abstract class LogModel extends BaseModel{
         return $res;
     }
 
-    protected function getUpdateChanges(int|string $id, Entity $data): array
+    protected function getUpdateLog(Time $opTimestamp, int|string $id, Entity $data):OperationLog| array
     {
         $new = $data->toArray();
         $old = $this->find($id)->toArray();
-        $changes = unset_array_keys($new, $this->updateChangesIgnore);
+        $new = unset_array_keys($new, $this->updateChangesIgnore);
         $changes = $this->getChangedFields($old, $new);
-        return $changes;
+        $operationLog = new OperationLog([
+            'changes' => $changes,
+            'record_id' => $id,
+            'action' =>'update',
+            'table' => $this->table,
+            'created_at' => $opTimestamp
+        ]);
+        return $operationLog;
     }
 
     protected function getChangedFields(array $old, array $new): array
     {
-        foreach ($new as $name=>$newValue){
-            if (($old[$name] != $newValue)){
-                $changes[$name] = $newValue;
+        foreach ($old as $name=>$oldValue){
+            if (($new[$name] != $oldValue)){
+                $changes[$name] = $new[$name];
             }
         }
         return (isset($changes))? $changes: [];
     }
 
     public function delete($id = null, bool $purge = false)
-    {   
+    {
+        if (is_array($id)){
+            foreach($id as $sampleId){
+                $res[] = $this->delete($sampleId, $purge);
+            }
+            return $res;
+        }
         $histModel = new HistModel();
         $opTimestamp = Time::now();
         $data = $this->find($id);
         $data->deleted_at = $opTimestamp;
-        $operationLog = new OperationLog([
-            'changes' => $this->getDeleteChanges($id),
-            'record_id' => $id,
-            'action' =>'delete',
-            'table' => $this->table,
-            'created_at' => $opTimestamp
-        ]);
+        $operationLog = $this->getDeleteLog($opTimestamp, $id);
+        $operationLog = 
         $this->db->transStart();
         $res = parent::delete($id, $purge);
         $histModel->insert($operationLog);
@@ -119,25 +133,37 @@ abstract class LogModel extends BaseModel{
         return $res;
     }
 
-    protected function getDeleteChanges(int|string $id): array
+    protected function getDeleteLog(Time $opTimestamp, int|string $id): OperationLog|array
     {
         $data = $this->find($id)->toArray();
+        $changes['id'] = $id;
         $changes = unset_array_keys($data, $this->deleteChangesIgnore);
-        return $changes;
-
-    }
-
-    public function restore(int|string $id): bool
-    {
-        $histModel = new HistModel();
-        $opTimestamp = Time::now();
         $operationLog = new OperationLog([
-            'changes' => $this->getRestoreChanges($id),
+            'changes' => $changes,
             'record_id' => $id,
             'action' =>'delete',
             'table' => $this->table,
             'created_at' => $opTimestamp
         ]);
+        return $operationLog;
+
+    }
+
+    public function restore(int|string|array $id): bool
+    {
+        if (is_array($id)){
+            foreach($id as $sampleId){
+                $res[] = $this->restore($sampleId);
+            }
+            return $res;
+        }
+        $histModel = new HistModel();
+        $opTimestamp = Time::now();
+        $data = $this->onlyDeleted()->find($id);
+        if (is_null($data)){
+            throw new DataException('Called restore on a non deleted row.');
+        }
+        $operationLog = $this->getRestoreLog($opTimestamp, $id, $data);
         $this->db->transStart();
         $this->withDeleted()->update($id, ['deleted_at' => null]);
         $histModel->insert($operationLog);
@@ -146,8 +172,15 @@ abstract class LogModel extends BaseModel{
         return true;
     }
 
-    protected function getRestoreChanges(int|string $id): array
+    protected function getRestoreLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
     {
-        return [];
+        $operationLog = new OperationLog([
+            'changes' => [],
+            'record_id' => $id,
+            'action' =>'restore',
+            'table' => $this->table,
+            'created_at' => $opTimestamp
+        ]);
+        return $operationLog;
     }
 }

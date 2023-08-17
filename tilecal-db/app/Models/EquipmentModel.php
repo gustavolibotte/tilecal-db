@@ -3,6 +3,10 @@
 namespace App\Models;
 
 use App\Entities\OperationLog;
+use CodeIgniter\Entity\Entity;
+use CodeIgniter\I18n\Time;
+use CodeIgniter\Database\Exceptions\DataException;
+
 
 class EquipmentModel extends LogModel
 {
@@ -27,6 +31,9 @@ class EquipmentModel extends LogModel
         parent::initialize();
         $this->selectSideTable .= 'equipments.id, ';
         $this->selectSideTable .= 'models.label as model_label ';
+        $this->insertChangesIgnore[] = 'model_params';
+        $this->updateChangesIgnore[] = 'model_params';
+        $this->deleteChangesIgnore[] = 'model_params';
     }
 
     public function fullQuery(){
@@ -85,122 +92,131 @@ class EquipmentModel extends LogModel
         return $relatedEquipments;
     }
 
-    protected function getUpdateLog($updateInfo){
-        $id = $updateInfo["id"][0];
-        $oldRow = $this->find($id)->toArray();
-        if (array_key_exists("model_params", $updateInfo["data"])){ //Should always happen
-            // Makes stdClass to assosciative array
-            $oldModelParams = json_decode(json_encode($oldRow["model_params"]), true);
-            $newModelParams = json_decode($updateInfo["data"]["model_params"], true);
-            $changes = $this->getUpdateChanges($oldModelParams, $newModelParams);
-        } else{
-            $changes = [];
+    protected function getInsertLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
+    {
+        $operationLog = parent::getInsertLog($opTimestamp, $id, $data);
+        $changes = $operationLog->changes;
+        foreach ($data->model_params as $key=>$value){
+            $hanges[$key] = $value;
         }
-        $changes = array_merge($changes,
-                               $this->getUpdateChanges($oldRow, $updateInfo["data"]));
-        
-        foreach ($changes as $name=>$change){
-            if ($name == 'model_id'){
-                $changes['model'] = $this->updateSubsIds('label', new ModelModel(), $change);
-            } elseif ($name == 'location_id'){
-                $changes['location'] = $this->updateSubsIds('name', new LocationModel(), $change);
-            } elseif ($name == 'status_id'){
-                $changes['status'] = $this->updateSubsIds('name', new StatusModel(), $change);
-            }
-        }
-        $updateLog = new OperationLog([
-            "record_id" => $id,
-            "action" => "update",
-            "changes" => $changes
-        ]);
-        return $updateLog;
-    }
-
-    protected function updateSubsIds(string $key, BaseModel $model, array $change){
-        $entities = $model->getIdArray([$change['old'], $change['new']]);
-        $newChange = [
-            'old' => $entities[$change['old']]->toArray()[$key],
-            'new' => $entities[$change['new']]->toArray()[$key],
-        ];
-        return $newChange;
-    }
-
-    protected function getInsertLog($insertInfo){
-        $changes = [];
-        foreach ($insertInfo['data'] as $name=>$value){
-            if (!in_array($name, $this->insertLogIgnore)){
-                $changes[$name] = $value;
-            }
-        }
-        $modelParams = json_decode($insertInfo["data"]["model_params"]);
-        foreach ($modelParams as $name=>$value){
-            if (!in_array($name, $this->insertLogIgnore)){
-                $changes[$name] = $value;
-            }
-        }
-        $model = (new \App\Models\ModelModel())->find($insertInfo['data']['model_id']);
+        $model = (new \App\Models\ModelModel())->find($changes['model_id']);
         $changes['model'] = $model->label;
-        $location = (new \App\Models\LocationModel())->find($insertInfo['data']['location_id']);
+        $location = (new \App\Models\LocationModel())->find($changes['location_id']);
         $changes['location'] = $location->name;
-        $status = (new \App\Models\StatusModel())->find($insertInfo['data']['status_id']);
+        $status = (new \App\Models\StatusModel())->find($changes['status_id']);
         $changes['status'] = $status->name;
-        $insertLog = new OperationLog([
-            "record_id" => $insertInfo["data"]["id"],
-            "action" => "insert",
-            "changes" => $changes
-        ]);
-
-        return $insertLog;
+        $operationLog->changes = $changes;
+        return $operationLog;
     }
 
-    protected function getDeleteLog($deleteLog){
-        return $this->getInsertLog($deleteLog);
+    protected function getUpdateLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
+    {
+        $new = $data->toArray();
+        $old = $this->find($id)->toArray();
+        $new = unset_array_keys($new, $this->updateChangesIgnore);
+        $oldModelParams = remove_value('model_params', $old);
+        $newModelParams = remove_value('model_params', $new);
+        $changes = $this->getChangedFields($old, $new);
+        $modelParamsChanges = $this->getChangedFields($oldModelParams, $newModelParams);
+        if (!empty($modelParamsChanges)){
+            $changes = array_merge($changes, $modelParamsChanges);
+        }
+        $changesKeys = array_keys($changes);
+        if (in_array('model_id', $changesKeys)){
+            $model = (new \App\Models\ModelModel())->find($changes['model_id']);
+            $changes['model'] = $model->label;
+        }
+        if (in_array('location_id', $changesKeys)){
+            $location = (new \App\Models\LocationModel())->find($changes['location_id']);
+            $changes['location'] = $location->name;
+        }
+        if (in_array('status_id', $changesKeys)){
+            $status = (new \App\Models\StatusModel())->find($changes['status_id']);
+            $changes['status'] = $status->name;
+        }
+
+        $operationLog = new OperationLog([
+            'changes' => $changes,
+            'record_id' => $id,
+            'action' =>'update',
+            'table' => $this->table,
+            'created_at' => $opTimestamp
+        ]);
+        return $operationLog;
     }
 
     public function delete($id=null, bool $purge = false)
     {
-        // The trans methods gauarantee that all database operations are made on the same transaction
-        // This is important since we are writing in 2 tables to handle many to many relationships
+        if (is_array($id)){
+            foreach($id as $sampleId){
+                $res[] = $this->delete($sampleId, $purge);
+            }
+            return $res;
+        }
+        $histModel = new HistModel();
+        $opTimestamp = Time::now();
+        $data = $this->find($id);
+        $data->deleted_at = $opTimestamp;
+        $operationLog = $this->getDeleteLog($opTimestamp, $id);
         $equipments2FilesModel = new Equipment2FileModel();
         $relations = $equipments2FilesModel->select('id')->where('equipment_id', $id)->findAll();
         array_walk($relations, function(&$value, $key){ $value=$value->id;});
         $this->db->transStart();
-        if (!empty($relations)){
-            $equipments2FilesModel->delete($relations, $purge);
-        }
-        sleep(2);
-        $res =  parent::delete($id, $purge);
+        $res = parent::delete($id, $purge);
+        $equipments2FilesModel->delete($relations, $purge);
+        $histModel->insert($operationLog);
         $this->db->transComplete();
         return $res;
     }
 
-    public function restore($equipmentId): bool
+    protected function getDeleteLog(Time $opTimestamp, int|string $id): OperationLog|array
     {
-        // The trans methods gauarantee that all database operations are made on the same transaction
-        // This is important since we are writing in 2 tables to handle many to many relationships
-        d($equipmentId);
-        $equipment = $this->onlyDeleted()->select('deleted_at')->find($equipmentId);
-        d($equipment);
+        $operationLog = parent::getDeleteLog($opTimestamp, $id);
+        $modelParams = remove_value('model_params', $operationLog->changes);
+        foreach ($modelParams as $key=>$value){
+            $changes[$key] = $value;
+        }
+        $model = (new \App\Models\ModelModel())->find($operationLog->changes['model_id']);
+        $operationLog->changes['model'] = $model->label;
+        $location = (new \App\Models\LocationModel())->find($operationLog->changes['location_id']);
+        $operationLog->changes['location'] = $location->name;
+        $status = (new \App\Models\StatusModel())->find($operationLog->changes['status_id']);
+        $operationLog->changes['status'] = $status->name;
+        return $operationLog;
+    }
+
+    public function restore(int|string|array $id): bool
+    {
+        if (is_array($id)){
+            foreach($id as $sampleId){
+                $res[] = $this->restore($sampleId);
+            }
+            return $res;
+        }
+        $histModel = new HistModel();
+        $opTimestamp = Time::now();
+        $data = $this->onlyDeleted()->find($id);
+        if (is_null($data)){
+            throw new DataException('Called restore on a non deleted row.');
+        }
+        $operationLog = $this->getRestoreLog($opTimestamp, $id, $data);
+        $equipment = $this->onlyDeleted()->select('deleted_at')->find($id);
+
         $equipments2FilesModel = new Equipment2FileModel();
-        // Gets the relations that were deleted at the same time as equipment deletion
-        // from files that are not deleted
         $relations = $equipments2FilesModel->withDeleted()
                                            ->select('equipments_to_files.id')
                                            ->join('files', 'equipments_to_files.file_id = files.id')
                                            ->where('files.deleted_at IS NULL')
-                                           ->where('equipment_id', $equipmentId)
+                                           ->where('equipment_id', $id)
                                            ->where('equipments_to_files.deleted_at', $equipment->deleted_at)
                                            ->findAll();
-        d($relations);
+        $relationsQueryBuilder = $this->builder($equipments2FilesModel->table);
         array_walk($relations, function(&$value, $key){ $value=$value->id;});
-        d($relations);
         $this->db->transStart();
-        if (!empty($relations)){
-            $equipments2FilesModel->onlyDeleted()->update($relations, ['deleted_at'=>null]);
-        }
-        // $res = $this->withDeleted()->update($equipmentId, ['deleted_at' => null]);
-        $res = parent::restore($equipmentId);
+        $this->withDeleted()->update($id, ['deleted_at' => null]);
+        $histModel->insert($operationLog);
         $this->db->transComplete();
-        return $res;
+
+        return true;
     }
 }

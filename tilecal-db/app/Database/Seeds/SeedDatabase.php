@@ -10,9 +10,9 @@ class SeedDatabase extends BaseSeeder
     public function run()
     {   
         helper('random');
-        $this->seedFiles();
+        // $this->seedFiles();
         $this->seedEquipments(1000);
-        $this->seedEquipments2Files();
+        // $this->seedEquipments2Files();
     }
 
     public function seedFiles(){

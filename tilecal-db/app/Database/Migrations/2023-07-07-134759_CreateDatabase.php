@@ -327,7 +327,7 @@ class CreateDatabase extends Migration
             ],
             'action' => [
                 'type' => 'ENUM',
-                'constraint' => ['insert', 'update', 'delete'],
+                'constraint' => ['insert', 'update', 'delete', 'restore'],
                 'null' => false
             ],
             'record_id' => [
