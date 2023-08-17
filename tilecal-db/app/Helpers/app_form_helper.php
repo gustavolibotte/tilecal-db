@@ -1,15 +1,19 @@
 <?php
 
-function div_wrap($divClass, $labelStr, $inputStr, $helpStr){
-    $wrapped = sprintf(
-        '<div class="%s">%s%s%s</div>',
-        $divClass, $labelStr, $inputStr, $helpStr
-    );
+function div_wrap(string $divClass, array $components){
+    $wrapped = sprintf('<div class="%s">', $divClass);
+    foreach ($components as $component){
+        $wrapped .= $component;
+    }
+    $wrapped .= '</div>';
     return $wrapped;
 }
 
 function user_input_field($id, $value, $fieldType, $fieldParams){
     helper('form');
+    if ($fieldType == 'hidden'){
+        return form_hidden($id, $value);
+    }
     $fieldParams['id'] = $id;
     $fieldParams['name'] = $id;
     $fieldParams['class'] = 'form-control';
@@ -47,19 +51,23 @@ function form_field(string $id,
                     string $label=null){
     helper('form');
     helper('string');
-    if (is_null($label)){
-        $label = snake2Capitalized($id);
+    if ($fieldType == 'hidden'){
+        $components = [user_input_field($id, $value, $fieldType, $fieldParams)];
+    } else{
+        if (is_null($label)){
+            $label = snake2Capitalized($id);
+        }
+        if (is_null($helpText)){
+            $helpText = "";
+        }
+        $labelText = ($required)? $label . '*:': $label . ':';
+        $components = [
+            form_label($labelText, $id, ['class' => 'col-form-label']),
+            user_input_field($id, $value, $fieldType, $fieldParams),
+            form_help($id, $helpText)
+        ];
     }
-    if (is_null($helpText)){
-        $helpText = "";
-    }
-    $labelText = ($required)? $label . '*:': $label . ':';
-    $fieldStr = div_wrap(
-        'mb-3',
-        form_label($labelText, $id, ['class' => 'col-form-label']),
-        user_input_field($id, $value, $fieldType, $fieldParams),
-        form_help($id, $helpText)
-    );
+    $fieldStr = div_wrap('mb-3', $components);
     return $fieldStr;
 }
 

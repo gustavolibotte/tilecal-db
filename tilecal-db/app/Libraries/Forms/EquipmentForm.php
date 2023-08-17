@@ -29,10 +29,8 @@ class EquipmentForm extends Form{
                 'label' => 'Model',
                 'required' => true,
                 'helpText' => "Equipment's model",
-                'fieldType' => 'input',
-                'fieldParams' => [
-                    'readOnly' => null
-                ]
+                'fieldType' => 'hidden',
+                'fieldParams' => []
             ],
             'location_id' => [
                 'id' => 'location_id',
