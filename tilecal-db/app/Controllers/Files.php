@@ -45,7 +45,6 @@ class Files extends BaseController
         }
         $viewData['pageTitle'] = $viewData['pageHeader'];
 
-        // $viewData['editable'] = $this->user->isAuthorized('edit') && !$file->isDeleted();
         $viewData['editable'] = false;
         if ($viewData['editable']){
             $viewData['editForm'] = new FileForm();
