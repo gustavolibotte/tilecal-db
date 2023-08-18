@@ -33,14 +33,14 @@ abstract class LogModel extends BaseModel{
         $this->allowedFields = array_merge($this->allowedFields, ['updated_at', 'created_at', 'deleted_at']);
     }
 
-    public function insertWithLog(Entity|array $data, bool $returnID = true, ?Time $opTimestamp=null)
+    public function insertWithLog(Entity|array $data, bool $returnID = true, ?Time $opTimestamp=null, bool $transaction=true)
     {
         if (is_null($opTimestamp)){
             $opTimestamp = Time::now();
         }
         if (is_array($data)){
             foreach($data as $sample){
-                $res[] = $this->insertWithLog($sample, $returnID, $opTimestamp);
+                $res[] = $this->insertWithLog($sample, $returnID, $opTimestamp, $transaction);
             }
             return $res;
         }
@@ -50,12 +50,16 @@ abstract class LogModel extends BaseModel{
         }
         $data->created_at = $opTimestamp;
         $data->updated_at = $opTimestamp;
-        $this->db->transStart();
+        if ($transaction){
+            $this->db->transStart();
+        }
         $res = $this->insert($data, $returnID);
         $id = $this->getInsertID();
         $operationLog = $this->getInsertLog($opTimestamp, $id, $data);
         $histModel->insert($operationLog);
-        $this->db->transComplete();
+        if ($transaction){
+            $this->db->transComplete();
+        }
         return $res;
     }
 
@@ -73,14 +77,14 @@ abstract class LogModel extends BaseModel{
         return $operationLog;
     }
 
-    public function updateWithLog(int|string|array $id, $data = null, ?Time $opTimestamp=null): bool
+    public function updateWithLog(int|string|array $id, $data = null, ?Time $opTimestamp=null, bool $transaction=true): bool
     {
         if (is_null($opTimestamp)){
             $opTimestamp = Time::now();
         }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->insertWithLog($sampleId, $data, $opTimestamp);
+                $res[] = $this->insertWithLog($sampleId, $data, $opTimestamp,);
             }
             return $res;
         }
@@ -91,10 +95,14 @@ abstract class LogModel extends BaseModel{
         $data->updated_at = $opTimestamp;
         $old = $this->find($id);
         $operationLog = $this->getUpdateLog($opTimestamp, $id, $data, $old);
-        $this->db->transStart();
+        if ($transaction){
+            $this->db->transStart();
+        }
         $res = $this->update($id, $data);
         $histModel->insert($operationLog);
-        $this->db->transComplete();
+        if ($transaction){
+            $this->db->transComplete();
+        }
         return $res;
     }
 
@@ -125,14 +133,14 @@ abstract class LogModel extends BaseModel{
         return (isset($changes))? $changes: [];
     }
 
-    public function deleteWithLog(int|string|array $id = null, bool $purge = false, ?Time $opTimestamp=null)
+    public function deleteWithLog(int|string|array $id = null, bool $purge = false, ?Time $opTimestamp=null, bool $transaction=true)
     {
         if (is_null($opTimestamp)){
             $opTimestamp = Time::now();
         }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->deleteWithLog($sampleId, $purge, $opTimestamp);
+                $res[] = $this->deleteWithLog($sampleId, $purge, $opTimestamp, $transaction);
             }
             return $res;
         }
@@ -140,10 +148,14 @@ abstract class LogModel extends BaseModel{
         $data = $this->find($id);
         $data->deleted_at = $opTimestamp;
         $operationLog = $this->getDeleteLog($opTimestamp, $id);
-        $this->db->transStart();
+        if ($transaction){
+            $this->db->transStart();
+        }
         $res = $this->update($id, ['deleted_at' => $opTimestamp]);
         $histModel->insert($operationLog);
-        $this->db->transComplete();
+        if ($transaction){
+            $this->db->transComplete();
+        }
         return $res;
     }
 
@@ -162,14 +174,14 @@ abstract class LogModel extends BaseModel{
 
     }
 
-    public function restoreWithLog(int|string|array $id, ?Time $opTimestamp = null): bool
+    public function restoreWithLog(int|string|array $id, ?Time $opTimestamp = null, bool $transaction=true): bool
     {
         if (is_null($opTimestamp)){
             $opTimestamp = Time::now();
         }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->restoreWithLog($sampleId, $opTimestamp);
+                $res[] = $this->restoreWithLog($sampleId, $opTimestamp, $transaction);
             }
             return $res;
         }
@@ -179,11 +191,15 @@ abstract class LogModel extends BaseModel{
             throw new DataException('Called restore on a non deleted row.');
         }
         $operationLog = $this->getRestoreLog($opTimestamp, $id, $data);
-        d($operationLog);
+        if ($transaction){
+            $this->db->transComplete();
+        }
         $this->db->transStart();
         $this->restore($id, $opTimestamp);
         $histModel->insert($operationLog);
-        $this->db->transComplete();
+        if ($transaction){
+            $this->db->transComplete();
+        }
 
         return true;
     }

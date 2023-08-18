@@ -61,14 +61,14 @@ class FileModel extends LogModel
         return $operationLog;
     }
 
-    public function deleteWithLog($id=null, bool $purge = false, ?Time $opTimestamp = null): bool
+    public function deleteWithLog($id=null, bool $purge = false, ?Time $opTimestamp = null, bool $transaction=true): bool
     {
         if (is_null($opTimestamp)){
             $opTimestamp = Time::now();
         }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->deleteWithLog($sampleId, $purge, $opTimestamp);
+                $res[] = $this->deleteWithLog($sampleId, $purge, $opTimestamp, $transaction);
             }
             return $res;
         }
@@ -78,15 +78,17 @@ class FileModel extends LogModel
         $operationLog = $this->getDeleteLog($opTimestamp, $id);
         $equipments2FilesModel = new Equipment2FileModel();
         $relations = $equipments2FilesModel->select('id')->where('file_id', $id)->findAll();
-        $this->db->transStart();
+        if ($transaction){
+            $this->db->transStart();
+        }
         $res = $this->delete($id, $purge);
         foreach($relations as $relation){
-            $relationLog = $equipments2FilesModel->getDeleteLog($opTimestamp, $relation->id);
-            $equipments2FilesModel->delete($relation->id);
-            $histModel->insert($relationLog);
+            $equipments2FilesModel->deleteWithLog($relation->id, $purge, $opTimestamp, false);
         }
         $histModel->insert($operationLog);
-        $this->db->transComplete();
+        if ($transaction){
+            $this->db->transComplete();
+        }
         return $res;
     }
 
@@ -106,14 +108,14 @@ class FileModel extends LogModel
         return $operationLog;
     }
 
-    public function restoreWithLog(int|string|array $id, ?Time $opTimestamp = null): bool
+    public function restoreWithLog(int|string|array $id, ?Time $opTimestamp = null, bool $transaction=true): bool
     {
         if (is_null($opTimestamp)){
             $opTimestamp = Time::now();
         }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->restoreWithLog($sampleId, $opTimestamp);
+                $res[] = $this->restoreWithLog($sampleId, $opTimestamp, $transaction);
             }
             return $res;
         }
@@ -130,13 +132,17 @@ class FileModel extends LogModel
                                            ->where('file_id', $id)
                                            ->where('equipments_to_files.deleted_at', $data->deleted_at)
                                            ->findAll();
-        $this->db->transStart();
+        if ($transaction){
+            $this->db->transStart();
+        }
         $this->restore($id, $opTimestamp);
         foreach($relations as $relation){
-            $equipments2FilesModel->restoreWithLog($relation->id, $opTimestamp);
+            $equipments2FilesModel->restoreWithLog($relation->id, $opTimestamp, false);
         }
         $histModel->insert($operationLog);
-        $this->db->transComplete();
+        if ($transaction){
+            $this->db->transComplete();
+        }
 
         return true;
     }
