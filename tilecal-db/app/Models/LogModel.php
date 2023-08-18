@@ -10,6 +10,7 @@ use App\Entities\OperationLog;
 use CodeIgniter\Database\Exceptions\DataException;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Entity\Entity;
+use App\Entities\Equipment2File;
 
 abstract class LogModel extends BaseModel{
 
@@ -18,6 +19,7 @@ abstract class LogModel extends BaseModel{
     protected $insertChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
     protected $updateChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
     protected $deleteChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
+    protected $restoreChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
 
     public function __construct(bool $isMigration=false)
     {   
@@ -31,16 +33,18 @@ abstract class LogModel extends BaseModel{
         $this->allowedFields = array_merge($this->allowedFields, ['updated_at', 'created_at', 'deleted_at']);
     }
 
-    public function insertWithLog(Entity|array $data, bool $returnID = true)
+    public function insertWithLog(Entity|array $data, bool $returnID = true, ?Time $opTimestamp=null)
     {
+        if (is_null($opTimestamp)){
+            $opTimestamp = Time::now();
+        }
         if (is_array($data)){
             foreach($data as $sample){
-                $res[] = $this->insertWithLog($sample, $returnID);
+                $res[] = $this->insertWithLog($sample, $returnID, $opTimestamp);
             }
             return $res;
         }
         $histModel = new HistModel($this->isMigration);
-        $opTimestamp = Time::now();
         if (!($data instanceof Entity)){
             throw new \TypeError('$data must be instance of Entity class');
         }
@@ -69,15 +73,24 @@ abstract class LogModel extends BaseModel{
         return $operationLog;
     }
 
-    public function updateWithLog(int|string $id, $data = null): bool
+    public function updateWithLog(int|string|array $id, $data = null, ?Time $opTimestamp=null): bool
     {
+        if (is_null($opTimestamp)){
+            $opTimestamp = Time::now();
+        }
+        if (is_array($id)){
+            foreach($id as $sampleId){
+                $res[] = $this->insertWithLog($sampleId, $data, $opTimestamp);
+            }
+            return $res;
+        }
         $histModel = new HistModel($this->isMigration);
-        $opTimestamp = Time::now();
         if (!($data instanceof Entity)){
             throw new \TypeError('$data must be instance of Entity class');
         }
         $data->updated_at = $opTimestamp;
-        $operationLog = $this->getUpdateLog($opTimestamp, $id, $data);
+        $old = $this->find($id);
+        $operationLog = $this->getUpdateLog($opTimestamp, $id, $data, $old);
         $this->db->transStart();
         $res = $this->update($id, $data);
         $histModel->insert($operationLog);
@@ -85,9 +98,10 @@ abstract class LogModel extends BaseModel{
         return $res;
     }
 
-    protected function getUpdateLog(Time $opTimestamp, int|string $id, Entity $data):OperationLog| array
+    protected function getUpdateLog(Time $opTimestamp, int|string $id, Entity $new,  Entity $old):OperationLog| array
     {
-        $new = $data->toArray();
+        $new = $new->toArray();
+        $old = $old->toArray();
         unset_array_keys($old, $this->updateChangesIgnore);
         unset_array_keys($new, $this->updateChangesIgnore);
         $changes = $this->getChangedFields($old, $new);
@@ -103,24 +117,26 @@ abstract class LogModel extends BaseModel{
 
     protected function getChangedFields(array $old, array $new): array
     {
-        foreach ($old as $name=>$oldValue){
-            if (($new[$name] != $oldValue)){
-                $changes[$name] = $new[$name];
+        foreach ($new as $name=>$newValue){
+            if (array_key_exists($name, $old) && ($old[$name] != $newValue)){
+                $changes[$name] = $newValue;
             }
         }
         return (isset($changes))? $changes: [];
     }
 
-    public function deleteWithLog(int|string|array $id = null, bool $purge = false)
+    public function deleteWithLog(int|string|array $id = null, bool $purge = false, ?Time $opTimestamp=null)
     {
+        if (is_null($opTimestamp)){
+            $opTimestamp = Time::now();
+        }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->deleteWithLog($sampleId, $purge);
+                $res[] = $this->deleteWithLog($sampleId, $purge, $opTimestamp);
             }
             return $res;
         }
         $histModel = new HistModel($this->isMigration);
-        $opTimestamp = Time::now();
         $data = $this->find($id);
         $data->deleted_at = $opTimestamp;
         $operationLog = $this->getDeleteLog($opTimestamp, $id);
@@ -133,7 +149,7 @@ abstract class LogModel extends BaseModel{
 
     protected function getDeleteLog(Time $opTimestamp, int|string $id): OperationLog|array
     {
-        $changes = $this->withDeleted()->find($id)->toArray();
+        $changes = $this->find($id)->toArray();
         unset_array_keys($changes, $this->deleteChangesIgnore);
         $operationLog = new OperationLog([
             'changes' => $changes,
@@ -146,9 +162,11 @@ abstract class LogModel extends BaseModel{
 
     }
 
-    public function restoreWithLog(int|string|array $id): bool
+    public function restoreWithLog(int|string|array $id, ?Time $opTimestamp = null): bool
     {
-        $opTimestamp = Time::now();
+        if (is_null($opTimestamp)){
+            $opTimestamp = Time::now();
+        }
         if (is_array($id)){
             foreach($id as $sampleId){
                 $res[] = $this->restoreWithLog($sampleId, $opTimestamp);
@@ -161,6 +179,7 @@ abstract class LogModel extends BaseModel{
             throw new DataException('Called restore on a non deleted row.');
         }
         $operationLog = $this->getRestoreLog($opTimestamp, $id, $data);
+        d($operationLog);
         $this->db->transStart();
         $this->restore($id, $opTimestamp);
         $histModel->insert($operationLog);
@@ -169,16 +188,18 @@ abstract class LogModel extends BaseModel{
         return true;
     }
 
-    public function restore(int|string|array $id, Time $opTimsetamp): bool
+    public function restore(int|string|array $id, Time $opTimestamp): bool
     {
-        $this->onlyDeleted()->update($id, ['deleted_at' => null, 'updated_at' => $opTimsetamp]);
+        $this->onlyDeleted()->update($id, ['deleted_at' => null, 'updated_at' => $opTimestamp]);
         return true;
     }
 
     protected function getRestoreLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
     {
+        $changes = $data->toArray();
+        unset_array_keys($changes, $this->restoreChangesIgnore);
         $operationLog = new OperationLog([
-            'changes' => [],
+            'changes' => $changes,
             'record_id' => $id,
             'action' =>'restore',
             'table' => $this->table,

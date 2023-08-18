@@ -22,9 +22,9 @@ class SeedDatabase extends BaseSeeder
             $fileData['filedata'] = $this->readFile($fileData['filedata']);
             $file = new \App\Entities\File($fileData);
             $fileModel = new \App\Models\FileModel(isMigration: true);
-            $fileModel->insert($file);
+            $fileModel->insertWithLog($file);
             if (str_starts_with($fileData['name'], 'deleted')){
-                $fileModel->delete($file->id);
+                $fileModel->deleteWithLog($file->id);
             }
         }
         echo "Seeded Files\n";

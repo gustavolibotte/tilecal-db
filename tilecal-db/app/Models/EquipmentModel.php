@@ -120,10 +120,10 @@ class EquipmentModel extends LogModel
         return $changes;
     }
 
-    protected function getUpdateLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
+    protected function getUpdateLog(Time $opTimestamp, int|string $id, Entity $new, Entity $old): OperationLog|array
     {
-        $new = $data->toArray();
-        $old = $this->find($id)->toArray();
+        $new = $new->toArray();
+        $old = $old->toArray();
         unset_array_keys($old, $this->updateChangesIgnore);
         unset_array_keys($new, $this->updateChangesIgnore);
         if (array_key_exists('model_params', $new)){
@@ -158,16 +158,18 @@ class EquipmentModel extends LogModel
         return $operationLog;
     }
 
-    public function deleteWithLog($id=null, bool $purge = false)
+    public function deleteWithLog($id=null, bool $purge = false, ?Time $opTimestamp = null)
     {
+        if (is_null($opTimestamp)){
+            $opTimestamp = Time::now();
+        }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->delete($sampleId, $purge);
+                $res[] = $this->deleteWithLog($sampleId, $purge, $opTimestamp);
             }
             return $res;
         }
         $histModel = new HistModel($this->isMigration);
-        $opTimestamp = Time::now();
         $data = $this->find($id);
         $data->deleted_at = $opTimestamp;
         $operationLog = $this->getDeleteLog($opTimestamp, $id);
@@ -200,12 +202,14 @@ class EquipmentModel extends LogModel
         return $operationLog;
     }
 
-    public function restoreWithLog(int|string|array $id): bool
+    public function restoreWithLog(int|string|array $id, ?Time $opTimestamp = null): bool
     {
-        $opTimestamp = Time::now();
+        if (is_null($opTimestamp)){
+            $opTimestamp = Time::now();
+        }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->restore($sampleId, $opTimestamp);
+                $res[] = $this->restoreWithLog($sampleId, $opTimestamp);
             }
             return $res;
         }
@@ -215,25 +219,36 @@ class EquipmentModel extends LogModel
             throw new DataException('Called restore on a non deleted row.');
         }
         $operationLog = $this->getRestoreLog($opTimestamp, $id, $data);
-        $equipment = $this->onlyDeleted()->select('deleted_at')->find($id);
 
         $equipments2FilesModel = new Equipment2FileModel();
-        $relations = $equipments2FilesModel->withDeleted()
+        $relations = $equipments2FilesModel->withDeleted()->select('equipments_to_files.id')
                                            ->join('files', 'equipments_to_files.file_id = files.id')
                                            ->where('files.deleted_at IS NULL')
                                            ->where('equipment_id', $id)
-                                           ->where('equipments_to_files.deleted_at', $equipment->deleted_at)
+                                           ->where('equipments_to_files.deleted_at', $data->deleted_at)
                                            ->findAll();
         $this->db->transStart();
         $this->restore($id, $opTimestamp);
         foreach($relations as $relation){
-            $relationLog = $equipments2FilesModel->getRestoreLog($opTimestamp, $relation->id, $relation);
-            $res = $equipments2FilesModel->restore($relation->id, $opTimestamp);
-            $histModel->insert($relationLog);
+            $equipments2FilesModel->restoreWithLog($relation->id, $opTimestamp);
         }
         $histModel->insert($operationLog);
         $this->db->transComplete();
 
         return true;
+    }
+
+    protected function getRestoreIgnore(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
+    {
+        $changes = $this->getFullChanges($data);
+        unset_array_keys($changes, $this->restoreChangesIgnore);
+        $operationLog = new OperationLog([
+            'record_id' => $id,
+            'table' => $this->table,
+            'changes' => $changes,
+            'action' => 'restore',
+            'created_at' => $opTimestamp
+        ]);
+        return $operationLog;
     }
 }

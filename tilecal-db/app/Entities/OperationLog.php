@@ -83,6 +83,20 @@ class OperationLog extends BaseEntity
         return $msg;
     }
 
+    protected function restoreEquipmentsToFilesMessage(){
+        $msg = $this->getMessageStart();
+        $fileLink = sprintf(
+            '<a type="button" class="link-primary" href="%s">file</a>',
+            base_url(sprintf('files/view/%s', $this->changes['file_id']))
+        );
+        $equipmentLink = sprintf(
+            '<a type="button" class="link-primary" href="%s">equipment</a>',
+            base_url(sprintf('equipments/view/%s', $this->changes['equipment_id']))
+        );
+        $msg .= sprintf('Link between %s and %s restored', $fileLink, $equipmentLink);
+        return $msg;
+    }
+
     protected function insertEquipmentsMessage(){
         $msg = $this->getMessageStart();
         $msg .= 'Entry created with values:';
@@ -106,9 +120,8 @@ class OperationLog extends BaseEntity
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
             if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
-                $old = (is_array($value['old']))? print_r($value['old'], true): $value['old'];
-                $new = (is_array($value['new']))? print_r($value['new'], true): $value['new'];
-                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', snake2Capitalized($name), $old, $new);
+                $value = (is_array($value))? print_r($value, true): $value;
+                $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
             }
         }
         $msg .= '</ul>';
@@ -151,7 +164,7 @@ class OperationLog extends BaseEntity
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
             if (!in_array($name, $this->msgIgnore)){
-                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', snake2Capitalized($name), $value['old'], $value['new']);
+                $msg .= sprintf('<li> <b>%s</b> - %s</li>', snake2Capitalized($name), $value);
             }
         }
         $msg .= '</ul>';
@@ -173,7 +186,7 @@ class OperationLog extends BaseEntity
 
     protected function defaultRestoreMessage(){
         $msg = $this->getMessageStart();
-        $msg .= 'Deleted entry was restored';
+        $msg .= 'Restored this deleted entry';
         return $msg;
     }
 

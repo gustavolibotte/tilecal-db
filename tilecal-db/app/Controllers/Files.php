@@ -38,6 +38,7 @@ class Files extends BaseController
         $viewData['pageHeader'] = sprintf('File %s', $file->name);
         $viewData['infoHeader'] = 'File Info';
         $viewData['histories'] = (new HistModel())->getFileHist($file->id);
+        d($viewData);
 
         if ($file->isDeleted()){
             $viewData['pageHeader'] = 'Deleted ' . $viewData['pageHeader'];
@@ -57,6 +58,12 @@ class Files extends BaseController
         if ($viewData['deletable']){
             $viewData['deleteUrl'] = base_url(sprintf('files/delete/%d', $file->id));
         }
+
+        $viewData['restorable'] = $this->user->isAuthorized('delete') && $file->isDeleted();
+        if ($viewData['restorable']){
+            $viewData['restoreUrl'] = base_url(sprintf('files/restore/%s', $file->id));
+        }
+
         return default_view('files/view', $viewData);
     }
 
@@ -118,6 +125,23 @@ class Files extends BaseController
             'type' => 'success'
         ];
         addMessages($messages);
-        return redirect('equipments');
+        if ($this->user->isAuthorized('delete')){
+            return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
+        } else {
+            return redirect('files');
+        }
+    }
+
+    public function restore($fileId)
+    {
+        helper('message');
+        $fileModel = new FileModel();
+        $fileModel->restoreWithLog($fileId);
+        $messages[] = [
+            'message' => 'Restored with success',
+            'type' => 'success'
+        ];
+        addMessages($messages);
+        return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
     }
 }

@@ -51,6 +51,7 @@ $routes->post('equipments/(:segment)/edit/(:alphanum)','Equipments::edit/$2/$1',
 $routes->get('files', 'Files::index', ['filter' => 'auth:view']);
 $routes->get('files/deleted', 'Files::deletedIndex', ['filter' => 'auth:delete']);
 $routes->post('files/delete/(:num)', 'Files::delete/$1', ['filter' => 'auth:delete']);
+$routes->post('files/restore/(:num)',  'Files::restore/$1', ['filter' => 'auth:delete']);
 $routes->get('files/view/(:alphanum)', 'Files::view/$1', ['filter' => 'auth:view']);
 $routes->get('files/upload', 'Files::upload', ['filter' => 'auth:upload']);
 $routes->post('files/upload', 'Files::upload', ['filter' => 'auth:upload']);

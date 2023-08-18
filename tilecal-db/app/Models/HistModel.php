@@ -23,26 +23,23 @@ class HistModel extends BaseModel
     }
 
     public function getEquipmentHist($equipmentId){
-        $equipmentHist = $this->where("table = 'equipments'")
-                       ->where(sprintf("record_id = '%s'", $equipmentId))
-                       ->findAll();
-        $fileLinkHist = $this->where("table = 'equipments_to_files'")
-                             ->where(sprintf('JSON_EXTRACT(changes, "$.equipment_id") = \'%s\'', $equipmentId))
-                             ->findAll();
-        $hist = array_merge($equipmentHist, $fileLinkHist);
-        usort($hist, [$this->returnType, "orderByCreationReverse"]);
+        $hist = $this->select("hist.id, hist.user, hist.table, hist.action, hist.record_id, hist.changes, hist.created_at")
+                     ->where("(table = 'equipments' AND record_id = '{$equipmentId}') OR (table = 'equipments_to_files' AND equipments_to_files.equipment_id = '{$equipmentId}')")
+                     ->join("equipments_to_files", "hist.record_id = equipments_to_files.id", 'left')
+                     ->join("equipments", "equipments.id = equipments_to_files.equipment_id", 'left')
+                     ->orderBy('hist.created_at', 'DESC')
+                     ->findAll();
         return $hist;
     }
 
     public function getFileHist($fileId){
-        $fileHist = $this->where("table = 'equipments'")
-                         ->where(sprintf("record_id = %s", $fileId))
-                         ->findAll();
-        $equipLinkHist = $this->where("table = 'equipments_to_files'")
-                             ->where(sprintf('JSON_EXTRACT(changes, "$.file_id") = %s', $fileId))
-                             ->findAll();
-        $hist = array_merge($fileHist, $equipLinkHist);
-        usort($hist, [$this->returnType, "orderByCreationReverse"]);
+        $fileId = $this->db->escape($fileId);
+        $hist = $this->select("hist.id, hist.user, hist.table, hist.action, hist.record_id, hist.changes, hist.created_at")
+                     ->where("(table = 'files' AND record_id = {$fileId}) OR (table = 'equipments_to_files' AND equipments_to_files.file_id = {$fileId})")
+                     ->join("equipments_to_files", "hist.record_id = equipments_to_files.id", 'left')
+                     ->join("files", "files.id = equipments_to_files.file_id", 'left')
+                     ->orderBy('hist.created_at', 'DESC')
+                     ->findAll();
         return $hist;
     }
 }
