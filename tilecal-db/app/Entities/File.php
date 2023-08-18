@@ -2,9 +2,7 @@
 
 namespace App\Entities;
 
-use CodeIgniter\Entity\Entity;
-
-class File extends Entity
+class File extends BaseEntity
 {
     protected $datamap = [];
     protected $dates   = ['created_at', 'updated_at', 'deleted_at'];

@@ -2,9 +2,7 @@
 
 namespace App\Entities;
 
-use CodeIgniter\Entity\Entity;
-
-class OperationLog extends Entity
+class OperationLog extends BaseEntity
 {
     protected $datamap = [];
     protected $dates   = ['created_at'];
@@ -30,15 +28,21 @@ class OperationLog extends Entity
             return $this->$defaultMsgBuilder();
         }
     }
+
     public function isInsert(){
         return ($this->action == 'insert');
     }
+
     public function isUpdate(){
         return ($this->action == 'update');
     }
 
     public function isDelete(){
         return ($this->action == 'delete');
+    }
+
+    public function isRestore(){
+        return ($this->action == 'restore');
     }
 
     protected function makeDanger($msg){
@@ -79,6 +83,20 @@ class OperationLog extends Entity
         return $msg;
     }
 
+    protected function restoreEquipmentsToFilesMessage(){
+        $msg = $this->getMessageStart();
+        $fileLink = sprintf(
+            '<a type="button" class="link-primary" href="%s">file</a>',
+            base_url(sprintf('files/view/%s', $this->changes['file_id']))
+        );
+        $equipmentLink = sprintf(
+            '<a type="button" class="link-primary" href="%s">equipment</a>',
+            base_url(sprintf('equipments/view/%s', $this->changes['equipment_id']))
+        );
+        $msg .= sprintf('Link between %s and %s restored', $fileLink, $equipmentLink);
+        return $msg;
+    }
+
     protected function insertEquipmentsMessage(){
         $msg = $this->getMessageStart();
         $msg .= 'Entry created with values:';
@@ -102,7 +120,21 @@ class OperationLog extends Entity
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
             if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
-                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', snake2Capitalized($name), $value['old'], $value['new']);
+                $value = (is_array($value))? print_r($value, true): $value;
+                $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
+            }
+        }
+        $msg .= '</ul>';
+        return $msg;
+    }
+
+    protected function deleteEquipmentsMessage(){
+        $msg = $this->getMessageStart();
+        $msg .= 'Deleted entry with values:';
+        $msg .= '<ul>';
+        foreach ($this->changes as $name=>$value){
+            if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
+                $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
             }
         }
         $msg .= '</ul>';
@@ -132,7 +164,7 @@ class OperationLog extends Entity
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
             if (!in_array($name, $this->msgIgnore)){
-                $msg .= sprintf('<li> <b>%s</b> - %s to %s </li>', snake2Capitalized($name), $value['old'], $value['new']);
+                $msg .= sprintf('<li> <b>%s</b> - %s</li>', snake2Capitalized($name), $value);
             }
         }
         $msg .= '</ul>';
@@ -149,6 +181,12 @@ class OperationLog extends Entity
             }
         }
         $msg .= '</ul>';
+        return $msg;
+    }
+
+    protected function defaultRestoreMessage(){
+        $msg = $this->getMessageStart();
+        $msg .= 'Restored this deleted entry';
         return $msg;
     }
 

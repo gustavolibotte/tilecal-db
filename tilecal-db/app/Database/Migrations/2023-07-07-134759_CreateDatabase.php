@@ -77,7 +77,7 @@ class CreateDatabase extends Migration
         $modelModel = new \App\Models\ModelModel();
         foreach ($jsonData as $row){
             $model = new \App\Entities\Model($row);
-            $modelModel->save($model);
+            $modelModel->insertWithLog($model);
         }
 
         echo "Created Models\n";
@@ -124,7 +124,7 @@ class CreateDatabase extends Migration
         $instituteModel = new \App\Models\InstituteModel();
         foreach ($jsonData as $row){
             $institute = new \App\Entities\Institute($row);
-            $instituteModel->save($institute);
+            $instituteModel->insertWithLog($institute);
         }
 
         echo "Created Institutes\n";
@@ -165,7 +165,7 @@ class CreateDatabase extends Migration
             if (!is_null($institute)){
                 $location->institute_id = $institute->id; 
             }
-            $locationModel->save($location);
+            $locationModel->insertWithLog($location);
         }
         echo "Created Locations\n";
     }
@@ -193,7 +193,7 @@ class CreateDatabase extends Migration
         $statusModel = new \App\Models\StatusModel();
         foreach ($jsonData as $row){
             $status = new \App\Entities\Status($row);
-            $statusModel->save($status);
+            $statusModel->insertWithLog($status);
         }
 
         echo "Created Statuses\n";
@@ -327,7 +327,7 @@ class CreateDatabase extends Migration
             ],
             'action' => [
                 'type' => 'ENUM',
-                'constraint' => ['insert', 'update', 'delete'],
+                'constraint' => ['insert', 'update', 'delete', 'restore'],
                 'null' => false
             ],
             'record_id' => [

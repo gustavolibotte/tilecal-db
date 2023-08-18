@@ -15,7 +15,19 @@ class Errors extends BaseController
             'pageTitle' => 'Unauthorized',
             'pageHeader' => ''
         ];
-        return view('errors/http_error', $viewData);
+        return default_view('errors/http_error', $viewData);
+    }
+
+    public function forbidden(){
+        $errorMsg = 'Your current role does not allow you to access this page. If you think this is an error please contact an admin.';
+        $this->response->setStatusCode(403, $errorMsg);
+        $viewData = [
+            'errorText' => '403 Forbidden',
+            'errorMessage' => $errorMsg,
+            'pageTitle' => 'Forbidden',
+            'pageHeader' => ''
+        ];
+        return default_view('errors/http_error', $viewData);
     }
 
     public function notFound(){
@@ -27,6 +39,19 @@ class Errors extends BaseController
             'pageTitle' => 'Not Found',
             'pageHeader' => ''
         ];
-        return view('errors/http_error', $viewData);
+        return default_view('errors/http_error', $viewData);
+    }
+
+    public function deletedEntry()
+    {
+        $errorMsg = 'This entry was deleted and isn\'t accessible anymore. If you would like for it to be restored please contact an admin.';
+        $this->response->setStatusCode(403, $errorMsg);
+        $viewData = [
+            'errorText' => '403 Deleted',
+            'errorMessage' => $errorMsg,
+            'pageTitle' => 'Deleted entry',
+            'pageHeader' => ''
+        ];
+        return default_view('errors/http_error', $viewData);
     }
 }

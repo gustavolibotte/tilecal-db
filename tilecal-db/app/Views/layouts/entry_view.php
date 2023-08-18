@@ -22,10 +22,22 @@
             <div class="col">
               <h4><? echo $infoHeader; ?></h4>
             </div>
-            <div class="col-1 text-right">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-modal">
-              Edit
-            </button>
+            <div class="col-2 text-end">
+              <? if ($editable): ?>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-modal">
+                  Edit
+                </button>
+              <?endif; ?>
+              <? if ($deletable): ?>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-modal">
+                  Delete
+                </button>
+              <? endif;?>
+              <? if ($restorable): ?>
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#restore-modal">
+                  Restore
+                </button>
+              <? endif;?>
             </div>
           </div>
           <div class="row">
@@ -50,7 +62,11 @@
           <? if($histories):?>
             <? foreach($histories as $hist): ?>
               <ul class="list-group" id="equipment-history-list">
-                <li class="list-group-item"><? echo $hist->message; ?></li>
+                <? if ($hist->isDelete()): ?>
+                  <li class="list-group-item" style="color:red;"><? echo $hist->message; ?></li>
+                <?else: ?>
+                  <li class="list-group-item"><? echo $hist->message; ?></li>
+                <?endif;?>
               </ul>
             <? endforeach; ?>
           <? endif; ?>
@@ -58,32 +74,65 @@
       </div>
     </div>
   </div>
-  <div class="modal fade" id="edit-modal" tabindex="-1" aria-labelledby="edit-modal-label" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <? if ($editable):?>
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="edit-modal-label">Edit info</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <? if ($editable): ?>
+    <div class="modal fade" id="edit-modal" tabindex="-1" aria-labelledby="edit-modal-label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="edit-modal-label">Edit info</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <? echo form_open_multipart($editUrl, 'id="edit-form"'); ?>
+            <div class="modal-body">
+              <? echo $editForm->toHTML();?>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </form>
         </div>
-        <? echo form_open_multipart($editUrl, 'id="edit-form"'); ?>
-          <div class="modal-body">
-            <? echo $editForm->toHTML();?>
+      </div>
+    </div>
+  <?endif;?>
+
+  <? if($deletable): ?>
+    <div class="modal fade" id="delete-modal" tabindex="-1" aria-labelledby="delete-modal-label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="delete-modal-label">Confirm Delete</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Save</button>
+            <? echo form_open_multipart($deleteUrl, 'id="edit-form"'); ?>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
           </div>
-        </form>
-      <? else: ?>
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="edit-modal-label">You can't edit this, if you think this an error contact an admin.</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-      <? endif; ?>
+      </div>
     </div>
-  </div>
-</div>
+  <? endif;?>
+
+  <? if($restorable): ?>
+    <div class="modal fade" id="restore-modal" tabindex="-1" aria-labelledby="restore-modal-label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="restore-modal-label">Confirm Restore</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-footer">
+            <? echo form_open_multipart($restoreUrl, 'id="edit-form"'); ?>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-success">Restore</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  <? endif;?>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript') ?>

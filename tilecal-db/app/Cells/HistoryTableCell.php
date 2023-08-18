@@ -17,6 +17,6 @@ class HistoryTableCell extends BaseCell
         } else{
             throw new \Exception(sprintf('Type %s is not supported for history', $type));
         }
-        return view('cells/history_table', $viewData);
+        return default_view('cells/history_table', $viewData);
     }
 }

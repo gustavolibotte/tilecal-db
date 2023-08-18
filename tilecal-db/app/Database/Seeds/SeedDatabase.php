@@ -22,9 +22,9 @@ class SeedDatabase extends BaseSeeder
             $fileData['filedata'] = $this->readFile($fileData['filedata']);
             $file = new \App\Entities\File($fileData);
             $fileModel = new \App\Models\FileModel(isMigration: true);
-            $fileModel->insert($file);
+            $fileModel->insertWithLog($file);
             if (str_starts_with($fileData['name'], 'deleted')){
-                $fileModel->delete($file->id);
+                $fileModel->deleteWithLog($file->id);
             }
         }
         echo "Seeded Files\n";
@@ -35,9 +35,8 @@ class SeedDatabase extends BaseSeeder
 
         $fabricatorModel = new EquipmentFabricator(isMigration: true);
         $fabricator = new Fabricator($fabricatorModel);
-        foreach ($fabricator->make($numEntries) as $equipment){
-            $fabricatorModel->insert($equipment);
-        }
+        $equipments = $fabricator->make($numEntries);
+        $fabricatorModel->insertWithLog($equipments);
         echo "Seeded Equipments\n";
     }
 
@@ -56,7 +55,7 @@ class SeedDatabase extends BaseSeeder
                 'file_id' => $file->id
             ];
             $equipment2File = new \App\Entities\Equipment2File($data);
-            $equipments2FileModel->insert($equipment2File);
+            $equipments2FileModel->insertWithLog($equipment2File);
         }
         echo "Seeded Equipments2Files\n";
     }

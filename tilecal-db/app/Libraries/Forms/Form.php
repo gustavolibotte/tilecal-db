@@ -51,7 +51,6 @@ abstract class Form{
 
     public function validate(){
         $this->isValid = $this->validator->run($this->getFieldValues());
-        d($this->getFieldValues());
         $this->calledValidate = true;
         return $this->isValid;
     }

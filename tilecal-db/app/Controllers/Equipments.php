@@ -13,32 +13,58 @@ class Equipments extends BaseController
         $indexData['pageTitle'] = 'Equipment Index';
         $indexData['pageHeader'] = 'Equipment Index';
         $indexData['modelName'] = $modelName;
-        return view('equipment/index', $indexData);
+        return default_view('equipment/index', $indexData);
+    }
+
+    public function deletedIndex()
+    {   
+        $indexData['pageTitle'] = 'Deleted Equipment Index';
+        $indexData['pageHeader'] = 'Deleted Equipment Index';
+        $indexData['headerClass'] = 'text-danger';
+        return default_view('equipment/deleted_index', $indexData);
     }
 
     public function view($equipmentId){
         helper(['app_form', 'form']);
         $equipmentModel = new EquipmentModel();
-        $equipment = $equipmentModel->getEquipment($equipmentId);
+        $equipment = $equipmentModel->withDeleted()->getEquipment($equipmentId);
+
         if (is_null($equipment)){
             return redirect('notfound');
+        } elseif ($equipment->isDeleted() && !$this->user->isAuthorized('delete')){
+            return redirect('deleted-entry');
         }
+
         $viewData['infoHeader'] = 'Equipment Info';
-        $viewData['equipmentInfo'] = $equipment;
-        $histModel = new \App\Models\HistModel();
-        $viewData["histories"] = $histModel->getEquipmentHist($equipmentId);
+        $viewData['entity'] = $equipment;
+        $viewData["histories"] = (new \App\Models\HistModel())->getEquipmentHist($equipmentId);
         $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->id);
-        $viewData['pageTitle'] = sprintf('Equipment %s', $equipment->id);
-        $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->model_name, $equipment->id));
-        if ($this->user->isAuthorized('edit')){
+
+        if ($equipment->isDeleted()){
+            $viewData['pageHeader'] = 'Deleted ' . $viewData['pageHeader'];
+            $viewData['headerClass'] = 'text-danger';
+        }
+        $viewData['pageTitle'] = $viewData['pageHeader'];
+
+        $viewData['editable'] = $this->user->isAuthorized('edit') && !$equipment->isDeleted();
+        if ($viewData['editable']){
             $viewData['editForm'] = new (get_model_form_class($equipment->model_name))();
             $viewData['editForm']->asEdit();
             $viewData['editForm']->setFieldValues($equipment->toArrayWithModelParams());
-            $viewData['editable'] = true;
-        } else{
-            $viewData['editable'] = false;
+            $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->model_name, $equipment->id));
         }
-        return view('equipment/view', $viewData);
+
+        $viewData['deletable'] = $this->user->isAuthorized('delete') && !$equipment->isDeleted();
+        if ($viewData['deletable']){
+            $viewData['deleteUrl'] = base_url(sprintf('equipments/delete/%s', $equipment->id));
+        }
+
+        $viewData['restorable'] = $this->user->isAuthorized('delete') && $equipment->isDeleted();
+        if ($viewData['restorable']){
+            $viewData['restoreUrl'] = base_url(sprintf('equipments/restore/%s', $equipment->id));
+        }
+
+        return default_view('equipment/view', $viewData);
     }
 
     public function register($modelName='pmt'){
@@ -52,7 +78,7 @@ class Equipments extends BaseController
             if ($form->validate()){
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
-                $equipmentModel->insert($equipment);
+                $equipmentModel->insertWithLog($equipment);
                 $messages[] = [
                     'message' => 'Register success',
                     'type' => 'success'
@@ -83,10 +109,11 @@ class Equipments extends BaseController
         $registerData['successMessage'] = false;
         $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $modelName));
         
-        return view('equipment/register', $registerData);
+        return default_view('equipment/register', $registerData);
     }
 
-    public function edit($equipmentId, $modelName){
+    public function edit($equipmentId, $modelName)
+    {
         helper(['message', 'app_form']);
         $formClass = get_model_form_class($modelName);
         $form = new $formClass($this->request);
@@ -94,7 +121,7 @@ class Equipments extends BaseController
         if ($form->validate()){
             $equipmentModel = new EquipmentModel();
             $equipment = $form->getEntity();
-            $equipmentModel->update($equipmentId, $equipment);
+            $equipmentModel->updateWithLog($equipmentId, $equipment);
             $messages[] = [
                 'message' => sprintf('Edited equipment %s with success', $equipment->id),
                 'type' => 'success'
@@ -109,6 +136,36 @@ class Equipments extends BaseController
                 addMessages($messages);
             }
         }
+        return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+    }
+
+    public function delete(string $equipmentId)
+    {
+        helper('message');
+        $equipmentModel = new EquipmentModel();
+        $equipmentModel->deleteWithLog($equipmentId);
+        $messages[] = [
+            'message' => 'Deleted with success',
+            'type' => 'success'
+        ];
+        addMessages($messages);
+        if ($this->user->isAuthorized('delete')){
             return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+        } else {
+            return redirect('equipments');
         }
     }
+
+    public function restore(string $equipmentId)
+    {
+        helper('message');
+        $equipmentModel = new EquipmentModel();
+        $equipmentModel->restoreWithLog($equipmentId);
+        $messages[] = [
+            'message' => 'Restored with success',
+            'type' => 'success'
+        ];
+        addMessages($messages);
+        return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+    }
+}
