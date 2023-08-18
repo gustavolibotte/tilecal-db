@@ -38,7 +38,6 @@ class Files extends BaseController
         $viewData['pageHeader'] = sprintf('File %s', $file->name);
         $viewData['infoHeader'] = 'File Info';
         $viewData['histories'] = (new HistModel())->getFileHist($file->id);
-        d($viewData);
 
         if ($file->isDeleted()){
             $viewData['pageHeader'] = 'Deleted ' . $viewData['pageHeader'];

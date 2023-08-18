@@ -63,7 +63,6 @@ class Equipments extends BaseController
         if ($viewData['restorable']){
             $viewData['restoreUrl'] = base_url(sprintf('equipments/restore/%s', $equipment->id));
         }
-        d($viewData);
 
         return default_view('equipment/view', $viewData);
     }
