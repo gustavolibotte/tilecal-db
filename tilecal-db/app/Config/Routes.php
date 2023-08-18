@@ -31,8 +31,6 @@ $routes->setAutoRoute(false);
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index', ['filter' => 'auth:view']);
-$routes->get('unauthorized', 'Errors::unauthorized');
-$routes->get('notfound', 'Errors::notFound');
 
 // Equipments routes
 $routes->get('equipments', 'Equipments::index', ['filter' => 'auth:view']);
@@ -57,6 +55,11 @@ $routes->get('files/upload', 'Files::upload', ['filter' => 'auth:upload']);
 $routes->post('files/upload', 'Files::upload', ['filter' => 'auth:upload']);
 $routes->get('files/(:alphanum)', 'Files::download/$1', ['filter' => 'auth:download']);
 
+// Errors
+$routes->get('unauthorized', 'Errors::unauthorized');
+$routes->get('notfound', 'Errors::notFound');
+$routes->get('deleted-entry', 'Errors::deletedEntry');
+$routes->get('forbidden', 'Errors::forbidden');
 /*
  * --------------------------------------------------------------------
  * Additional Routing

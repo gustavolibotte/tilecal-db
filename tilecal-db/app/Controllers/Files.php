@@ -31,7 +31,7 @@ class Files extends BaseController
         if (is_null($file)){
             return redirect('notfound');
         } elseif ($file->isDeleted() && !$this->user->isAuthorized('delete')){
-            return redirect ('unauthorized');
+            return redirect ('deleted-entry');
         }
 
         $viewData['entity'] = $file;

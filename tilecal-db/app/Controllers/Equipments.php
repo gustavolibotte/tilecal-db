@@ -32,7 +32,7 @@ class Equipments extends BaseController
         if (is_null($equipment)){
             return redirect('notfound');
         } elseif ($equipment->isDeleted() && !$this->user->isAuthorized('delete')){
-            return redirect('unauthorized');
+            return redirect('deleted-entry');
         }
 
         $viewData['infoHeader'] = 'Equipment Info';
