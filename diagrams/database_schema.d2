@@ -37,6 +37,7 @@ types: {
   created_at: timestamp utc {constraint: [NN default now()]}
   updated_at: timestamp utc {constraint: [NN default now()]}
   deleted_at: timestamp utc
+  tooltip: system enum possibilities are ('LB','LE','LO','LL','LC')
 }
 
 institutes: {
@@ -100,12 +101,12 @@ hist: {
   id: uint {constraint: primary_key}
   user: varchar(20) {constraint: NN}
   table: varchar(30) {constraint: NN}
-  action: enum {constraint: NN}
+  action: varchar(15) {constraint: NN}
   record_id: varchar(14)
   changes: json {constraint: NN}
   filedata: mediumblob
   created_at: timestamp utc {constraint: [NN default now()]}
-  tooltip: \"record_id\" is a pseudo foreign key the reference is guaranteed by the application
+  tooltip: \"record_id\" is a pseudo foreign key the reference is guaranteed by the application. \"action\" can be one of the following: ('insert', 'update' 'delete', 'restore')
 }
 
 
