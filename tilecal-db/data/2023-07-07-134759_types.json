@@ -2,7 +2,7 @@
     {
         "name": "pmt",
         "label": "PMT",
-        "params": ["beta", "nominal_hv", "qe", "type"],
+        "params": ["beta", "nominal_hv", "qe", "model"],
         "in_detector": true,
         "description": null
     },

@@ -154,7 +154,7 @@ class EquipmentForm extends Form{
         $equipment->type_id = $equipmentType->id;
         $typeParams = [];
         foreach ($equipmentType->params as $param){
-            $typeParams[$param] = $this->request->getVar($param);
+            $typeParams[$param] = $fieldValues[$param];
         }
         $equipment->type_params = $typeParams;
         return $equipment;

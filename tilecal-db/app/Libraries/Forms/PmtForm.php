@@ -154,8 +154,8 @@ class PmtForm extends EquipmentForm{
     {
         parent::processRequest();
         $values = $this->getFieldValues();
-        $values['id'] = "20LOCER0{$values['serial']}";
-        $this->setFieldValues($values);
+        $newValues['id'] = "20LOCER0{$values['serial']}";
+        $this->setFieldValues($newValues);
     }
 
     public function asEdit(){
