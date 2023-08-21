@@ -71,13 +71,13 @@ function form_field(string $id,
     return $fieldStr;
 }
 
-function get_model_form_class(string $modelName): string
+function get_model_form_class(string $typeName): string
 {
     helper('string');
-    if ($modelName != 'pmt'){
+    if ($typeName != 'pmt'){
         return '\App\Library\Forms\EquipmentForm';
     }
-    $modelName = snake2CamelCase($modelName);
-    $formClass = sprintf('\App\Library\Forms\%sForm', $modelName);
+    $typeName = snake2CamelCase($typeName);
+    $formClass = sprintf('\App\Library\Forms\%sForm', $typeName);
     return $formClass;
 }

@@ -15,14 +15,14 @@ class EquipmentModel extends LogModel
     protected $returnType       = \App\Entities\Equipment::class;
     protected $allowedFields    = [
         'id',
-        'model_id',
+        'type_id',
         'owner_id',
         'location_id',
         'status_id',
         'parent_id',
-        'comments',
         'serial',
-        'model_params'
+        'comments',
+        'type_params'
     ];
 
     // Custom
@@ -31,13 +31,13 @@ class EquipmentModel extends LogModel
     public function initialize(){
         parent::initialize();
         $this->selectSideTable .= 'equipments.id, ';
-        $this->selectSideTable .= 'models.label as model_label ';
+        $this->selectSideTable .= 'equipment_types.label as type_label ';
     }
 
     public function fullQuery(){
         $selectColumns = 'equipments.id, ';
-        $selectColumns .= 'models.label as model_label, ';
-        $selectColumns .= 'models.name as model_name, ';
+        $selectColumns .= 'equipment_types.label as type_label, ';
+        $selectColumns .= 'equipment_types.name as type_name, ';
         $selectColumns .= 'equipments.location_id as location_id, ';
         $selectColumns .= 'locations.name as location, ';
         $selectColumns .= 'locations.description as location_description, ';
@@ -46,21 +46,21 @@ class EquipmentModel extends LogModel
         $selectColumns .= 'equipments.owner_id as owner_id, ';
         $selectColumns .= 'institutes.name as owner_name, ';
         $selectColumns .= 'statuses.name as status, ';
-        $selectColumns .= 'parent_models.label as parent_model_label, ';
-        $selectColumns .= 'parent_models.name as parent_model_name, ';
+        $selectColumns .= 'parent_types.label as parent_type_label, ';
+        $selectColumns .= 'parent_types.name as parent_type_name, ';
         $selectColumns .= 'equipments.parent_id, ';
         $selectColumns .= 'equipments.serial, ';
         $selectColumns .= 'equipments.comments, ';
-        $selectColumns .= 'equipments.model_params, ';
+        $selectColumns .= 'equipments.type_params, ';
         $selectColumns .= 'equipments.updated_at, ';
         $selectColumns .= 'equipments.created_at, ';
         $selectColumns .= 'equipments.deleted_at ';
         $query = $this->select($selectColumns)
-                      ->join('models', 'equipments.model_id = models.id', 'left')
+                      ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
                       ->join('locations', 'equipments.location_id = locations.id', 'left')
                       ->join('statuses', 'equipments.status_id = statuses.id', 'left')
                       ->join('equipments parents', 'equipments.parent_id = parents.id', 'left')
-                      ->join('models parent_models', 'parents.model_id = parent_models.id', 'left')
+                      ->join('equipment_types parent_types', 'parents.type_id = parent_types.id', 'left')
                       ->join('institutes', 'equipments.owner_id = institutes.id');
         return $query;
 
@@ -106,13 +106,14 @@ class EquipmentModel extends LogModel
 
     protected function getFullChanges(Equipment $equipment): array
     {
+        helper('app_array');
         $changes = $equipment->toArray();
-        $modelParams = remove_value('model_params', $changes);
-        foreach ($modelParams as $key=>$value){
+        $typeParams = remove_value('type_params', $changes);
+        foreach ($typeParams as $key=>$value){
             $changes[$key] = $value;
         }
-        $model = (new \App\Models\ModelModel())->find($changes['model_id']);
-        $changes['model'] = $model->label;
+        $type = (new \App\Models\EquipmentTypeModel())->find($changes['type_id']);
+        $changes['type'] = $type->label;
         $location = (new \App\Models\LocationModel())->find($changes['location_id']);
         $changes['location'] = $location->name;
         $status = (new \App\Models\StatusModel())->find($changes['status_id']);
@@ -126,18 +127,18 @@ class EquipmentModel extends LogModel
         $old = $old->toArray();
         unset_array_keys($old, $this->updateChangesIgnore);
         unset_array_keys($new, $this->updateChangesIgnore);
-        if (array_key_exists('model_params', $new)){
-            $oldModelParams = remove_value('model_params', $old);
-            $newModelParams = remove_value('model_params', $new);
+        if (array_key_exists('type_params', $new)){
+            $oldModelParams = remove_value('type_params', $old);
+            $newModelParams = remove_value('type_params', $new);
             $changes = $this->getChangedFields($old, $new);
-            $modelParamsChanges = $this->getChangedFields($oldModelParams, $newModelParams);
-            if (!empty($modelParamsChanges)){
-                $changes = array_merge($changes, $modelParamsChanges);
+            $typeParamsChanges = $this->getChangedFields($oldModelParams, $newModelParams);
+            if (!empty($typeParamsChanges)){
+                $changes = array_merge($changes, $typeParamsChanges);
             }
         }
-        if (array_key_exists('model_id', $changes)){
-            $model = (new \App\Models\ModelModel())->find($changes['model_id']);
-            $changes['model'] = $model->label;
+        if (array_key_exists('type_id', $changes)){
+            $type = (new \App\Models\EquipmentTypeModel())->find($changes['type_id']);
+            $changes['type'] = $type->label;
         }
         if (array_key_exists('location_id', $changes)){
             $location = (new \App\Models\LocationModel())->find($changes['location_id']);

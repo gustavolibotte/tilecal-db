@@ -39,12 +39,12 @@ class EquipmentTableCell extends BaseCell
     public function full(array $params=[]): string
     {
         helper('array');
-        $modelName = dot_array_search('modelName', $params);
+        $typeName = dot_array_search('typeName', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
-        if (empty($modelName)){
+        if (empty($typeName)){
             $viewData['equipments'] = $equipmentModel->fullQuery()->findAll();
         } else{
-            $viewData['equipments'] = $equipmentModel->fullQuery()->where('models.name', $modelName)->findAll();
+            $viewData['equipments'] = $equipmentModel->fullQuery()->where('equipment_types.name', $typeName)->findAll();
         }
         
         return view('cells/equipment_table_full', $viewData);

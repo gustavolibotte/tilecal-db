@@ -30,7 +30,9 @@ abstract class Form{
 
     protected function processRequest(){
         foreach (array_keys($this->fields) as $key){
-            $this->fieldValues[$key] = $this->request->getVar($key);
+            if (!array_key_exists($key, $this->fieldValues)){
+                $this->fieldValues[$key] = $this->request->getVar($key);
+            }
         }
     }
 

@@ -3,7 +3,7 @@
 namespace Tests\Support\Models;
 
 use App\Models\EquipmentModel;
-use App\Models\ModelModel;
+use App\Models\EquipmentTypeModel;
 use App\Models\StatusModel;
 use App\Models\LocationModel;
 use App\Models\InstituteModel;
@@ -12,8 +12,8 @@ use App\Library\Forms\PmtForm;
 
 class EquipmentFabricator extends EquipmentModel
 {
-    public ModelModel $modelModel;
-    public array $models;
+    public EquipmentTypeModel $equipmentTypeModel;
+    public array $types;
     public LocationModel $locationModel;
     public array $locations;
     public StatusModel $statusModel;
@@ -28,8 +28,8 @@ class EquipmentFabricator extends EquipmentModel
     public function initialize()
     {
         parent::initialize();
-        $this->modelModel = new ModelModel(isMigration: $this->isMigration);
-        $this->models = $this->modelModel->getIdArray();
+        $this->equipmentTypeModel = new EquipmentTypeModel(isMigration: $this->isMigration);
+        $this->types = $this->equipmentTypeModel->getIdArray();
         $this->locationModel = new LocationModel(isMigration: $this->isMigration);
         $this->locations = $this->locationModel ->getIdArray();
         $this->statusModel = new StatusModel(isMigration: $this->isMigration);
@@ -45,10 +45,10 @@ class EquipmentFabricator extends EquipmentModel
     public function fake(&$faker)
     {
         helper('string');
-        $model = $faker->randomElement($this->models);
+        $type = $faker->randomElement($this->types);
         try{
-            $modelMethod = snake2CamelCase($model->name);
-            $methodName = "fake{$modelMethod}";
+            $typeMethod = snake2CamelCase($type->name);
+            $methodName = "fake{$typeMethod}";
             $fakeEquipment = $this->$methodName($faker);
         } catch (\BadMethodCallException $e) {
             $location = $faker->randomElement($this->locations);
@@ -57,12 +57,12 @@ class EquipmentFabricator extends EquipmentModel
             $system = $faker->randomElement(array_keys(AtlasIdRules::$validSystems));
             $entityArray = [
                 'id' => "20{$system}{$institute->mne}" . $faker->regexify(AtlasIdRules::$sequentialNumberRegex),
-                'model_id' => $model->id,
+                'type_id' => $type->id,
                 'location_id' => $location->id,
                 'status_id' => $status->id,
                 'owner_id' => $institute->id,
                 'serial' => $faker->regexify('^[A-Z0-9]{10}'),
-                'model_params' => [],
+                'type_params' => [],
                 'comments' => $faker->text($this->numCommentsCharacters)
             ];
             if (!empty($this->parentEquipment)){
@@ -79,22 +79,22 @@ class EquipmentFabricator extends EquipmentModel
 
     protected function fakePmt(&$faker)
     {
-        $model = $this->models[PmtForm::$pmtId];  //PMT is ID 1
+        $type = $this->types[PmtForm::$pmtId];  //PMT is ID 1
         $location = $faker->randomElement($this->locations);
         $status = $faker->randomElement($this->statuses);
         $institute = $this->institutes[PmtForm::$pmtOwnerId];   //PMT is always from CERN
         $entityArray = [
-            'model_id' => $model->id,
+            'type_id' => $type->id,
             'location_id' => $location->id,
             'status_id' => $status->id,
             'owner_id' => $institute->id,
             'serial' => $faker->regexify(PmtForm::$validSerialRegex),
             'comments' => $faker->text($this->numCommentsCharacters),
-            'model_params' => [
+            'type_params' => [
                 'beta' => $faker->randomFloat(3, 6, 8),
                 'nominal_hv' => $faker->numberBetween(600, 800),
                 'qe' => $faker->randomFloat(1, 20, 25),
-                'type' => $faker->randomElement(PmtForm::$validPmtTypeValues)
+                'model' => $faker->randomElement(PmtForm::$validPmtModelValues)
             ]
         ];
         $entityArray['id'] = "20LOCER0{$entityArray['serial']}";

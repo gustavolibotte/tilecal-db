@@ -2,7 +2,7 @@
 
 <?= $this->section('entryProperties') ?>
   <li class="list-group-item"><b>ID</b>: <? echo $entity->id?> </li>
-  <li class="list-group-item"><b>Model</b>: <? echo $entity->model_label?> </li>
+  <li class="list-group-item"><b>Type</b>: <? echo $entity->type_label?> </li>
   <? if ($entity->location_description): ?>
     <li class="list-group-item"><b>Location</b>: <? echo $entity->location . ' - ' . $entity->location_description?> </li>
   <? else: ?>
@@ -12,8 +12,8 @@
   <li class="list-group-item"><b>Owner</b>: <? echo $entity->owner_name?> </li>
   <li class="list-group-item"><b>Parent ID</b>: <? echo $entity->parent_id?></li>
   <li class="list-group-item"><b>Serial</b>: <? echo $entity->serial?> </li>
-  <?php if($entity->model_params): ?>
-    <?php foreach($entity->model_params as $name=>$value): ?>
+  <?php if($entity->type_params): ?>
+    <?php foreach($entity->type_params as $name=>$value): ?>
       <li class="list-group-item"><b><? echo ucwords(str_replace('_', ' ', $name)); ?></b>: <? echo $value; ?> </li>
     <?php endforeach; ?>
   <?php endif; ?>

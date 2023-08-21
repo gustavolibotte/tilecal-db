@@ -4,7 +4,7 @@ namespace App\Library\Forms;
 use \App\Entities\Equipment;
 
 class PmtForm extends EquipmentForm{
-    public static array $pmtTypeOptions = [
+    public static array $pmtModelOptions = [
         'null' => 'Select an option',
         'R11187' => 'R11187',
         'R7877' => 'R7877',
@@ -12,7 +12,7 @@ class PmtForm extends EquipmentForm{
         'R11187-SEL' => 'R11187-SEL',
         'R11187-A1' => 'R11187-A1'
     ];
-    public static array $validPmtTypeValues = [
+    public static array $validPmtModelValues = [
         'R11187',
         'R7877',
         'R7787',
@@ -54,13 +54,13 @@ class PmtForm extends EquipmentForm{
             "required",
             sprintf("max_length[%d]", self::$serialMaxSize),
             sprintf('regex_match[%s]', self::$validSerialRegex),
-            sprintf("is_model_unique[serial,{%s}]", self::$pmtId)
+            sprintf("is_type_unique[serial,%d]", self::$pmtId)
         ];
         $this->validationRules['serial']['errors'] = [
             "required" => "A serial code is required",
             "max_length" => "Serial max size is {param} characters",
             'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
-            "is_model_unique" => "There is already a PMT registered with the serial {value}"
+            "is_type_unique" => "There is already a PMT registered with the serial {value}"
         ];
 
         $this->fields['beta'] = [
@@ -125,28 +125,28 @@ class PmtForm extends EquipmentForm{
             ]
         ];
 
-        $this->fields['type'] = [
-            'id' => 'type',
+        $this->fields['model'] = [
+            'id' => 'model',
             'required' => true,
             'fieldType' => 'dropdown',
             'fieldParams' => [
-                'options' => self::$pmtTypeOptions
+                'options' => self::$pmtModelOptions
             ]
         ];
-        $validPMTTypesString = implode(', ', self::$validPmtTypeValues);
-        $this->validationRules['type'] = [
+        $validPMTModelsString = implode(', ', self::$validPmtModelValues);
+        $this->validationRules['model'] = [
             "rules" => [
                 "required",
-                sprintf("in_list[%s]",$validPMTTypesString),
+                sprintf("in_list[%s]",$validPMTModelsString),
             ],
             "errors" => [
-                "required" => "You must supply a PMT model type for the equipment.",
-                "in_list" => "The PMT type value is not valid",
+                "required" => "You must supply a PMT model for the equipment.",
+                "in_list" => "The PMT model value is not valid. Choose one of ({param})",
             ]
         ];
         $this->commentsEnd();
         $values = $this->getFieldValues();
-        $values['model_label'] = 'PMT';
+        $values['type_label'] = 'PMT';
         $this->setFieldValues($values);
     }
 
@@ -154,29 +154,8 @@ class PmtForm extends EquipmentForm{
     {
         parent::processRequest();
         $values = $this->getFieldValues();
-        $values['id'] = "20LOCER0{$values['serial']}";
-        $this->setFieldValues($values);
-    }
-
-    public function getEntity(): Equipment
-    {
-        helper(['array', 'atlas_id']);
-        if (!$this->isValid){
-            throw new \Exception('To get the equipment you must validate the form first');
-        }
-        $fieldValues = $this->getFieldValues();
-        $equipment = new Equipment($fieldValues);
-        $instituteMne = getInstituteMne($equipment->id);
-        $owner = (new \App\Models\InstituteModel())->where(sprintf("mne = '%s'", $instituteMne))->first();
-        $equipment->owner_id = $owner->id;
-        $model = (new \App\Models\ModelModel())->where(sprintf("label = '%s'", $fieldValues['model_label']))->first();
-        $equipment->model_id = $model->id;
-        $modelParams = [];
-        foreach ($model->params as $param){
-            $modelParams[$param] = $this->request->getVar($param);
-        }
-        $equipment->model_params = $modelParams;
-        return $equipment;
+        $newValues['id'] = "20LOCER0{$values['serial']}";
+        $this->setFieldValues($newValues);
     }
 
     public function asEdit(){
@@ -204,13 +183,13 @@ class PmtForm extends EquipmentForm{
             "required",
             sprintf("max_length[%d]", self::$serialMaxSize),
             sprintf('regex_match[%s]', self::$validSerialRegex),
-            sprintf("is_model_not_unique[serial,{%s}]", self::$pmtId)
+            sprintf("is_type_not_unique[serial,%d]", self::$pmtId)
         ];
         $this->validationRules['serial']['errors'] = [
             "required" => "A serial code is required",
             "max_length" => "Serial max size is {param} characters",
             'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
-            "is_model_not_unique" => "There is no PMT with the serial {value}"
+            "is_type_not_unique" => "There is no PMT with the serial {value}"
         ];
 
         $this->resetRules();
