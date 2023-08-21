@@ -192,9 +192,8 @@ abstract class LogModel extends BaseModel{
         }
         $operationLog = $this->getRestoreLog($opTimestamp, $id, $data);
         if ($transaction){
-            $this->db->transComplete();
+            $this->db->transStart();
         }
-        $this->db->transStart();
         $this->restore($id, $opTimestamp);
         $histModel->insert($operationLog);
         if ($transaction){
