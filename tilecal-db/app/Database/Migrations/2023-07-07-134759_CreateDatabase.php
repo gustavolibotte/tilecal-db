@@ -35,8 +35,8 @@ class CreateDatabase extends Migration
         ]);
     }
 
-    public function createModels(){
-        echo "Creating Models\n";
+    public function createEquipmentTypes(){
+        echo "Creating Equipment Types\n";
 
         $this->addId();
         $this->forge->addField([
@@ -71,16 +71,10 @@ class CreateDatabase extends Migration
         ]);
         $this->addTimestamps();
         $this->forge->addPrimaryKey('id');
-        $this->forge->createTable('models', true);
+        $this->forge->createTable('equipment_types', true);
 
-        $jsonData = readJson(joinPaths([ROOTPATH, 'data', '2023-07-07-134759_models.json']), true);
-        $modelModel = new \App\Models\ModelModel();
-        foreach ($jsonData as $row){
-            $model = new \App\Entities\Model($row);
-            $modelModel->insertWithLog($model);
-        }
 
-        echo "Created Models\n";
+        echo "Created Equipment Types\n";
 
     }
 
@@ -119,13 +113,6 @@ class CreateDatabase extends Migration
         $this->addTimestamps();
         $this->forge->addPrimaryKey('id');
         $this->forge->createTable('institutes', true);
-        
-        $jsonData = readJson(joinPaths([ROOTPATH, 'data', '2023-07-07-134759_institutes.json']), true);
-        $instituteModel = new \App\Models\InstituteModel();
-        foreach ($jsonData as $row){
-            $institute = new \App\Entities\Institute($row);
-            $instituteModel->insertWithLog($institute);
-        }
 
         echo "Created Institutes\n";
     }
@@ -156,17 +143,6 @@ class CreateDatabase extends Migration
         $this->forge->addForeignKey('institute_id', 'institutes', 'id');
         $this->forge->createTable('locations', true);
 
-        $jsonData = readJson(joinPaths([ROOTPATH, 'data', '2023-07-07-134759_locations.json']), true);
-        $instituteModel = new \App\Models\InstituteModel();
-        $locationModel = new \App\Models\LocationModel();
-        foreach ($jsonData as $row){
-            $institute = $instituteModel->where('mne', $row['institute_mne'])->first();
-            $location = new \App\Entities\Location($row);
-            if (!is_null($institute)){
-                $location->institute_id = $institute->id; 
-            }
-            $locationModel->insertWithLog($location);
-        }
         echo "Created Locations\n";
     }
 
@@ -188,13 +164,6 @@ class CreateDatabase extends Migration
         $this->addTimestamps();
         $this->forge->addPrimaryKey('id');
         $this->forge->createTable('statuses', true);
-
-        $jsonData = readJson(joinPaths([ROOTPATH, 'data', '2023-07-07-134759_statuses.json']), true);
-        $statusModel = new \App\Models\StatusModel();
-        foreach ($jsonData as $row){
-            $status = new \App\Entities\Status($row);
-            $statusModel->insertWithLog($status);
-        }
 
         echo "Created Statuses\n";
     }
@@ -236,7 +205,7 @@ class CreateDatabase extends Migration
                 'type' => 'CHAR',
                 'constraint' => 14,
             ],
-            'model_id' => [
+            'type_id' => [
                 'type' => 'INT',
                 'unsigned' => true,
                 'null' => false
@@ -266,7 +235,7 @@ class CreateDatabase extends Migration
                 'constraint' => 36, # Number of chars in uuid,
                 'null' => true
             ],
-            'model_params' => [
+            'type_params' => [
                 'type' => 'JSON',
                 'null' => false
             ],
@@ -277,7 +246,7 @@ class CreateDatabase extends Migration
         ]);
         $this->addTimestamps();
         $this->forge->addPrimaryKey('id');
-        $this->forge->addForeignKey('model_id', 'models', 'id');
+        $this->forge->addForeignKey('type_id', 'equipment_types', 'id');
         $this->forge->addForeignKey('owner_id', 'institutes', 'id');
         $this->forge->addForeignKey('parent_id', 'equipments', 'id');
         $this->forge->addForeignKey('location_id', 'locations', 'id');
@@ -356,9 +325,8 @@ class CreateDatabase extends Migration
 
     public function up()
     {
-        helper(['json', 'path']);
         $this->createHist();
-        $this->createModels();
+        $this->createEquipmentTypes();
         $this->createInstitutes();
         $this->createLocations();
         $this->createStatuses();
@@ -377,6 +345,6 @@ class CreateDatabase extends Migration
         $this->forge->dropTable('institutes', true);
         $this->forge->dropTable('locations', true);
         $this->forge->dropTable('statuses', true);
-        $this->forge->dropTable('models', true);
+        $this->forge->dropTable('equipment_types', true);
     }
 }

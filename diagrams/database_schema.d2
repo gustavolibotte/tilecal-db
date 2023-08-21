@@ -19,19 +19,19 @@ equipments: {
   parent_id: uint {constraint: [foreign_key; NN]}
   serial: varchar(20)
   comments: text
-  model_params: json {constraint: NN;}
+  type_params: json {constraint: NN;}
   created_at: timestamp utc {constraint: [NN default now()]}
   updated_at: timestamp utc {constraint: [NN default now()]}
   deleted_at: timestamp utc
-  }
+}
 
-types: {
+equipment_types: {
   shape: sql_table
   id: uint {constraint: primary_key}
   name: varchar(30) {constraint: [unique; NN]}
   in_detector: bool {constraint: [NN]}
   system: enum {constraint: NN}
-  label: varchar(50) {constraint: [unique; NN]}
+  label_: varchar(50) {constraint: [unique; NN]}
   params: json {constraint: NN}
   description: text
   created_at: timestamp utc {constraint: [NN default now()]}
@@ -110,7 +110,7 @@ hist: {
 }
 
 
-equipments.type_id -- types.id: type_id > id
+equipments.type_id -- equipment_types.id: type_id > id
 equipments.owner_id -- institutes.id: owner_id > id
 equipments.status_id -- statuses.id: status_id > id
 equipments.location_id -- locations.id: location_id > id
@@ -121,7 +121,7 @@ locations.institute_id -- institutes.id: institute_id > id
 
 
 equipments.id -- hist.record_id: id < record_id
-types.id -- hist.record_id: id < record_id
+equipment_types.id -- hist.record_id: id < record_id
 institutes.id -- hist.record_id: id < record_id
 locations.id -- hist.record_id: id < record_id
 statuses.id -- hist.record_id: id < record_id

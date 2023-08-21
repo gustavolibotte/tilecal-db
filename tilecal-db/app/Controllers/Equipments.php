@@ -50,7 +50,7 @@ class Equipments extends BaseController
         if ($viewData['editable']){
             $viewData['editForm'] = new (get_model_form_class($equipment->model_name))();
             $viewData['editForm']->asEdit();
-            $viewData['editForm']->setFieldValues($equipment->toArrayWithModelParams());
+            $viewData['editForm']->setFieldValues($equipment->toArrayWithTypeParams());
             $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->model_name, $equipment->id));
         }
 
