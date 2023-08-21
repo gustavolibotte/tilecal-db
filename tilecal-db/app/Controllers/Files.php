@@ -50,7 +50,7 @@ class Files extends BaseController
             $viewData['editForm'] = new FileForm();
             $viewData['editForm']->asEdit();
             $viewData['editForm']->setFieldValues($file->toArray());
-            $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $file->model_name, $file->id));
+            $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $file->type_name, $file->id));
         }
         $viewData['deletable'] = $this->user->isAuthorized('delete') && (!$file->isDeleted());
         if ($viewData['deletable']){

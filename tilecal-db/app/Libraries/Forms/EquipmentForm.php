@@ -2,7 +2,6 @@
 
 namespace App\Library\Forms;
 
-use Exception;
 use \App\Models\BaseModel;
 use \App\Entities\Equipment;
 
@@ -24,11 +23,11 @@ class EquipmentForm extends Form{
                     'placeholder' => 'XXXXXXXXXXXXXX'
                 ]
             ],
-            'model_label' => [
-                'id' => 'model_label',
+            'type_label' => [
+                'id' => 'type_label',
                 'label' => 'Model',
                 'required' => true,
-                'helpText' => "Equipment's model",
+                'helpText' => "Equipment's type",
                 'fieldType' => 'hidden',
                 'fieldParams' => []
             ],
@@ -91,14 +90,14 @@ class EquipmentForm extends Form{
                     "id_has_valid_institute" => "The barcode doesn't have a valid institute value"
                 ]
             ],
-            "model_label" => [
+            "type_label" => [
                 "rules" => [
                     "required",
-                    "is_not_unique[models.label]",
+                    "is_not_unique[equipment_types.label]",
                 ],
                 "errors" => [
-                    "required" => "You must supply a model for the equipment.",
-                    "is_not_unique" => "The given model doesn't exist.",
+                    "required" => "You must supply a type for the equipment.",
+                    "is_not_unique" => "The given type doesn't exist.",
                 ]
             ],
             "location_id" => [
@@ -144,20 +143,20 @@ class EquipmentForm extends Form{
     {
         helper(['array', 'atlas_id']);
         if (!$this->isValid){
-            throw new Exception('To get the equipment you must validate the form first');
+            throw new \Exception('To get the equipment you must validate the form first');
         }
-        $equipment = new Equipment($this->getFieldValues());
+        $fieldValues = $this->getFieldValues();
+        $equipment = new Equipment($fieldValues);
         $instituteMne = getInstituteMne($equipment->id);
         $owner = (new \App\Models\InstituteModel())->where(sprintf("mne = '%s'", $instituteMne))->first();
         $equipment->owner_id = $owner->id;
-        $modelLabel = $this->request->getVar('model_label');
-        $model = (new \App\Models\ModelModel())->where(sprintf("label = '%s'", $modelLabel))->first();
-        $equipment->model_id = $model->id;
-        $modelParams = [];
-        foreach ($model->params as $param){
-            $modelParams[$param] = $this->request->getVar($param);
+        $equipmentType = (new \App\Models\EquipmentTypeModel())->where(sprintf("label = '%s'", $fieldValues['type_label']))->first();
+        $equipment->type_id = $equipmentType->id;
+        $typeParams = [];
+        foreach ($equipmentType->params as $param){
+            $typeParams[$param] = $this->request->getVar($param);
         }
-        $equipment->model_params = $modelParams;
+        $equipment->type_params = $typeParams;
         return $equipment;
     }
 

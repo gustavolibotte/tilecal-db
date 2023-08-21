@@ -4,15 +4,15 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\EquipmentModel;
-use App\Models\ModelModel;
+use App\Models\EquipmentTypeModel;
 
 class Equipments extends BaseController
 {   
-    public function index($modelName=null)
+    public function index($typeName=null)
     {   
         $indexData['pageTitle'] = 'Equipment Index';
         $indexData['pageHeader'] = 'Equipment Index';
-        $indexData['modelName'] = $modelName;
+        $indexData['typeName'] = $typeName;
         return default_view('equipment/index', $indexData);
     }
 
@@ -48,10 +48,10 @@ class Equipments extends BaseController
 
         $viewData['editable'] = $this->user->isAuthorized('edit') && !$equipment->isDeleted();
         if ($viewData['editable']){
-            $viewData['editForm'] = new (get_model_form_class($equipment->model_name))();
+            $viewData['editForm'] = new (get_model_form_class($equipment->type_name))();
             $viewData['editForm']->asEdit();
             $viewData['editForm']->setFieldValues($equipment->toArrayWithTypeParams());
-            $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->model_name, $equipment->id));
+            $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->type_name, $equipment->id));
         }
 
         $viewData['deletable'] = $this->user->isAuthorized('delete') && !$equipment->isDeleted();
@@ -67,10 +67,10 @@ class Equipments extends BaseController
         return default_view('equipment/view', $viewData);
     }
 
-    public function register($modelName='pmt'){
+    public function register($typeName='pmt'){
         helper(['form', 'url', 'message', 'app_form']);
 
-        $formClass = get_model_form_class($modelName);
+        $formClass = get_model_form_class($typeName);
         $equipmentModel = new EquipmentModel();
 
         if ($this->request->is('post')){
@@ -84,7 +84,7 @@ class Equipments extends BaseController
                     'type' => 'success'
                 ];
                 addMessages($messages);
-                return redirect(sprintf('equipments/%s/register', $modelName));
+                return redirect(sprintf('equipments/%s/register', $typeName));
             } else {
                 foreach ($form->getErrors() as $errorMsg){
                     $messages[] = [
@@ -98,8 +98,8 @@ class Equipments extends BaseController
             $form = new $formClass();
         }
         
-        $modelModel = new ModelModel();
-        $model = $modelModel->where(sprintf("name = '%s'", $modelName))->first();
+        $modelModel = new EquipmentTypeModel();
+        $model = $modelModel->where(sprintf("name = '%s'", $typeName))->first();
         $registerData['model'] = $model;
         $title = sprintf('Register %s', $model->label);
         $registerData['pageTitle'] = $title;
@@ -107,15 +107,15 @@ class Equipments extends BaseController
         $registerData['forms'] = ['Equipment Info'=> $form];
         $registerData['formUrl'] = uri_string();
         $registerData['successMessage'] = false;
-        $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $modelName));
+        $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $typeName));
         
         return default_view('equipment/register', $registerData);
     }
 
-    public function edit($equipmentId, $modelName)
+    public function edit($equipmentId, $typeName)
     {
         helper(['message', 'app_form']);
-        $formClass = get_model_form_class($modelName);
+        $formClass = get_model_form_class($typeName);
         $form = new $formClass($this->request);
         $form->asEdit();
         if ($form->validate()){

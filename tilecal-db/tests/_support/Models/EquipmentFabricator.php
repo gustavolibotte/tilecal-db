@@ -94,7 +94,7 @@ class EquipmentFabricator extends EquipmentModel
                 'beta' => $faker->randomFloat(3, 6, 8),
                 'nominal_hv' => $faker->numberBetween(600, 800),
                 'qe' => $faker->randomFloat(1, 20, 25),
-                'type' => $faker->randomElement(PmtForm::$validPmtTypeValues)
+                'model' => $faker->randomElement(PmtForm::$validPmtModelValues)
             ]
         ];
         $entityArray['id'] = "20LOCER0{$entityArray['serial']}";

@@ -10,7 +10,7 @@ class Equipment extends BaseEntity
         "type_params" => "json-array",
         "location_id" => "integer",
         "status_id" => "integer",
-        "model_id" => "integer",
+        "type_id" => "integer",
         "institute_id" => "integer"
     ];
 
