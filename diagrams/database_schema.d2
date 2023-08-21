@@ -1,0 +1,130 @@
+...@classes
+
+direction: down
+
+title: {
+  label: MySQL Database Schema
+  near: top-center
+  shape: text
+  style.font-size: 40
+}
+
+equipments: {
+  shape: sql_table
+  id: char(14) {constraint: primary_key}
+  type_id: uint {constraint: [foreign_key; NN]}
+  owner_id: uint {constraint: [foreign_key; NN]}
+  location_id: uint {constraint: [foreign_key; NN]}
+  status_id: uint {constraint: [foreign_key; NN]}
+  parent_id: uint {constraint: [foreign_key; NN]}
+  serial: varchar(20)
+  comments: text
+  model_params: json {constraint: NN;}
+  created_at: timestamp utc {constraint: [NN default now()]}
+  updated_at: timestamp utc {constraint: [NN default now()]}
+  deleted_at: timestamp utc
+  }
+
+types: {
+  shape: sql_table
+  id: uint {constraint: primary_key}
+  name: varchar(30) {constraint: [unique; NN]}
+  in_detector: bool {constraint: [NN]}
+  system: enum {constraint: NN}
+  label: varchar(50) {constraint: [unique; NN]}
+  params: json {constraint: NN}
+  description: text
+  created_at: timestamp utc {constraint: [NN default now()]}
+  updated_at: timestamp utc {constraint: [NN default now()]}
+  deleted_at: timestamp utc
+}
+
+institutes: {
+  shape: sql_table
+  id: uint {constraint: primary_key}
+  name: varchar(100) {constraint: [NN; unique]}
+  mne: char(3) {constraint: [NN; unique]}
+  num: char(3) {constraint: [NN; unique]}
+  place: varchar(50) {constraint: [NN; unique]}
+  country: varchar(30) {constraint: [NN; unique]}
+  created_at: timestamp utc {constraint: [NN default now()]}
+  updated_at: timestamp utc {constraint: [NN default now()]}
+  deleted_at: timestamp utc
+}
+
+locations: {
+  shape: sql_table
+  id: uint {constraint: primary_key}
+  name: varchar(100) {constraint: [NN; unique]}
+  institute_id: uint {constraint: [foreign_key; NN]}
+  description: varchar(280)
+  created_at: timestamp utc {constraint: [NN default now()]}
+  updated_at: timestamp utc {constraint: [NN default now()]}
+  deleted_at: timestamp utc
+}
+
+statuses: {
+  shape: sql_table
+  id: uint {constraint: primary_key}
+  name: varchar(30) {constraint: [NN; unique]}
+  description: text {constraint: [NN; unique]}
+  created_at: timestamp utc {constraint: [NN default now()]}
+  updated_at: timestamp utc {constraint: [NN default now()]}
+  deleted_at: timestamp utc
+}
+
+files: {
+  shape: sql_table
+  id: uint {constraint: primary_key}
+  name: varchar(100) {constraint: [NN; unique]}
+  mime: varchar(50) {constraint: [NN;]}
+  filedata: mediumblob {constraint: [NN]}
+  description: text {constraint: [NN]}
+  created_at: timestamp utc {constraint: [NN default now()]}
+  updated_at: timestamp utc {constraint: [NN default now()]}
+  deleted_at: timestamp utc
+}
+
+equipments_to_files: {
+  shape: sql_table
+  id: uint {constraint: primary_key}
+  equipment_id: char(14) {constraint: [foreign_key; NN]}
+  file_id: uint {constraint: [foreign_key; NN]}
+  created_at: timestamp utc {constraint: [NN default now()]}
+  updated_at: timestamp utc {constraint: [NN default now()]}
+  deleted_at: timestamp utc
+}
+
+hist: {
+  shape: sql_table
+  id: uint {constraint: primary_key}
+  user: varchar(20) {constraint: NN}
+  table: varchar(30) {constraint: NN}
+  action: enum {constraint: NN}
+  record_id: varchar(14)
+  changes: json {constraint: NN}
+  filedata: mediumblob
+  created_at: timestamp utc {constraint: [NN default now()]}
+  tooltip: \"record_id\" is a pseudo foreign key the reference is guaranteed by the application
+}
+
+
+equipments.type_id -- types.id: type_id > id
+equipments.owner_id -- institutes.id: owner_id > id
+equipments.status_id -- statuses.id: status_id > id
+equipments.location_id -- locations.id: location_id > id
+equipments.parent_id -- equipments.id: parent_id - id
+equipments.id -- equipments_to_files.equipment_id: id < equipment_id
+files.id -- equipments_to_files.file_id: id < file_id
+locations.institute_id -- institutes.id: institute_id > id
+
+
+equipments.id -- hist.record_id: id < record_id
+types.id -- hist.record_id: id < record_id
+institutes.id -- hist.record_id: id < record_id
+locations.id -- hist.record_id: id < record_id
+statuses.id -- hist.record_id: id < record_id
+files.id -- hist.record_id: id < record_id
+equipments_to_files.id -- hist.record_id: id < record_id
+
+  
