@@ -110,22 +110,22 @@ hist: {
 }
 
 
-equipments.type_id -- equipment_types.id: type_id > id
-equipments.owner_id -- institutes.id: owner_id > id
-equipments.status_id -- statuses.id: status_id > id
-equipments.location_id -- locations.id: location_id > id
-equipments.parent_id -- equipments.id: parent_id - id
-equipments.id -- equipments_to_files.equipment_id: id < equipment_id
-files.id -- equipments_to_files.file_id: id < file_id
-locations.institute_id -- institutes.id: institute_id > id
+equipments.type_id -- equipment_types.id: type_id > id {class: connection}
+equipments.owner_id -- institutes.id: owner_id > id {class: connection}
+equipments.status_id -- statuses.id: status_id > id {class: connection}
+equipments.location_id -- locations.id: location_id > id {class: connection}
+equipments.parent_id -- equipments.id: parent_id - id {class: connection}
+equipments.id -- equipments_to_files.equipment_id: id < equipment_id {class: connection}
+files.id -- equipments_to_files.file_id: id < file_id {class: connection}
+locations.institute_id -- institutes.id: institute_id > id {class: connection}
 
 
-equipments.id -- hist.record_id: id < record_id
-equipment_types.id -- hist.record_id: id < record_id
-institutes.id -- hist.record_id: id < record_id
-locations.id -- hist.record_id: id < record_id
-statuses.id -- hist.record_id: id < record_id
-files.id -- hist.record_id: id < record_id
-equipments_to_files.id -- hist.record_id: id < record_id
+equipments.id -- hist.record_id: id < record_id {class: connection}
+equipment_types.id -- hist.record_id: id < record_id {class: connection}
+institutes.id -- hist.record_id: id < record_id {class: connection}
+locations.id -- hist.record_id: id < record_id {class: connection}
+statuses.id -- hist.record_id: id < record_id {class: connection}
+files.id -- hist.record_id: id < record_id {class: connection}
+equipments_to_files.id -- hist.record_id: id < record_id {class: connection}
 
   

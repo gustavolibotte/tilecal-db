@@ -7,24 +7,29 @@ classes: {
 }
 
 title: {
-  label: Off detector equipments
+  label: Phase 2 Off-detector
   near: top-center
   shape: text
   style.font-size: 40
 }
 
 # Nodes
-...@equipments.ppr_blade
-...@equipments.carrierboard
+
+...@equipments.felix
+...@equipments.atca_carrier_board
 ...@equipments.cpm
-...@equipments.tdaqi
-...@equipments.tilecom
 ...@equipments.gbe_switch
 ...@equipments.ipmc
+...@equipments.ppr_blade
+...@equipments.tdaqi
+...@equipments.tilecom
+
 
 # Edges
-PPr blade -> TDAQi: up to 1 {class: connection}
-CPM -> Carrierboard: up to 4 {class: connection}
-IPMC -> Carrierboard: up to 1 {class: connection}
-TileCoM -> Carrierboard: up to 1 {class: connection}
-GbE switch-> Carrierboard: up to 1 {class: connection}
+TDAQi -> PPr blade: up to 1 {class: connection}
+ATCA Carrier Board -> PPr blade: up to 1 {class: connection}
+CPM -> ATCA Carrier Board: up to 4 {class: connection}
+IPMC -> ATCA Carrier Board: up to 1 {class: connection}
+TileCoM -> ATCA Carrier Board: up to 1 {class: connection}
+GbE switch-> ATCA Carrier Board: up to 1 {class: connection}
+# ATCA Carrier Board -> FELIX: 1 {class: connection}

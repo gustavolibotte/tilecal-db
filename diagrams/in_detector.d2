@@ -3,45 +3,45 @@
 direction: up
 
 title: {
-  label: In detector equipments
+  label: Phase 2 In Detector
   near: top-center
   shape: text
   style.font-size: 40
 }
 
 # Node declaration
-...@equipments.pmt
-...@equipments.fenics
-...@equipments.hv_divider
-...@equipments.pmt_block
-...@equipments.daughterboard
-...@equipments.mainboard
-...@equipments.micro_drawer
-...@equipments.mini_drawer
-...@equipments.super_drawer
-...@equipments.lv_box
-...@equipments.regulation_board
-...@equipments.auxiliary_board
-...@equipments.hv_power_supply
-...@equipments.module
-...@equipments.partition
 
+...@equipments.base_equipment
+...@equipments.partition
+...@equipments.active_hv_divider
+...@equipments.auxiliary_board
+...@equipments.cooling_hoses
+...@equipments.daughterboard
+...@equipments.fenics
+...@equipments.mainboard
+...@equipments.mini_drawer
+...@equipments.micro_drawer
+...@equipments.module
+...@equipments.phase2_super_drawer
+...@equipments.pmt
+...@equipments.pmt_block
+...@equipments.regulation_board
 
 # Edge declaration
+
 PMT -> PMT Block: 1 {class: connection}
+PMT Block -> Mini Drawer: Undefined {class: connection}
+PMT Block -> Micro Drawer: Undefined {class: connection}
 FENICS -> PMT Block: 1 {class: connection}
 HV Divider -> PMT Block: 1 {class: connection}
-PMT Block -> Mini Drawer: 12 {class: connection}
-PMT Block -> Micro Drawer: Undefined {class: connection}
 Mainboard -> Mini Drawer: 1 {class: connection}
 Daughterboard -> Mini Drawer: 1 {class: connection}
-Mini Drawer -> Super Drawer: 4 {class: connection}
+Mainboard -> Micro Drawer: 1 {class: connection}
+Daughterboard -> Micro Drawer: 1 {class: connection}
+Mini Drawer -> Super Drawer: SD Model dependendent {class: connection}
+Micro Drawer -> Super Drawer: SD Model dependendent {class: connection}
 Super Drawer -> Module: 1 {class: connection}
-Micro Drawer -> Module: 1 {class: connection}
 HV Regulation Board -> Module: 1 {class: connection}
 Auxiliary Board -> Module: 1 {class: connection}
-LV Box -> Module: 1 {class: connection}
 Module -> Partition: 1 {class:connection}
-HV Power Suppply -> Partition: 1 {class:connection}
-
-  
+Cooling Hoses -> Super Drawer: Undefined {class: connection}
