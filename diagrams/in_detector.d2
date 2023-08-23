@@ -2,17 +2,18 @@
 
 direction: up
 
-title: {
-  label: Phase 2 In Detector
-  near: top-center
-  shape: text
-  style.font-size: 40
-}
+title: |md
+  # Phase 2 In Detector Equipments
+|
+title.near: top-center
+title.style.font-size: 30
 
 # Node declaration
 
-...@equipments.base_equipment
-...@equipments.partition
+All Equipments Have: {
+  ...@equipments.base_equipment
+}
+
 ...@equipments.active_hv_divider
 ...@equipments.auxiliary_board
 ...@equipments.cooling_hoses
@@ -30,18 +31,17 @@ title: {
 # Edge declaration
 
 PMT -> PMT Block: 1 {class: connection}
-PMT Block -> Mini Drawer: Undefined {class: connection}
-PMT Block -> Micro Drawer: Undefined {class: connection}
+PMT Block -> Mini Drawer: X {class: connection}
+PMT Block -> Micro Drawer: X {class: connection}
 FENICS -> PMT Block: 1 {class: connection}
 HV Divider -> PMT Block: 1 {class: connection}
 Mainboard -> Mini Drawer: 1 {class: connection}
 Daughterboard -> Mini Drawer: 1 {class: connection}
 Mainboard -> Micro Drawer: 1 {class: connection}
 Daughterboard -> Micro Drawer: 1 {class: connection}
-Mini Drawer -> Super Drawer: SD Model dependendent {class: connection}
-Micro Drawer -> Super Drawer: SD Model dependendent {class: connection}
-Super Drawer -> Module: 1 {class: connection}
+Mini Drawer -> Phase 2 Super Drawer: SD Model dependendent {class: connection}
+Micro Drawer -> Phase 2 Super Drawer: SD Model dependendent {class: connection}
+Phase 2 Super Drawer -> Module: 1 {class: connection}
 HV Regulation Board -> Module: 1 {class: connection}
 Auxiliary Board -> Module: 1 {class: connection}
-Module -> Partition: 1 {class:connection}
-Cooling Hoses -> Super Drawer: Undefined {class: connection}
+Cooling Hoses -> Phase 2 Super Drawer: X {class: connection}

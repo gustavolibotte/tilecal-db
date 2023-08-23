@@ -3,8 +3,10 @@ base_equipment: {
         shape: class
         ID: ATLAS ID
         model: string
+        location: Current location
+        status: Current status
         owner: CERN Institute
-        serial: string
+        serial: Manufacturer issued serial code
         comments: string
     }
 }
@@ -61,6 +63,7 @@ cpm: {
 daughterboard:{
     Daughterboard: {
         shape: class
+        model: \"VX\"
     }     
 }
 
@@ -115,6 +118,7 @@ lv_brick: {
 mainboard: {
     Mainboard: {
         shape: class
+        model: \"VX\"
     }
 }
 
@@ -137,7 +141,7 @@ micro_drawer: {
 module: {
     Module: {
         shape: class
-        # parition_position: uint
+        model: \"LBA\#\#\", \"LBC\#\#\", \"EBA\#\#\" or \"EBC\#\#\"
     }
 }
 
@@ -147,7 +151,12 @@ pmt: {
         beta: float
         qe: float
         nominal_hv: float
-        model: string
+        model options: string 
+        R11187
+        R7877
+        R7787
+        R11187-SEL
+        R11187-A1
     }
 }
 
@@ -165,12 +174,6 @@ regulation_board: {
     }
 }
 
-super_drawer: {
-    Super Drawer: {
-        shape: class
-    }
-}
-
 partition: {
     Partition: {
         shape: class
@@ -178,16 +181,24 @@ partition: {
     }
 }
 
-phase2_super_drawer: {
-    Super Drawer: {
+passive_hv_divider: {
+    HV Divider: {
         shape: class
-        model: \"LB\"or \"EB\"
+        model: \"passive\"
     }
 }
 
-phase1_hv_divider: {
-    Phase 1 HV Divider: {
+phase1_super_drawer: {
+    Phase 1 Super Drawer: {
         shape: class
+        model: \"P1LB\" or \"P1EB\"
+    }
+}
+
+phase2_super_drawer: {
+    Phase 2 Super Drawer: {
+        shape: class
+        model: \"P2LB\"or \"P2EB\"
     }
 }
 
