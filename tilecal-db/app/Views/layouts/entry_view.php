@@ -59,6 +59,7 @@
       <div class="row">
         <div class="col mt-4" id="history-info-col">
           <h4>Change history</h4>
+          <p>Ordered from the most recent operation to the oldest</p>
           <? echo view_cell('HistoryTableCell::full', ['histories' => $histories]);?>
         </div>
       </div>
