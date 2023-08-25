@@ -31,6 +31,7 @@ $routes->setAutoRoute(false);
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index', ['filter' => 'auth:view']);
+$routes->get('callback', 'Callback::callback', ['filter' => 'auth:view']);
 
 // Equipments routes
 $routes->get('equipments', 'Equipments::index', ['filter' => 'auth:view']);

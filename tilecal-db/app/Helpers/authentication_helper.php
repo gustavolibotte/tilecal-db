@@ -63,9 +63,8 @@ function getUser(){
                     'nonce' => $decodedAccessToken->nonce
                 ];
             }
-            $tempTime = 20*60;
-            $session->setTempdata('isLogged', true, $tempTime);
-            $session->setTempdata('userInfo', $userInfo, $tempTime);
+            $session->set('isLogged', true);
+            $session->set('userInfo', $userInfo);
             $currentUser = new \App\Entities\User($userInfo);
         }
         else{

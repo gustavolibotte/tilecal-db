@@ -23,7 +23,6 @@ use App\Entities\User;
  */
 abstract class BaseController extends Controller
 {
-    protected User $user;
     /**
      * Instance of the main Request object.
      *
@@ -44,7 +43,8 @@ abstract class BaseController extends Controller
      * Be sure to declare properties for any property fetch you initialized.
      * The creation of dynamic property is deprecated in PHP 8.2.
      */
-    // protected $session;
+    
+    protected User $user;
 
     /**
      * Constructor.
