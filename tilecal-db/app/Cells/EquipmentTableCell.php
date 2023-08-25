@@ -6,7 +6,7 @@ class EquipmentTableCell extends BaseCell
 {
     public function side(array $params=[])
     {   
-        helper('array');
+        helper(['array', 'view']);
         $equipmentId = dot_array_search('equipmentId', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
         if (is_null($equipmentId)){
@@ -24,7 +24,7 @@ class EquipmentTableCell extends BaseCell
 
     public function sideFileRelated(array $params)
     {
-        helper('array');
+        helper(['array', 'view']);
         $fileId = dot_array_search('fileId', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
         $viewData['equipments'] = $equipmentModel->getFileRelated($fileId, limit:30);
@@ -38,7 +38,7 @@ class EquipmentTableCell extends BaseCell
 
     public function full(array $params=[]): string
     {
-        helper('array');
+        helper(['array', 'view']);
         $typeName = dot_array_search('typeName', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
         if (empty($typeName)){
@@ -57,6 +57,7 @@ class EquipmentTableCell extends BaseCell
 
     public function fullDeleted(): string
     {
+        helper(['view']);
         $equipmentModel = new \App\Models\EquipmentModel();
         $viewData['equipments'] = $equipmentModel->onlyDeleted()->getEquipment();
         return default_view('cells/equipment_table_full_deleted', $viewData);
@@ -69,7 +70,7 @@ class EquipmentTableCell extends BaseCell
 
     public function fullEquipmentRelated(array $params): string
     {
-        helper('array');
+        helper(['array', 'view']);
         $equipmentId = dot_array_search('equipmentId', $params);
         $withDeleted = dot_array_search('withDeleted', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
@@ -87,7 +88,7 @@ class EquipmentTableCell extends BaseCell
 
     public function fullFileRelated(array $params): string
     {
-        helper('array');
+        helper(['array', 'view']);
         $fileId = dot_array_search('fileId', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
         $viewData['equipments'] = $equipmentModel->getFileRelated($fileId);
