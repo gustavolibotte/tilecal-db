@@ -16,7 +16,7 @@ class CreateCiSessionsTable extends Migration
             'timestamp timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL',
             'data' => ['type' => 'BLOB', 'null' => false],
          ]);
-        $this->forge->addKey(['id', 'ip_address'], true);
+        $this->forge->addKey(['id'], true);
         $this->forge->addKey('timestamp');
         $this->forge->createTable('ci_sessions', true);
     }
