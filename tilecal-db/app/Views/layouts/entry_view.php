@@ -59,17 +59,7 @@
       <div class="row">
         <div class="col mt-4" id="history-info-col">
           <h4>Change history</h4>
-          <? if($histories):?>
-            <? foreach($histories as $hist): ?>
-              <ul class="list-group" id="equipment-history-list">
-                <? if ($hist->isDelete()): ?>
-                  <li class="list-group-item" style="color:red;"><? echo $hist->message; ?></li>
-                <?else: ?>
-                  <li class="list-group-item"><? echo $hist->message; ?></li>
-                <?endif;?>
-              </ul>
-            <? endforeach; ?>
-          <? endif; ?>
+          <? echo view_cell('HistoryTableCell::full', ['histories' => $histories]);?>
         </div>
       </div>
     </div>
@@ -139,5 +129,6 @@
   <script src="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/b-2.3.6/datatables.min.js"></script>
   <script src="https://cdn.datatables.net/plug-ins/1.13.4/features/scrollResize/dataTables.scrollResize.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <? echo view_cell('HistoryTableCell::fulljs'); ?>
   <?= $this->renderSection('javascript') ?> 
 <?= $this->endSection() ?>

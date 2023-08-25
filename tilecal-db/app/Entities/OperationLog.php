@@ -56,7 +56,7 @@ class OperationLog extends BaseEntity
     }
 
     protected function insertEquipmentsToFilesMessage(){
-        $msg = $this->getMessageStart();
+        $msg = '';
         $fileLink = sprintf(
             '<a type="button" class="link-primary" href="%s">file</a>',
             base_url(sprintf('files/view/%s', $this->changes['file_id']))
@@ -70,7 +70,7 @@ class OperationLog extends BaseEntity
     }
 
     protected function deleteEquipmentsToFilesMessage(){
-        $msg = $this->getMessageStart();
+        $msg = '';
         $fileLink = sprintf(
             '<a type="button" class="link-primary" href="%s">file</a>',
             base_url(sprintf('files/view/%s', $this->changes['file_id']))
@@ -84,7 +84,7 @@ class OperationLog extends BaseEntity
     }
 
     protected function restoreEquipmentsToFilesMessage(){
-        $msg = $this->getMessageStart();
+        $msg = '';
         $fileLink = sprintf(
             '<a type="button" class="link-primary" href="%s">file</a>',
             base_url(sprintf('files/view/%s', $this->changes['file_id']))
@@ -98,8 +98,7 @@ class OperationLog extends BaseEntity
     }
 
     protected function insertEquipmentsMessage(){
-        $msg = $this->getMessageStart();
-        $msg .= 'Entry created with values:';
+        $msg = 'Entry created with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
             if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
@@ -111,7 +110,7 @@ class OperationLog extends BaseEntity
     }
 
     protected function updateEquipmentsMessage(){
-        $msg = $this->getMessageStart();
+        $msg = '';
         if (is_null($this->changes) or (count($this->changes) == 0)){
             $msg .= 'Submited update with no changes';
             return $msg;
@@ -129,8 +128,7 @@ class OperationLog extends BaseEntity
     }
 
     protected function deleteEquipmentsMessage(){
-        $msg = $this->getMessageStart();
-        $msg .= 'Deleted entry with values:';
+        $msg = 'Deleted entry with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
             if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
@@ -142,8 +140,7 @@ class OperationLog extends BaseEntity
     }
 
     protected function defaultInsertMessage(){
-        $msg = $this->getMessageStart();
-        $msg .= 'Entry created with values:';
+        $msg = 'Entry created with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
             if (!in_array($name, $this->msgIgnore)){
@@ -155,7 +152,7 @@ class OperationLog extends BaseEntity
     }
 
     protected function defaultUpdateMessage(){
-        $msg = $this->getMessageStart();
+        $msg = '';
         if (is_null($this->changes)){
             $msg .= 'submited update with no changes';
             return $msg;
@@ -172,8 +169,7 @@ class OperationLog extends BaseEntity
     }
 
     protected function defaultDeleteMessage(){
-        $msg = $this->getMessageStart();
-        $msg .= 'Entry deleted with values:';
+        $msg = 'Entry deleted with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
             if (!in_array($name, $this->msgIgnore)){
@@ -185,8 +181,7 @@ class OperationLog extends BaseEntity
     }
 
     protected function defaultRestoreMessage(){
-        $msg = $this->getMessageStart();
-        $msg .= 'Restored this deleted entry';
+        $msg = 'Restored this deleted entry';
         return $msg;
     }
 
