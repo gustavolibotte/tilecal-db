@@ -40,7 +40,6 @@ class AtlasIdRules {
 
     public function id_has_valid_institute($value, string $params, array $data, ?string &$error): bool
     {   
-        helper('atlas_id');
         $tableColumn = explode('.', $params);
         $table = $tableColumn[0];
         $column = $tableColumn[1];

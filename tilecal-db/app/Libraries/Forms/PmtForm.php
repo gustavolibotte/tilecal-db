@@ -22,6 +22,7 @@ class PmtForm extends EquipmentForm{
     public static string $validSerialRegex = '/^[A-Z]{2}[0-9]{4}/';
     public static int $serialMaxSize = 6;
     public static int $pmtId = 1;
+    public static int $pmtBlockId = 2;
     public static int $pmtOwnerId = 103;
 
     public function initialize()
@@ -46,6 +47,8 @@ class PmtForm extends EquipmentForm{
             "string_starts_with" => "PMT ID must start with 20LOCER0. (20 for ATLAS peoject, LO for optics equipment and CER for CERN).",
             "string_ends_with" => "The final 6 characters of a PMT barcode must be its serial code."
         ];
+
+        $this->validationRules['parent_id']['rules'][] = "equipment_is_type[pmt_block]";
 
         $this->fields['serial']['required'] = true;
         $this->fields['serial']['helpText'] .= sprintf(' (Max size of %d characters)', self::$serialMaxSize);
