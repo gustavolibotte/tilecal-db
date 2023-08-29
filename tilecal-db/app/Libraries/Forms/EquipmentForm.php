@@ -147,11 +147,11 @@ class EquipmentForm extends Form{
                 "errors" => [
                     "alpha_numeric" => "The parent ID must be alphanumeric.",
                     "exact_length" => "The parent ID must have 14 characters.",
-                    "is_not_unique" => "The parent ID doesn't exist.",
                     "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
                     "differs" => "The parent ID is equal to the equipment ID",
                     "id_has_valid_institute" => "The barcode doesn't have a valid institute value",
-                    "id_has_valid_system" => "The id system is not valid."
+                    "id_has_valid_system" => "The id system is not valid.",
+                    "is_not_unique" => "The parent ID doesn't exist."
                 ]
             ],
             "serial" => [
