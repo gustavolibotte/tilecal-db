@@ -10,7 +10,9 @@ class EquipmentTableCell extends BaseCell
         $equipmentId = dot_array_search('equipmentId', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
         if (is_null($equipmentId)){
-           $viewData['equipments'] = $equipmentModel->getEquipment(limit: 30);
+           $viewData['equipments'] = $equipmentModel->fullQuery()
+                                                    ->orderBy('updated_at', 'DESC')
+                                                    ->findAll(limit: 30);
         } else{
            $viewData['equipments'] = $equipmentModel->getRelatedEquipments($equipmentId);
         }

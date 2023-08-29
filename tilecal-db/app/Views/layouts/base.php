@@ -14,7 +14,7 @@
 <?= $this->include('layouts/header') ?>
 
 <body>
-  <div class="container mt-4 mb-4">
+  <div class="container-fluid mt-4 mb-4">
     <div class="row">
       <div class="jumbotron text-left">
         <? if (empty($headerClass)):?>
