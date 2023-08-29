@@ -87,11 +87,13 @@ class EquipmentModel extends LogModel
 
     public function getRelatedEquipments($equipmentId){
         $equipment = $this->withDeleted()->find($equipmentId);
-        $equipments = $this->fullQuery()
-                           ->orWhere('equipments.id', $equipment->parent_id)
-                           ->orWhere('equipments.parent_id', $equipment->parent_id)
-                           ->orWhere('equipments.parent_id', $equipment->id)
-                           ->findAll();
+        $query = $this->fullQuery()
+                      ->orWhere('equipments.id', $equipment->parent_id)
+                      ->orWhere('equipments.parent_id', $equipment->id);
+        if (!empty($equipment->parent_id)){
+            $query = $query->orWhere('equipments.parent_id', $equipment->parent_id);
+        }
+        $equipments = $query->findAll();
         return $equipments;
     }
 
