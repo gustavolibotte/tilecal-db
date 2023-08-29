@@ -101,7 +101,7 @@ class OperationLog extends BaseEntity
         $msg = 'Entry created with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
-            if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
+            if ($this->printEquipmentField($name) and !in_array($name, $this->msgIgnore)){
                 $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
             }
         }
@@ -118,7 +118,7 @@ class OperationLog extends BaseEntity
         $msg .= 'Entry updated with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
-            if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
+            if ($this->printEquipmentField($name) and !in_array($name, $this->msgIgnore)){
                 $value = (is_array($value))? print_r($value, true): $value;
                 $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
             }
@@ -131,7 +131,7 @@ class OperationLog extends BaseEntity
         $msg = 'Deleted entry with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
-            if (!str_ends_with($name, '_id') and !in_array($name, $this->msgIgnore)){
+            if ($this->printEquipmentField($name) and !in_array($name, $this->msgIgnore)){
                 $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
             }
         }
@@ -191,5 +191,11 @@ class OperationLog extends BaseEntity
 
     static function orderByCreationReverse($a, $b){
         return $b->created_at <=> $a->created_at;
+    }
+
+    protected function printEquipmentField(string $fieldName): bool
+    {
+        $printId = ($fieldName == 'parent_id') || (!str_ends_with($fieldName, '_id'));
+        return $printId;
     }
 }
