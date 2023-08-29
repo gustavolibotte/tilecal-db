@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Library\Forms;
-use \App\Entities\Equipment;
 
 class PmtForm extends EquipmentForm{
     public static array $pmtModelOptions = [
@@ -22,8 +21,8 @@ class PmtForm extends EquipmentForm{
     public static string $validSerialRegex = '/^[A-Z]{2}[0-9]{4}/';
     public static int $serialMaxSize = 6;
     public static int $pmtId = 1;
-    public static int $pmtBlockId = 2;
     public static int $pmtOwnerId = 103;
+    public static int $maxNumberPerBlock = 1;
 
     public function initialize()
     {   
@@ -49,6 +48,7 @@ class PmtForm extends EquipmentForm{
         ];
 
         $this->validationRules['parent_id']['rules'][] = "equipment_is_type[pmt_block]";
+        // $this->validationRules['parent_id']['rules'][] = "not_maxed_parent[1,pmt]";
 
         $this->fields['serial']['required'] = true;
         $this->fields['serial']['helpText'] .= sprintf(' (Max size of %d characters)', self::$serialMaxSize);

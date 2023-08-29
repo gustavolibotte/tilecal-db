@@ -136,6 +136,7 @@ class EquipmentForm extends Form{
             ],
             "parent_id" => [
                 "rules" => [
+                    "permit_empty",
                     "alpha_numeric",
                     "exact_length[14]",
                     "id_is_project[20]",
@@ -189,6 +190,9 @@ class EquipmentForm extends Form{
         $typeParams = [];
         foreach ($equipmentType->params as $param){
             $typeParams[$param] = $fieldValues[$param];
+        }
+        if ($equipment->parent_id == ''){
+            $equipment->parent_id = null;
         }
         $equipment->type_params = $typeParams;
         return $equipment;

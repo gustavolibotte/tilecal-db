@@ -67,4 +67,38 @@ class DatabaseRules{
         }
         return $approved;
     }
+
+    /**
+     * Checks if the parent equipment has not reached the max number of childs
+     *
+     * @param $value  Value given by CodeIgniter validator, considered as an equipment id
+     * @param string $params <max>,<type> <max> is the maximum number of childs of type name <type> the parent equipment can have
+     * @param array $data Ignored
+     * @param ?string &$error Error string in the format "The given parent equipment (%s) already has the maximum of linked childs (%d)."
+     * 
+     * @return bool True if the data was approved on this rule 
+     */ 
+    public function not_maxed_parent($value, string $params, array $data, ?string &$error): bool
+    {
+        helper('string');
+        $params = explode(',', $params);
+        $maxChilds = $params[0];
+        $typeName = $params[1];
+        $equipmentModel = new EquipmentModel();
+        $count = $equipmentModel->join('equipment_types', 'equipments.type_id = equipment_types.id')
+                                    ->where('equipment_types.name', $typeName)
+                                    ->where('equipments.parent_id', $value)
+                                    ->countAllResults();
+        $approved = ($count < $maxChilds);
+        if (!$approved){
+            $error = sprintf(
+                "The given parent equipment (%s) already has %d %s childs. It is maximum is %d ",
+                $value,
+                $count,
+                snake2Capitalized($typeName),
+                $maxChilds
+            );
+        }
+        return $approved;
+    }
 }
