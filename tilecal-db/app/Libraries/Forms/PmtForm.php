@@ -3,6 +3,7 @@
 namespace App\Library\Forms;
 
 class PmtForm extends EquipmentForm{
+
     public static array $pmtModelOptions = [
         'null' => 'Select an option',
         'R11187' => 'R11187',
@@ -48,7 +49,7 @@ class PmtForm extends EquipmentForm{
         ];
 
         $this->validationRules['parent_id']['rules'][] = "equipment_is_type[pmt_block]";
-        // $this->validationRules['parent_id']['rules'][] = "not_maxed_parent[1,pmt]";
+        $this->validationRules['parent_id']['rules'][] = "not_maxed_parent[1,pmt,{id}]";
 
         $this->fields['serial']['required'] = true;
         $this->fields['serial']['helpText'] .= sprintf(' (Max size of %d characters)', self::$serialMaxSize);
