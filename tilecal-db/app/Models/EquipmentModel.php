@@ -93,7 +93,7 @@ class EquipmentModel extends LogModel
         if (!empty($equipment->parent_id)){
             $query = $query->orWhere('equipments.parent_id', $equipment->parent_id);
         }
-        $equipments = $query->findAll();
+        $equipments = $query->where('equipments.id !=', $equipmentId)->findAll();
         return $equipments;
     }
 
