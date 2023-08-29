@@ -181,12 +181,7 @@ class EquipmentForm extends Form{
         }
         $fieldValues = $this->getFieldValues();
         $equipment = new Equipment($fieldValues);
-        d($equipment->id);
         $id = new AtlasId(['id' => $equipment->id]);
-        d($id);
-        d($id->project);
-        d($id->institute);
-        d(substr($equipment->id, 4, 3));
         $owner = (new \App\Models\InstituteModel())->where(sprintf("mne = '%s'", $id->institute))->first();
         $equipment->owner_id = $owner->id;
         $equipmentType = (new \App\Models\EquipmentTypeModel())->where(sprintf("label = '%s'", $fieldValues['type_label']))->first();
