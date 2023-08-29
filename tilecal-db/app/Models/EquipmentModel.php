@@ -94,6 +94,15 @@ class EquipmentModel extends LogModel
             $query = $query->orWhere('equipments.parent_id', $equipment->parent_id);
         }
         $equipments = $query->where('equipments.id !=', $equipmentId)->findAll();
+        foreach ($equipments as &$related){
+            if ($related->id == $equipment->parent_id){
+                $related->relation_type = 'Parent';
+            } elseif ($related->parent_id == $equipment->parent_id){
+                $related->relation_type = 'Sibling';
+            } else {
+                $related->relation_type = 'Child';
+            }
+        }       
         return $equipments;
     }
 

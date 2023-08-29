@@ -80,12 +80,12 @@ class EquipmentTableCell extends BaseCell
             $equipmentModel->withDeleted();
         }
         $viewData['equipments'] = $equipmentModel->getRelatedEquipments($equipmentId);
-        return default_view('cells/equipment_table_full', $viewData);
+        return default_view('cells/equipment_table_related', $viewData);
     }
 
     public function fullEquipmentRelatedjs(): string
     {
-        return $this->getJs('equipment_table_full.js');
+        return $this->getJs('equipment_table_related.js');
     }
 
     public function fullFileRelated(array $params): string
