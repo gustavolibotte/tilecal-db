@@ -84,7 +84,7 @@ abstract class LogModel extends BaseModel{
         }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->insertWithLog($sampleId, $data, $opTimestamp,);
+                $res[] = $this->updateWithLog($sampleId, $data, $opTimestamp,);
             }
             return $res;
         }
