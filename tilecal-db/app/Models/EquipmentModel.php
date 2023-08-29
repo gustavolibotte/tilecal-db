@@ -86,8 +86,13 @@ class EquipmentModel extends LogModel
     }
 
     public function getRelatedEquipments($equipmentId){
-        $relatedEquipments = $this->getEquipment(limit:30);
-        return $relatedEquipments;
+        $equipment = $this->withDeleted()->find($equipmentId);
+        $equipments = $this->fullQuery()
+                           ->orWhere('equipments.id', $equipment->parent_id)
+                           ->orWhere('equipments.parent_id', $equipment->parent_id)
+                           ->orWhere('equipments.parent_id', $equipment->id)
+                           ->findAll();
+        return $equipments;
     }
 
     protected function getInsertLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
