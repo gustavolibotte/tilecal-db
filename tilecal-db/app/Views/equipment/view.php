@@ -10,7 +10,6 @@
   <? endif; ?>
   <li class="list-group-item"><b>Status</b>: <? echo $entity->status?> </li>
   <li class="list-group-item"><b>Owner</b>: <? echo $entity->owner_name?> </li>
-  <li class="list-group-item"><b>Parent ID</b>: <? echo $entity->parent_id?></li>
   <li class="list-group-item"><b>Serial</b>: <? echo $entity->serial?> </li>
   <?php if($entity->type_params): ?>
     <?php foreach($entity->type_params as $name=>$value): ?>
