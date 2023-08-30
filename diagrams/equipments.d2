@@ -97,8 +97,20 @@ gbe_switch: {
     }
 }
 
+hv_distribution_board: {
+    HV Distribution Board: {
+        shape: class
+    }
+}
+
 hv_power_supply: {
     HV Power Suppply: {
+        shape: class
+    }
+}
+
+hv_regulation_board: {
+    HV Regulation Board: {
         shape: class
     }
 }
@@ -111,6 +123,12 @@ lv_box: {
 
 lv_brick: {
     LV Brick: {
+        shape: class
+    }
+}
+
+lv_power_supply: {
+    LV Power Supply: {
         shape: class
     }
 }
@@ -134,7 +152,7 @@ micro_drawer: {
     Micro Drawer: {
         shape: class
         super_drawer_pos: uint
-        model: \"mD4\" or \"md5\"
+        model: 4 or 5
     }
 }
 
@@ -168,12 +186,6 @@ pmt_block: {
     }
 }
 
-regulation_board: {
-    HV Regulation Board: {
-        shape: class
-    }
-}
-
 partition: {
     Partition: {
         shape: class
@@ -198,7 +210,7 @@ phase1_super_drawer: {
 phase2_super_drawer: {
     Phase 2 Super Drawer: {
         shape: class
-        model: \"P2LB\"or \"P2EB\"
+        model: \"LB\"or \"EB\"
     }
 }
 
