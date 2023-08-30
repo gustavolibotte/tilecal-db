@@ -348,6 +348,7 @@ class CreateDatabase extends Migration
         $this->forge->addPrimaryKey('id');
         $this->forge->addForeignKey('equipment_a_id', 'equipments', 'id');
         $this->forge->addForeignKey('equipment_b_id', 'equipments', 'id');
+        $this->forge->addUniqueKey(['equipment_a_id', 'equipment_b_id'], 'unique_ab_ids');
         $this->forge->createTable('equipments_to_equipments', true);
     }
 
