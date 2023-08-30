@@ -323,6 +323,34 @@ class CreateDatabase extends Migration
         echo "Created Hist\n";
     }
 
+    public function Equipments2Equipments()
+    {
+        echo "Creating Equipments to Equipments\n";
+        $this->addId();
+        $this->forge->addField([
+            'equipment_a_id' => [
+                'type' => 'CHAR',
+                'constraint' => 14,
+                'null' => false
+            ],
+            'equipment_b_id' => [
+                'type' => 'CHAR',
+                'constraint' => 14,
+                'null' => false
+            ],
+            'type' => [
+                'type' => 'VARCHAR',
+                'constraint' => 20,
+                'null' => false
+            ]
+        ]);
+        $this->addTimestamps();
+        $this->forge->addPrimaryKey('id');
+        $this->forge->addForeignKey('equipment_a_id', 'equipments', 'id');
+        $this->forge->addForeignKey('equipment_b_id', 'equipments', 'id');
+        $this->forge->createTable('equipments_to_equipments', true);
+    }
+
     public function up()
     {
         $this->createHist();
@@ -332,6 +360,7 @@ class CreateDatabase extends Migration
         $this->createStatuses();
         $this->createFiles();
         $this->createEquipments();
+        $this->Equipments2Equipments();
         $this->createEquipments2Files();
     }
 
@@ -339,6 +368,7 @@ class CreateDatabase extends Migration
     {
         // Drop tables in reverse order
         $this->forge->dropTable('hist', true);
+        $this->forge->dropTable('equipments_to_equipments', true);
         $this->forge->dropTable('equipments_to_files', true);
         $this->forge->dropTable('equipments', true);
         $this->forge->dropTable('files', true);
