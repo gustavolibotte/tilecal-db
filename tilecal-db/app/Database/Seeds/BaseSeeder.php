@@ -6,12 +6,6 @@ use CodeIgniter\Database\Seeder;
 
 class BaseSeeder extends Seeder
 {
-    protected function probDecision($prob){
-        $deleteEntry = mt_rand(0,999);
-        $isDelete = $deleteEntry<($prob*1000);
-        return $isDelete;
-    }
-
     protected function readFile($filename){
         helper('path');
         $fullpath = joinPaths([ROOTPATH, 'data', $filename]);

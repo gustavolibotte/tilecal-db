@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Entities\OperationLog;
 use App\Entities\Equipment;
+use App\Entities\Equipment2Equipment;
 use CodeIgniter\Entity\Entity;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Database\Exceptions\DataException;
@@ -282,5 +283,31 @@ class EquipmentModel extends LogModel
             'created_at' => $opTimestamp
         ]);
         return $operationLog;
+    }
+
+    /**
+     * Adds parent relation between child and parent.
+     * Assumes that conditions were validated before
+     *
+     * @param string $childId Child equipment id
+     * @param string $parentId Parent equipment id
+     * 
+     * @return bool Always true
+     */ 
+    public function addParent(string $childId, string $parentId): bool
+    {
+        $equipment2EquipmentModel = new Equipments2EquipmentsModel(isMigration: $this->isMigration);
+        $parentRelation = new Equipment2Equipment([
+            'equipment_a_id' => $childId,
+            'equipment_b_id' => $parentId,
+            'type' => 'parent'
+        ]);
+        $equipment2EquipmentModel->insertWithLog($parentRelation);
+        return true;
+    }
+
+    public function removeParent(string $childId, string $parentId): bool
+    {
+        return true;
     }
 }

@@ -22,8 +22,6 @@ class EquipmentFabricator extends EquipmentModel
     public array $institutes;
 
     public int $numCommentsCharacters = 100;
-    public bool $firstCall = true;
-    public $parentEquipment;
 
     public function initialize()
     {
@@ -65,14 +63,7 @@ class EquipmentFabricator extends EquipmentModel
                 'type_params' => [],
                 'comments' => $faker->text($this->numCommentsCharacters)
             ];
-            if (!empty($this->parentEquipment)){
-                $entityArray['parent_id'] = $this->parentEquipment->id;
-            }
             $fakeEquipment = new $this->returnType($entityArray);
-        }
-        if ($this->firstCall){
-            $this->parentEquipment = $fakeEquipment;
-            $this->firstCall = false;
         }
         return $fakeEquipment;
     }

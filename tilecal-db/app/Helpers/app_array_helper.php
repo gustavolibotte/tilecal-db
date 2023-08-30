@@ -9,6 +9,14 @@ function unset_array_keys(array &$source, array $removeKeys)
     }
 }
 
+/**
+ * Unsets a value from an array and returns it
+ *
+ * @param $key Key to the value to remove
+ * @param array &$array Array to have its value removed
+ * 
+ * @return mixed The removed value
+ */ 
 function remove_value($key, array &$array): mixed
 {
     $value = $array[$key];

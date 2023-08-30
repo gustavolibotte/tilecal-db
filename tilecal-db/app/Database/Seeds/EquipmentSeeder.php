@@ -9,10 +9,18 @@ class EquipmentSeeder extends BaseSeeder
 {
     public function run()
     {
-        $numEntries = 1000;
+        helper(['random', 'app_array']);
+        $numEntries = 100;
+        $parentChance = 0.5;
         $fabricatorModel = new EquipmentFabricator(isMigration: true);
         $fabricator = new Fabricator($fabricatorModel);
         $equipments = $fabricator->make($numEntries);
         $fabricatorModel->insertWithLog($equipments);
+        $parent = remove_value(0, $equipments);
+        foreach ($equipments as $equipment){
+            if (apply_prob($parentChance)){
+                $fabricatorModel->addParent($equipment->id, $parent->id);
+            }
+        }
     }
 }
