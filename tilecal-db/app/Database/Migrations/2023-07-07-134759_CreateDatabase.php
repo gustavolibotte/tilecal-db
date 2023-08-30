@@ -333,16 +333,16 @@ class CreateDatabase extends Migration
                 'constraint' => 14,
                 'null' => false
             ],
+            'type' => [
+                'type' => 'VARCHAR',
+                'constraint' => 20,
+                'null' => false
+            ],
             'equipment_b_id' => [
                 'type' => 'CHAR',
                 'constraint' => 14,
                 'null' => false
             ],
-            'type' => [
-                'type' => 'VARCHAR',
-                'constraint' => 20,
-                'null' => false
-            ]
         ]);
         $this->addTimestamps();
         $this->forge->addPrimaryKey('id');

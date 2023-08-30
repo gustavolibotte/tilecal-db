@@ -36,7 +36,7 @@ class EquipmentModel extends LogModel
     }
 
     public function fullQuery(?string $extraSelect=null){
-        $selectColumns = 'equipments.id, ';
+        $selectColumns = 'equipments.id as id, ';
         $selectColumns .= 'equipment_types.label as type_label, ';
         $selectColumns .= 'equipment_types.name as type_name, ';
         $selectColumns .= 'equipments.location_id as location_id, ';
@@ -47,7 +47,6 @@ class EquipmentModel extends LogModel
         $selectColumns .= 'equipments.owner_id as owner_id, ';
         $selectColumns .= 'institutes.name as owner_name, ';
         $selectColumns .= 'statuses.name as status, ';
-        $selectColumns .= 'equipments.parent_id, ';
         $selectColumns .= 'equipments.serial, ';
         $selectColumns .= 'equipments.comments, ';
         $selectColumns .= 'equipments.type_params, ';
@@ -87,33 +86,59 @@ class EquipmentModel extends LogModel
 
     /**
      * Returns the related equipments for a given equipment id.
-     * 
-     * Related equipments are the parents, sibilings and childs of a specific equipment.
-     * The equipment instances returned by this query containg an extra field relation_type
-     * that defines which relation that equipment has with the original one:
-     * "Parent", "Sibling" or "Child".
+     * This function breaks if equipments_to_equipments have 2 rows with same ids in a, b with different types
      *
      * @param string $equipmentId The equipment id to get relations from.
      * 
      * @return array All Equipment instances found
      */ 
     public function getRelatedEquipments($equipmentId): array{
-        // $equipment = $this->withDeleted()->find($equipmentId);
-        $extraSelect = "equipments_to_equipments.type as relation_type";
-        // $extraSelect .= sprintf("WHEN equipments.id = '%s' THEN 'Parent' ", $equipment->parent_id);
-        // $extraSelect .= sprintf("WHEN equipments.parent_id = '%s' THEN 'Sibling' ", $equipment->parent_id);
-        // $extraSelect .= "ELSE 'Child' END AS relation_type";
-        $query = $this->fullQuery($extraSelect)
-                      ->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_b_id')
-                      ->where('equipments_to_equipments.equipment_a_id', $equipmentId);
-                    //   ->orWhere('equipments.id', $equipment->parent_id)
-                    //   ->orWhere('equipments.parent_id', $equipment->id);
-        // if (!empty($equipment->parent_id)){
-        //     $query = $query->orWhere('equipments.parent_id', $equipment->parent_id);
-        // }
-        // $equipments = $query->where('equipments.id !=', $equipmentId)->findAll();
-        $equipments = $query->findAll();
+        $parentId = $this->getParentId($equipmentId);
+        $extraSelect = "CASE ";
+        $extraSelect .= sprintf(
+            "WHEN equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.type = %s THEN %s ",
+            $this->db->escape($parentId),
+            $this->db->escape('child'),
+            $this->db->escape('sibling')
+        );
+        $extraSelect .= "ELSE equipments_to_equipments.type END AS relation_type";
+        $equipments = $this->fullQuery($extraSelect)
+            ->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_a_id', 'left')
+            ->orWhere(sprintf(
+                "equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.equipment_a_id != %s",
+                $this->db->escape($equipmentId),
+                $this->db->escape($equipmentId)
+            ))    // Gets the equipments that have a relation that refers this $equipmentId
+            ->orWhere(sprintf(
+                "equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.equipment_a_id != %s AND equipments_to_equipments.type = %s",
+                $this->db->escape($parentId),
+                $this->db->escape($equipmentId),
+                $this->db->escape('child')
+            ))    // Gets the this equipmentId parent childs
+            ->findAll();
         return $equipments;
+    }
+
+    /**
+     * Returns the parent id from a specific equipment id.
+     * Considers that the equipment has only one parent
+     * 
+     * @param string $equipmentId The equipment id to get the parent from.
+     * 
+     * @return ?string The obtained parent id
+     */ 
+    public function getParentId(string $equipmentId): ?string
+    {
+        $parentRelation = $this->select('equipment_b_id as parent_id')
+                               ->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_a_id')
+                               ->where('equipments_to_equipments.equipment_a_id', $equipmentId)
+                               ->where('equipments_to_equipments.type', 'child')
+                               ->first();
+        if (is_null($parentRelation)){
+            return null;
+        } else {
+            return $parentRelation->parent_id;
+        }
     }
 
     protected function getInsertLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
@@ -296,17 +321,45 @@ class EquipmentModel extends LogModel
     public function addParent(string $childId, string $parentId): bool
     {
         $equipment2EquipmentModel = new Equipments2EquipmentsModel(isMigration: $this->isMigration);
-        $parentRelation = new Equipment2Equipment([
+        $childRelation = new Equipment2Equipment([
             'equipment_a_id' => $childId,
             'equipment_b_id' => $parentId,
+            'type' => 'child'
+        ]);
+        $parentRelation = new Equipment2Equipment([
+            'equipment_b_id' => $childId,
+            'equipment_a_id' => $parentId,
             'type' => 'parent'
         ]);
-        $equipment2EquipmentModel->insertWithLog($parentRelation);
+        $this->db->transStart();
+        $opTimestamp = Time::now();
+        $equipment2EquipmentModel->insertWithLog($parentRelation, opTimestamp: $opTimestamp, transaction: false);
+        $equipment2EquipmentModel->insertWithLog($childRelation, opTimestamp: $opTimestamp, transaction: false);
+        $this->db->transComplete();
         return true;
     }
 
-    public function removeParent(string $childId, string $parentId): bool
-    {
+    public function removeParent(string $childId): bool
+    {   
+        $parentId = $this->getParentId($childId);
+        $equipment2EquipmentModel = new Equipments2EquipmentsModel(isMigration: $this->isMigration);
+        $ids = $equipment2EquipmentModel
+            ->select('id')
+            ->orWhere(sprintf(
+                "equipment_a_id = %s AND equipment_b_id = %s",
+                $this->db->escape($childId),
+                $this->db->escape($parentId)
+            ))
+            ->orWhere(sprintf(
+                "equipment_b_id = %s AND equipment_a_id = %s",
+                $this->db->escape($childId),
+                $this->db->escape($parentId)
+            ))
+            ->findAll();
+        array_walk($ids, function($value, $key){
+            $ids[$key] = $value->id;
+        });
+        $equipment2EquipmentModel->deleteWithLog($ids);
         return true;
     }
 }
