@@ -9,8 +9,8 @@ class StringRules{
      *
      * @param $value  Value given by CodeIgniter validator
      * @param string $params Substring to check
-     * @param array $data Ignored, here for compatibility reasons
-     * @param ?string &$error Ignored, here for compatibility reasons
+     * @param array $data Ignored, it exists for compatibility reasons only
+     * @param ?string &$error Ignored, it exists for compatibility reasons only
      * 
      * @return bool True if the value ends with the substring in $params
      */ 
@@ -24,8 +24,8 @@ class StringRules{
      *
      * @param $value  Value given by CodeIgniter validator
      * @param string $params Substring to check
-     * @param array $data Ignored, here for compatibility reasons
-     * @param ?string &$error Ignored, here for compatibility reasons
+     * @param array $data Ignored, it exists for compatibility reasons only
+     * @param ?string &$error Ignored, it exists for compatibility reasons only
      * 
      * @return bool True if the value starts with the substring in $params
      */ 

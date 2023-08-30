@@ -34,7 +34,7 @@ class EquipmentModel extends LogModel
         $this->selectSideTable .= 'equipment_types.label as type_label ';
     }
 
-    public function fullQuery(){
+    public function fullQuery(?string $extraSelect=null){
         $selectColumns = 'equipments.id, ';
         $selectColumns .= 'equipment_types.label as type_label, ';
         $selectColumns .= 'equipment_types.name as type_name, ';
@@ -55,6 +55,9 @@ class EquipmentModel extends LogModel
         $selectColumns .= 'equipments.updated_at, ';
         $selectColumns .= 'equipments.created_at, ';
         $selectColumns .= 'equipments.deleted_at ';
+        if (!is_null($extraSelect)){
+            $selectColumns .= sprintf(', %s', $extraSelect);
+        }
         $query = $this->select($selectColumns)
                       ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
                       ->join('locations', 'equipments.location_id = locations.id', 'left')
@@ -85,24 +88,31 @@ class EquipmentModel extends LogModel
         return $result;
     }
 
-    public function getRelatedEquipments($equipmentId){
+    /**
+     * Returns the related equipments for a given equipment id.
+     * 
+     * Related equipments are the parents, sibilings and childs of a specific equipment.
+     * The equipment instances returned by this query containg an extra field relation_type
+     * that defines which relation that equipment has with the original one:
+     * "Parent", "Sibling" or "Child".
+     *
+     * @param string $equipmentId The equipment id to get relations from.
+     * 
+     * @return array All Equipment instances found
+     */ 
+    public function getRelatedEquipments($equipmentId): array{
         $equipment = $this->withDeleted()->find($equipmentId);
-        $query = $this->fullQuery()
+        $extraSelect = "CASE ";
+        $extraSelect .= sprintf("WHEN equipments.id = '%s' THEN 'Parent' ", $equipment->parent_id);
+        $extraSelect .= sprintf("WHEN equipments.parent_id = '%s' THEN 'Sibling' ", $equipment->parent_id);
+        $extraSelect .= "ELSE 'Child' END AS relation_type";
+        $query = $this->fullQuery($extraSelect)
                       ->orWhere('equipments.id', $equipment->parent_id)
                       ->orWhere('equipments.parent_id', $equipment->id);
         if (!empty($equipment->parent_id)){
             $query = $query->orWhere('equipments.parent_id', $equipment->parent_id);
         }
         $equipments = $query->where('equipments.id !=', $equipmentId)->findAll();
-        foreach ($equipments as &$related){
-            if ($related->id == $equipment->parent_id){
-                $related->relation_type = 'Parent';
-            } elseif ($related->parent_id == $equipment->parent_id){
-                $related->relation_type = 'Sibling';
-            } else {
-                $related->relation_type = 'Child';
-            }
-        }       
         return $equipments;
     }
 

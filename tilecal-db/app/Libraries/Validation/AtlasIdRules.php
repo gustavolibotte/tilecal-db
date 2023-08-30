@@ -52,8 +52,8 @@ class AtlasIdRules {
      *
      * @param $value  Value given by CodeIgniter validator, considered as an equipment id
      * @param string $params System code to check
-     * @param array $data Ignored, here for compatibility reasons
-     * @param ?string &$error Ignored, here for compatibility reasons
+     * @param array $data Ignored, it exists for compatibility reasons only
+     * @param ?string &$error Ignored, it exists for compatibility reasons only
      * 
      * @return bool True if the id for the specified system
      */ 
@@ -69,8 +69,8 @@ class AtlasIdRules {
      *
      * @param $value  Value given by CodeIgniter validator, considered as an equipment id
      * @param string $params Project code to check
-     * @param array $data Ignored, here for compatibility reasons
-     * @param ?string &$error Ignored, here for compatibility reasons
+     * @param array $data Ignored, it exists for compatibility reasons only
+     * @param ?string &$error Ignored, it exists for compatibility reasons only
      * 
      * @return bool True if the id is for the specified project
      */ 
@@ -86,8 +86,8 @@ class AtlasIdRules {
      *
      * @param $value  Value given by CodeIgniter validator, considered as an equipment id
      * @param string $params String with format <table>.<column> that refers to the database column that has the valid institute mnes
-     * @param array $data Ignored, here for compatibility reasons
-     * @param ?string &$error Ignored, here for compatibility reasons
+     * @param array $data Ignored, it exists for compatibility reasons only
+     * @param ?string &$error Ignored, it exists for compatibility reasons only
      * 
      * @return bool True if the id has a valid institute
      */ 
