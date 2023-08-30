@@ -47,8 +47,6 @@ class EquipmentModel extends LogModel
         $selectColumns .= 'equipments.owner_id as owner_id, ';
         $selectColumns .= 'institutes.name as owner_name, ';
         $selectColumns .= 'statuses.name as status, ';
-        $selectColumns .= 'parent_types.label as parent_type_label, ';
-        $selectColumns .= 'parent_types.name as parent_type_name, ';
         $selectColumns .= 'equipments.parent_id, ';
         $selectColumns .= 'equipments.serial, ';
         $selectColumns .= 'equipments.comments, ';
@@ -63,8 +61,6 @@ class EquipmentModel extends LogModel
                       ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
                       ->join('locations', 'equipments.location_id = locations.id', 'left')
                       ->join('statuses', 'equipments.status_id = statuses.id', 'left')
-                      ->join('equipments parents', 'equipments.parent_id = parents.id', 'left')
-                      ->join('equipment_types parent_types', 'parents.type_id = parent_types.id', 'left')
                       ->join('institutes', 'equipments.owner_id = institutes.id');
         return $query;
 
@@ -102,18 +98,21 @@ class EquipmentModel extends LogModel
      * @return array All Equipment instances found
      */ 
     public function getRelatedEquipments($equipmentId): array{
-        $equipment = $this->withDeleted()->find($equipmentId);
-        $extraSelect = "CASE ";
-        $extraSelect .= sprintf("WHEN equipments.id = '%s' THEN 'Parent' ", $equipment->parent_id);
-        $extraSelect .= sprintf("WHEN equipments.parent_id = '%s' THEN 'Sibling' ", $equipment->parent_id);
-        $extraSelect .= "ELSE 'Child' END AS relation_type";
+        // $equipment = $this->withDeleted()->find($equipmentId);
+        $extraSelect = "equipments_to_equipments.type as relation_type";
+        // $extraSelect .= sprintf("WHEN equipments.id = '%s' THEN 'Parent' ", $equipment->parent_id);
+        // $extraSelect .= sprintf("WHEN equipments.parent_id = '%s' THEN 'Sibling' ", $equipment->parent_id);
+        // $extraSelect .= "ELSE 'Child' END AS relation_type";
         $query = $this->fullQuery($extraSelect)
-                      ->orWhere('equipments.id', $equipment->parent_id)
-                      ->orWhere('equipments.parent_id', $equipment->id);
-        if (!empty($equipment->parent_id)){
-            $query = $query->orWhere('equipments.parent_id', $equipment->parent_id);
-        }
-        $equipments = $query->where('equipments.id !=', $equipmentId)->findAll();
+                      ->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_b_id')
+                      ->where('equipments_to_equipments.equipment_a_id', $equipmentId);
+                    //   ->orWhere('equipments.id', $equipment->parent_id)
+                    //   ->orWhere('equipments.parent_id', $equipment->id);
+        // if (!empty($equipment->parent_id)){
+        //     $query = $query->orWhere('equipments.parent_id', $equipment->parent_id);
+        // }
+        // $equipments = $query->where('equipments.id !=', $equipmentId)->findAll();
+        $equipments = $query->findAll();
         return $equipments;
     }
 

@@ -18,9 +18,10 @@ class EquipmentSeeder extends BaseSeeder
         $fabricatorModel->insertWithLog($equipments);
         $parent = remove_value(0, $equipments);
         foreach ($equipments as $equipment){
-            if (apply_prob($parentChance)){
-                $fabricatorModel->addParent($equipment->id, $parent->id);
-            }
+            $fabricatorModel->addParent($equipment->id, $parent->id);
+            // if (apply_prob($parentChance)){
+                
+            // }
         }
     }
 }
