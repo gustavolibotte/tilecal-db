@@ -231,7 +231,7 @@ class EquipmentModel extends LogModel
         return $operationLog;
     }
 
-    public function deleteWithLog($id=null, bool $purge = false, ?Time $opTimestamp = null, bool $transaction = true)
+    public function deleteWithLog($id=null, bool $purge = false, ?Time $opTimestamp = null)
     {
         if (is_null($opTimestamp)){
             $opTimestamp = Time::now();
@@ -247,9 +247,6 @@ class EquipmentModel extends LogModel
         // $data->deleted_at = $opTimestamp;
         $operationLog = $this->getDeleteLog($opTimestamp, $id);
         // $relations = $equipments2FilesModel->select('id')->where('equipment_id', $id)->findAll();
-        if($transaction){
-            $this->db->transStart();
-        }
         $res = $this->delete($id, $purge);
         // Relations are always hard deleted
         
@@ -257,9 +254,6 @@ class EquipmentModel extends LogModel
         //     $equipments2FilesModel->deleteWithLog($relation->id, $purge, $opTimestamp, false);
         // }
         $histModel->insert($operationLog);
-        if($transaction){
-            $this->db->transComplete();
-        }
         return $res;
     }
 
@@ -278,14 +272,14 @@ class EquipmentModel extends LogModel
         return $operationLog;
     }
 
-    public function restoreWithLog(int|string|array $id, ?Time $opTimestamp = null, bool $transaction=true): bool
+    public function restoreWithLog(int|string|array $id, ?Time $opTimestamp = null): bool
     {
         if (is_null($opTimestamp)){
             $opTimestamp = Time::now();
         }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->restoreWithLog($sampleId, $opTimestamp, $transaction);
+                $res[] = $this->restoreWithLog($sampleId, $opTimestamp);
             }
             return $res;
         }
@@ -303,17 +297,11 @@ class EquipmentModel extends LogModel
                                            ->where('equipment_id', $id)
                                            ->where('equipments_to_files.deleted_at', $data->deleted_at)
                                            ->findAll();
-        if ($transaction){
-            $this->db->transStart();
-        }
         $this->restore($id, $opTimestamp);
         foreach($relations as $relation){
             $equipments2FilesModel->restoreWithLog($relation->id, $opTimestamp, false);
         }
         $histModel->insert($operationLog);
-        if ($transaction){
-            $this->db->transComplete();
-        }
         return true;
     }
 
@@ -353,11 +341,9 @@ class EquipmentModel extends LogModel
             'equipment_a_id' => $parentId,
             'type' => 'parent'
         ]);
-        $this->db->transStart();
         $opTimestamp = Time::now();
-        $equipment2EquipmentModel->insertWithLog($parentRelation, opTimestamp: $opTimestamp, transaction: false);
-        $equipment2EquipmentModel->insertWithLog($childRelation, opTimestamp: $opTimestamp, transaction: false);
-        $this->db->transComplete();
+        $equipment2EquipmentModel->insertWithLog($parentRelation, opTimestamp: $opTimestamp);
+        $equipment2EquipmentModel->insertWithLog($childRelation, opTimestamp: $opTimestamp);
         return true;
     }
 
@@ -404,8 +390,8 @@ class EquipmentModel extends LogModel
             'type' => 'parent'
         ]);
         $opTimestamp = Time::now();
-        $equipment2EquipmentModel->insertWithLog($parentRelation, opTimestamp: $opTimestamp, transaction: false);
-        $equipment2EquipmentModel->insertWithLog($childRelation, opTimestamp: $opTimestamp, transaction: false);
+        $equipment2EquipmentModel->insertWithLog($parentRelation, opTimestamp: $opTimestamp);
+        $equipment2EquipmentModel->insertWithLog($childRelation, opTimestamp: $opTimestamp);
         return true;
     }
 

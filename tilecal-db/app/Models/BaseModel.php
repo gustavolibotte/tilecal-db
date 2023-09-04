@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
-use CodeIgniter\Config\Factories;
 
 abstract class BaseModel extends Model
 {

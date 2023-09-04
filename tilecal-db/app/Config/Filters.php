@@ -23,7 +23,8 @@ class Filters extends BaseConfig
         'secureheaders' => SecureHeaders::class,
         'auth'          => \App\Filters\Authentication::class,
         'lasturl'       => \App\Filters\LastURL::class,
-        'request_time'  => \App\Filters\RequestTime::class
+        'request_time'  => \App\Filters\RequestTime::class,
+        'db_transaction' => \App\Filters\DbTransaction::class
     ];
 
     /**
@@ -36,11 +37,13 @@ class Filters extends BaseConfig
             // 'honeypot',
             'csrf',
             'request_time',
-            'lasturl' => ['except' => 'callback']
+            'lasturl' => ['except' => 'callback'],
+            'db_transaction'
             // 'invalidchars',
         ],
         'after' => [
             'toolbar',
+            'db_transaction'
             // 'honeypot',
             // 'secureheaders',
         ],
