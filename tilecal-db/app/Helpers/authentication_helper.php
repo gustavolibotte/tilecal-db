@@ -1,9 +1,9 @@
 <?php
 
-use CodeIgniter\HTTP\Exceptions\HTTPException;
 use Jumbojett\OpenIDConnectClient;
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
+use \App\Entities\User;
 
 function getUser(){
     $session = \Config\Services::session();
@@ -13,7 +13,7 @@ function getUser(){
                     'username' => 'anakin.skywalker',
                     'preferredUsername' => 'darth.vader',
                     'firstName' => 'Darth',
-                    'lastName' => 'vader',
+                    'lastName' => 'Vader',
                     'name' => 'Darth Vader',
                     'email' => 'darth.vader@cern.ch',
                     'cernId' => 'XXXXXX',
@@ -63,12 +63,21 @@ function getUser(){
                     'nonce' => $decodedAccessToken->nonce
                 ];
             }
-            $session->set('isLogged', true);
-            $session->set('userInfo', $userInfo);
-            $currentUser = new \App\Entities\User($userInfo);
+            setUser($userInfo);
+            $currentUser = new User($userInfo);
         }
         else{
-            $currentUser = new \App\Entities\User($session->get('userInfo'));
+            $currentUser = new User($session->get('userInfo'));
         }
         return $currentUser;
+}
+
+function setUser(User|array $user)
+{
+    $session = \Config\Services::session();
+    if ($user instanceof User){
+        $user = $user->toRawArray();
+    }
+    $session->set('isLogged', true);
+    $session->set('userInfo', $user);
 }

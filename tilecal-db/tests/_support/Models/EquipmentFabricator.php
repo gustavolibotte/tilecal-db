@@ -26,13 +26,13 @@ class EquipmentFabricator extends EquipmentModel
     public function initialize()
     {
         parent::initialize();
-        $this->equipmentTypeModel = new EquipmentTypeModel(isMigration: $this->isMigration);
+        $this->equipmentTypeModel = new EquipmentTypeModel();
         $this->types = $this->equipmentTypeModel->getIdArray();
-        $this->locationModel = new LocationModel(isMigration: $this->isMigration);
+        $this->locationModel = new LocationModel();
         $this->locations = $this->locationModel ->getIdArray();
-        $this->statusModel = new StatusModel(isMigration: $this->isMigration);
+        $this->statusModel = new StatusModel();
         $this->statuses = $this->statusModel->getIdArray();
-        $this->instituteModel = new InstituteModel(isMigration: $this->isMigration);
+        $this->instituteModel = new InstituteModel();
         $this->institutes = $this->instituteModel->getIdArray();
     }
 

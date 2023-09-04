@@ -8,12 +8,13 @@ class Equipment2FileSeeder extends BaseSeeder
     public function run()
     {
         helper('random');
-        $equipmentModel = new \App\Models\EquipmentModel(isMigration: true);
+        service('authenticator')->setMigration();
+        $equipmentModel = new \App\Models\EquipmentModel();
         $equipments = $equipmentModel->findAll();
-        $fileModel = new \App\Models\FileModel(isMigration: true);
+        $fileModel = new \App\Models\FileModel();
         $files = $fileModel->findAll();
 
-        $equipments2FileModel = new \App\Models\Equipment2FileModel(isMigration: true);
+        $equipments2FileModel = new \App\Models\Equipment2FileModel();
         foreach ($equipments as $equipment){
             $file = random_choice($files);
             $data = [

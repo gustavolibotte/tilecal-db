@@ -13,7 +13,6 @@ use CodeIgniter\Entity\Entity;
 
 abstract class LogModel extends BaseModel{
 
-    protected bool $isMigration = false;
     protected $useSoftDeletes = true;
     protected array $insertChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
     protected array $updateChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
@@ -24,15 +23,10 @@ abstract class LogModel extends BaseModel{
     protected array $deleteWithLogCallbacks = []; 
     protected array $restoreWithLogCallbacks = []; 
 
-    public function __construct(bool $isMigration=false)
-    {   
-        parent::__construct();
-        $this->isMigration = $isMigration;
-    }
-
     public function initialize()
     {
         helper('app_array');
+        parent::initialize();
         $this->allowedFields = array_merge($this->allowedFields, ['updated_at', 'created_at', 'deleted_at']);
     }
 
@@ -47,7 +41,7 @@ abstract class LogModel extends BaseModel{
             }
             return $res;
         }
-        $histModel = new HistModel($this->isMigration);
+        $histModel = new HistModel();
         if (!($data instanceof Entity)){
             throw new \TypeError('$data must be instance of Entity class');
         }
@@ -98,7 +92,7 @@ abstract class LogModel extends BaseModel{
             }
             return $res;
         }
-        $histModel = new HistModel($this->isMigration);
+        $histModel = new HistModel();
         if (!($data instanceof Entity)){
             throw new \TypeError('$data must be instance of Entity class');
         }
@@ -162,7 +156,7 @@ abstract class LogModel extends BaseModel{
             }
             return $res;
         }
-        $histModel = new HistModel($this->isMigration);
+        $histModel = new HistModel();
         $callbackData['operationLog'] = $this->getDeleteLog($opTimestamp, $id);
         $callbackData['deleted_at'] = $opTimestamp;
         $callbackData['id'] = $id;
@@ -211,7 +205,7 @@ abstract class LogModel extends BaseModel{
             }
             return $res;
         }
-        $histModel = new HistModel($this->isMigration);
+        $histModel = new HistModel();
         $data = $this->onlyDeleted()->find($id);
         if (is_null($data)){
             throw new DataException('Called restore on a non deleted row.');

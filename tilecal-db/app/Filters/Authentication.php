@@ -18,10 +18,9 @@ class Authentication implements FilterInterface
      * @return mixed
      */
     public function before(RequestInterface $request, $arguments = null){
-        helper('authentication');
-        helper('array');
-        $user = getUser();
-        $action = (is_null($arguments))? null: dot_array_search(0, $arguments);
+        helper('app_array');
+        $user = service('authenticator')->getUser();
+        $action = (is_null($arguments))? null: dot_search_with_default(0, $arguments);
         if (!$user->isAuthorized($action)){
             return redirect('unauthorized');
         }

@@ -18,7 +18,7 @@ class HistModel extends BaseModel
     }
 
     public function addUser($operationInfo){
-        $operationInfo['data']['user'] = ($this->isMigration)? 'root': getUser()->username;
+        $operationInfo['data']['user'] = service('authenticator')->getUser()->username;
         return $operationInfo;
     }
 

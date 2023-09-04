@@ -242,7 +242,7 @@ class EquipmentModel extends LogModel
             }
             return $res;
         }
-        $histModel = new HistModel($this->isMigration);
+        $histModel = new HistModel();
         // $data = $this->find($id);
         // $data->deleted_at = $opTimestamp;
         $operationLog = $this->getDeleteLog($opTimestamp, $id);
@@ -289,7 +289,7 @@ class EquipmentModel extends LogModel
             }
             return $res;
         }
-        $histModel = new HistModel($this->isMigration);
+        $histModel = new HistModel();
         $data = $this->onlyDeleted()->find($id);
         if (is_null($data)){
             throw new DataException('Called restore on a non deleted row.');
@@ -342,7 +342,7 @@ class EquipmentModel extends LogModel
      */ 
     public function addParent(string $childId, string $parentId): bool
     {
-        $equipment2EquipmentModel = new Equipments2EquipmentsModel(isMigration: $this->isMigration);
+        $equipment2EquipmentModel = new Equipments2EquipmentsModel();
         $childRelation = new Equipment2Equipment([
             'equipment_a_id' => $childId,
             'equipment_b_id' => $parentId,
@@ -364,7 +364,7 @@ class EquipmentModel extends LogModel
     public function removeParent(string $childId): bool
     {   
         $parentId = $this->getParentId($childId);
-        $equipment2EquipmentModel = new Equipments2EquipmentsModel(isMigration: $this->isMigration);
+        $equipment2EquipmentModel = new Equipments2EquipmentsModel();
         $ids = $equipment2EquipmentModel
             ->select('id')
             ->orWhere(sprintf(
@@ -392,7 +392,7 @@ class EquipmentModel extends LogModel
         }
         $childId = $data->id;
         $parentId = $data->parent_id;
-        $equipment2EquipmentModel = new Equipments2EquipmentsModel(isMigration: $this->isMigration);
+        $equipment2EquipmentModel = new Equipments2EquipmentsModel();
         $childRelation = new Equipment2Equipment([
             'equipment_a_id' => $childId,
             'equipment_b_id' => $parentId,
@@ -411,7 +411,6 @@ class EquipmentModel extends LogModel
 
     protected function deleteRelations(array &$data): array
     {
-        d($data);
         $this->deleteFileRelations($data['id'], $data['opTimestamp']);
         $this->deleteEquipmentRelations($data['id'], $data['opTimestamp']);
         return $data;
@@ -419,7 +418,7 @@ class EquipmentModel extends LogModel
 
     protected function deleteFileRelations(string $id, Time $opTimestamp)
     {
-        $equipments2FilesModel = new Equipment2FileModel($this->isMigration);
+        $equipments2FilesModel = new Equipment2FileModel();
         $relations = $equipments2FilesModel->select('id')->where('equipment_id', $id)->findAll();
         foreach($relations as $relation){
              $equipments2FilesModel->deleteWithLog($relation->id, true, $opTimestamp, false);
@@ -428,7 +427,7 @@ class EquipmentModel extends LogModel
 
     public function deleteEquipmentRelations(string $id, Time $opTimestamp)
     {
-        $equipments2Equipments = new Equipments2EquipmentsModel($this->isMigration);
+        $equipments2Equipments = new Equipments2EquipmentsModel();
         $relations = $equipments2Equipments->select('id')->where('equipment_id', $id)->findAll();
         foreach($relations as $relation){
              $equipments2Equipments->deleteWithLog($relation->id, true, $opTimestamp, false);

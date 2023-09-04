@@ -10,9 +10,10 @@ class EquipmentSeeder extends BaseSeeder
     public function run()
     {
         helper(['random', 'app_array']);
+        service('authenticator')->setMigration();
         $numEntries = 100;
         $parentChance = 0.5;
-        $fabricatorModel = new EquipmentFabricator(isMigration: true);
+        $fabricatorModel = new EquipmentFabricator();
         $fabricator = new Fabricator($fabricatorModel);
         $equipments = $fabricator->make($numEntries);
         $fabricatorModel->insertWithLog($equipments);

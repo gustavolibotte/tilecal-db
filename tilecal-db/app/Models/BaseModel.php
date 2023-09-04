@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use CodeIgniter\Config\Factories;
 
 abstract class BaseModel extends Model
 {
@@ -40,13 +41,15 @@ abstract class BaseModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    // Custom
-    protected bool $isMigration = false;
+    /**
+     * Timestamp to be used on operation logs. Initialized as the request timestamp given by the filter request_time
+     * @var \CodeIgniter\I18n\Time $opTimestamp
+     */
+    public \CodeIgniter\I18n\Time $opTimestamp;
 
-    public function __construct(bool $isMigration=false)
-    {   
-        parent::__construct();
-        $this->isMigration = $isMigration;
+    protected function initialize()
+    {
+        $this->resetOpTimestamp();
     }
 
     public function getIdArray(?array $ids=null){
@@ -78,5 +81,10 @@ abstract class BaseModel extends Model
             }
         }
         return $options;
+    }
+
+    public function resetOpTimestamp()
+    {
+        $this->opTimestamp = service('time')->getRequestTimestamp();
     }
 }

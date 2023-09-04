@@ -83,7 +83,7 @@ class FileModel extends LogModel
             }
             return $res;
         }
-        $histModel = new HistModel($this->isMigration);
+        $histModel = new HistModel();
         $data = $this->find($id);
         $data->deleted_at = $opTimestamp;
         $operationLog = $this->getDeleteLog($opTimestamp, $id);
@@ -130,7 +130,7 @@ class FileModel extends LogModel
             }
             return $res;
         }
-        $histModel = new HistModel($this->isMigration);
+        $histModel = new HistModel();
         $data = $this->onlyDeleted()->find($id);
         if (is_null($data)){
             throw new DataException('Called restore on a non deleted row.');

@@ -42,6 +42,7 @@ class Autoload extends AutoloadConfig
     public $psr4 = [
         APP_NAMESPACE => APPPATH, // For custom app namespace
         'Config'      => APPPATH . 'Config',
+        'App\Library' =>  APPPATH . 'Libraries',
         'App\Library\Forms' => APPPATH . 'Libraries/Forms',
         'App\Library\Validation' => APPPATH . 'Libraries/Validation'
     ];

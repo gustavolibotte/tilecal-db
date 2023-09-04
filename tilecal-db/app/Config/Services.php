@@ -3,6 +3,8 @@
 namespace Config;
 
 use CodeIgniter\Config\BaseService;
+use App\Library\Authenticator;
+use App\Library\Time;
 
 /**
  * Services Configuration file.
@@ -29,4 +31,20 @@ class Services extends BaseService
      *     return new \CodeIgniter\Example();
      * }
      */
+
+    public static function authenticator($getShared=true)
+    {   
+        if($getShared){
+            return static::getSharedInstance('Authenticator');
+        }
+        return new Authenticator();
+    }
+
+    public static function time($getShared=true)
+    {
+        if($getShared){
+            return static::getSharedInstance('time');
+        }
+        return new Time();
+    }
 }
