@@ -40,16 +40,7 @@ abstract class BaseModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    /**
-     * Timestamp to be used on operation logs. Initialized as the request timestamp given by the filter request_time
-     * @var \CodeIgniter\I18n\Time $opTimestamp
-     */
-    public \CodeIgniter\I18n\Time $opTimestamp;
-
-    protected function initialize()
-    {
-        $this->resetOpTimestamp();
-    }
+    protected function initialize(){}
 
     public function getIdArray(?array $ids=null){
         $results = [];
@@ -80,11 +71,5 @@ abstract class BaseModel extends Model
             }
         }
         return $options;
-    }
-
-    public function resetOpTimestamp(): self
-    {
-        $this->opTimestamp = service('time')->getRequestTimestamp();
-        return $this;
     }
 }

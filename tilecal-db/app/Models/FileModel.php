@@ -54,50 +54,47 @@ class FileModel extends LogModel
         return $result;
     }
 
-    protected function getInsertLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
+    protected function getInsertLog(int|string $id, Entity $data): OperationLog|array
     {
-        $operationLog = parent::getInsertLog($opTimestamp, $id, $data);
+        $operationLog = parent::getInsertLog($id, $data);
         if (array_key_exists('filedata', $operationLog->changes)){
             $operationLog->filedata = remove_value('filedata', $operationLog->changes['filedata']);
         }
         return $operationLog;
     }
 
-    protected function getUpdateLog(Time $opTimestamp, int|string $id, Entity $new, Entity $old): OperationLog|array
+    protected function getUpdateLog(int|string $id, Entity $new, Entity $old): OperationLog|array
     {
-        $operationLog = parent::getUpdateLog($opTimestamp, $id, $new, $old);
+        $operationLog = parent::getUpdateLog($id, $new, $old);
         if ($new->filedata != $old->filedata){
             $operationLog->filedata = $new->filedata;
         }
         return $operationLog;
     }
 
-    public function deleteWithLog($id=null, bool $purge = false, ?Time $opTimestamp = null): bool
+    public function deleteWithLog($id=null, bool $purge = false): bool
     {
-        if (is_null($opTimestamp)){
-            $opTimestamp = Time::now();
-        }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->deleteWithLog($sampleId, $purge, $opTimestamp);
+                $res[] = $this->deleteWithLog($sampleId, $purge);
             }
             return $res;
         }
         $histModel = new HistModel();
         $data = $this->find($id);
-        $data->deleted_at = $opTimestamp;
-        $operationLog = $this->getDeleteLog($opTimestamp, $id);
+        $data->deleted_at = service('time')->getRequestTimestamp();
+        $operationLog = $this->getDeleteLog($id);
         $equipments2FilesModel = new Equipment2FileModel();
         $relations = $equipments2FilesModel->select('id')->where('file_id', $id)->findAll();
         $res = $this->delete($id, $purge);
         foreach($relations as $relation){
-            $equipments2FilesModel->deleteWithLog($relation->id, $purge, $opTimestamp, false);
+            $equipments2FilesModel->deleteWithLog($relation->id, $purge, false);
         }
         $histModel->insert($operationLog);
         return $res;
     }
 
-    protected function getDeleteLog(Time $opTimestamp, int|string $id): OperationLog|array
+    protected function getDeleteLog(int|string $id): OperationLog|array
     {
         $changes = $this->find($id)->toArray();
         $filedata = remove_value('filedata', $changes);
@@ -107,20 +104,16 @@ class FileModel extends LogModel
             'record_id' => $id,
             'action' =>'delete',
             'table' => $this->table,
-            'created_at' => $opTimestamp,
             'filedata' => $filedata
         ]);
         return $operationLog;
     }
 
-    public function restoreWithLog(int|string|array $id, ?Time $opTimestamp = null): bool
+    public function restoreWithLog(int|string|array $id): bool
     {
-        if (is_null($opTimestamp)){
-            $opTimestamp = Time::now();
-        }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->restoreWithLog($sampleId, $opTimestamp);
+                $res[] = $this->restoreWithLog($sampleId);
             }
             return $res;
         }
@@ -129,7 +122,7 @@ class FileModel extends LogModel
         if (is_null($data)){
             throw new DataException('Called restore on a non deleted row.');
         }
-        $operationLog = $this->getRestoreLog($opTimestamp, $id, $data);
+        $operationLog = $this->getRestoreLog($id, $data);
         $equipments2FilesModel = new Equipment2FileModel();
         $relations = $equipments2FilesModel->withDeleted()->select('equipments_to_files.id')
                                            ->join('equipments', 'equipments_to_files.equipment_id = equipments.id')
@@ -137,16 +130,16 @@ class FileModel extends LogModel
                                            ->where('file_id', $id)
                                            ->where('equipments_to_files.deleted_at', $data->deleted_at)
                                            ->findAll();
-        $this->restore($id, $opTimestamp);
+        $this->restore($id);
         foreach($relations as $relation){
-            $equipments2FilesModel->restoreWithLog($relation->id, $opTimestamp, false);
+            $equipments2FilesModel->restoreWithLog($relation->id, false);
         }
         $histModel->insert($operationLog);
 
         return true;
     }
 
-    protected function getRestoreLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
+    protected function getRestoreLog(int|string $id, Entity $data): OperationLog|array
     {
         $changes = $data->toArray();
         $filedata = remove_value('filedata', $changes);
@@ -156,7 +149,6 @@ class FileModel extends LogModel
             'record_id' => $id,
             'action' =>'restore',
             'table' => $this->table,
-            'created_at' => $opTimestamp,
             'filedata' => $filedata
         ]);
         return $operationLog;

@@ -10,8 +10,6 @@ class Home extends BaseController
     {   
         $welcomeData['pageHeader'] = '';
         $welcomeData['pageTitle'] = 'Welcome to the Tilecal Database';
-        $model = model('EquipmentModel');
-        d($model->opTimestamp);
         return default_view('welcome', $welcomeData);
     }
 }

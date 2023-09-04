@@ -30,14 +30,11 @@ abstract class LogModel extends BaseModel{
         $this->allowedFields = array_merge($this->allowedFields, ['updated_at', 'created_at', 'deleted_at']);
     }
 
-    public function insertWithLog(Entity|array $data, bool $returnID = true, ?Time $opTimestamp=null)
+    public function insertWithLog(Entity|array $data, bool $returnID = true)
     {
-        if (is_null($opTimestamp)){
-            $opTimestamp = Time::now();
-        }
         if (is_array($data)){
             foreach($data as $sample){
-                $res[] = $this->insertWithLog($sample, $returnID, $opTimestamp);
+                $res[] = $this->insertWithLog($sample, $returnID);
             }
             return $res;
         }
@@ -45,23 +42,24 @@ abstract class LogModel extends BaseModel{
         if (!($data instanceof Entity)){
             throw new \TypeError('$data must be instance of Entity class');
         }
-        $data->created_at = $opTimestamp;
-        $data->updated_at = $opTimestamp;
+        $requestTimestamp = service('time')->getRequestTimestamp();
+        $data->created_at = $requestTimestamp;
+        $data->updated_at = $requestTimestamp;
         $res = $this->insert($data, $returnID);
         $id = $this->getInsertID();
-        $operationLog = $this->getInsertLog($opTimestamp, $id, $data);
+        $operationLog = $this->getInsertLog($id, $data);
         $histModel->insert($operationLog);
-        $this->callInsertCallbacks($opTimestamp, $id, $data, $operationLog);
+        $this->callInsertCallbacks($id, $data, $operationLog);
         return $res;
     }
 
-    protected function callInsertCallbacks(Time $opTimestamp, mixed $id, Entity $data, OperationLog $operationLog){
+    protected function callInsertCallbacks(mixed $id, Entity $data, OperationLog $operationLog){
         foreach($this->insertWithLogCallbacks as $callback){
-            $this->$callback($opTimestamp, $id, $data, $operationLog);
+            $this->$callback($id, $data, $operationLog);
         }
     }
 
-    protected function getInsertLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
+    protected function getInsertLog(int|string $id, Entity $data): OperationLog|array
     {
         $changes = $data->toArray();
         unset_array_keys($changes, $this->insertChangesIgnore);
@@ -69,20 +67,16 @@ abstract class LogModel extends BaseModel{
             'changes' => $changes,
             'record_id' => $id,
             'action' =>'insert',
-            'table' => $this->table,
-            'created_at' => $opTimestamp
+            'table' => $this->table
         ]);
         return $operationLog;
     }
 
-    public function updateWithLog(int|string|array $id, $data = null, ?Time $opTimestamp=null): bool
+    public function updateWithLog(int|string|array $id, $data = null): bool
     {
-        if (is_null($opTimestamp)){
-            $opTimestamp = Time::now();
-        }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->updateWithLog($sampleId, $data, $opTimestamp);
+                $res[] = $this->updateWithLog($sampleId, $data);
             }
             return $res;
         }
@@ -90,22 +84,22 @@ abstract class LogModel extends BaseModel{
         if (!($data instanceof Entity)){
             throw new \TypeError('$data must be instance of Entity class');
         }
-        $data->updated_at = $opTimestamp;
+        $data->updated_at = service('time')->getRequestTimestamp();
         $old = $this->find($id);
-        $operationLog = $this->getUpdateLog($opTimestamp, $id, $data, $old);
+        $operationLog = $this->getUpdateLog($id, $data, $old);
         $res = $this->update($id, $data);
         $histModel->insert($operationLog);
-        $this->callUpdateCallbacks($opTimestamp, $id, $data, $operationLog);
+        $this->callUpdateCallbacks($id, $data, $operationLog);
         return $res;
     }
 
-    protected function callUpdateCallbacks(Time $opTimestamp, mixed $id, Entity $data, OperationLog $operationLog){
+    protected function callUpdateCallbacks(mixed $id, Entity $data, OperationLog $operationLog){
         foreach($this->updateWithLogCallbacks as $callback){
-            $this->$callback($opTimestamp, $id, $data, $operationLog);
+            $this->$callback($id, $data, $operationLog);
         }
     }
 
-    protected function getUpdateLog(Time $opTimestamp, int|string $id, Entity $new,  Entity $old):OperationLog| array
+    protected function getUpdateLog(int|string $id, Entity $new,  Entity $old):OperationLog| array
     {
         $new = $new->toArray();
         $old = $old->toArray();
@@ -116,8 +110,7 @@ abstract class LogModel extends BaseModel{
             'changes' => $changes,
             'record_id' => $id,
             'action' =>'update',
-            'table' => $this->table,
-            'created_at' => $opTimestamp
+            'table' => $this->table
         ]);
         return $operationLog;
     }
@@ -132,21 +125,18 @@ abstract class LogModel extends BaseModel{
         return (isset($changes))? $changes: [];
     }
 
-    public function deleteWithLog(int|string|array $id = null, bool $purge = false, ?Time $opTimestamp=null)
+    public function deleteWithLog(int|string|array $id = null, bool $purge = false)
     {
         
-        if (is_null($opTimestamp)){
-            $opTimestamp = Time::now();
-        }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->deleteWithLog($sampleId, $purge, $opTimestamp);
+                $res[] = $this->deleteWithLog($sampleId, $purge);
             }
             return $res;
         }
         $histModel = new HistModel();
-        $callbackData['operationLog'] = $this->getDeleteLog($opTimestamp, $id);
-        $callbackData['deleted_at'] = $opTimestamp;
+        $callbackData['operationLog'] = $this->getDeleteLog($id);
+        $callbackData['deleted_at'] = service('time')->getRequestTimestamp();
         $callbackData['id'] = $id;
         $res = $this->update($id, ['deleted_at' => $callbackData['deleted_at']]);
         $histModel->insert($callbackData['operationLog']);
@@ -161,7 +151,7 @@ abstract class LogModel extends BaseModel{
         }
     }
 
-    protected function getDeleteLog(Time $opTimestamp, int|string $id): OperationLog|array
+    protected function getDeleteLog(int|string $id): OperationLog|array
     {
         $changes = $this->find($id)->toArray();
         unset_array_keys($changes, $this->deleteChangesIgnore);
@@ -169,21 +159,17 @@ abstract class LogModel extends BaseModel{
             'changes' => $changes,
             'record_id' => $id,
             'action' =>'delete',
-            'table' => $this->table,
-            'created_at' => $opTimestamp
+            'table' => $this->table
         ]);
         return $operationLog;
 
     }
 
-    public function restoreWithLog(int|string|array $id, ?Time $opTimestamp = null): bool
+    public function restoreWithLog(int|string|array $id): bool
     {
-        if (is_null($opTimestamp)){
-            $opTimestamp = Time::now();
-        }
         if (is_array($id)){
             foreach($id as $sampleId){
-                $res[] = $this->restoreWithLog($sampleId, $opTimestamp);
+                $res[] = $this->restoreWithLog($sampleId);
             }
             return $res;
         }
@@ -192,27 +178,27 @@ abstract class LogModel extends BaseModel{
         if (is_null($data)){
             throw new DataException('Called restore on a non deleted row.');
         }
-        $operationLog = $this->getRestoreLog($opTimestamp, $id, $data);
-        $this->restore($id, $opTimestamp);
+        $operationLog = $this->getRestoreLog($id, $data);
+        $this->restore($id);
         $histModel->insert($operationLog);
-        $this->callRestoreCallbacks($opTimestamp, $id, $operationLog);
+        $this->callRestoreCallbacks($id, $operationLog);
 
         return true;
     }
 
-    protected function callRestoreCallbacks(Time $opTimestamp, mixed $id, OperationLog $operationLog){
+    protected function callRestoreCallbacks(mixed $id, OperationLog $operationLog){
         foreach($this->restoreWithLogCallbacks as $callback){
-            $this->$callback($opTimestamp, $id, $operationLog);
+            $this->$callback($id, $operationLog);
         }
     }
 
-    public function restore(int|string|array $id, Time $opTimestamp): bool
+    public function restore(int|string|array $id): bool
     {
-        $this->onlyDeleted()->update($id, ['deleted_at' => null, 'updated_at' => $opTimestamp]);
+        $this->onlyDeleted()->update($id, ['deleted_at' => null, 'updated_at' => service('time')->getRequestTimestamp()]);
         return true;
     }
 
-    protected function getRestoreLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
+    protected function getRestoreLog(int|string $id, Entity $data): OperationLog|array
     {
         $changes = $data->toArray();
         unset_array_keys($changes, $this->restoreChangesIgnore);
@@ -220,8 +206,7 @@ abstract class LogModel extends BaseModel{
             'changes' => $changes,
             'record_id' => $id,
             'action' =>'restore',
-            'table' => $this->table,
-            'created_at' => $opTimestamp
+            'table' => $this->table
         ]);
         return $operationLog;
     }

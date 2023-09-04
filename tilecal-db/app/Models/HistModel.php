@@ -22,6 +22,11 @@ class HistModel extends BaseModel
         return $operationInfo;
     }
 
+    public function addCreatedAt($operationInfo){
+        $operationInfo['data']['created_at'] = service('time')->getRequestTimestamp();
+        return $operationInfo;
+    }
+
     public function getEquipmentHist($equipmentId){
         $hist = $this->select("hist.id, hist.user, hist.table, hist.action, hist.record_id, hist.changes, hist.created_at")
                      ->where("(table = 'equipments' AND record_id = '{$equipmentId}') OR (table = 'equipments_to_files' AND equipments_to_files.equipment_id = '{$equipmentId}')")
