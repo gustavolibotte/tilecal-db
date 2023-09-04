@@ -82,7 +82,7 @@ class FileModel extends LogModel
         }
         $histModel = new HistModel();
         $data = $this->find($id);
-        $data->deleted_at = service('time')->getRequestTimestamp();
+        // $data->deleted_at = service('time')->getRequestTimestamp();
         $operationLog = $this->getDeleteLog($id);
         $equipments2FilesModel = new Equipment2FileModel();
         $relations = $equipments2FilesModel->select('id')->where('file_id', $id)->findAll();

@@ -23,7 +23,7 @@ class HistModel extends BaseModel
     }
 
     public function addCreatedAt($operationInfo){
-        $operationInfo['data']['created_at'] = service('time')->getRequestTimestamp();
+        $operationInfo['data']['created_at'] = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
         return $operationInfo;
     }
 

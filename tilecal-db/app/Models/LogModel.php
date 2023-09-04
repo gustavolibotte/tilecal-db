@@ -7,9 +7,7 @@
 namespace App\Models;
 
 use App\Entities\OperationLog;
-use CodeIgniter\Database\Exceptions\DataException;
-use CodeIgniter\I18n\Time;
-use CodeIgniter\Entity\Entity;
+use CodeIgniter\Database\Exceptions\DatabaseException;
 
 abstract class LogModel extends BaseModel{
 
@@ -18,97 +16,75 @@ abstract class LogModel extends BaseModel{
     protected array $updateChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
     protected array $deleteChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
     protected array $restoreChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
-    protected array $insertWithLogCallbacks = []; 
-    protected array $updateWithLogCallbacks = []; 
-    protected array $deleteWithLogCallbacks = []; 
-    protected array $restoreWithLogCallbacks = []; 
+    protected array $beforeRestore = [];
+    protected array $afterRestore = [];
 
     public function initialize()
     {
         helper('app_array');
         parent::initialize();
-        $this->allowedFields = array_merge($this->allowedFields, ['updated_at', 'created_at', 'deleted_at']);
+        $this->beforeInsert[] = 'addInsertTimestamps';
+        $this->afterInsert[] = 'logInsert';
+        $this->beforeUpdate[] = 'addUpdateTimestamps';
+        $this->beforeUpdate[] = 'logUpdate';
+        $this->beforeDelete[] = 'logDelete';
+        $this->beforeDelete[] = 'addDeleteTimestamps';
+        $this->beforeRestore[] = 'logRestore';
     }
 
-    public function insertWithLog(Entity|array $data, bool $returnID = true)
+    protected function addInsertTimestamps(array $data): array
     {
-        if (is_array($data)){
-            foreach($data as $sample){
-                $res[] = $this->insertWithLog($sample, $returnID);
-            }
-            return $res;
-        }
-        $histModel = new HistModel();
-        if (!($data instanceof Entity)){
-            throw new \TypeError('$data must be instance of Entity class');
-        }
-        $requestTimestamp = service('time')->getRequestTimestamp();
-        $data->created_at = $requestTimestamp;
-        $data->updated_at = $requestTimestamp;
-        $res = $this->insert($data, $returnID);
-        $id = $this->getInsertID();
-        $operationLog = $this->getInsertLog($id, $data);
-        $histModel->insert($operationLog);
-        $this->callInsertCallbacks($id, $data, $operationLog);
-        return $res;
+        $opTimestamp = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
+        $data['data']['created_at'] = $opTimestamp;
+        $data['data']['updated_at'] = $opTimestamp;
+        return $data;
     }
 
-    protected function callInsertCallbacks(mixed $id, Entity $data, OperationLog $operationLog){
-        foreach($this->insertWithLogCallbacks as $callback){
-            $this->$callback($id, $data, $operationLog);
-        }
-    }
-
-    protected function getInsertLog(int|string $id, Entity $data): OperationLog|array
+    protected function logInsert(array $data)
     {
-        $changes = $data->toArray();
-        unset_array_keys($changes, $this->insertChangesIgnore);
+        $operationLog = $this->getInsertLog($data);
+        model('HistModel')->insert($operationLog);
+        return $data;
+    }
+
+    protected function getInsertLog(array $data): OperationLog
+    {
+        d($data);
+        unset_array_keys($data['data'], $this->insertChangesIgnore);
+        $data['data']['id'] = $data['id'];
         $operationLog = new OperationLog([
-            'changes' => $changes,
-            'record_id' => $id,
+            'changes' => $data['data'],
+            'record_id' => $data['id'],
             'action' =>'insert',
             'table' => $this->table
         ]);
         return $operationLog;
     }
 
-    public function updateWithLog(int|string|array $id, $data = null): bool
+    protected function addUpdateTimestamps(array $data): array
     {
-        if (is_array($id)){
-            foreach($id as $sampleId){
-                $res[] = $this->updateWithLog($sampleId, $data);
-            }
-            return $res;
-        }
-        $histModel = new HistModel();
-        if (!($data instanceof Entity)){
-            throw new \TypeError('$data must be instance of Entity class');
-        }
-        $data->updated_at = service('time')->getRequestTimestamp();
-        $old = $this->find($id);
-        $operationLog = $this->getUpdateLog($id, $data, $old);
-        $res = $this->update($id, $data);
-        $histModel->insert($operationLog);
-        $this->callUpdateCallbacks($id, $data, $operationLog);
-        return $res;
+        $data['data']['updated_at'] = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
+        return $data;
     }
 
-    protected function callUpdateCallbacks(mixed $id, Entity $data, OperationLog $operationLog){
-        foreach($this->updateWithLogCallbacks as $callback){
-            $this->$callback($id, $data, $operationLog);
-        }
+    protected function logUpdate(array $data)
+    {
+        $operationLog = $this->getUpdateLog($data);
+        model('HistModel')->insert($operationLog);
+        return $data;
     }
 
-    protected function getUpdateLog(int|string $id, Entity $new,  Entity $old):OperationLog| array
+    protected function getUpdateLog(array $data): OperationLog
     {
-        $new = $new->toArray();
-        $old = $old->toArray();
+        $old = $this->find($data['id']);
+        $new = $data['data'];
+        $old = $old->toRawArray();
         unset_array_keys($old, $this->updateChangesIgnore);
         unset_array_keys($new, $this->updateChangesIgnore);
         $changes = $this->getChangedFields($old, $new);
         $operationLog = new OperationLog([
             'changes' => $changes,
-            'record_id' => $id,
+            'record_id' => $data['id'],
             'action' =>'update',
             'table' => $this->table
         ]);
@@ -117,47 +93,43 @@ abstract class LogModel extends BaseModel{
 
     protected function getChangedFields(array $old, array $new): array
     {
+        $changes = [];
         foreach ($new as $name=>$newValue){
             if (array_key_exists($name, $old) && ($old[$name] != $newValue)){
                 $changes[$name] = $newValue;
             }
         }
-        return (isset($changes))? $changes: [];
+        return $changes;
     }
 
-    public function deleteWithLog(int|string|array $id = null, bool $purge = false)
-    {
-        
-        if (is_array($id)){
-            foreach($id as $sampleId){
-                $res[] = $this->deleteWithLog($sampleId, $purge);
-            }
-            return $res;
+    protected function addDeleteTimestamps(array $data): array
+    {   
+        if ($data['purge']){
+            return $data;
         }
-        $histModel = new HistModel();
-        $callbackData['operationLog'] = $this->getDeleteLog($id);
-        $callbackData['deleted_at'] = service('time')->getRequestTimestamp();
-        $callbackData['id'] = $id;
-        $res = $this->update($id, ['deleted_at' => $callbackData['deleted_at']]);
-        $histModel->insert($callbackData['operationLog']);
-        $this->callDeleteCallbacks($callbackData);
-        return $res;
+        $opTimestamp = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
+        $builder = $this->builder();
+        $builder->set('deleted_at', $opTimestamp)
+                ->set('updated_at', $opTimestamp)
+                ->where('id', $data['id'])
+                ->update();
+        return $data;
     }
 
-    protected function callDeleteCallbacks(array &$callbackData){
-        foreach($this->deleteWithLogCallbacks as $callback){
-            echo "Calling {$callback}";
-            $this->$callback($callbackData);
-        }
-    }
-
-    protected function getDeleteLog(int|string $id): OperationLog|array
+    protected function logDelete(array $data)
     {
-        $changes = $this->find($id)->toArray();
+        $operationLog = $this->getDeleteLog($data);
+        model('HistModel')->insert($operationLog);
+        return $data;
+    }
+
+    protected function getDeleteLog(array $data): OperationLog
+    {
+        $changes = $this->find($data['id'][0])->toRawArray();
         unset_array_keys($changes, $this->deleteChangesIgnore);
         $operationLog = new OperationLog([
             'changes' => $changes,
-            'record_id' => $id,
+            'record_id' => $data['id'],
             'action' =>'delete',
             'table' => $this->table
         ]);
@@ -165,46 +137,50 @@ abstract class LogModel extends BaseModel{
 
     }
 
-    public function restoreWithLog(int|string|array $id): bool
+    public function restore(int|string|array $id): bool|array
     {
         if (is_array($id)){
-            foreach($id as $sampleId){
-                $res[] = $this->restoreWithLog($sampleId);
+            foreach($id as $entryId){
+                $res[] = $this->restore($entryId);
             }
             return $res;
         }
-        $histModel = new HistModel();
-        $data = $this->onlyDeleted()->find($id);
-        if (is_null($data)){
-            throw new DataException('Called restore on a non deleted row.');
+        $data = ['id' => $id];
+        foreach($this->beforeRestore as $callback){
+            d($callback);
+            $data = $this->$callback($data);
         }
-        $operationLog = $this->getRestoreLog($id, $data);
-        $this->restore($id);
-        $histModel->insert($operationLog);
-        $this->callRestoreCallbacks($id, $operationLog);
-
+        $opTimestamp = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
+        $entry = $this->onlyDeleted()->select('id')->find($id);
+        if (is_null($entry)){
+            throw new DatabaseException('The entry is not deleted to be restored');
+        }
+        $builder = $this->builder();
+        $builder->set('deleted_at', null)
+                ->set('updated_at', $opTimestamp)
+                ->where('id', $id)
+                ->update();
+        $data = ['id' => $id];
+        foreach($this->afterRestore as $callback){
+            d($callback);
+            $data = $this->$callback($data);
+        }
+        $this->resetQuery();
         return true;
     }
 
-    protected function callRestoreCallbacks(mixed $id, OperationLog $operationLog){
-        foreach($this->restoreWithLogCallbacks as $callback){
-            $this->$callback($id, $operationLog);
-        }
+    protected function logRestore(array $data): array
+    {
+        $operationLog = $this->getRestoreLog($data);
+        model('HistModel')->insert($operationLog);
+        return $data;
     }
 
-    public function restore(int|string|array $id): bool
+    protected function getRestoreLog(array $data): OperationLog
     {
-        $this->onlyDeleted()->update($id, ['deleted_at' => null, 'updated_at' => service('time')->getRequestTimestamp()]);
-        return true;
-    }
-
-    protected function getRestoreLog(int|string $id, Entity $data): OperationLog|array
-    {
-        $changes = $data->toArray();
-        unset_array_keys($changes, $this->restoreChangesIgnore);
         $operationLog = new OperationLog([
-            'changes' => $changes,
-            'record_id' => $id,
+            'changes' => [],
+            'record_id' => $data['id'],
             'action' =>'restore',
             'table' => $this->table
         ]);

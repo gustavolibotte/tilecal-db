@@ -57,7 +57,6 @@ abstract class BaseController extends Controller
 
         helper('view');
         $this->user = service('authenticator')->getUser();
-        $this->requestTimestamp = service('time')->getRequestTimestamp();
     }
 
     public function buildDataTablesResponse($data)
