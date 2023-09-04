@@ -83,8 +83,9 @@ abstract class BaseModel extends Model
         return $options;
     }
 
-    public function resetOpTimestamp()
+    public function resetOpTimestamp(): self
     {
         $this->opTimestamp = service('time')->getRequestTimestamp();
+        return $this;
     }
 }
