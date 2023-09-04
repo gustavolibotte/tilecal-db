@@ -24,20 +24,6 @@ class EquipmentTableCell extends BaseCell
         return $this->getJs('equipment_table_side.js');
     }
 
-    public function sideFileRelated(array $params)
-    {
-        helper(['array', 'view']);
-        $fileId = dot_array_search('fileId', $params);
-        $equipmentModel = new \App\Models\EquipmentModel();
-        $viewData['equipments'] = $equipmentModel->getFileRelated($fileId, limit:30);
-        return default_view('cells/equipment_table_side', $viewData);
-    }
-
-    public function sideFileRelatedjs()
-    {
-        return $this->getJs('equipment_table_side.js');
-    }
-
     public function full(array $params=[]): string
     {
         helper(['array', 'view']);
@@ -72,11 +58,10 @@ class EquipmentTableCell extends BaseCell
 
     public function fullEquipmentRelated(array $params): string
     {
-        helper(['array', 'view']);
+        helper(['app_array', 'view']);
         $equipmentId = dot_array_search('equipmentId', $params);
-        $withDeleted = dot_array_search('withDeleted', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
-        if ($withDeleted){
+        if(dot_search_with_default('withDeleted', $params, false)){
             $equipmentModel->withDeleted();
         }
         $viewData['equipments'] = $equipmentModel->getRelatedEquipments($equipmentId);
@@ -90,9 +75,12 @@ class EquipmentTableCell extends BaseCell
 
     public function fullFileRelated(array $params): string
     {
-        helper(['array', 'view']);
-        $fileId = dot_array_search('fileId', $params);
+        helper(['app_array', 'view']);
+        $fileId = dot_search_with_default('fileId', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
+        if(dot_search_with_default('withDeleted', $params, false)){
+            $equipmentModel->withDeleted();
+        }
         $viewData['equipments'] = $equipmentModel->getFileRelated($fileId);
         return default_view('cells/equipment_table_full', $viewData);
     }

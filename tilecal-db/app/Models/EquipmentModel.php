@@ -33,6 +33,9 @@ class EquipmentModel extends LogModel
         parent::initialize();
         $this->selectSideTable .= 'equipments.id, ';
         $this->selectSideTable .= 'equipment_types.label as type_label ';
+        $this->insertWithLogCallbacks[] = 'insertParentId';
+        $this->deleteWithLogCallbacks[] = 'deleteRelations';
+        d($this->deleteWithLogCallbacks);
     }
 
     public function fullQuery(?string $extraSelect=null){
@@ -76,24 +79,36 @@ class EquipmentModel extends LogModel
         return $result;
     }
 
-    public function getFileRelated($fileId, $limit=null){
+    /**
+     * Returns an array with all the related equipments to a specific file given its id
+     *
+     * @param string|int $id file id to get related equipments from
+     * 
+     * @param array array with related equipment entities
+     */
+    public function getFileRelated(string|int $id): array
+    {
         $query = $this->fullQuery()
-                      ->join('equipments_to_files', 'equipments.id = equipments_to_files.equipment_id')
-                      ->where(sprintf('equipments_to_files.file_id = %s', $fileId));
-        $result = is_null($limit)? $query->findAll(): $query->findAll($limit);
+                      ->join('equipments_to_files', 'equipments.id = equipments_to_files.equipment_id', 'left')
+                      ->where('equipments_to_files.file_id', $id);
+        if ($this->tempUseSoftDeletes){    // If withDeleted was called this evaluates to false
+            $query = $query->where('equipments_to_files.deleted_at IS NULL');
+        }
+        $result = $query->findAll();
         return $result;
     }
 
     /**
      * Returns the related equipments for a given equipment id.
-     * This function breaks if equipments_to_equipments have 2 rows with same ids in a, b with different types
+     * This function breaks if equipments_to_equipments have 2 rows with same a, b id pair
      *
-     * @param string $equipmentId The equipment id to get relations from.
+     * @param string $id The equipment id to get relations from.
      * 
      * @return array All Equipment instances found
      */ 
-    public function getRelatedEquipments($equipmentId): array{
-        $parentId = $this->getParentId($equipmentId);
+    public function getRelatedEquipments(string $id): array
+    {
+        $parentId = $this->getParentId($id);
         $extraSelect = "CASE ";
         $extraSelect .= sprintf(
             "WHEN equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.type = %s THEN %s ",
@@ -102,20 +117,26 @@ class EquipmentModel extends LogModel
             $this->db->escape('sibling')
         );
         $extraSelect .= "ELSE equipments_to_equipments.type END AS relation_type";
-        $equipments = $this->fullQuery($extraSelect)
+        // Gets the equipments that have a relation that refers to this equipment
+        $whereQuery = sprintf(
+            "((equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.equipment_a_id != %s) OR ",
+            $this->db->escape($id),
+            $this->db->escape($id)
+        );
+        // Gets the this id parent childs
+        $whereQuery .= sprintf(
+            "(equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.equipment_a_id != %s AND equipments_to_equipments.type = %s))",
+            $this->db->escape($parentId),
+            $this->db->escape($id),
+            $this->db->escape('child')
+        );
+        $query = $this->fullQuery($extraSelect)
             ->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_a_id', 'left')
-            ->orWhere(sprintf(
-                "equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.equipment_a_id != %s",
-                $this->db->escape($equipmentId),
-                $this->db->escape($equipmentId)
-            ))    // Gets the equipments that have a relation that refers this $equipmentId
-            ->orWhere(sprintf(
-                "equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.equipment_a_id != %s AND equipments_to_equipments.type = %s",
-                $this->db->escape($parentId),
-                $this->db->escape($equipmentId),
-                $this->db->escape('child')
-            ))    // Gets the this equipmentId parent childs
-            ->findAll();
+            ->where($whereQuery);
+        if ($this->tempUseSoftDeletes){
+            $query->where('equipments_to_equipments.deleted_at IS NULL');
+        }
+        $equipments = $query->findAll();
         return $equipments;
     }
 
@@ -222,18 +243,19 @@ class EquipmentModel extends LogModel
             return $res;
         }
         $histModel = new HistModel($this->isMigration);
-        $data = $this->find($id);
-        $data->deleted_at = $opTimestamp;
+        // $data = $this->find($id);
+        // $data->deleted_at = $opTimestamp;
         $operationLog = $this->getDeleteLog($opTimestamp, $id);
-        $equipments2FilesModel = new Equipment2FileModel();
-        $relations = $equipments2FilesModel->select('id')->where('equipment_id', $id)->findAll();
+        // $relations = $equipments2FilesModel->select('id')->where('equipment_id', $id)->findAll();
         if($transaction){
             $this->db->transStart();
         }
         $res = $this->delete($id, $purge);
-        foreach($relations as $relation){
-            $equipments2FilesModel->deleteWithLog($relation->id, $purge, $opTimestamp, false);
-        }
+        // Relations are always hard deleted
+        
+        // foreach($relations as $relation){
+        //     $equipments2FilesModel->deleteWithLog($relation->id, $purge, $opTimestamp, false);
+        // }
         $histModel->insert($operationLog);
         if($transaction){
             $this->db->transComplete();
@@ -361,5 +383,55 @@ class EquipmentModel extends LogModel
         });
         $equipment2EquipmentModel->deleteWithLog($ids);
         return true;
+    }
+
+    protected function insertParentId(Time $opTimestamp, mixed $id, Entity $data, OperationLog $operationLog)
+    {
+        if (is_null($data->parent_id)){
+            return null;
+        }
+        $childId = $data->id;
+        $parentId = $data->parent_id;
+        $equipment2EquipmentModel = new Equipments2EquipmentsModel(isMigration: $this->isMigration);
+        $childRelation = new Equipment2Equipment([
+            'equipment_a_id' => $childId,
+            'equipment_b_id' => $parentId,
+            'type' => 'child'
+        ]);
+        $parentRelation = new Equipment2Equipment([
+            'equipment_b_id' => $childId,
+            'equipment_a_id' => $parentId,
+            'type' => 'parent'
+        ]);
+        $opTimestamp = Time::now();
+        $equipment2EquipmentModel->insertWithLog($parentRelation, opTimestamp: $opTimestamp, transaction: false);
+        $equipment2EquipmentModel->insertWithLog($childRelation, opTimestamp: $opTimestamp, transaction: false);
+        return true;
+    }
+
+    protected function deleteRelations(array &$data): array
+    {
+        d($data);
+        $this->deleteFileRelations($data['id'], $data['opTimestamp']);
+        $this->deleteEquipmentRelations($data['id'], $data['opTimestamp']);
+        return $data;
+    }
+
+    protected function deleteFileRelations(string $id, Time $opTimestamp)
+    {
+        $equipments2FilesModel = new Equipment2FileModel($this->isMigration);
+        $relations = $equipments2FilesModel->select('id')->where('equipment_id', $id)->findAll();
+        foreach($relations as $relation){
+             $equipments2FilesModel->deleteWithLog($relation->id, true, $opTimestamp, false);
+        }
+    }
+
+    public function deleteEquipmentRelations(string $id, Time $opTimestamp)
+    {
+        $equipments2Equipments = new Equipments2EquipmentsModel($this->isMigration);
+        $relations = $equipments2Equipments->select('id')->where('equipment_id', $id)->findAll();
+        foreach($relations as $relation){
+             $equipments2Equipments->deleteWithLog($relation->id, true, $opTimestamp, false);
+        }
     }
 }

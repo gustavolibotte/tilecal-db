@@ -11,16 +11,17 @@ class CreateDatabase extends Migration
         $this->forge->addField([
             'created_at' => [
                 'type' => 'TIMESTAMP',
-                'null' => false,
-                'default' => new RawSql('CURRENT_TIMESTAMP')
+                'constraint' => 6,
+                'null' => false
             ],
             'updated_at' => [
                 'type' => 'TIMESTAMP',
-                'null' => false,
-                'default' => new RawSql('CURRENT_TIMESTAMP')
+                'constraint' => 6,
+                'null' => false
             ],
             'deleted_at' => [
                 'type' => 'TIMESTAMP',
+                'constraint' => 6,
                 'null' => true
             ]
         ]);

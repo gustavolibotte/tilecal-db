@@ -10,4 +10,14 @@ class BaseCell
         $script = sprintf('<script type="text/javascript" src="%s" ></script>', $jsUrl);
         return $script;
     }
+
+    protected function getBool(string|int $key, array $params): bool
+    {
+        $value = dot_array_search($key, $params);
+        if (is_null($value)){
+            return false;
+        } else {
+            return $value;
+        }
+    }
 }

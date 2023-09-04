@@ -22,10 +22,21 @@ class FileModel extends LogModel
         $this->updateChangesIgnore[] = 'filedata';
     }
 
-    public function getEquipmentRelated($id){
+    /**
+     * Returns an array with all the related files to a specific equipment given its id
+     *
+     * @param string|int $id equipment id to get related files from
+     * 
+     * @param array array with related files entities
+     */
+    public function getEquipmentRelated(string|int $id): array
+    {
         $query = $this->select('files.id, files.name, files.description, files.created_at, files.deleted_at')
-                      ->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
-                      ->where(sprintf("equipments_to_files.equipment_id = '%s'", $id));
+                       ->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
+                       ->where('equipments_to_files.equipment_id', $id);
+        if ($this->tempUseSoftDeletes){
+            $query = $query->where('equipments_to_files.deleted_at IS NULL');
+        }
         $result = $query->findAll();
         return $result;
     }

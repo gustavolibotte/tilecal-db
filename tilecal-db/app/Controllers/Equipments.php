@@ -98,10 +98,10 @@ class Equipments extends BaseController
             $form = new $formClass();
         }
         
-        $modelModel = new EquipmentTypeModel();
-        $model = $modelModel->where(sprintf("name = '%s'", $typeName))->first();
-        $registerData['model'] = $model;
-        $title = sprintf('Register %s', $model->label);
+        $equipmentTypeModel = new EquipmentTypeModel();
+        $type = $equipmentTypeModel->where(sprintf("name = '%s'", $typeName))->first();
+        $registerData['model'] = $type;
+        $title = sprintf('Register %s', $type->label);
         $registerData['pageTitle'] = $title;
         $registerData['pageHeader'] = $title;
         $registerData['forms'] = ['Equipment Info'=> $form];

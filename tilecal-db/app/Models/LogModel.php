@@ -10,16 +10,19 @@ use App\Entities\OperationLog;
 use CodeIgniter\Database\Exceptions\DataException;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Entity\Entity;
-use App\Entities\Equipment2File;
 
 abstract class LogModel extends BaseModel{
 
     protected bool $isMigration = false;
     protected $useSoftDeletes = true;
-    protected $insertChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
-    protected $updateChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
-    protected $deleteChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
-    protected $restoreChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
+    protected array $insertChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
+    protected array $updateChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
+    protected array $deleteChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
+    protected array $restoreChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
+    protected array $insertWithLogCallbacks = []; 
+    protected array $updateWithLogCallbacks = []; 
+    protected array $deleteWithLogCallbacks = []; 
+    protected array $restoreWithLogCallbacks = []; 
 
     public function __construct(bool $isMigration=false)
     {   
@@ -57,10 +60,17 @@ abstract class LogModel extends BaseModel{
         $id = $this->getInsertID();
         $operationLog = $this->getInsertLog($opTimestamp, $id, $data);
         $histModel->insert($operationLog);
+        $this->callInsertCallbacks($opTimestamp, $id, $data, $operationLog);
         if ($transaction){
             $this->db->transComplete();
         }
         return $res;
+    }
+
+    protected function callInsertCallbacks(Time $opTimestamp, mixed $id, Entity $data, OperationLog $operationLog){
+        foreach($this->insertWithLogCallbacks as $callback){
+            $this->$callback($opTimestamp, $id, $data, $operationLog);
+        }
     }
 
     protected function getInsertLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
@@ -100,10 +110,17 @@ abstract class LogModel extends BaseModel{
         }
         $res = $this->update($id, $data);
         $histModel->insert($operationLog);
+        $this->callUpdateCallbacks($opTimestamp, $id, $data, $operationLog);
         if ($transaction){
             $this->db->transComplete();
         }
         return $res;
+    }
+
+    protected function callUpdateCallbacks(Time $opTimestamp, mixed $id, Entity $data, OperationLog $operationLog){
+        foreach($this->updateWithLogCallbacks as $callback){
+            $this->$callback($opTimestamp, $id, $data, $operationLog);
+        }
     }
 
     protected function getUpdateLog(Time $opTimestamp, int|string $id, Entity $new,  Entity $old):OperationLog| array
@@ -135,6 +152,7 @@ abstract class LogModel extends BaseModel{
 
     public function deleteWithLog(int|string|array $id = null, bool $purge = false, ?Time $opTimestamp=null, bool $transaction=true)
     {
+        
         if (is_null($opTimestamp)){
             $opTimestamp = Time::now();
         }
@@ -145,18 +163,26 @@ abstract class LogModel extends BaseModel{
             return $res;
         }
         $histModel = new HistModel($this->isMigration);
-        $data = $this->find($id);
-        $data->deleted_at = $opTimestamp;
-        $operationLog = $this->getDeleteLog($opTimestamp, $id);
+        $callbackData['operationLog'] = $this->getDeleteLog($opTimestamp, $id);
+        $callbackData['deleted_at'] = $opTimestamp;
+        $callbackData['id'] = $id;
         if ($transaction){
             $this->db->transStart();
         }
-        $res = $this->update($id, ['deleted_at' => $opTimestamp]);
-        $histModel->insert($operationLog);
+        $res = $this->update($id, ['deleted_at' => $callbackData['deleted_at']]);
+        $histModel->insert($callbackData['operationLog']);
+        $this->callDeleteCallbacks($callbackData);
         if ($transaction){
             $this->db->transComplete();
         }
         return $res;
+    }
+
+    protected function callDeleteCallbacks(array &$callbackData){
+        foreach($this->deleteWithLogCallbacks as $callback){
+            echo "Calling {$callback}";
+            $this->$callback($callbackData);
+        }
     }
 
     protected function getDeleteLog(Time $opTimestamp, int|string $id): OperationLog|array
@@ -196,11 +222,18 @@ abstract class LogModel extends BaseModel{
         }
         $this->restore($id, $opTimestamp);
         $histModel->insert($operationLog);
+        $this->callRestoreCallbacks($opTimestamp, $id, $operationLog);
         if ($transaction){
             $this->db->transComplete();
         }
 
         return true;
+    }
+
+    protected function callRestoreCallbacks(Time $opTimestamp, mixed $id, OperationLog $operationLog){
+        foreach($this->restoreWithLogCallbacks as $callback){
+            $this->$callback($opTimestamp, $id, $operationLog);
+        }
     }
 
     public function restore(int|string|array $id, Time $opTimestamp): bool
