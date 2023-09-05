@@ -49,7 +49,7 @@ class PmtForm extends EquipmentForm{
         ];
 
         $this->validationRules['parent_id']['rules'][] = "equipment_is_type[pmt_block]";
-        $this->validationRules['parent_id']['rules'][] = "not_maxed_parent[1,pmt,shrebbles]";
+        $this->validationRules['parent_id']['rules'][] = "not_maxed_parent[1,pmt,{id}]";
 
         $this->fields['serial']['required'] = true;
         $this->fields['serial']['helpText'] .= sprintf(' (Max size of %d characters)', self::$serialMaxSize);
@@ -145,7 +145,7 @@ class PmtForm extends EquipmentForm{
             ],
             "errors" => [
                 "required" => "You must supply a PMT model for the equipment.",
-                "in_list" => "The PMT model value is not valid. Choose one of ({param})",
+                "in_list" => "The PMT model value is not valid. Choose one of {param}",
             ]
         ];
         $this->commentsEnd();

@@ -43,9 +43,10 @@ class Filters extends BaseConfig
             // 'invalidchars',
         ],
         'after' => [
-            'toolbar',
-            // 'dump_messages'
             'db_transaction',
+            'toolbar'
+            // 'dump_messages'
+            // 'db_transaction',
             // 'honeypot',
             // 'secureheaders',
         ],

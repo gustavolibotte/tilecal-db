@@ -81,12 +81,14 @@ class Equipments extends BaseController
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
                 $equipmentModel->insert($equipment);
-                $messenger->addRegiserSuccess();
-                return redirect(sprintf('equipments/%s/register', $typeName));
+                $messenger->addRegisterSuccess();
+                $messenger->dumpMessages();
+                return redirect()->to(sprintf('equipments/%s/register', $typeName));
             } else {
                 foreach ($form->getErrors() as $errorMsg){
                     $messenger->addMessage($errorMsg, 'danger');
                 }
+                $messenger->dumpMessages();
             };
         } else{
             $form = new $formClass();
@@ -102,7 +104,6 @@ class Equipments extends BaseController
         $registerData['formUrl'] = uri_string();
         $registerData['successMessage'] = false;
         $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $typeName));
-        $messenger->dumpMessages();
         
         return default_view('equipment/register', $registerData);
     }

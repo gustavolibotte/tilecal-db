@@ -446,8 +446,8 @@ class EquipmentModel extends LogModel
         if ($this->tempUseSoftDeletes){
             foreach ($joinedTables as $tableName){
                 $this->where(sprintf(
-                    '%s.deleted_at IS NULL',
-                    $this->db->escape($tableName)
+                    '`%s`.`deleted_at` IS NULL',
+                    $tableName
                 ));
             }
         }
