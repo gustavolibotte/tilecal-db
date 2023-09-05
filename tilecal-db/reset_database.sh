@@ -5,5 +5,5 @@ php spark db:seed StatusSeeder
 php spark db:seed LocationSeeder
 php spark db:seed EquipmentTypeSeeder
 php spark db:seed EquipmentSeeder
-# php spark db:seed FileSeeder
-# php spark db:seed Equipment2FileSeeder
+php spark db:seed FileSeeder
+php spark db:seed Equipment2FileSeeder
