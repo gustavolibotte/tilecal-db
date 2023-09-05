@@ -4,6 +4,7 @@ namespace Config;
 
 use CodeIgniter\Config\BaseService;
 use App\Library\Authenticator;
+use App\Library\Messenger;
 use App\Library\Time;
 
 /**
@@ -46,5 +47,13 @@ class Services extends BaseService
             return static::getSharedInstance('time');
         }
         return new Time();
+    }
+
+    public static function messenger($getShared=true)
+    {
+        if($getShared){
+            return static::getSharedInstance('messenger');
+        }
+        return new Messenger();
     }
 }

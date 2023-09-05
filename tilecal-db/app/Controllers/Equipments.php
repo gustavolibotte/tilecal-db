@@ -69,10 +69,11 @@ class Equipments extends BaseController
     }
 
     public function register($typeName='pmt'){
-        helper(['form', 'url', 'message', 'app_form']);
+        helper(['form', 'url', 'app_form']);
 
         $formClass = get_model_form_class($typeName);
         $equipmentModel = new EquipmentModel();
+        $messenger = service('messenger');
 
         if ($this->request->is('post')){
             $form = new $formClass($this->request);
@@ -80,20 +81,12 @@ class Equipments extends BaseController
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
                 $equipmentModel->insert($equipment);
-                $messages[] = [
-                    'message' => 'Register success',
-                    'type' => 'success'
-                ];
-                addMessages($messages);
+                $messenger->addRegiserSuccess();
                 return redirect(sprintf('equipments/%s/register', $typeName));
             } else {
                 foreach ($form->getErrors() as $errorMsg){
-                    $messages[] = [
-                        'message' => $errorMsg,
-                        'type' => 'danger'
-                    ];
+                    $messenger->addMessage($errorMsg, 'danger');
                 }
-                addMessages($messages);
             };
         } else{
             $form = new $formClass();
@@ -109,47 +102,42 @@ class Equipments extends BaseController
         $registerData['formUrl'] = uri_string();
         $registerData['successMessage'] = false;
         $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $typeName));
+        $messenger->dumpMessages();
         
         return default_view('equipment/register', $registerData);
     }
 
     public function edit($equipmentId, $typeName)
     {
-        helper(['message', 'app_form']);
+        helper(['app_form']);
         $formClass = get_model_form_class($typeName);
         $form = new $formClass($this->request);
         $form->asEdit();
+        $messenger = service('messenger');
         if ($form->validate()){
             $equipmentModel = new EquipmentModel();
             $equipment = $form->getEntity();
             $equipmentModel->update($equipmentId, $equipment);
-            $messages[] = [
-                'message' => sprintf('Edited equipment %s with success', $equipment->id),
-                'type' => 'success'
-            ];
-            addMessages($messages);
+            $messenger->addMessage(
+                sprintf('Edited equipment %s with success', $equipment->id),
+                'success'
+            );
         } else{
             foreach ($form->getErrors() as $errorMsg){
-                $messages[] = [
-                    'message' => $errorMsg,
-                    'type' => 'danger'
-                ];
-                addMessages($messages);
+                $messenger->addMessage($errorMsg, 'danger');
             }
         }
+        $messenger->dumpMessages();
         return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
     }
 
     public function delete(string $equipmentId)
     {
-        helper('message');
         $equipmentModel = new EquipmentModel();
         $equipmentModel->delete($equipmentId);
-        $messages[] = [
-            'message' => 'Deleted with success',
-            'type' => 'success'
-        ];
-        addMessages($messages);
+        $messenger = service('messenger');
+        $messenger->addDeleteSuccess();
+        $messenger->dumpMessages();
         if ($this->user->isAuthorized('delete')){
             return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
         } else {
@@ -159,14 +147,9 @@ class Equipments extends BaseController
 
     public function restore(string $equipmentId)
     {
-        helper('message');
         $equipmentModel = new EquipmentModel();
         $equipmentModel->restore($equipmentId);
-        $messages[] = [
-            'message' => 'Restored with success',
-            'type' => 'success'
-        ];
-        addMessages($messages);
+        service('messenger')->addRestoreSuccess();
         return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
     }
 }

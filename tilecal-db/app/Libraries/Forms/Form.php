@@ -18,7 +18,7 @@ abstract class Form{
     public function __construct(?IncomingRequest $request=null)
     {
         $this->request = $request;
-        $this->validator = \Config\Services::validation();
+        $this->validator = \Config\Services::validation(getShared: false);
         $this->initialize();
         if (!is_null($this->request)){
             $this->processRequest();

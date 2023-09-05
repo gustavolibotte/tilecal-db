@@ -24,7 +24,8 @@ class Filters extends BaseConfig
         'auth'          => \App\Filters\Authentication::class,
         'lasturl'       => \App\Filters\LastURL::class,
         'request_time'  => \App\Filters\RequestTime::class,
-        'db_transaction' => \App\Filters\DbTransaction::class
+        'db_transaction' => \App\Filters\DbTransaction::class,
+        'dump_messages' => \App\Filters\DumpMessages::class
     ];
 
     /**
@@ -43,7 +44,8 @@ class Filters extends BaseConfig
         ],
         'after' => [
             'toolbar',
-            'db_transaction'
+            // 'dump_messages'
+            'db_transaction',
             // 'honeypot',
             // 'secureheaders',
         ],

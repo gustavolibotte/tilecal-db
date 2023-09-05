@@ -49,7 +49,7 @@ class PmtForm extends EquipmentForm{
         ];
 
         $this->validationRules['parent_id']['rules'][] = "equipment_is_type[pmt_block]";
-        $this->validationRules['parent_id']['rules'][] = "not_maxed_parent[1,pmt,{id}]";
+        $this->validationRules['parent_id']['rules'][] = "not_maxed_parent[1,pmt,shrebbles]";
 
         $this->fields['serial']['required'] = true;
         $this->fields['serial']['helpText'] .= sprintf(' (Max size of %d characters)', self::$serialMaxSize);
