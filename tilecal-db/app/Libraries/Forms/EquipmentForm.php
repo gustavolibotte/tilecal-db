@@ -52,17 +52,17 @@ class EquipmentForm extends Form{
                     'options' => (new \App\Models\StatusModel())->getFormDropdownOptions(['name', 'description'])
                 ]
             ],
-            'parent_id' => [
-                'id' => 'parent_id',
-                'label' => 'Parent ID',
-                'required' => false,
-                'helpText' => "Parent Equipment's barcode value following ATLAS identification rules.",
-                'fieldType' => 'input',
-                'fieldParams' => [
-                    'maxlength' => 14,
-                    'placeholder' => 'XXXXXXXXXXXXXX'
-                ]
-            ],
+            // 'parent_id' => [
+            //     'id' => 'parent_id',
+            //     'label' => 'Parent ID',
+            //     'required' => false,
+            //     'helpText' => "Parent Equipment's barcode value following ATLAS identification rules.",
+            //     'fieldType' => 'input',
+            //     'fieldParams' => [
+            //         'maxlength' => 14,
+            //         'placeholder' => 'XXXXXXXXXXXXXX'
+            //     ]
+            // ],
             'serial' => [
                 'id' => 'serial',
                 'required' => false,
@@ -134,27 +134,27 @@ class EquipmentForm extends Form{
                     "is_not_unique" => "The inserted status is not valid",
                 ]
             ],
-            "parent_id" => [
-                "rules" => [
-                    "permit_empty",
-                    "alpha_numeric",
-                    "exact_length[14]",
-                    "id_is_project[20]",
-                    "differs[id]",
-                    "id_has_valid_system",
-                    "id_has_valid_institute[institutes.mne]",
-                    "is_not_unique[equipments.id]",
-                ],
-                "errors" => [
-                    "alpha_numeric" => "The parent ID must be alphanumeric.",
-                    "exact_length" => "The parent ID must have 14 characters.",
-                    "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
-                    "differs" => "The parent ID is equal to the equipment ID",
-                    "id_has_valid_institute" => "The barcode doesn't have a valid institute value",
-                    "id_has_valid_system" => "The id system is not valid.",
-                    "is_not_unique" => "The parent ID doesn't exist."
-                ]
-            ],
+            // "parent_id" => [
+            //     "rules" => [
+            //         "permit_empty",
+            //         "alpha_numeric",
+            //         "exact_length[14]",
+            //         "id_is_project[20]",
+            //         "differs[id]",
+            //         "id_has_valid_system",
+            //         "id_has_valid_institute[institutes.mne]",
+            //         "is_not_unique[equipments.id]",
+            //     ],
+            //     "errors" => [
+            //         "alpha_numeric" => "The parent ID must be alphanumeric.",
+            //         "exact_length" => "The parent ID must have 14 characters.",
+            //         "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
+            //         "differs" => "The parent ID is equal to the equipment ID",
+            //         "id_has_valid_institute" => "The barcode doesn't have a valid institute value",
+            //         "id_has_valid_system" => "The id system is not valid.",
+            //         "is_not_unique" => "The parent ID doesn't exist."
+            //     ]
+            // ],
             "serial" => [
                 "rules" => [
                     sprintf("max_length[%d]", self::$serialMaxSize)

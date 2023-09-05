@@ -78,7 +78,7 @@ class Equipments extends BaseController
             if ($form->validate()){
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
-                $equipmentModel->insertWithLog($equipment);
+                $equipmentModel->insert($equipment);
                 $messages[] = [
                     'message' => 'Register success',
                     'type' => 'success'
@@ -121,7 +121,7 @@ class Equipments extends BaseController
         if ($form->validate()){
             $equipmentModel = new EquipmentModel();
             $equipment = $form->getEntity();
-            $equipmentModel->updateWithLog($equipmentId, $equipment);
+            $equipmentModel->update($equipmentId, $equipment);
             $messages[] = [
                 'message' => sprintf('Edited equipment %s with success', $equipment->id),
                 'type' => 'success'
@@ -143,7 +143,7 @@ class Equipments extends BaseController
     {
         helper('message');
         $equipmentModel = new EquipmentModel();
-        $equipmentModel->deleteWithLog($equipmentId);
+        $equipmentModel->delete($equipmentId);
         $messages[] = [
             'message' => 'Deleted with success',
             'type' => 'success'
@@ -160,7 +160,7 @@ class Equipments extends BaseController
     {
         helper('message');
         $equipmentModel = new EquipmentModel();
-        $equipmentModel->restoreWithLog($equipmentId);
+        $equipmentModel->restore($equipmentId);
         $messages[] = [
             'message' => 'Restored with success',
             'type' => 'success'

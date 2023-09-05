@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Library\Validation;
+namespace App\Validation;
 
 class StringRules{
 

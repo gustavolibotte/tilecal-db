@@ -99,7 +99,6 @@ class EquipmentModel extends LogModel
 
     /**
      * Returns the related equipments for a given equipment id.
-     * This function breaks if equipments_to_equipments have 2 rows with same a, b id pair
      *
      * @param string $id The equipment id to get relations from.
      * 
@@ -107,31 +106,33 @@ class EquipmentModel extends LogModel
      */ 
     public function getRelatedEquipments(string $id): array
     {
-        $parentId = $this->getParentId($id);
-        $extraSelect = "CASE ";
-        $extraSelect .= sprintf(
-            "WHEN equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.type = %s THEN %s ",
-            $this->db->escape($parentId),
-            $this->db->escape('child'),
-            $this->db->escape('sibling')
-        );
-        $extraSelect .= "ELSE equipments_to_equipments.type END AS relation_type";
+        // $parentId = $this->getParentId($id);
+        // $extraSelect = "CASE ";
+        // $extraSelect .= sprintf(
+        //     "WHEN equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.type = %s THEN %s ",
+        //     $this->db->escape($parentId),
+        //     $this->db->escape('child'),
+        //     $this->db->escape('sibling')
+        // );
+        // $extraSelect .= "ELSE equipments_to_equipments.type END AS relation_type";
+        $extraSelect = "equipments_to_equipments.type AS relation_type";
         // Gets the equipments that have a relation that refers to this equipment
         $whereQuery = sprintf(
-            "((equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.equipment_a_id != %s) OR ",
+            "((equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.equipment_a_id != %s)",
             $this->db->escape($id),
             $this->db->escape($id)
         );
-        // Gets the this id parent childs
-        $whereQuery .= sprintf(
-            "(equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.equipment_a_id != %s AND equipments_to_equipments.type = %s))",
-            $this->db->escape($parentId),
-            $this->db->escape($id),
-            $this->db->escape('child')
-        );
+        // Gets this id parent childs
+        // $whereQuery .= sprintf(
+        //     "(equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.equipment_a_id != %s AND equipments_to_equipments.type = %s))",
+        //     $this->db->escape($parentId),
+        //     $this->db->escape($id),
+        //     $this->db->escape('child')
+        // );
         $query = $this->fullQuery($extraSelect)
             ->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_a_id', 'left')
-            ->where($whereQuery);
+            ->where('equipments_to_equipments.equipment_b_id', $id)
+            ->where('equipments_to_equipments.equipment_a_id !=', $id);
         if ($this->tempUseSoftDeletes){
             $query->where('equipments_to_equipments.deleted_at IS NULL');
         }
@@ -190,7 +191,7 @@ class EquipmentModel extends LogModel
 
     protected function getInsertLog(array $data): OperationLog
     {
-        $data = $this->mergeTypeParams($data);
+        $data['data'] = $this->mergeTypeParams($data['data']);
         unset_array_keys($data['data'], $this->insertChangesIgnore);
         $data['data'] = $this->addForeignLabels($data['data']);
         $operationLog = new OperationLog([
@@ -285,13 +286,13 @@ class EquipmentModel extends LogModel
 
     protected function getDeleteLog(array $data): OperationLog
     {
-        $changes['data'] = $this->find($data['id'][0])->toRawArray();
+        $changes = $this->find($data['id'][0])->toRawArray();
         $changes = $this->mergeTypeParams($changes);
         unset_array_keys($changes, $this->deleteChangesIgnore);
-        $changes['data'] = $this->addForeignLabels($changes['data']);
+        $changes = $this->addForeignLabels($changes);
 
         $operationLog = new OperationLog([
-            'changes' => $changes['data'],
+            'changes' => $changes,
             'record_id' => $data['id'][0],
             'action' =>'delete',
             'table' => $this->table
@@ -370,12 +371,12 @@ class EquipmentModel extends LogModel
 
     protected function mergeTypeParams(array $data): array
     {
-        if(!array_key_exists('type_params', $data['data'])){
+        if(!array_key_exists('type_params', $data)){
             return $data;
         }
-        $data['typeParams'] = json_decode(remove_value('type_params', $data['data']), true);
-        foreach ($data['typeParams'] as $key=>$value){
-            $data['data'][$key] = $value;
+        $typeParams = json_decode(remove_value('type_params', $data), true);
+        foreach ($typeParams as $key=>$value){
+            $data[$key] = $value;
         }
         return $data;
     }

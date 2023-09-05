@@ -13,7 +13,6 @@ class Equipment2FileSeeder extends BaseSeeder
         $equipments = $equipmentModel->select('id')->findAll();
         $fileModel = new \App\Models\FileModel();
         $files = $fileModel->select('id, name')->findAll();
-        d($files);
 
         $equipments2FileModel = new \App\Models\Equipment2FileModel();
         foreach ($equipments as $equipment){

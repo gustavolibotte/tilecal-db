@@ -7,7 +7,7 @@ use App\Models\EquipmentTypeModel;
 use App\Models\StatusModel;
 use App\Models\LocationModel;
 use App\Models\InstituteModel;
-use App\Library\Validation\AtlasIdRules;
+use App\Validation\AtlasIdRules;
 use App\Library\Forms\PmtForm;
 
 class EquipmentFabricator extends EquipmentModel
