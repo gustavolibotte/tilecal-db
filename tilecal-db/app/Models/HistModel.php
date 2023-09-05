@@ -10,7 +10,7 @@ class HistModel extends BaseModel
     protected $allowedFields    = ['table', 'action', 'record_id', 'changes', 'filedata'];
 
     // Callbacks
-    protected $beforeInsert   = ['addUser'];
+    protected $beforeInsert   = ['addUser', 'addCreatedAt'];
 
     public function initialize()
     {
@@ -28,12 +28,21 @@ class HistModel extends BaseModel
     }
 
     public function getEquipmentHist($equipmentId){
-        $hist = $this->select("hist.id, hist.user, hist.table, hist.action, hist.record_id, hist.changes, hist.created_at")
-                     ->where("(table = 'equipments' AND record_id = '{$equipmentId}') OR (table = 'equipments_to_files' AND equipments_to_files.equipment_id = '{$equipmentId}')")
-                     ->join("equipments_to_files", "hist.record_id = equipments_to_files.id", 'left')
-                     ->join("equipments", "equipments.id = equipments_to_files.equipment_id", 'left')
-                     ->orderBy('hist.created_at', 'DESC')
-                     ->findAll();
+        $hist = $this
+        ->select("hist.id, hist.user, hist.table, hist.action, hist.record_id, hist.changes, hist.created_at")
+        ->orWhere("table = 'equipments' AND record_id = '{$equipmentId}'")
+        ->orWhere(sprintf(
+            'table = %s AND JSON_EXTRACT(changes, "$.equipment_id") = %s',
+            $this->db->escape('equipments_to_files'),
+            $this->db->escape($equipmentId)
+        ))
+        ->orWhere(sprintf(
+            'table = %s AND JSON_EXTRACT(changes , "$.equipment_b_id") = %s',
+            $this->db->escape('equipments_to_equipments'),
+            $this->db->escape($equipmentId)
+        ))
+        ->orderBy('hist.created_at', 'DESC')
+        ->findAll();
         return $hist;
     }
 

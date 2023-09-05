@@ -25,7 +25,7 @@ class Equipment2FileModel extends LogModel
             ->select('name')
             ->find($id);
         $changes = $operationLog->changes;
-        $changes['name'] = $file->name;
+        $changes['file_name'] = $file->name;
         $operationLog->changes = $changes;
         return $operationLog;
     }

@@ -55,45 +55,47 @@ class OperationLog extends BaseEntity
         return $msg;
     }
 
-    protected function insertEquipmentsToFilesMessage(){
-        $msg = '';
+    protected function getFileLink(): string
+    {
         $fileLink = sprintf(
-            '<a type="button" class="link-primary" href="%s">file</a>',
-            base_url(sprintf('files/view/%s', $this->changes['file_id']))
+            '<a type="button" class="link-primary" href="%s">%s</a>',
+            base_url(sprintf('files/view/%s', $this->changes['file_id'])),
+            $this->changes['file_name']
         );
+        return $fileLink;
+    }
+
+    protected function getEquipmentLink(string $idField): string
+    {
         $equipmentLink = sprintf(
-            '<a type="button" class="link-primary" href="%s">equipment</a>',
-            base_url(sprintf('equipments/view/%s', $this->changes['equipment_id']))
+            '<a type="button" class="link-primary" href="%s">%s</a>',
+            base_url(sprintf('equipments/view/%s', $this->changes[$idField])),
+            $this->changes[$idField]
         );
-        $msg .= sprintf('Link between %s and %s', $fileLink, $equipmentLink);
+        return $equipmentLink;
+    }
+
+    protected function insertEquipmentsToFilesMessage(){
+        $msg = sprintf('Link between %s and %s created',
+            $this->getFileLink(),
+            $this->getEquipmentLink('equipment_id')
+        );
         return $msg;
     }
 
     protected function deleteEquipmentsToFilesMessage(){
-        $msg = '';
-        $fileLink = sprintf(
-            '<a type="button" class="link-primary" href="%s">file</a>',
-            base_url(sprintf('files/view/%s', $this->changes['file_id']))
+        $msg = sprintf('Link between %s and %s removed',
+            $this->getFileLink(),
+            $this->getEquipmentLink('equipment_id')
         );
-        $equipmentLink = sprintf(
-            '<a type="button" class="link-primary" href="%s">equipment</a>',
-            base_url(sprintf('equipments/view/%s', $this->changes['equipment_id']))
-        );
-        $msg .= sprintf('Link between %s and %s removed', $fileLink, $equipmentLink);
         return $msg;
     }
 
     protected function restoreEquipmentsToFilesMessage(){
-        $msg = '';
-        $fileLink = sprintf(
-            '<a type="button" class="link-primary" href="%s">file</a>',
-            base_url(sprintf('files/view/%s', $this->changes['file_id']))
+        $msg = sprintf('Link between %s and %s restored',
+            $this->getFileLink(),
+            $this->getEquipmentLink('equipment_id')
         );
-        $equipmentLink = sprintf(
-            '<a type="button" class="link-primary" href="%s">equipment</a>',
-            base_url(sprintf('equipments/view/%s', $this->changes['equipment_id']))
-        );
-        $msg .= sprintf('Link between %s and %s restored', $fileLink, $equipmentLink);
         return $msg;
     }
 
@@ -136,6 +138,26 @@ class OperationLog extends BaseEntity
             }
         }
         $msg .= '</ul>';
+        return $msg;
+    }
+
+    protected function insertEquipmentsToEquipmentsMessage(): string
+    {
+        $msg = sprintf('Related %s %s to %s',
+            $this->getEquipmentLink('equipment_a_id'),
+            $this->changes['type'],
+            $this->getEquipmentLink('equipment_b_id')
+        );
+        return $msg;
+    }
+
+    protected function deleteEquipmentsToEquipmentsMessage(): string
+    {
+        $msg = sprintf('Unrelates %s %s to %s',
+            $this->getEquipmentLink('equipment_a_id'),
+            $this->changes['type'],
+            $this->getEquipmentLink('equipment_b_id')
+        );
         return $msg;
     }
 

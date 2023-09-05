@@ -311,7 +311,7 @@ class CreateDatabase extends Migration
             'created_at' => [
                 'type' => 'TIMESTAMP',
                 'null' => false,
-                'default' => new RawSql('CURRENT_TIMESTAMP')
+                'constraint' => 6
             ]
         ]);
         $this->forge->addPrimaryKey('id');
