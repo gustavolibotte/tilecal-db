@@ -59,10 +59,10 @@ class EquipmentModel extends LogModel
             $selectColumns .= sprintf(', %s', $extraSelect);
         }
         $query = $this->select($selectColumns)
-                      ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
-                      ->join('locations', 'equipments.location_id = locations.id', 'left')
-                      ->join('statuses', 'equipments.status_id = statuses.id', 'left')
-                      ->join('institutes', 'equipments.owner_id = institutes.id');
+            ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
+            ->join('locations', 'equipments.location_id = locations.id', 'left')
+            ->join('statuses', 'equipments.status_id = statuses.id', 'left')
+            ->join('institutes', 'equipments.owner_id = institutes.id', 'left');
         return $query;
 
     }
@@ -406,5 +406,51 @@ class EquipmentModel extends LogModel
             $changes['owner'] = $institute->name;
         }
         return $changes;
+    }
+
+    /**
+     * Updates the builder to select child equipments
+     * Joins the desired tables to select only equipments child to a given $parentId
+     *
+     * @param string $parentId  Equipment Id for the parent id to search for childs
+     * @param ?string $typeName If passed, selects childs only with equipment_types.name = $typeName
+     * @param ?array $idIgnore Ignores the equipment ids inside this array
+     * 
+     * @return Self This model instance
+     */
+    public function childQuery(string $parentId, ?string $typeName=null, ?array $idIgnore=null): Self
+    {
+        $this->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_b_id', 'left')
+            ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
+            ->where('equipments_to_equipments.equipment_a_id', $parentId)
+            ->where('equipments_to_equipments.type', 'parent');
+        if (!empty($typeName)){
+            $this->where('equipment_types.name', $typeName);
+        }
+        if (!empty($idIgnore)){
+            $this->whereNotIn('equipments.id', $idIgnore);
+        }
+        $this->withDeletedJoin(['equipments_to_equipments']);
+        return $this;
+    }
+
+    /**
+     * Updates the builder to add soft delete condition to joines tables
+     *
+     * @param array $joinedTables Array with the joined table names
+
+     * @return Self This model instance
+     */
+    protected function withDeletedJoin(array $joinedTables): Self
+    {
+        if ($this->tempUseSoftDeletes){
+            foreach ($joinedTables as $tableName){
+                $this->where(sprintf(
+                    '%s.deleted_at IS NULL',
+                    $this->db->escape($tableName)
+                ));
+            }
+        }
+        return $this;
     }
 }

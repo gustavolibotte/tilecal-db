@@ -51,6 +51,7 @@ class Equipments extends BaseController
             $viewData['editForm'] = new (get_model_form_class($equipment->type_name))();
             $viewData['editForm']->asEdit();
             $viewData['editForm']->setFieldValues($equipment->toArrayWithTypeParams());
+            $viewData['editForm']->setFieldValues(['parent_id' => $equipmentModel->getParentId($equipment->id)]);
             $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->type_name, $equipment->id));
         }
 

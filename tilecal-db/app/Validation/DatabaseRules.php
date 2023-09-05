@@ -71,12 +71,13 @@ class DatabaseRules{
     /**
      * Checks if the parent equipment has not reached the max number of childs
      *
-     * @param $value  Value given by CodeIgniter validator, considered as an equipment id
-     * @param string $params "<max>,<type>,<id>" <max> is the maximum number of childs of type name <type> the parent equipment can have. <id> is the child equipment id
+     * @param $value  Value given by CodeIgniter validator, considered as an equipment id for the parent id
+     * @param string $params "<max>,<type>,<id>"
+     * <max> is the maximum number of childs of type name <type> the parent equipment can have. <id> is the child equipment id
      * @param array $data Ignored
      * @param ?string &$error Error string in the format "The given parent equipment (%s) already has the maximum of linked childs (%d)."
      * 
-     * @return bool True if the data was approved on this rule 
+     * @return bool True if the data was approved on this rule
      */ 
     public function not_maxed_parent($value, string $params, array $data, ?string &$error): bool
     {
@@ -86,12 +87,8 @@ class DatabaseRules{
         $maxChilds = $params[0];
         $typeName = $params[1];
         $childId = $params[2];
-        $equipmentModel = new EquipmentModel();
-        $count = $equipmentModel->join('equipment_types', 'equipments.type_id = equipment_types.id')
-                                ->where('equipment_types.name', $typeName)
-                                ->where('equipments.parent_id', $parentId)
-                                ->where(sprintf("equipments.id != '%s'", $childId))
-                                ->countAllResults();
+        $equipmentModel = model('EquipmentModel');
+        $count = $equipmentModel->childQuery($parentId, $typeName, [$childId])->countAllResults();
         $approved = ($count < $maxChilds);
         if (!$approved){
             $error = sprintf(
