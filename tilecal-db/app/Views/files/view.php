@@ -11,7 +11,7 @@
 <?= $this->section('relatedContent') ?>
   <hr>
   <h4>Related Equipments</h4>
-  <? echo view_cell('EquipmentTableCell::fullFileRelated', ['fileId' => $entity->id]);?>
+  <? echo view_cell('EquipmentTableCell::fullFileRelated', ['fileId' => $entity->id, 'withDeleted' => $entity->isDeleted()]);?>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript')?>

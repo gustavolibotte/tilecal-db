@@ -9,7 +9,7 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use App\Entities\User;
-
+use CodeIgniter\Config\Factories;
 
 /**
  * Class BaseController
@@ -45,6 +45,7 @@ abstract class BaseController extends Controller
      */
     
     protected User $user;
+    public $requestTimestamp;
 
     /**
      * Constructor.
@@ -53,8 +54,9 @@ abstract class BaseController extends Controller
     {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
-        helper(['authentication', 'view']);
-        $this->user = getUser();
+
+        helper('view');
+        $this->user = service('authenticator')->getUser();
     }
 
     public function buildDataTablesResponse($data)

@@ -7,7 +7,7 @@ use App\Models\EquipmentTypeModel;
 use App\Models\StatusModel;
 use App\Models\LocationModel;
 use App\Models\InstituteModel;
-use App\Library\Validation\AtlasIdRules;
+use App\Validation\AtlasIdRules;
 use App\Library\Forms\PmtForm;
 
 class EquipmentFabricator extends EquipmentModel
@@ -22,19 +22,17 @@ class EquipmentFabricator extends EquipmentModel
     public array $institutes;
 
     public int $numCommentsCharacters = 100;
-    public bool $firstCall = true;
-    public $parentEquipment;
 
     public function initialize()
     {
         parent::initialize();
-        $this->equipmentTypeModel = new EquipmentTypeModel(isMigration: $this->isMigration);
+        $this->equipmentTypeModel = new EquipmentTypeModel();
         $this->types = $this->equipmentTypeModel->getIdArray();
-        $this->locationModel = new LocationModel(isMigration: $this->isMigration);
+        $this->locationModel = new LocationModel();
         $this->locations = $this->locationModel ->getIdArray();
-        $this->statusModel = new StatusModel(isMigration: $this->isMigration);
+        $this->statusModel = new StatusModel();
         $this->statuses = $this->statusModel->getIdArray();
-        $this->instituteModel = new InstituteModel(isMigration: $this->isMigration);
+        $this->instituteModel = new InstituteModel();
         $this->institutes = $this->instituteModel->getIdArray();
     }
 
@@ -65,14 +63,7 @@ class EquipmentFabricator extends EquipmentModel
                 'type_params' => [],
                 'comments' => $faker->text($this->numCommentsCharacters)
             ];
-            if (!empty($this->parentEquipment)){
-                $entityArray['parent_id'] = $this->parentEquipment->id;
-            }
             $fakeEquipment = new $this->returnType($entityArray);
-        }
-        if ($this->firstCall){
-            $this->parentEquipment = $fakeEquipment;
-            $this->firstCall = false;
         }
         return $fakeEquipment;
     }

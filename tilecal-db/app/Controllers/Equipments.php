@@ -51,6 +51,7 @@ class Equipments extends BaseController
             $viewData['editForm'] = new (get_model_form_class($equipment->type_name))();
             $viewData['editForm']->asEdit();
             $viewData['editForm']->setFieldValues($equipment->toArrayWithTypeParams());
+            $viewData['editForm']->setFieldValues(['parent_id' => $equipmentModel->getParentId($equipment->id)]);
             $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->type_name, $equipment->id));
         }
 
@@ -68,40 +69,35 @@ class Equipments extends BaseController
     }
 
     public function register($typeName='pmt'){
-        helper(['form', 'url', 'message', 'app_form']);
+        helper(['form', 'url', 'app_form']);
 
         $formClass = get_model_form_class($typeName);
         $equipmentModel = new EquipmentModel();
+        $messenger = service('messenger');
 
         if ($this->request->is('post')){
             $form = new $formClass($this->request);
             if ($form->validate()){
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
-                $equipmentModel->insertWithLog($equipment);
-                $messages[] = [
-                    'message' => 'Register success',
-                    'type' => 'success'
-                ];
-                addMessages($messages);
-                return redirect(sprintf('equipments/%s/register', $typeName));
+                $equipmentModel->insert($equipment);
+                $messenger->addRegisterSuccess();
+                $messenger->dumpMessages();
+                return redirect()->to(sprintf('equipments/%s/register', $typeName));
             } else {
                 foreach ($form->getErrors() as $errorMsg){
-                    $messages[] = [
-                        'message' => $errorMsg,
-                        'type' => 'danger'
-                    ];
+                    $messenger->addMessage($errorMsg, 'danger');
                 }
-                addMessages($messages);
+                $messenger->dumpMessages();
             };
         } else{
             $form = new $formClass();
         }
         
-        $modelModel = new EquipmentTypeModel();
-        $model = $modelModel->where(sprintf("name = '%s'", $typeName))->first();
-        $registerData['model'] = $model;
-        $title = sprintf('Register %s', $model->label);
+        $equipmentTypeModel = new EquipmentTypeModel();
+        $type = $equipmentTypeModel->where(sprintf("name = '%s'", $typeName))->first();
+        $registerData['model'] = $type;
+        $title = sprintf('Register %s', $type->label);
         $registerData['pageTitle'] = $title;
         $registerData['pageHeader'] = $title;
         $registerData['forms'] = ['Equipment Info'=> $form];
@@ -114,41 +110,35 @@ class Equipments extends BaseController
 
     public function edit($equipmentId, $typeName)
     {
-        helper(['message', 'app_form']);
+        helper(['app_form']);
         $formClass = get_model_form_class($typeName);
         $form = new $formClass($this->request);
         $form->asEdit();
+        $messenger = service('messenger');
         if ($form->validate()){
             $equipmentModel = new EquipmentModel();
             $equipment = $form->getEntity();
-            $equipmentModel->updateWithLog($equipmentId, $equipment);
-            $messages[] = [
-                'message' => sprintf('Edited equipment %s with success', $equipment->id),
-                'type' => 'success'
-            ];
-            addMessages($messages);
+            $equipmentModel->update($equipmentId, $equipment);
+            $messenger->addMessage(
+                sprintf('Edited equipment %s with success', $equipment->id),
+                'success'
+            );
         } else{
             foreach ($form->getErrors() as $errorMsg){
-                $messages[] = [
-                    'message' => $errorMsg,
-                    'type' => 'danger'
-                ];
-                addMessages($messages);
+                $messenger->addMessage($errorMsg, 'danger');
             }
         }
+        $messenger->dumpMessages();
         return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
     }
 
     public function delete(string $equipmentId)
     {
-        helper('message');
         $equipmentModel = new EquipmentModel();
-        $equipmentModel->deleteWithLog($equipmentId);
-        $messages[] = [
-            'message' => 'Deleted with success',
-            'type' => 'success'
-        ];
-        addMessages($messages);
+        $equipmentModel->delete($equipmentId);
+        $messenger = service('messenger');
+        $messenger->addDeleteSuccess();
+        $messenger->dumpMessages();
         if ($this->user->isAuthorized('delete')){
             return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
         } else {
@@ -158,14 +148,9 @@ class Equipments extends BaseController
 
     public function restore(string $equipmentId)
     {
-        helper('message');
         $equipmentModel = new EquipmentModel();
-        $equipmentModel->restoreWithLog($equipmentId);
-        $messages[] = [
-            'message' => 'Restored with success',
-            'type' => 'success'
-        ];
-        addMessages($messages);
+        $equipmentModel->restore($equipmentId);
+        service('messenger')->addRestoreSuccess();
         return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
     }
 }

@@ -32,10 +32,9 @@ class FileTableCell extends BaseCell
     {
         helper('array');
         $equipmentId = dot_array_search('equipmentId', $params);
-        $withDeleted = dot_array_search('withDeleted', $params);
         $fileModel = new \App\Models\FileModel();
-        if ($withDeleted){
-            $fileModel = $fileModel->withDeleted();
+        if(dot_array_search('withDeleted', $params)){
+            $fileModel->withDeleted();
         }
         $viewData['files'] = $fileModel->getEquipmentRelated($equipmentId);
         return default_view('cells/file_table_full', $viewData);

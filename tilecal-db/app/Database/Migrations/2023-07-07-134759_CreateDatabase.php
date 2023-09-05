@@ -11,16 +11,17 @@ class CreateDatabase extends Migration
         $this->forge->addField([
             'created_at' => [
                 'type' => 'TIMESTAMP',
-                'null' => false,
-                'default' => new RawSql('CURRENT_TIMESTAMP')
+                'constraint' => 6,
+                'null' => false
             ],
             'updated_at' => [
                 'type' => 'TIMESTAMP',
-                'null' => false,
-                'default' => new RawSql('CURRENT_TIMESTAMP')
+                'constraint' => 6,
+                'null' => false
             ],
             'deleted_at' => [
                 'type' => 'TIMESTAMP',
+                'constraint' => 6,
                 'null' => true
             ]
         ]);
@@ -225,11 +226,6 @@ class CreateDatabase extends Migration
                 'unsigned' => true,
                 'null' => false
             ],
-            'parent_id' => [
-                'type' => 'CHAR',
-                'constraint' => 14,
-                'null' => true
-            ],
             'serial' => [
                 'type' => 'VARCHAR',
                 'constraint' => 36, # Number of chars in uuid,
@@ -248,7 +244,6 @@ class CreateDatabase extends Migration
         $this->forge->addPrimaryKey('id');
         $this->forge->addForeignKey('type_id', 'equipment_types', 'id');
         $this->forge->addForeignKey('owner_id', 'institutes', 'id');
-        $this->forge->addForeignKey('parent_id', 'equipments', 'id');
         $this->forge->addForeignKey('location_id', 'locations', 'id');
         $this->forge->addForeignKey('status_id', 'statuses', 'id');
         $this->forge->createTable('equipments', true);
@@ -275,6 +270,7 @@ class CreateDatabase extends Migration
         $this->forge->addPrimaryKey('id');
         $this->forge->addForeignKey('equipment_id', 'equipments', 'id');
         $this->forge->addForeignKey('file_id', 'files', 'id');
+        $this->forge->addUniqueKey(['file_id', 'equipment_id'], 'unique_file_equipment');
         $this->forge->createTable('equipments_to_files', true);
         echo "Created Equipments to Files\n";
 
@@ -315,12 +311,41 @@ class CreateDatabase extends Migration
             'created_at' => [
                 'type' => 'TIMESTAMP',
                 'null' => false,
-                'default' => new RawSql('CURRENT_TIMESTAMP')
+                'constraint' => 6
             ]
         ]);
         $this->forge->addPrimaryKey('id');
         $this->forge->createTable('hist', true);
         echo "Created Hist\n";
+    }
+
+    public function Equipments2Equipments()
+    {
+        echo "Creating Equipments to Equipments\n";
+        $this->addId();
+        $this->forge->addField([
+            'equipment_a_id' => [
+                'type' => 'CHAR',
+                'constraint' => 14,
+                'null' => false
+            ],
+            'type' => [
+                'type' => 'VARCHAR',
+                'constraint' => 20,
+                'null' => false
+            ],
+            'equipment_b_id' => [
+                'type' => 'CHAR',
+                'constraint' => 14,
+                'null' => false
+            ],
+        ]);
+        $this->addTimestamps();
+        $this->forge->addPrimaryKey('id');
+        $this->forge->addForeignKey('equipment_a_id', 'equipments', 'id');
+        $this->forge->addForeignKey('equipment_b_id', 'equipments', 'id');
+        $this->forge->addUniqueKey(['equipment_a_id', 'equipment_b_id'], 'unique_ab_ids');
+        $this->forge->createTable('equipments_to_equipments', true);
     }
 
     public function up()
@@ -332,6 +357,7 @@ class CreateDatabase extends Migration
         $this->createStatuses();
         $this->createFiles();
         $this->createEquipments();
+        $this->Equipments2Equipments();
         $this->createEquipments2Files();
     }
 
@@ -339,6 +365,7 @@ class CreateDatabase extends Migration
     {
         // Drop tables in reverse order
         $this->forge->dropTable('hist', true);
+        $this->forge->dropTable('equipments_to_equipments', true);
         $this->forge->dropTable('equipments_to_files', true);
         $this->forge->dropTable('equipments', true);
         $this->forge->dropTable('files', true);

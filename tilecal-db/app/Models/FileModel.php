@@ -18,14 +18,26 @@ class FileModel extends LogModel
 
     public function initialize(){
         parent::initialize();
+        helper(['app_array']);
         $this->insertChangesIgnore[] = 'filedata';
         $this->updateChangesIgnore[] = 'filedata';
     }
 
-    public function getEquipmentRelated($id){
+    /**
+     * Returns an array with all the related files to a specific equipment given its id
+     *
+     * @param string|int $id equipment id to get related files from
+     * 
+     * @param array array with related files entities
+     */
+    public function getEquipmentRelated(string|int $id): array
+    {
         $query = $this->select('files.id, files.name, files.description, files.created_at, files.deleted_at')
-                      ->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
-                      ->where(sprintf("equipments_to_files.equipment_id = '%s'", $id));
+                       ->join('equipments_to_files', 'files.id = equipments_to_files.file_id')
+                       ->where('equipments_to_files.equipment_id', $id);
+        if ($this->tempUseSoftDeletes){
+            $query = $query->where('equipments_to_files.deleted_at IS NULL');
+        }
         $result = $query->findAll();
         return $result;
     }
@@ -43,123 +55,60 @@ class FileModel extends LogModel
         return $result;
     }
 
-    protected function getInsertLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
+    protected function makeLog(array $data, string $parentMethod): OperationLog
     {
-        $operationLog = parent::getInsertLog($opTimestamp, $id, $data);
+        $operationLog = parent::$parentMethod($data);
         if (array_key_exists('filedata', $operationLog->changes)){
             $operationLog->filedata = remove_value('filedata', $operationLog->changes['filedata']);
         }
         return $operationLog;
     }
 
-    protected function getUpdateLog(Time $opTimestamp, int|string $id, Entity $new, Entity $old): OperationLog|array
+    protected function getInsertLog(array $data): OperationLog
     {
-        $operationLog = parent::getUpdateLog($opTimestamp, $id, $new, $old);
-        if ($new->filedata != $old->filedata){
-            $operationLog->filedata = $new->filedata;
+        $filedata = remove_value('filedata', $data['data']);
+        $operationLog = parent::getInsertLog($data);
+        $operationLog->filedata = $filedata;
+        return $operationLog;
+    }
+
+    protected function getUpdateLog(array $data): OperationLog
+    {
+        $old = $this->find($data['id']);
+        $filedata = remove_value('filedata', $data['data']);
+        $operationLog = parent::getUpdateLog($data);
+        if ($old->filedata != $filedata){
+            $operationLog->filedata = $filedata;
         }
         return $operationLog;
     }
 
-    public function deleteWithLog($id=null, bool $purge = false, ?Time $opTimestamp = null, bool $transaction=true): bool
+    protected function getDeleteLog(array $data): OperationLog
     {
-        if (is_null($opTimestamp)){
-            $opTimestamp = Time::now();
-        }
-        if (is_array($id)){
-            foreach($id as $sampleId){
-                $res[] = $this->deleteWithLog($sampleId, $purge, $opTimestamp, $transaction);
-            }
-            return $res;
-        }
-        $histModel = new HistModel($this->isMigration);
-        $data = $this->find($id);
-        $data->deleted_at = $opTimestamp;
-        $operationLog = $this->getDeleteLog($opTimestamp, $id);
-        $equipments2FilesModel = new Equipment2FileModel();
-        $relations = $equipments2FilesModel->select('id')->where('file_id', $id)->findAll();
-        if ($transaction){
-            $this->db->transStart();
-        }
-        $res = $this->delete($id, $purge);
-        foreach($relations as $relation){
-            $equipments2FilesModel->deleteWithLog($relation->id, $purge, $opTimestamp, false);
-        }
-        $histModel->insert($operationLog);
-        if ($transaction){
-            $this->db->transComplete();
-        }
-        return $res;
-    }
-
-    protected function getDeleteLog(Time $opTimestamp, int|string $id): OperationLog|array
-    {
-        $changes = $this->find($id)->toArray();
-        $filedata = remove_value('filedata', $changes);
-        unset_array_keys($changes, $this->deleteChangesIgnore);
-        $operationLog = new OperationLog([
-            'changes' => $changes,
-            'record_id' => $id,
-            'action' =>'delete',
-            'table' => $this->table,
-            'created_at' => $opTimestamp,
-            'filedata' => $filedata
-        ]);
+        $old['data'] = $this->find($data['id'][0])->toRawArray();
+        $old['id'] = $data['id'][0];
+        $operationLog = $this->getInsertLog($old);
+        $operationLog->action = 'delete';
         return $operationLog;
     }
 
-    public function restoreWithLog(int|string|array $id, ?Time $opTimestamp = null, bool $transaction=true): bool
+    public function deleteRelations(int|string|array $id): bool
     {
-        if (is_null($opTimestamp)){
-            $opTimestamp = Time::now();
+        $equipments2FilesModel = model('Equipments2FilesModel');
+        $whereClause = (is_array($id))? 'whereIn': 'where';
+        $relations = $equipments2FilesModel
+            ->select('id')
+            ->$whereClause('file_id', $id)
+            ->findAll();
+        foreach ($relations as $relation){
+            $equipments2FilesModel->delete($relation->id, true);
         }
-        if (is_array($id)){
-            foreach($id as $sampleId){
-                $res[] = $this->restoreWithLog($sampleId, $opTimestamp, $transaction);
-            }
-            return $res;
-        }
-        $histModel = new HistModel($this->isMigration);
-        $data = $this->onlyDeleted()->find($id);
-        if (is_null($data)){
-            throw new DataException('Called restore on a non deleted row.');
-        }
-        $operationLog = $this->getRestoreLog($opTimestamp, $id, $data);
-        $equipments2FilesModel = new Equipment2FileModel();
-        $relations = $equipments2FilesModel->withDeleted()->select('equipments_to_files.id')
-                                           ->join('equipments', 'equipments_to_files.equipment_id = equipments.id')
-                                           ->where('equipments.deleted_at IS NULL')
-                                           ->where('file_id', $id)
-                                           ->where('equipments_to_files.deleted_at', $data->deleted_at)
-                                           ->findAll();
-        if ($transaction){
-            $this->db->transStart();
-        }
-        $this->restore($id, $opTimestamp);
-        foreach($relations as $relation){
-            $equipments2FilesModel->restoreWithLog($relation->id, $opTimestamp, false);
-        }
-        $histModel->insert($operationLog);
-        if ($transaction){
-            $this->db->transComplete();
-        }
-
         return true;
     }
 
-    protected function getRestoreLog(Time $opTimestamp, int|string $id, Entity $data): OperationLog|array
+    protected function deleteRelationsCallback(array $data): array
     {
-        $changes = $data->toArray();
-        $filedata = remove_value('filedata', $changes);
-        unset_array_keys($changes, $this->deleteChangesIgnore);
-        $operationLog = new OperationLog([
-            'changes' => $changes,
-            'record_id' => $id,
-            'action' =>'restore',
-            'table' => $this->table,
-            'created_at' => $opTimestamp,
-            'filedata' => $filedata
-        ]);
-        return $operationLog;
+        $this->deleteRelations($data['id']);
+        return $data;
     }
 }

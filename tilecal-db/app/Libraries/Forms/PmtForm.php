@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Library\Forms;
-use \App\Entities\Equipment;
 
 class PmtForm extends EquipmentForm{
+
     public static array $pmtModelOptions = [
         'null' => 'Select an option',
         'R11187' => 'R11187',
@@ -23,6 +23,7 @@ class PmtForm extends EquipmentForm{
     public static int $serialMaxSize = 6;
     public static int $pmtId = 1;
     public static int $pmtOwnerId = 103;
+    public static int $maxNumberPerBlock = 1;
 
     public function initialize()
     {   
@@ -46,6 +47,9 @@ class PmtForm extends EquipmentForm{
             "string_starts_with" => "PMT ID must start with 20LOCER0. (20 for ATLAS peoject, LO for optics equipment and CER for CERN).",
             "string_ends_with" => "The final 6 characters of a PMT barcode must be its serial code."
         ];
+
+        $this->validationRules['parent_id']['rules'][] = "equipment_is_type[pmt_block]";
+        $this->validationRules['parent_id']['rules'][] = "not_maxed_parent[1,pmt,{id}]";
 
         $this->fields['serial']['required'] = true;
         $this->fields['serial']['helpText'] .= sprintf(' (Max size of %d characters)', self::$serialMaxSize);
@@ -141,7 +145,7 @@ class PmtForm extends EquipmentForm{
             ],
             "errors" => [
                 "required" => "You must supply a PMT model for the equipment.",
-                "in_list" => "The PMT model value is not valid. Choose one of ({param})",
+                "in_list" => "The PMT model value is not valid. Choose one of {param}",
             ]
         ];
         $this->commentsEnd();

@@ -40,14 +40,7 @@ abstract class BaseModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    // Custom
-    protected bool $isMigration = false;
-
-    public function __construct(bool $isMigration=false)
-    {   
-        parent::__construct();
-        $this->isMigration = $isMigration;
-    }
+    protected function initialize(){}
 
     public function getIdArray(?array $ids=null){
         $results = [];

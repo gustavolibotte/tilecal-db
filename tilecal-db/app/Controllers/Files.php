@@ -81,24 +81,21 @@ class Files extends BaseController
     public function upload(){
         helper(['form', 'string', 'url', 'message']);
         $session = \Config\Services::session();
+        $messenger = service('messenger');
 
         if ($this->request->is('post')){
             $form = new FileForm($this->request);
             if ($form->validate()){
                 $file = $form->getEntity();
                 $fileModel = new FileModel();
-                $fileModel->insertWithLog($file);
-                $session->setFlashdata('success', true);
+                $fileModel->insert($file);
+                $messenger->addMessage('File uploaded with success', 'success');
                 return redirect('files/upload');
             } else {
                 foreach ($form->getErrors() as $errorMsg){
-                    $messages[] = [
-                        'message' => $errorMsg,
-                        'type' => 'danger'
-                    ];
-                }
-                addMessages($messages);
-            };
+                    $messenger->addMessage($errorMsg, 'danger');
+                };
+            }
         } else{
             $form = new FileForm();
         }
@@ -110,36 +107,32 @@ class Files extends BaseController
         $registerData['successMessage'] = $session->getFlashdata('success');
         $registerData['formUrl'] = uri_string();
         $registerData['cancelUrl'] = base_url('files');
+        $messenger->dumpMessages();
+
         return default_view('files/upload', $registerData);
     }
 
     public function delete($fileId)
     {
-        helper('message');
         $fileModel = new FileModel();
-        $fileModel->deleteWithLog($fileId);
-        $messages[] = [
-            'message' => 'Deleted with success',
-            'type' => 'success'
-        ];
-        addMessages($messages);
+        $fileModel->delete($fileId);
+        $messenger = service('messenger');
+        $messenger->addDeleteSuccess();
         if ($this->user->isAuthorized('delete')){
             return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
         } else {
             return redirect('files');
         }
+        $messenger->dumpMessages();
     }
 
     public function restore($fileId)
     {
-        helper('message');
         $fileModel = new FileModel();
-        $fileModel->restoreWithLog($fileId);
-        $messages[] = [
-            'message' => 'Restored with success',
-            'type' => 'success'
-        ];
-        addMessages($messages);
+        $fileModel->restore($fileId);
+        $messenger = service('messenger');
+        $messenger->addRestoreSuccess();
+        $messenger->dumpMessages();
         return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
     }
 }

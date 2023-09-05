@@ -4,6 +4,7 @@ namespace App\Library\Forms;
 
 use \App\Models\BaseModel;
 use \App\Entities\Equipment;
+use \App\Entities\AtlasId;
 
 class EquipmentForm extends Form{
 
@@ -51,6 +52,17 @@ class EquipmentForm extends Form{
                     'options' => (new \App\Models\StatusModel())->getFormDropdownOptions(['name', 'description'])
                 ]
             ],
+            'parent_id' => [
+                'id' => 'parent_id',
+                'label' => 'Parent ID',
+                'required' => false,
+                'helpText' => "Parent Equipment's barcode value following ATLAS identification rules.",
+                'fieldType' => 'input',
+                'fieldParams' => [
+                    'maxlength' => 14,
+                    'placeholder' => 'XXXXXXXXXXXXXX'
+                ]
+            ],
             'serial' => [
                 'id' => 'serial',
                 'required' => false,
@@ -78,6 +90,7 @@ class EquipmentForm extends Form{
                     "alpha_numeric",
                     "exact_length[14]",
                     "id_is_project[20]",
+                    "id_has_valid_system",
                     "id_has_valid_institute[institutes.mne]",
                     "is_unique[equipments.id]"
                 ],
@@ -87,7 +100,8 @@ class EquipmentForm extends Form{
                     "exact_length" => "The id must have 14 characters.",
                     "is_unique" => "This id already exists.",
                     "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
-                    "id_has_valid_institute" => "The barcode doesn't have a valid institute value"
+                    "id_has_valid_institute" => "The barcode doesn't have a valid institute value",
+                    "id_has_valid_system" => "The id system is not valid."
                 ]
             ],
             "type_label" => [
@@ -120,6 +134,27 @@ class EquipmentForm extends Form{
                     "is_not_unique" => "The inserted status is not valid",
                 ]
             ],
+            "parent_id" => [
+                "rules" => [
+                    "permit_empty",
+                    "alpha_numeric",
+                    "exact_length[14]",
+                    "id_is_project[20]",
+                    "differs[id]",
+                    "id_has_valid_system",
+                    "id_has_valid_institute[institutes.mne]",
+                    "is_not_unique[equipments.id]",
+                ],
+                "errors" => [
+                    "alpha_numeric" => "The parent ID must be alphanumeric.",
+                    "exact_length" => "The parent ID must have 14 characters.",
+                    "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
+                    "differs" => "The parent ID is equal to the equipment ID",
+                    "id_has_valid_institute" => "The barcode doesn't have a valid institute value",
+                    "id_has_valid_system" => "The id system is not valid.",
+                    "is_not_unique" => "The parent ID doesn't exist."
+                ]
+            ],
             "serial" => [
                 "rules" => [
                     sprintf("max_length[%d]", self::$serialMaxSize)
@@ -141,20 +176,23 @@ class EquipmentForm extends Form{
 
     public function getEntity(): Equipment
     {
-        helper(['array', 'atlas_id']);
+        helper(['array']);
         if (!$this->isValid){
             throw new \Exception('To get the equipment you must validate the form first');
         }
         $fieldValues = $this->getFieldValues();
         $equipment = new Equipment($fieldValues);
-        $instituteMne = getInstituteMne($equipment->id);
-        $owner = (new \App\Models\InstituteModel())->where(sprintf("mne = '%s'", $instituteMne))->first();
+        $id = new AtlasId(['id' => $equipment->id]);
+        $owner = (new \App\Models\InstituteModel())->where(sprintf("mne = '%s'", $id->institute))->first();
         $equipment->owner_id = $owner->id;
         $equipmentType = (new \App\Models\EquipmentTypeModel())->where(sprintf("label = '%s'", $fieldValues['type_label']))->first();
         $equipment->type_id = $equipmentType->id;
         $typeParams = [];
         foreach ($equipmentType->params as $param){
             $typeParams[$param] = $fieldValues[$param];
+        }
+        if ($equipment->parent_id == ''){
+            $equipment->parent_id = null;
         }
         $equipment->type_params = $typeParams;
         return $equipment;
