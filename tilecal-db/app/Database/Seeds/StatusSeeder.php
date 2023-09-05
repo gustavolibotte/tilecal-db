@@ -12,7 +12,7 @@ class StatusSeeder extends BaseSeeder
         $statusModel = new \App\Models\StatusModel();
         foreach ($jsonData as $row){
             $status = new \App\Entities\Status($row);
-            $statusModel->insertWithLog($status);
+            $statusModel->insert($status);
         }
     }
 }

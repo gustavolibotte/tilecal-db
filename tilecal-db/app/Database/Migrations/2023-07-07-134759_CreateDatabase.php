@@ -226,11 +226,6 @@ class CreateDatabase extends Migration
                 'unsigned' => true,
                 'null' => false
             ],
-            'parent_id' => [
-                'type' => 'CHAR',
-                'constraint' => 14,
-                'null' => true
-            ],
             'serial' => [
                 'type' => 'VARCHAR',
                 'constraint' => 36, # Number of chars in uuid,
@@ -249,7 +244,6 @@ class CreateDatabase extends Migration
         $this->forge->addPrimaryKey('id');
         $this->forge->addForeignKey('type_id', 'equipment_types', 'id');
         $this->forge->addForeignKey('owner_id', 'institutes', 'id');
-        $this->forge->addForeignKey('parent_id', 'equipments', 'id');
         $this->forge->addForeignKey('location_id', 'locations', 'id');
         $this->forge->addForeignKey('status_id', 'statuses', 'id');
         $this->forge->createTable('equipments', true);
@@ -276,6 +270,7 @@ class CreateDatabase extends Migration
         $this->forge->addPrimaryKey('id');
         $this->forge->addForeignKey('equipment_id', 'equipments', 'id');
         $this->forge->addForeignKey('file_id', 'files', 'id');
+        $this->forge->addUniqueKey(['file_id', 'equipment_id'], 'unique_file_equipment');
         $this->forge->createTable('equipments_to_files', true);
         echo "Created Equipments to Files\n";
 

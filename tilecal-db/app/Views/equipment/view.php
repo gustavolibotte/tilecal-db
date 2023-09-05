@@ -28,7 +28,6 @@
   <? echo view_cell('EquipmentTableCell::fullEquipmentRelated', ['equipmentId' => $entity->id, 'withDeleted' =>  $entity->isDeleted]);?>
   <hr>
   <h4> Related Files </h4>
-  <? echo view_cell('FileTableCell::fullEquipmentRelated', ['equipmentId' => $entity->id, 'withDeleted' =>  $entity->isDeleted]);?>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript')?>

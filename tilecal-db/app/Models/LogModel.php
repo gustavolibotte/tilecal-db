@@ -49,7 +49,6 @@ abstract class LogModel extends BaseModel{
 
     protected function getInsertLog(array $data): OperationLog
     {
-        d($data);
         unset_array_keys($data['data'], $this->insertChangesIgnore);
         $data['data']['id'] = $data['id'];
         $operationLog = new OperationLog([
@@ -129,7 +128,7 @@ abstract class LogModel extends BaseModel{
         unset_array_keys($changes, $this->deleteChangesIgnore);
         $operationLog = new OperationLog([
             'changes' => $changes,
-            'record_id' => $data['id'],
+            'record_id' => $data['id'][0],
             'action' =>'delete',
             'table' => $this->table
         ]);
@@ -147,7 +146,6 @@ abstract class LogModel extends BaseModel{
         }
         $data = ['id' => $id];
         foreach($this->beforeRestore as $callback){
-            d($callback);
             $data = $this->$callback($data);
         }
         $opTimestamp = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
@@ -162,7 +160,6 @@ abstract class LogModel extends BaseModel{
                 ->update();
         $data = ['id' => $id];
         foreach($this->afterRestore as $callback){
-            d($callback);
             $data = $this->$callback($data);
         }
         $this->resetQuery();

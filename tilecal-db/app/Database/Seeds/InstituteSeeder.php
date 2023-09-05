@@ -13,7 +13,5 @@ class InstituteSeeder extends BaseSeeder
             $institute = new \App\Entities\Institute($row);
             $instituteModel->insert($institute);
         }
-        $instituteModel->delete(1);
-        $instituteModel->restore(1);
     }
 }

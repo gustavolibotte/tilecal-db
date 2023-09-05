@@ -13,7 +13,7 @@ use CodeIgniter\Database\Exceptions\DataException;
 class EquipmentModel extends LogModel
 {
     protected $table            = 'equipments';
-    protected $returnType       = \App\Entities\Equipment::class;
+    protected $returnType       = Equipment::class;
     protected $allowedFields    = [
         'id',
         'type_id',
@@ -31,11 +31,10 @@ class EquipmentModel extends LogModel
 
     public function initialize(){
         parent::initialize();
+        helper(['app_array']);
         $this->selectSideTable .= 'equipments.id, ';
         $this->selectSideTable .= 'equipment_types.label as type_label ';
-        $this->insertWithLogCallbacks[] = 'insertParentId';
-        $this->deleteWithLogCallbacks[] = 'deleteRelations';
-        d($this->deleteWithLogCallbacks);
+        $this->afterDelete[] = 'deleteRelations';
     }
 
     public function fullQuery(?string $extraSelect=null){
@@ -162,142 +161,43 @@ class EquipmentModel extends LogModel
         }
     }
 
-    protected function getInsertLog(int|string $id, Entity $data): OperationLog|array
+    /**
+     * Inserts equipment data.
+     * The equipment entity can also have a parent_id field that it will be inserted correctly
+     *
+     * @param Equipment $data Equipment entity
+     * 
+     * @throws TypeError If data is not instance of EquipmenturnId is true
+     * @return ?string returns id if $returnID is true
+     */
+    public function insert($data = null, bool $returnID = true)
     {
-        $changes = $this->getFullChanges($data);
-        unset_array_keys($changes, $this->insertChangesIgnore);
+        if (!($data instanceof Equipment)){
+            throw new \TypeError('Equipment Model insert supports only Equipment as $data');
+        }
+        $data = $data->toRawArray();
+        if(array_key_exists('parent_id', $data)){
+            $parentId = remove_value('parent_id', $data);
+        }
+        $childId = parent::insert($data, true);
+        if(isset($parentId)){
+            $this->addParent($childId, $parentId);
+        }
+        if($returnID){
+            return $childId;
+        }
+    }
+
+    protected function getInsertLog(array $data): OperationLog
+    {
+        $data = $this->mergeTypeParams($data);
+        unset_array_keys($data['data'], $this->insertChangesIgnore);
+        $data['data'] = $this->addForeignLabels($data['data']);
         $operationLog = new OperationLog([
-            'record_id' => $id,
+            'record_id' => $data['id'],
             'table' => $this->table,
-            'changes' => $changes,
+            'changes' => $data['data'],
             'action' => 'insert'
-        ]);
-        return $operationLog;
-    }
-
-    protected function getFullChanges(Equipment $equipment): array
-    {
-        helper('app_array');
-        $changes = $equipment->toArray();
-        $typeParams = remove_value('type_params', $changes);
-        foreach ($typeParams as $key=>$value){
-            $changes[$key] = $value;
-        }
-        $type = (new \App\Models\EquipmentTypeModel())->find($changes['type_id']);
-        $changes['type'] = $type->label;
-        $location = (new \App\Models\LocationModel())->find($changes['location_id']);
-        $changes['location'] = $location->name;
-        $status = (new \App\Models\StatusModel())->find($changes['status_id']);
-        $changes['status'] = $status->name;
-        return $changes;
-    }
-
-    protected function getUpdateLog(int|string $id, Entity $new, Entity $old): OperationLog|array
-    {
-        $new = $new->toArray();
-        $old = $old->toArray();
-        unset_array_keys($old, $this->updateChangesIgnore);
-        unset_array_keys($new, $this->updateChangesIgnore);
-        if (array_key_exists('type_params', $new)){
-            $oldModelParams = remove_value('type_params', $old);
-            $newModelParams = remove_value('type_params', $new);
-            $changes = $this->getChangedFields($old, $new);
-            $typeParamsChanges = $this->getChangedFields($oldModelParams, $newModelParams);
-            if (!empty($typeParamsChanges)){
-                $changes = array_merge($changes, $typeParamsChanges);
-            }
-        }
-        if (array_key_exists('type_id', $changes)){
-            $type = (new \App\Models\EquipmentTypeModel())->find($changes['type_id']);
-            $changes['type'] = $type->label;
-        }
-        if (array_key_exists('location_id', $changes)){
-            $location = (new \App\Models\LocationModel())->find($changes['location_id']);
-            $changes['location'] = $location->name;
-        }
-        if (array_key_exists('status_id', $changes)){
-            $status = (new \App\Models\StatusModel())->find($changes['status_id']);
-            $changes['status'] = $status->name;
-        }
-
-        $operationLog = new OperationLog([
-            'changes' => $changes,
-            'record_id' => $id,
-            'action' =>'update',
-            'table' => $this->table
-        ]);
-        return $operationLog;
-    }
-
-    public function deleteWithLog($id=null, bool $purge = false)
-    {
-        if (is_array($id)){
-            foreach($id as $sampleId){
-                $res[] = $this->deleteWithLog($sampleId, $purge);
-            }
-            return $res;
-        }
-        $histModel = new HistModel();
-        $operationLog = $this->getDeleteLog($id);
-        $res = $this->delete($id, $purge);
-        // Relations are always hard deleted
-        $histModel->insert($operationLog);
-        return $res;
-    }
-
-    protected function getDeleteLog(int|string $id): OperationLog|array
-    {
-        $equipment = $this->find($id);
-        $changes = $this->getFullChanges($equipment);
-        unset_array_keys($changes, $this->deleteChangesIgnore);
-        $operationLog = new OperationLog([
-            'record_id' => $id,
-            'table' => $this->table,
-            'changes' => $changes,
-            'action' => 'delete'
-        ]);
-        return $operationLog;
-    }
-
-    public function restoreWithLog(int|string|array $id): bool
-    {
-        if (is_array($id)){
-            foreach($id as $sampleId){
-                $res[] = $this->restoreWithLog($sampleId);
-            }
-            return $res;
-        }
-        $histModel = new HistModel();
-        $data = $this->onlyDeleted()->find($id);
-        if (is_null($data)){
-            throw new DataException('Called restore on a non deleted row.');
-        }
-        $operationLog = $this->getRestoreLog($id, $data);
-
-        $equipments2FilesModel = new Equipment2FileModel();
-        $relations = $equipments2FilesModel->withDeleted()->select('equipments_to_files.id')
-                                           ->join('files', 'equipments_to_files.file_id = files.id')
-                                           ->where('files.deleted_at IS NULL')
-                                           ->where('equipment_id', $id)
-                                           ->where('equipments_to_files.deleted_at', $data->deleted_at)
-                                           ->findAll();
-        $this->restore($id);
-        foreach($relations as $relation){
-            $equipments2FilesModel->restoreWithLog($relation->id, false);
-        }
-        $histModel->insert($operationLog);
-        return true;
-    }
-
-    protected function getRestoreIgnore(int|string $id, Entity $data): OperationLog|array
-    {
-        $changes = $this->getFullChanges($data);
-        unset_array_keys($changes, $this->restoreChangesIgnore);
-        $operationLog = new OperationLog([
-            'record_id' => $id,
-            'table' => $this->table,
-            'changes' => $changes,
-            'action' => 'restore'
         ]);
         return $operationLog;
     }
@@ -313,7 +213,7 @@ class EquipmentModel extends LogModel
      */ 
     public function addParent(string $childId, string $parentId): bool
     {
-        $equipment2EquipmentModel = new Equipments2EquipmentsModel();
+        $equipment2EquipmentModel = model('Equipments2EquipmentsModel');
         $childRelation = new Equipment2Equipment([
             'equipment_a_id' => $childId,
             'equipment_b_id' => $parentId,
@@ -324,16 +224,132 @@ class EquipmentModel extends LogModel
             'equipment_a_id' => $parentId,
             'type' => 'parent'
         ]);
-        $equipment2EquipmentModel->insertWithLog($parentRelation);
-        $equipment2EquipmentModel->insertWithLog($childRelation);
+        $equipment2EquipmentModel->insert($parentRelation);
+        $equipment2EquipmentModel->insert($childRelation);
         return true;
     }
 
-    public function removeParent(string $childId): bool
+    /**
+     * Updates equipment data.
+     * The equipment entity can also have a parent_id field that it will be updated correctly
+     *
+     * @param mixed $id Ids of the entries to update
+     * @param Equipment $data Equipment entity
+     * 
+     * @throws TypeError If data is not instance of Equipment 
+     * @return bool
+     */
+    public function update($id = null, $data = null): bool
+    {
+        if (!($data instanceof Equipment)){
+            throw new \TypeError('Equipment Model insert supports only Equipment as $data');
+        }
+        if (is_null($id)){
+            throw new \TypeError('$id must be passed');
+        }
+        $data = $data->toRawArray();
+        if(array_key_exists('parent_id', $data)){
+            $parentId = remove_value('parent_id', $data);
+        }
+        $res = parent::update($id, $data);
+        if(isset($parentId)){
+            $this->deleteParent($id);
+            $this->addParent($id, $parentId);
+        }
+        return $res;
+    }
+
+    protected function getUpdateLog(array $data): OperationLog
+    {
+        $old = $this->find($data['id']);
+        $new = $this->mergeTypeParams($data['data']);
+        $old = $this->mergeTypeParams($old->toRawArray());
+        unset_array_keys($old, $this->updateChangesIgnore);
+        unset_array_keys($new, $this->updateChangesIgnore);
+        $changes = $this->getChangedFields($old, $new);
+        $changes = $this->addForeignLabels($changes);
+
+        $operationLog = new OperationLog([
+            'changes' => $changes,
+            'record_id' => $data['id'],
+            'action' =>'update',
+            'table' => $this->table
+        ]);
+        return $operationLog;
+    }
+
+    public function delete($id = null, bool $purge = false)
+    {
+        parent::delete($id, false);
+    }
+
+    protected function getDeleteLog(array $data): OperationLog
+    {
+        $changes['data'] = $this->find($data['id'][0])->toRawArray();
+        $changes = $this->mergeTypeParams($changes);
+        unset_array_keys($changes, $this->deleteChangesIgnore);
+        $changes['data'] = $this->addForeignLabels($changes['data']);
+
+        $operationLog = new OperationLog([
+            'changes' => $changes['data'],
+            'record_id' => $data['id'][0],
+            'action' =>'delete',
+            'table' => $this->table
+        ]);
+        return $operationLog;
+    }
+
+    protected function deleteRelations(array $data): array
+    {   
+        $this->deleteFileRelations($data['id']);
+        $this->deleteEquipmentRelations($data['id']);
+        return $data;
+    }
+
+    public function deleteFileRelations(string|array $id): bool
+    {
+        $equipments2FilesModel = model('Equipment2FileModel');
+        $whereClause = (is_array($id))? 'whereIn': 'where';
+        $relations = $equipments2FilesModel
+            ->select('id')
+            ->$whereClause('equipment_id', $id)
+            ->findAll();
+        foreach($relations as $relation){
+             $equipments2FilesModel->delete($relation->id, true);
+        }
+        return true;
+    }
+
+    public function deleteEquipmentRelations(string|array $id): bool
+    {
+        $equipments2Equipments = model('Equipments2EquipmentsModel');
+        $whereClause = (is_array($id))? 'orWhereIn': 'orWhere';
+        $relations = $equipments2Equipments
+            ->select('id')
+            ->$whereClause('equipment_a_id', $id)
+            ->$whereClause('equipment_b_id', $id)
+            ->findAll();
+        // could call delete but the model doesnt work with  whereIn for some reason
+        // Gives: 'Deletes are not allowed unless they contain a "where" or "like" clause'.
+        foreach($relations as $relation){
+             $equipments2Equipments->delete($relation->id, true);
+        }
+        return true;
+    }
+
+    /**
+     * Removes parent relation between child and parent.
+     * Assumes that conditions were validated before
+     *
+     * @param string $childId Child equipment id
+     * 
+     * @return bool Always true
+     */ 
+    public function deleteParent(string $childId): bool
     {   
         $parentId = $this->getParentId($childId);
-        $equipment2EquipmentModel = new Equipments2EquipmentsModel();
-        $ids = $equipment2EquipmentModel
+        $equipment2EquipmentModel = model('Equipments2EquipmentsModel');
+        $relations = $equipment2EquipmentModel
             ->select('id')
             ->orWhere(sprintf(
                 "equipment_a_id = %s AND equipment_b_id = %s",
@@ -341,63 +357,53 @@ class EquipmentModel extends LogModel
                 $this->db->escape($parentId)
             ))
             ->orWhere(sprintf(
-                "equipment_b_id = %s AND equipment_a_id = %s",
+                "equipment_a_id = %s AND equipment_b_id = %s",
+                $this->db->escape($parentId),
                 $this->db->escape($childId),
-                $this->db->escape($parentId)
             ))
             ->findAll();
-        array_walk($ids, function($value, $key){
-            $ids[$key] = $value->id;
-        });
-        $equipment2EquipmentModel->deleteWithLog($ids);
-        return true;
-    }
-
-    protected function insertParentId(mixed $id, Entity $data, OperationLog $operationLog)
-    {
-        if (is_null($data->parent_id)){
-            return null;
+        foreach($relations as $relation){
+            $equipment2EquipmentModel->delete($relation, purge: true);
         }
-        $childId = $data->id;
-        $parentId = $data->parent_id;
-        $equipment2EquipmentModel = new Equipments2EquipmentsModel();
-        $childRelation = new Equipment2Equipment([
-            'equipment_a_id' => $childId,
-            'equipment_b_id' => $parentId,
-            'type' => 'child'
-        ]);
-        $parentRelation = new Equipment2Equipment([
-            'equipment_b_id' => $childId,
-            'equipment_a_id' => $parentId,
-            'type' => 'parent'
-        ]);
-        $equipment2EquipmentModel->insertWithLog($parentRelation);
-        $equipment2EquipmentModel->insertWithLog($childRelation);
         return true;
     }
 
-    protected function deleteRelations(array &$data): array
+    protected function mergeTypeParams(array $data): array
     {
-        $this->deleteFileRelations($data['id']);
-        $this->deleteEquipmentRelations($data['id']);
+        if(!array_key_exists('type_params', $data['data'])){
+            return $data;
+        }
+        $data['typeParams'] = json_decode(remove_value('type_params', $data['data']), true);
+        foreach ($data['typeParams'] as $key=>$value){
+            $data['data'][$key] = $value;
+        }
         return $data;
     }
 
-    protected function deleteFileRelations(string $id)
+    protected function unmergeTypeParams(array $data): array
     {
-        $equipments2FilesModel = new Equipment2FileModel();
-        $relations = $equipments2FilesModel->select('id')->where('equipment_id', $id)->findAll();
-        foreach($relations as $relation){
-             $equipments2FilesModel->deleteWithLog($relation->id, true);
-        }
+        $data['data']['type_params'] = json_encode(remove_value('type_params', $data));
+        return $data;
     }
 
-    public function deleteEquipmentRelations(string $id)
+    protected function addForeignLabels(array $changes): array
     {
-        $equipments2Equipments = new Equipments2EquipmentsModel();
-        $relations = $equipments2Equipments->select('id')->where('equipment_id', $id)->findAll();
-        foreach($relations as $relation){
-             $equipments2Equipments->deleteWithLog($relation->id, true);
+        if (array_key_exists('type_id', $changes)){
+            $type = (new \App\Models\EquipmentTypeModel())->find($changes['type_id']);
+            $changes['type'] = $type->label;
         }
+        if (array_key_exists('location_id', $changes)){
+            $location = (new \App\Models\LocationModel())->find($changes['location_id']);
+            $changes['location'] = $location->name;
+        }
+        if (array_key_exists('status_id', $changes)){
+            $status = (new \App\Models\StatusModel())->find($changes['status_id']);
+            $changes['status'] = $status->name;
+        }
+        if (array_key_exists('owner_id', $changes)){
+            $institute = (new \App\Models\InstituteModel())->find($changes['owner_id']);
+            $changes['owner'] = $institute->name;
+        }
+        return $changes;
     }
 }

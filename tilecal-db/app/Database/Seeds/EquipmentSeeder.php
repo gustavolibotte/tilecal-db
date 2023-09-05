@@ -12,17 +12,19 @@ class EquipmentSeeder extends BaseSeeder
         helper(['random', 'app_array']);
         service('authenticator')->setMigration();
         $numEntries = 100;
-        $parentChance = 0.5;
+        $deleteChance = 0.05;
         $fabricatorModel = new EquipmentFabricator();
         $fabricator = new Fabricator($fabricatorModel);
         $equipments = $fabricator->make($numEntries);
-        $fabricatorModel->insertWithLog($equipments);
         $parent = remove_value(0, $equipments);
+        $fabricatorModel->insert($parent);
         foreach ($equipments as $equipment){
-            $fabricatorModel->addParent($equipment->id, $parent->id);
-            // if (apply_prob($parentChance)){
-                
-            // }
+            $equipment->parent_id = $parent->id;
+            $fabricatorModel->insert($equipment);
+            if(apply_prob($deleteChance)){
+                $fabricatorModel->delete($equipment->id);
+                $fabricatorModel->restore($equipment->id);
+            }
         }
     }
 }

@@ -16,7 +16,7 @@ class LocationSeeder extends BaseSeeder
             if (!is_null($institute)){
                 $location->institute_id = $institute->id; 
             }
-            $locationModel->insertWithLog($location);
+            $locationModel->insert($location);
         }
     }
 }
