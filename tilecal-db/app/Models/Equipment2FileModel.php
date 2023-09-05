@@ -39,6 +39,6 @@ class Equipment2FileModel extends LogModel
     protected function getDeleteLog(array $data): OperationLog
     {
         $operationLog = parent::getDeleteLog($data);
-        return $this->addName($data['data']['file_id'], $operationLog);
+        return $this->addName($operationLog->changes['file_id'], $operationLog);
     }
 }

@@ -8,6 +8,7 @@ namespace App\Models;
 
 use App\Entities\OperationLog;
 use CodeIgniter\Database\Exceptions\DatabaseException;
+use CodeIgniter\Entity\Entity;
 
 abstract class LogModel extends BaseModel{
 
@@ -117,6 +118,9 @@ abstract class LogModel extends BaseModel{
 
     protected function logDelete(array $data)
     {
+        // if ($data['id'] instanceof Entity){
+        //     $data['id'] = [$data['id']->id];
+        // }
         $operationLog = $this->getDeleteLog($data);
         model('HistModel')->insert($operationLog);
         return $data;
@@ -124,7 +128,8 @@ abstract class LogModel extends BaseModel{
 
     protected function getDeleteLog(array $data): OperationLog
     {
-        $changes = $this->find($data['id'][0])->toRawArray();
+        $entity = $this->find($data['id'][0]);
+        $changes = $entity->toRawArray();
         unset_array_keys($changes, $this->deleteChangesIgnore);
         $operationLog = new OperationLog([
             'changes' => $changes,

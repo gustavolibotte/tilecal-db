@@ -5,9 +5,6 @@ namespace App\Models;
 use App\Entities\OperationLog;
 use App\Entities\Equipment;
 use App\Entities\Equipment2Equipment;
-use CodeIgniter\Entity\Entity;
-use CodeIgniter\I18n\Time;
-use CodeIgniter\Database\Exceptions\DataException;
 
 
 class EquipmentModel extends LogModel
@@ -262,7 +259,8 @@ class EquipmentModel extends LogModel
 
     protected function getUpdateLog(array $data): OperationLog
     {
-        $old = $this->find($data['id']);
+        $old = $this->find($data['id'][0]);
+        d($old);
         $new = $this->mergeTypeParams($data['data']);
         $old = $this->mergeTypeParams($old->toRawArray());
         unset_array_keys($old, $this->updateChangesIgnore);
@@ -272,7 +270,7 @@ class EquipmentModel extends LogModel
 
         $operationLog = new OperationLog([
             'changes' => $changes,
-            'record_id' => $data['id'],
+            'record_id' => $data['id'][0],
             'action' =>'update',
             'table' => $this->table
         ]);
@@ -364,7 +362,7 @@ class EquipmentModel extends LogModel
             ))
             ->findAll();
         foreach($relations as $relation){
-            $equipment2EquipmentModel->delete($relation, purge: true);
+            $equipment2EquipmentModel->delete($relation->id, purge: true);
         }
         return true;
     }

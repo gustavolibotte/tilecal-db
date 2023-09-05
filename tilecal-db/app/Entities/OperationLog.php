@@ -143,7 +143,7 @@ class OperationLog extends BaseEntity
 
     protected function insertEquipmentsToEquipmentsMessage(): string
     {
-        $msg = sprintf('Related %s %s to %s',
+        $msg = sprintf('Relates %s %s to %s',
             $this->getEquipmentLink('equipment_a_id'),
             $this->changes['type'],
             $this->getEquipmentLink('equipment_b_id')
