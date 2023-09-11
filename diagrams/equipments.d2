@@ -1,11 +1,11 @@
 base_equipment: {
     Base Equipment: {
         shape: class
-        ID: ATLAS ID
+        ID*: ATLAS ID
         model: string
-        location: Current location
-        status: Current status
-        owner: CERN Institute
+        location*: Current location
+        status*: Current status
+        owner*: CERN Institute
         serial: Manufacturer issued serial code
         comments: string
     }
@@ -32,7 +32,7 @@ auxiliary_board: {
 active_hv_divider: {
     HV Divider: {
         shape: class
-        model: \"active\"
+        model*: \"active\"
     }
 }
 
@@ -63,7 +63,7 @@ cpm: {
 daughterboard:{
     Daughterboard: {
         shape: class
-        model: \"VX\"
+        model*: \"VX\"
     }     
 }
 
@@ -136,7 +136,7 @@ lv_power_supply: {
 mainboard: {
     Mainboard: {
         shape: class
-        model: \"VX\"
+        model*: \"VX\"
     }
 }
 
@@ -159,17 +159,17 @@ micro_drawer: {
 module: {
     Module: {
         shape: class
-        model: \"LBA\#\#\", \"LBC\#\#\", \"EBA\#\#\" or \"EBC\#\#\"
+        model*: \"LBA\#\#\", \"LBC\#\#\", \"EBA\#\#\" or \"EBC\#\#\"
     }
 }
 
 pmt: {
     PMT: {
         shape: class
-        beta: float
-        qe: float
-        nominal_hv: float
-        model: options bellow
+        beta*: float
+        qe*: float
+        nominal_hv*: float
+        model*: options bellow
         R11187
         R7877
         R7787
@@ -189,28 +189,28 @@ pmt_block: {
 partition: {
     Partition: {
         shape: class
-        model: \"LBA\", \"LBC\", \"EBA\" or \"EBC\"
+        model*: \"LBA\", \"LBC\", \"EBA\" or \"EBC\"
     }
 }
 
 passive_hv_divider: {
     HV Divider: {
         shape: class
-        model: \"passive\"
+        model*: \"passive\"
     }
 }
 
 phase1_super_drawer: {
     Phase 1 Super Drawer: {
         shape: class
-        model: \"P1LB\" or \"P1EB\"
+        model*: \"P1LB\" or \"P1EB\"
     }
 }
 
 phase2_super_drawer: {
     Phase 2 Super Drawer: {
         shape: class
-        model: \"LB\"or \"EB\"
+        model*: \"LB\"or \"EB\"
     }
 }
 

@@ -72,4 +72,27 @@ abstract class BaseModel extends Model
         }
         return $options;
     }
+
+    public function getCustomArray(string $keyField, ?string $valueField=null, ?array $ids=null, ): array
+    {
+        $nullValue = is_null($valueField);
+        if(!$nullValue){
+            $this->select(sprintf(
+                '%s, %s',
+                $this->db->escape($keyField),
+                $this->db->escape($valueField)
+            ));
+        }
+        $results = (is_null($ids))? $this->findAll(): $this->find($ids);
+        if ($nullValue) {
+            foreach ($results as $result){
+                $array[$result->$keyField] = $result;
+            }
+        } else {
+            foreach ($results as $result){
+                $array[$result->$keyField] = $result->$valueField;
+            }
+        }
+        return $array;
+    }
 }

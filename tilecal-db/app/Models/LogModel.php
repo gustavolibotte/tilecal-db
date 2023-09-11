@@ -118,9 +118,6 @@ abstract class LogModel extends BaseModel{
 
     protected function logDelete(array $data)
     {
-        // if ($data['id'] instanceof Entity){
-        //     $data['id'] = [$data['id']->id];
-        // }
         $operationLog = $this->getDeleteLog($data);
         model('HistModel')->insert($operationLog);
         return $data;

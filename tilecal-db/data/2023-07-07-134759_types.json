@@ -14,8 +14,8 @@
         "description": null
     },
     {
-        "name": "phase_2_hv_divider",
-        "label": "Phase 2 HV Divider",
+        "name": "hv_divider",
+        "label": "HV Divider",
         "params": [],
         "in_detector": true,
         "description": null
