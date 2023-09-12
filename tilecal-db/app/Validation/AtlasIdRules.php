@@ -13,8 +13,8 @@ class AtlasIdRules {
     public static array $validSystems = [
         'LB' => 'Barrel',
         'LE' => 'Extended',
-        'LL' => 'Optics',
-        'LO' => 'Electronics',
+        'LL' => 'Electronics',
+        'LO' => 'Optics',
         'LC' => 'Control'
     ];
 
@@ -35,7 +35,32 @@ class AtlasIdRules {
     public static string $sequentialNumberRegex = '^[A-Z0-9]{7}';
 
     /**
-     * Checks if the equipment id is has one of the valid systems
+     * Exact Id length
+     * @var int $exactLength
+     */
+    public static int $exactLength = 14;
+
+    /**
+     * Checks if the equipment id has one of the valid projects.
+     * Builds error message
+     *
+     * @param $value  Value given by CodeIgniter validator, considered as an equipment id
+     * 
+     * @return bool True if the id has a valid project
+     */ 
+    public function id_has_valid_project($value, ?string &$error = null): bool
+    {
+        $id = new AtlasId(['id' => $value]);
+        $result = array_key_exists($id->project, AtlasIdRules::$validProjects);
+        if ($result){
+            $error = sprintf('ID has invalid project %s', $id->project);
+        }
+        return $result;
+    }
+
+    /**
+     * Checks if the equipment id has one of the valid systems
+     * Builds error message
      *
      * @param $value  Value given by CodeIgniter validator, considered as an equipment id
      * 
@@ -45,6 +70,29 @@ class AtlasIdRules {
     {
         $id = new AtlasId(['id' => $value]);
         return in_array($id->system, array_keys(AtlasIdRules::$validSystems));
+    }
+
+    /**
+     * Checks if the equipment id is has a valid institute
+     *
+     * @param $value  Value given by CodeIgniter validator, considered as an equipment id
+     * @param string $params String with format <table>.<column> that refers to the database column that has the valid institute mnes
+     * @param array $data Ignored, it exists for compatibility reasons only
+     * @param ?string &$error Ignored, it exists for compatibility reasons only
+     * 
+     * @return bool True if the id has a valid institute
+     */ 
+    public function id_has_valid_institute($value, string $params, array $data, ?string &$error): bool
+    {   
+        $tableColumn = explode('.', $params);
+        $table = $tableColumn[0];
+        $column = $tableColumn[1];
+        $id = new AtlasId(['id' => $value]);
+        $db = db_connect();
+        $queryText = sprintf("SELECT * FROM `%s` WHERE `%s` = '%s' LIMIT 1", $table, $column, $id->institute);
+        $query = $db->query($queryText);
+        $results = $query->getFirstRow();
+        return isset($results);
     }
 
     /**
@@ -79,28 +127,5 @@ class AtlasIdRules {
         $correctProject = $params;
         $id = new AtlasId(['id' => $value]);
         return $id->project == $correctProject;
-    }
-
-    /**
-     * Checks if the equipment id is has a valid institute
-     *
-     * @param $value  Value given by CodeIgniter validator, considered as an equipment id
-     * @param string $params String with format <table>.<column> that refers to the database column that has the valid institute mnes
-     * @param array $data Ignored, it exists for compatibility reasons only
-     * @param ?string &$error Ignored, it exists for compatibility reasons only
-     * 
-     * @return bool True if the id has a valid institute
-     */ 
-    public function id_has_valid_institute($value, string $params, array $data, ?string &$error): bool
-    {   
-        $tableColumn = explode('.', $params);
-        $table = $tableColumn[0];
-        $column = $tableColumn[1];
-        $id = new AtlasId(['id' => $value]);
-        $db = db_connect();
-        $queryText = sprintf("SELECT * FROM `%s` WHERE `%s` = '%s' LIMIT 1", $table, $column, $id->institute);
-        $query = $db->query($queryText);
-        $results = $query->getFirstRow();
-        return isset($results);
     }
 }

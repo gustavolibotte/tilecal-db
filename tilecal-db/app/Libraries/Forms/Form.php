@@ -77,7 +77,8 @@ abstract class Form{
                 dot_array_search($name, $fieldValues),
                 dot_array_search('required', $field),
                 dot_array_search('helpText', $field),
-                dot_array_search('label', $field));
+                dot_array_search('label', $field)
+            );
         }
         return $str;
     }

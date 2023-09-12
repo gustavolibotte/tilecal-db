@@ -67,38 +67,60 @@ class DatabaseRules{
         }
         return $approved;
     }
-
+    
     /**
      * Checks if the parent equipment has not reached the max number of childs
      *
      * @param $value  Value given by CodeIgniter validator, considered as an equipment id for the parent id
-     * @param string $params "<max>,<type>,<id>"
-     * <max> is the maximum number of childs of type name <type> the parent equipment can have. <id> is the child equipment id
+     * @param string $params "<child_id>"
+     * <child_id> The id for the child equipment to be used by the parent
      * @param array $data Ignored
-     * @param ?string &$error Error string in the format "The given parent equipment (%s) already has the maximum of linked childs (%d)."
+     * @param ?string &$error Error string, formated automatically by the function
      * 
      * @return bool True if the data was approved on this rule
      */ 
-    public function not_maxed_parent($value, string $params, array $data, ?string &$error): bool
+    public function id_is_valid_parent($value, string $params, array $data, ?string &$error): bool
     {
-        helper('string');
+        $childId = $params;
         $parentId = $value;
-        $params = explode(',', $params);
-        $maxChilds = $params[0];
-        $typeName = $params[1];
-        $childId = $params[2];
+
         $equipmentModel = model('EquipmentModel');
-        $count = $equipmentModel->childQuery($parentId, $typeName, [$childId])->countAllResults();
-        $approved = ($count < $maxChilds);
-        if (!$approved){
+        $subQuery = $equipmentModel
+            ->builder()
+            ->select('type_id')
+            ->where('id', $childId)
+            ->get();
+        $parent = $equipmentModel
+            ->select('equipments.id')
+            ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
+            ->join('type_hirarchies', 'equipment_types.id = type_hierarchies.parent_type_id', 'left')
+            ->withDeletedJoin('equipment_types')
+            ->withDeletedJoin('type_hierarchies')
+            ->where(sprintf(
+                '(%s) MEMBER OF(children_type_ids)',
+                $subQuery
+            ))
+            ->find($parentId);
+        
+        if (empty($parent)){
             $error = sprintf(
-                "The given parent equipment (%s) already has %d %s childs. It is maximum is %d ",
-                $value,
-                $count,
-                snake2Capitalized($typeName),
-                $maxChilds
-            );
+                'You cannot assign equipment %s as parent to %s. (Parent doesn\'t allow this child equipment type)',
+                $parentId,
+                $childId)
+            ;
+            return false;
         }
-        return $approved;
+        $childrenTypeIds = json_decode($parent->children_type_ids);
+        $count = $equipmentModel->queryChilds($parentId, $childrenTypeIds, [$childId])->countAllResults();
+        if ($count >= $parent->max_count){
+            $error = sprintf(
+                'You cannot assign equipment %s as parent to %s. Parent is already filled with max number of equipments (%s)',
+                $parentId,
+                $childId,
+                $parent->max_count
+            );
+            return false;
+        }
+        return true;
     }
 }

@@ -11,7 +11,7 @@
   <?= $this->renderSection('css') ?>
 </head>
 
-<?= $this->include('layouts/header') ?>
+<? echo view_cell('LayoutCell::header'); ?>
 
 <body>
   <div class="container-fluid mt-4 mb-4">

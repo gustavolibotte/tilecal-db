@@ -93,7 +93,6 @@ class Equipments extends BaseController
         } else{
             $form = new $formClass();
         }
-        
         $equipmentTypeModel = new EquipmentTypeModel();
         $type = $equipmentTypeModel->where(sprintf("name = '%s'", $typeName))->first();
         $registerData['model'] = $type;

@@ -5,10 +5,12 @@ namespace App\Library\Forms;
 use \App\Models\BaseModel;
 use \App\Entities\Equipment;
 use \App\Entities\AtlasId;
+use \App\Validation\AtlasIdRules;
 
 class EquipmentForm extends Form{
 
     public static int $serialMaxSize = 36;
+    public array $validParents = [];
 
     public function initialize()
     {
@@ -87,21 +89,16 @@ class EquipmentForm extends Form{
             "id" => [
                 "rules" => [
                     "required",
-                    "alpha_numeric",
-                    "exact_length[14]",
-                    "id_is_project[20]",
+                    sprintf("exact_length[%s]", AtlasIdRules::$exactLength),
+                    'id_has_valid_project',
                     "id_has_valid_system",
                     "id_has_valid_institute[institutes.mne]",
                     "is_unique[equipments.id]"
                 ],
                 "errors" => [
                     "required" => "You must supply an id for the equipment.",
-                    "alpha_numeric" => "The id must be alphanumeric.",
-                    "exact_length" => "The id must have 14 characters.",
+                    "exact_length" => "The id must have {param} characters.",
                     "is_unique" => "This id already exists.",
-                    "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
-                    "id_has_valid_institute" => "The barcode doesn't have a valid institute value",
-                    "id_has_valid_system" => "The id system is not valid."
                 ]
             ],
             "type_label" => [
@@ -136,23 +133,16 @@ class EquipmentForm extends Form{
             ],
             "parent_id" => [
                 "rules" => [
-                    "permit_empty",
-                    "alpha_numeric",
-                    "exact_length[14]",
-                    "id_is_project[20]",
-                    "differs[id]",
+                    "required",
+                    sprintf("exact_length[%s]", AtlasIdRules::$exactLength),
+                    'id_has_valid_project',
                     "id_has_valid_system",
                     "id_has_valid_institute[institutes.mne]",
-                    "is_not_unique[equipments.id]",
+                    "id_is_valid_parent[{id}]"
                 ],
                 "errors" => [
-                    "alpha_numeric" => "The parent ID must be alphanumeric.",
-                    "exact_length" => "The parent ID must have 14 characters.",
-                    "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
-                    "differs" => "The parent ID is equal to the equipment ID",
-                    "id_has_valid_institute" => "The barcode doesn't have a valid institute value",
-                    "id_has_valid_system" => "The id system is not valid.",
-                    "is_not_unique" => "The parent ID doesn't exist."
+                    "required" => "You must supply an id for the equipment.",
+                    "exact_length" => "The id must have {param} characters.",
                 ]
             ],
             "serial" => [

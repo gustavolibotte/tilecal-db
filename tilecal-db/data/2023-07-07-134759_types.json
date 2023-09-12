@@ -1,65 +1,70 @@
 [
     {
+        "id": 1,
         "name": "pmt",
         "label": "PMT",
+        "system": "LO",
+        "project": 20,
         "params": ["beta", "nominal_hv", "qe", "model"],
         "in_detector": true,
-        "description": null
+        "description": null,
+        "hierarchy": []
     },
     {
+        "id": 2,
         "name": "pmt_block",
         "label": "PMT Block",
+        "system": "LO",
+        "project": 20,
         "params": [],
         "in_detector": true,
-        "description": null
+        "description": null,
+        "hierarchy": [
+            {
+                "children": ["3_in_1_board", "fenics"],
+                "max_count": 1
+            },
+            {
+                "children": ["pmt"],
+                "max_count": 1
+            },
+            {
+                "children": ["hv_divider"],
+                "max_count": 1
+            }
+        ]
     },
     {
+        "id": 3,
         "name": "hv_divider",
         "label": "HV Divider",
+        "system": "LL",
+        "project": 20,
         "params": [],
         "in_detector": true,
-        "description": null
+        "description": null,
+        "hierarchy": []
     },
     {
-        "name": "super_drawer",
-        "label": "Super Drawer",
-        "params": [],
-        "in_detector": true,
-        "description": null
-    },
-    {
-        "name": "mini_drawer",
-        "label": "Mini Drawer",
-        "params": [],
-        "in_detector": true,
-        "description": null
-    },
-    {
+        "id": 6,
         "name": "3_in_1_board",
         "label": "3 in 1 Board",
+        "system": "LL",
+        "project": 20,
         "params": [],
         "in_detector": true,
-        "description": null
+        "description": null,
+        "hierarchy": []
     },
     {
+        "id": 7,
         "name": "fenics",
         "label": "FENICS",
+        "system": "LL",
+        "project": 20,
         "params": [],
         "in_detector": true,
-        "description": null
-    },
-    {
-        "name": "mainboard",
-        "label": "Mainboard",
-        "params": [],
-        "in_detector": true,
-        "description": null
-    },
-    {
-        "name": "daughterboard",
-        "label": "Daughterboard",
-        "params": [],
-        "in_detector": true,
-        "description": null
+        "description": null,
+        "hierarchy": []
     }
 ]
