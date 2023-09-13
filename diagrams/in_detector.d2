@@ -2,20 +2,20 @@
 
 direction: up
 
-title: |md
-  # Phase 2 In Detector Equipments
-|
-title.near: top-center
-title.style.font-size: 30
+# title: |md
+#   # Phase 2 In Detector Equipments
+# |
+# title.near: top-center
+# title.style.font-size: 30
 
 # Node declaration
 
-All Equipments Have: {
-  ...@equipments.base_equipment
-}
+# All Equipments Have: {
+#   ...@equipments.base_equipment
+# }
 
 ...@equipments.active_hv_divider
-...@equipments.cooling_hoses
+# ...@equipments.cooling_hoses
 ...@equipments.daughterboard
 ...@equipments.fenics
 ...@equipments.hv_distribution_board
@@ -39,11 +39,11 @@ HV Divider -> PMT Block: 1 {class: connection}
 Mainboard -> Mini Drawer: 1 {class: connection}
 Daughterboard -> Mini Drawer: 1 {class: connection}
 Mini Drawer -> Phase 2 Super Drawer: 3 if EB, 4 if LB {class: connection}
-Micro Drawer -> Phase 2 Super Drawer: SD Model dependent {class: connection}
+Micro Drawer -> Phase 2 Super Drawer:  {class: connection}
 Phase 2 Super Drawer -> Module: 1 {class: connection}
 # HV Regulation Board -> Module: 1 {class: connection}
 HV Distribution Board -> Module: 1 per minidrawer {class: connection}
 # Auxiliary Board -> Module: 1 {class: connection}
 LV Power Supply -> Module: 1 {class: connection}
 LV Brick -> LV Power Supply: 8 {class: connection}
-Cooling Hoses -> Phase 2 Super Drawer: X {class: connection}
+# Cooling Hoses -> Phase 2 Super Drawer: X {class: connection}

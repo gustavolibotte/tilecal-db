@@ -8,6 +8,7 @@ base_equipment: {
         owner*: CERN Institute
         serial: Manufacturer issued serial code
         comments: string
+        extra_params: Equipment type dependent
     }
 }
 
@@ -32,7 +33,7 @@ auxiliary_board: {
 active_hv_divider: {
     HV Divider: {
         shape: class
-        model*: \"active\"
+        # model*: \"active\"
     }
 }
 
@@ -63,7 +64,7 @@ cpm: {
 daughterboard:{
     Daughterboard: {
         shape: class
-        model*: \"VX\"
+        # model*: \"VX\"
     }     
 }
 
@@ -136,7 +137,7 @@ lv_power_supply: {
 mainboard: {
     Mainboard: {
         shape: class
-        model*: \"VX\"
+        # model*: \"VX\"
     }
 }
 
@@ -144,7 +145,7 @@ mini_drawer: {
     Mini Drawer: {
         shape: class
         super_drawer_pos: uint
-        model
+        # model
     }
 }
 
@@ -152,7 +153,7 @@ micro_drawer: {
     Micro Drawer: {
         shape: class
         super_drawer_pos: uint
-        model: 4 or 5
+        # model: 4 or 5
     }
 }
 
@@ -169,12 +170,12 @@ pmt: {
         beta*: float
         qe*: float
         nominal_hv*: float
-        model*: options bellow
-        R11187
-        R7877
-        R7787
-        R11187-SEL
-        R11187-A1
+        # model*: options bellow
+        # R11187
+        # R7877
+        # R7787
+        # R11187-SEL
+        # R11187-A1
     }
 }
 
