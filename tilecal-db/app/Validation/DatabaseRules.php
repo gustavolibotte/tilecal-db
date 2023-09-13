@@ -2,6 +2,7 @@
 
 namespace App\Validation;
 use App\Models\EquipmentModel;
+use CodeIgniter\Database\RawSql;
 
 class DatabaseRules{
 
@@ -81,27 +82,28 @@ class DatabaseRules{
      */ 
     public function id_is_valid_parent($value, string $params, array $data, ?string &$error): bool
     {
-        $childId = $params;
+        $params = explode(',', $params);
+        $childId = $params[0];
+        $typeName = $params[1];
         $parentId = $value;
 
+        $query = 'SELECT e.id, children_type_ids, max_count FROM equipments e ';
+        $query .= 'LEFT JOIN equipment_types et ON e.type_id = et.id ';
+        $query .= 'LEFT JOIN types_hierarchy th ON th.parent_type_id = et.id ';
+        $query .= sprintf(
+            'WHERE (SELECT id FROM equipment_types WHERE name=\'%s\') MEMBER OF(children_type_ids) ',
+            $typeName
+        );
+        $query .= sprintf(
+            'AND e.id = \'%s\' ',
+            $parentId
+        );
+        $query .= 'LIMIT 1';
+        $query = new RawSql($query);
         $equipmentModel = model('EquipmentModel');
-        $subQuery = $equipmentModel
-            ->builder()
-            ->select('type_id')
-            ->where('id', $childId)
-            ->get();
-        $parent = $equipmentModel
-            ->select('equipments.id')
-            ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
-            ->join('type_hirarchies', 'equipment_types.id = type_hierarchies.parent_type_id', 'left')
-            ->withDeletedJoin('equipment_types')
-            ->withDeletedJoin('type_hierarchies')
-            ->where(sprintf(
-                '(%s) MEMBER OF(children_type_ids)',
-                $subQuery
-            ))
-            ->find($parentId);
-        
+        $parent = $equipmentModel->db->query($query)->getResult()[0];
+        d($parent);
+        // For some reason the query doesn't work when built with the builder
         if (empty($parent)){
             $error = sprintf(
                 'You cannot assign equipment %s as parent to %s. (Parent doesn\'t allow this child equipment type)',
@@ -111,7 +113,9 @@ class DatabaseRules{
             return false;
         }
         $childrenTypeIds = json_decode($parent->children_type_ids);
+        d($childrenTypeIds);
         $count = $equipmentModel->queryChilds($parentId, $childrenTypeIds, [$childId])->countAllResults();
+        d($count);
         if ($count >= $parent->max_count){
             $error = sprintf(
                 'You cannot assign equipment %s as parent to %s. Parent is already filled with max number of equipments (%s)',

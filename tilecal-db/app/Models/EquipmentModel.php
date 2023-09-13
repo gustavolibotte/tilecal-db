@@ -174,6 +174,7 @@ class EquipmentModel extends LogModel
             throw new \TypeError('Equipment Model insert supports only Equipment as $data');
         }
         $data = $data->toRawArray();
+        d($data);
         if(array_key_exists('parent_id', $data)){
             $parentId = remove_value('parent_id', $data);
         }
@@ -442,13 +443,14 @@ class EquipmentModel extends LogModel
 
      * @return Self This model instance
      */
-    protected function withDeletedJoin(array $joinedTables): Self
+    public function withDeletedJoin(array $joinedTables): Self
     {
         if ($this->tempUseSoftDeletes){
             foreach ($joinedTables as $tableName){
                 $this->where(sprintf(
-                    '`%s`.`deleted_at` IS NULL',
-                    $tableName
+                    '`%s`.`%s` IS NULL',
+                    $tableName,
+                    $this->deletedField
                 ));
             }
         }

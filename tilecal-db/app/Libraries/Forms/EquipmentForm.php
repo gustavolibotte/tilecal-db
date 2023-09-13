@@ -6,6 +6,8 @@ use \App\Models\BaseModel;
 use \App\Entities\Equipment;
 use \App\Entities\AtlasId;
 use \App\Validation\AtlasIdRules;
+use \CodeIgniter\HTTP\IncomingRequest;
+use Error;
 
 class EquipmentForm extends Form{
 
@@ -26,8 +28,8 @@ class EquipmentForm extends Form{
                     'placeholder' => 'XXXXXXXXXXXXXX'
                 ]
             ],
-            'type_label' => [
-                'id' => 'type_label',
+            'type_name' => [
+                'id' => 'type_name',
                 'label' => 'Model',
                 'required' => true,
                 'helpText' => "Equipment's type",
@@ -101,10 +103,10 @@ class EquipmentForm extends Form{
                     "is_unique" => "This id already exists.",
                 ]
             ],
-            "type_label" => [
+            "type_name" => [
                 "rules" => [
                     "required",
-                    "is_not_unique[equipment_types.label]",
+                    "is_not_unique[equipment_types.name]",
                 ],
                 "errors" => [
                     "required" => "You must supply a type for the equipment.",
@@ -133,12 +135,12 @@ class EquipmentForm extends Form{
             ],
             "parent_id" => [
                 "rules" => [
-                    "required",
+                    "permit_empty",
                     sprintf("exact_length[%s]", AtlasIdRules::$exactLength),
                     'id_has_valid_project',
                     "id_has_valid_system",
                     "id_has_valid_institute[institutes.mne]",
-                    "id_is_valid_parent[{id}]"
+                    "id_is_valid_parent[{id},hv_divider]"
                 ],
                 "errors" => [
                     "required" => "You must supply an id for the equipment.",
@@ -166,16 +168,19 @@ class EquipmentForm extends Form{
 
     public function getEntity(): Equipment
     {
-        helper(['array']);
+        helper(['array', 'cast']);
         if (!$this->isValid){
             throw new \Exception('To get the equipment you must validate the form first');
         }
         $fieldValues = $this->getFieldValues();
+        foreach ($fieldValues as $key=>&$value){
+            $value = null_empty($value);
+        }
         $equipment = new Equipment($fieldValues);
         $id = new AtlasId(['id' => $equipment->id]);
         $owner = (new \App\Models\InstituteModel())->where(sprintf("mne = '%s'", $id->institute))->first();
         $equipment->owner_id = $owner->id;
-        $equipmentType = (new \App\Models\EquipmentTypeModel())->where(sprintf("label = '%s'", $fieldValues['type_label']))->first();
+        $equipmentType = (new \App\Models\EquipmentTypeModel())->where('name', $fieldValues['type_name'])->first();
         $equipment->type_id = $equipmentType->id;
         $typeParams = [];
         foreach ($equipmentType->params as $param){
@@ -221,5 +226,29 @@ class EquipmentForm extends Form{
         ];
         $this->resetRules();
         $this->fields['id']['fieldParams']['readOnly'] = null;
+    }
+
+    public static function getTypeForm(?string $typeName=null, ?IncomingRequest $request=null): EquipmentForm
+    {
+        if (is_null($typeName)){
+            return new Self($request);
+        }
+
+        helper('string');
+        $formClass = sprintf('\App\Library\Forms\%sForm', snake2CamelCase($typeName));
+        try {
+            return new $formClass($request);
+        } catch (Error $e){
+            $expectedMsg = sprintf(
+                'Class "%s" not found',
+                $formClass
+            );
+            if($e->getMessage() == $expectedMsg){
+                $form = new Self($request);
+                $form->setFieldValues(['type_name' => $typeName]);
+                return $form;
+            }
+            throw $e;
+        } 
     }
 }

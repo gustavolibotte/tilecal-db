@@ -150,7 +150,7 @@ class PmtForm extends EquipmentForm{
         ];
         $this->commentsEnd();
         $values = $this->getFieldValues();
-        $values['type_label'] = 'PMT';
+        $values['type_name'] = 'PMT';
         $this->setFieldValues($values);
     }
 
