@@ -8,7 +8,6 @@ namespace App\Models;
 
 use App\Entities\OperationLog;
 use CodeIgniter\Database\Exceptions\DatabaseException;
-use CodeIgniter\Entity\Entity;
 
 abstract class LogModel extends BaseModel{
 
@@ -52,6 +51,9 @@ abstract class LogModel extends BaseModel{
     {
         unset_array_keys($data['data'], $this->insertChangesIgnore);
         $data['data']['id'] = $data['id'];
+        if ($this->table == 'types_hierarchy'){
+            d($data);
+        }
         $operationLog = new OperationLog([
             'changes' => $data['data'],
             'record_id' => $data['id'],

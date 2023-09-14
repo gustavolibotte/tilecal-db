@@ -5,14 +5,26 @@ namespace App\Library\Forms;
 use \App\Models\BaseModel;
 use \App\Entities\Equipment;
 use \App\Entities\AtlasId;
+use App\Entities\EquipmentType;
 use \App\Validation\AtlasIdRules;
+use \App\Validation\DatabaseRules;
 use \CodeIgniter\HTTP\IncomingRequest;
 use Error;
 
 class EquipmentForm extends Form{
 
-    public static int $serialMaxSize = 36;
     public array $validParents = [];
+    public string $typeName;
+    public EquipmentType $equipmentType;
+
+    public function __construct(?IncomingRequest $request=null, string $typeName)
+    {
+        $this->equipmentType = model('EquipmentTypeModel')
+            ->where('name', $typeName)
+            ->first();
+        parent::__construct($request);
+        $this->setFieldValues(['type_name' => $typeName]);
+    }
 
     public function initialize()
     {
@@ -73,7 +85,7 @@ class EquipmentForm extends Form{
                 'fieldType' => 'input',
                 'helpText' => "Equipment serial number",
                 'fieldParams' => [
-                    'maxlength' => self::$serialMaxSize
+                    'maxlength' => DatabaseRules::$serialMaxSize
                 ]
             ],
             'comments' => [
@@ -140,7 +152,7 @@ class EquipmentForm extends Form{
                     'id_has_valid_project',
                     "id_has_valid_system",
                     "id_has_valid_institute[institutes.mne]",
-                    "id_is_valid_parent[{id},hv_divider]"
+                    "id_is_valid_parent[{id},{type_name}]"
                 ],
                 "errors" => [
                     "required" => "You must supply an id for the equipment.",
@@ -149,18 +161,21 @@ class EquipmentForm extends Form{
             ],
             "serial" => [
                 "rules" => [
-                    sprintf("max_length[%d]", self::$serialMaxSize)
+                    "permit_empty",
+                    sprintf("max_length[%d]", DatabaseRules::$serialMaxSize),
+                    sprintf("is_type_unique[serial,%d]", $this->equipmentType->id)
                 ],
                 "errors" => [
-                    "max_length" => "Serial max size is {param} characters",
+                    "max_length" => "Serial max size is {param} characters.",
+                    "is_type_unique" => "Serial Number {value} already exists."
                 ]
             ],
             "comments" => [
                 "rules" => [
-                    "max_length[65535]" //MySQL max text size
+                    sprintf("max_length[%s]", DatabaseRules::$maxCommentsSize)
                 ],
                 "errors" => [
-                    "max_length" => "Comments max size is 65535 characthers",
+                    "max_length" => "Comments max size is {param} characthers",
                 ]
             ],
         ];
@@ -205,35 +220,21 @@ class EquipmentForm extends Form{
     }
 
     public function asEdit(){
-        
-        $this->validationRules['id'] = [
-            "rules" => [
-                "required",
-                "alpha_numeric",
-                "exact_length[14]",
-                "id_is_project[20]",
-                "id_has_valid_institute[institutes.mne]",
-                "is_not_unique[equipments.id]"
-            ],
-            "errors" => [
-                "required" => "You must supply an id for the equipment.",
-                "alpha_numeric" => "The id must be alphanumeric.",
-                "exact_length" => "The id must have 14 characters.",
-                "is_not_unique" => "This id doesn't exist.",
-                "id_is_project" => "An equipment barcode must start with 20 (20 is code for ATLAS detector)",
-                "id_has_valid_institute" => "The barcode doesn't have a valid institute value"
-            ]
-        ];
+
+        $this->removeRule('id', 'is_unique');
+        $this->addRule('id', 'is_not_unique[equipments.id]', 'This id doesn\'t exist.');
+        $this->setReadOnly('id');
+
+        $oldRule = $this->removeRule('serial', 'is_type_unique');
+        $newRule = str_replace('is_type_unique', 'is_type_not_unique', $oldRule);
+        $this->addRule('serial', $newRule, 'The serial {value} doesn\'t exist');
+        $this->setReadOnly('serial');
+
         $this->resetRules();
-        $this->fields['id']['fieldParams']['readOnly'] = null;
     }
 
-    public static function getTypeForm(?string $typeName=null, ?IncomingRequest $request=null): EquipmentForm
+    public static function getTypeForm(string $typeName=null, ?IncomingRequest $request=null): EquipmentForm
     {
-        if (is_null($typeName)){
-            return new Self($request);
-        }
-
         helper('string');
         $formClass = sprintf('\App\Library\Forms\%sForm', snake2CamelCase($typeName));
         try {
@@ -244,8 +245,7 @@ class EquipmentForm extends Form{
                 $formClass
             );
             if($e->getMessage() == $expectedMsg){
-                $form = new Self($request);
-                $form->setFieldValues(['type_name' => $typeName]);
+                $form = new Self($request, $typeName);
                 return $form;
             }
             throw $e;

@@ -3,8 +3,13 @@
 namespace App\Validation;
 use App\Models\EquipmentModel;
 use CodeIgniter\Database\RawSql;
+use TypeError;
 
 class DatabaseRules{
+
+
+    public static int $serialMaxSize = 36;
+    public static int $maxCommentsSize = 65535; //MySQL max text size
 
     /**
      * Checks if the a value doesn't exist for a given type. A negation of is_type_not_unique
@@ -99,11 +104,14 @@ class DatabaseRules{
             $parentId
         );
         $query .= 'LIMIT 1';
+        d($query);
         $query = new RawSql($query);
         $equipmentModel = model('EquipmentModel');
-        $parent = $equipmentModel->db->query($query)->getResult()[0];
+        $parent = $equipmentModel->db->query($query)->getResult();
         d($parent);
+
         // For some reason the query doesn't work when built with the builder
+        // The query checks if exists a hierarchy for the given parent_id that allows this equipment type
         if (empty($parent)){
             $error = sprintf(
                 'You cannot assign equipment %s as parent to %s. (Parent doesn\'t allow this child equipment type)',
@@ -111,9 +119,15 @@ class DatabaseRules{
                 $childId)
             ;
             return false;
+        } elseif (is_array($parent)){
+            $parent = $parent[0];
+        } else{
+            throw new TypeError("parent must be null or an array");
         }
+
+        // Here it means that the parent actually allows this type then we check if there is space to assign it.
+        d($parent);
         $childrenTypeIds = json_decode($parent->children_type_ids);
-        d($childrenTypeIds);
         $count = $equipmentModel->queryChilds($parentId, $childrenTypeIds, [$childId])->countAllResults();
         d($count);
         if ($count >= $parent->max_count){

@@ -174,7 +174,6 @@ class EquipmentModel extends LogModel
             throw new \TypeError('Equipment Model insert supports only Equipment as $data');
         }
         $data = $data->toRawArray();
-        d($data);
         if(array_key_exists('parent_id', $data)){
             $parentId = remove_value('parent_id', $data);
         }

@@ -49,7 +49,7 @@ class Equipments extends BaseController
 
         $viewData['editable'] = $this->user->isAuthorized('edit') && !$equipment->isDeleted();
         if ($viewData['editable']){
-            $viewData['editForm'] = new (get_model_form_class($equipment->type_name))();
+            $viewData['editForm'] = EquipmentForm::getTypeForm($equipment->type_name);
             $viewData['editForm']->asEdit();
             $viewData['editForm']->setFieldValues($equipment->toArrayWithTypeParams());
             $viewData['editForm']->setFieldValues(['parent_id' => $equipmentModel->getParentId($equipment->id)]);
@@ -77,14 +77,14 @@ class Equipments extends BaseController
 
         if ($this->request->is('post')){
             $form = EquipmentForm::getTypeForm($typeName, $this->request);
+            d($form);
             if ($form->validate()){
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
-                d($equipment);
                 $res = $equipmentModel->insert($equipment);
-                d($res);
                 $messenger->addRegisterSuccess();
                 $messenger->dumpMessages();
+                d($res);
                 // return redirect()->to(sprintf('equipments/%s/register', $typeName));
             } else {
                 foreach ($form->getErrors() as $errorMsg){

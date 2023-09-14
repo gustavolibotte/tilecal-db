@@ -24,6 +24,7 @@ class EquipmentTypeSeeder extends BaseSeeder
             }
             $hierarchies = $this->getFormatedHierarchyArray($row);
             foreach ($hierarchies as $hierarchy){
+                d($hierarchy);
                 $typeHierarchyModel->insert($hierarchy);
             }
         }

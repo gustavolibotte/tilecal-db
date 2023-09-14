@@ -52,8 +52,12 @@ class AtlasIdRules {
     {
         $id = new AtlasId(['id' => $value]);
         $result = array_key_exists($id->project, AtlasIdRules::$validProjects);
-        if ($result){
-            $error = sprintf('ID has invalid project %s', $id->project);
+        if (!$result){
+            $error = sprintf(
+                'ID has invalid project %s. (Valid values: %s)',
+                $id->project,
+                implode(',', array_keys(self::$validProjects))
+            );
         }
         return $result;
     }

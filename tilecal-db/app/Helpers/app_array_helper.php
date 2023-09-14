@@ -14,11 +14,15 @@ function unset_array_keys(array &$source, array $removeKeys)
  *
  * @param $key Key to the value to remove
  * @param array &$array Array to have its value removed
+ * @param bool $error If false ignores keys that doesn't exist and returns null
  * 
  * @return mixed The removed value
  */ 
-function remove_value($key, array &$array): mixed
+function remove_value($key, array &$array, bool $error=true): mixed
 {
+    if ((!$error) && (!array_key_exists($key, $array))){
+        return null;
+    }
     $value = $array[$key];
     unset($array[$key]);
     return $value;
