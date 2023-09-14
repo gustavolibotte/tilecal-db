@@ -104,14 +104,20 @@ class EquipmentForm extends Form{
                 "rules" => [
                     "required",
                     sprintf("exact_length[%s]", AtlasIdRules::$exactLength),
-                    'id_has_valid_project',
-                    "id_has_valid_system",
+                    sprintf("id_is_system[%s]", $this->equipmentType->system),
+                    "id_is_project[20]",
                     "id_has_valid_institute[institutes.mne]",
                     "is_unique[equipments.id]"
                 ],
                 "errors" => [
                     "required" => "You must supply an id for the equipment.",
                     "exact_length" => "The id must have {param} characters.",
+                    "id_is_system" => sprintf(
+                        "For %s the ID system must be {param} for %s",
+                        $this->equipmentType->label,
+                        AtlasIdRules::$validSystems[$this->equipmentType->system]
+                    ),
+                    "id_is_project" => "The ID project for ATLAS must be {param}",
                     "is_unique" => "This id already exists.",
                 ]
             ],
