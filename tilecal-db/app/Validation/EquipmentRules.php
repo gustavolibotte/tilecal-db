@@ -5,7 +5,7 @@ use App\Models\EquipmentModel;
 use CodeIgniter\Database\RawSql;
 use TypeError;
 
-class DatabaseRules{
+class EquipmentRules{
 
 
     public static int $serialMaxSize = 36;

@@ -46,7 +46,7 @@
         "hierarchy": []
     },
     {
-        "id": 6,
+        "id": 4,
         "name": "3_in_1_board",
         "label": "3 in 1 Board",
         "system": "LL",
@@ -57,9 +57,129 @@
         "hierarchy": []
     },
     {
-        "id": 7,
+        "id": 5,
         "name": "fenics",
         "label": "FENICS",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "hierarchy": []
+    },
+    {
+        "id": 6,
+        "name": "mainboard",
+        "label": "Mainboard",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "hierarchy": []
+    },
+    {
+        "id": 7,
+        "name": "daughterboard",
+        "label": "Daughterboard",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "hierarchy": []
+    },
+    {
+        "id": 8,
+        "name": "mini_drawer",
+        "label": "Mini Drawer",
+        "system": "LB",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "hierarchy": [
+            {
+                "children": ["mainboard"],
+                "max_count": 1
+            },
+            {
+                "children": ["daughterboard"],
+                "max_count": 1
+            },
+            {
+                "children": ["pmt_block"],
+                "max_count": 12
+            }
+        ]
+    },
+    {
+        "id": 9,
+        "name": "micro_drawer",
+        "label": "Micro Drawer",
+        "system": "LB",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "hierarchy": [
+            {
+                "children": ["pmt_block"],
+                "max_count": 6
+            }
+        ]
+    },
+    {
+        "id": 10,
+        "name": "phase_2_lb_super_drawer",
+        "label": "Phase 2 LB Super Drawer",
+        "system": "LB",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "hierarchy": [
+            {
+                "children": ["mini_drawer"],
+                "max_count": 4
+            }
+        ]
+    },
+    {
+        "id": 11,
+        "name": "phase_2_eb_super_drawer",
+        "label": "Phase 2 EB Super Drawer",
+        "system": "LE",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "hierarchy": [
+            {
+                "children": ["mini_drawer"],
+                "max_count": 3
+            },
+            {
+                "children": ["micro_drawer"],
+                "max_count": 1
+            }
+        ]
+    },
+    {
+        "id": 12,
+        "name": "hv_distribution_board",
+        "label": "HV Distribution Board",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "hierarchy": []
+    },
+    {
+        "id": 13,
+        "name": "lv_power_supply",
+        "label": "LV Power Supply",
         "system": "LL",
         "project": 20,
         "params": [],

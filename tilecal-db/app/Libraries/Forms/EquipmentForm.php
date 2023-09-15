@@ -7,7 +7,7 @@ use \App\Entities\Equipment;
 use \App\Entities\AtlasId;
 use App\Entities\EquipmentType;
 use \App\Validation\AtlasIdRules;
-use \App\Validation\DatabaseRules;
+use \App\Validation\EquipmentRules;
 use \CodeIgniter\HTTP\IncomingRequest;
 use Error;
 
@@ -85,7 +85,7 @@ class EquipmentForm extends Form{
                 'fieldType' => 'input',
                 'helpText' => "Equipment serial number",
                 'fieldParams' => [
-                    'maxlength' => DatabaseRules::$serialMaxSize
+                    'maxlength' => EquipmentRules::$serialMaxSize
                 ]
             ],
             'comments' => [
@@ -158,7 +158,7 @@ class EquipmentForm extends Form{
                     'id_has_valid_project',
                     "id_has_valid_system",
                     "id_has_valid_institute[institutes.mne]",
-                    "id_is_valid_parent[{id},{type_name}]"
+                    sprintf("id_is_valid_%s_parent[{id}]", $this->equipmentType->name)
                 ],
                 "errors" => [
                     "required" => "You must supply an id for the equipment.",
@@ -168,7 +168,7 @@ class EquipmentForm extends Form{
             "serial" => [
                 "rules" => [
                     "permit_empty",
-                    sprintf("max_length[%d]", DatabaseRules::$serialMaxSize),
+                    sprintf("max_length[%d]", EquipmentRules::$serialMaxSize),
                     sprintf("is_type_unique[serial,%d]", $this->equipmentType->id)
                 ],
                 "errors" => [
@@ -178,7 +178,7 @@ class EquipmentForm extends Form{
             ],
             "comments" => [
                 "rules" => [
-                    sprintf("max_length[%s]", DatabaseRules::$maxCommentsSize)
+                    sprintf("max_length[%s]", EquipmentRules::$maxCommentsSize)
                 ],
                 "errors" => [
                     "max_length" => "Comments max size is {param} characthers",
@@ -201,10 +201,9 @@ class EquipmentForm extends Form{
         $id = new AtlasId(['id' => $equipment->id]);
         $owner = (new \App\Models\InstituteModel())->where(sprintf("mne = '%s'", $id->institute))->first();
         $equipment->owner_id = $owner->id;
-        $equipmentType = (new \App\Models\EquipmentTypeModel())->where('name', $fieldValues['type_name'])->first();
-        $equipment->type_id = $equipmentType->id;
+        $equipment->type_id = $this->equipmentType->id;
         $typeParams = [];
-        foreach ($equipmentType->params as $param){
+        foreach ($this->equipmentType->params as $param){
             $typeParams[$param] = $fieldValues[$param];
         }
         if ($equipment->parent_id == ''){
