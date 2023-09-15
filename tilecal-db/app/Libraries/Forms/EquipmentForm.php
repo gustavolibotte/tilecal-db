@@ -29,46 +29,87 @@ class EquipmentForm extends Form{
     public function initialize()
     {
         parent::initialize();
-        $this->fields = [
-            'id' => [
-                'id' => 'id',
-                'required' => true,
-                'helpText' => "Equipment's barcode value following ATLAS identification rules.",
-                'fieldType' => 'input',
-                'fieldParams' => [
-                    'maxlength' => 14,
-                    'placeholder' => 'XXXXXXXXXXXXXX'
-                ]
+
+        $this->fields['id'] = [
+            'id' => 'id',
+            'required' => true,
+            'helpText' => "Equipment's barcode value following ATLAS identification rules.",
+            'fieldType' => 'input',
+            'fieldParams' => [
+                'maxlength' => 14,
+                'placeholder' => 'XXXXXXXXXXXXXX'
+            ]
+        ];
+
+        $this->validationRules['id'] = [
+            "rules" => [
+                "required",
+                sprintf("exact_length[%s]", AtlasIdRules::$exactLength),
+                sprintf("id_is_system[%s]", $this->equipmentType->system),
+                "id_is_project[20]",
+                "id_has_valid_institute[institutes.mne]",
+                "is_unique[equipments.id]"
             ],
-            'type_name' => [
-                'id' => 'type_name',
-                'label' => 'Model',
-                'required' => true,
-                'helpText' => "Equipment's type",
-                'fieldType' => 'hidden',
-                'fieldParams' => []
+            "errors" => [
+                "required" => "You must supply an id for the equipment.",
+                "exact_length" => "The id must have {param} characters.",
+                "id_is_system" => sprintf(
+                    "For %s the ID system must be {param} for %s",
+                    $this->equipmentType->label,
+                    AtlasIdRules::$validSystems[$this->equipmentType->system]
+                ),
+                "id_is_project" => "The ID project for ATLAS must be {param}",
+                "is_unique" => "This id already exists.",
+            ]
+        ];
+
+        $this->fields['location_id'] = [
+            'id' => 'location_id',
+            'label' => 'Location',
+            'required' => true,
+            'fieldType' => 'dropdown',
+            'helpText' => "Current equipment location",
+            'fieldParams' => [
+                'options' => (new \App\Models\LocationModel())->getFormDropdownOptions(['name', 'description'])
+            ]
+        ];
+        
+        $this->validationRules['location_id'] = [
+            "rules" => [
+                "required",
+                "is_not_unique[locations.id]",
             ],
-            'location_id' => [
-                'id' => 'location_id',
-                'label' => 'Location',
-                'required' => true,
-                'fieldType' => 'dropdown',
-                'helpText' => "Current equipment location",
-                'fieldParams' => [
-                    'options' => (new \App\Models\LocationModel())->getFormDropdownOptions(['name', 'description'])
-                ]
+            "errors" => [
+                "required" => "You must supply a location for the equipment.",
+                "is_not_unique" => "The inserted location is not valid",
+            ]
+        ];
+
+        $this->fields['status_id'] = [
+            'id' => 'status_id',
+            'label' => 'Status',
+            'required' => true,
+            'fieldType' => 'dropdown',
+            'helpText' => "Current equipment status",
+            'fieldParams' => [
+                'options' => (new \App\Models\StatusModel())->getFormDropdownOptions(['name', 'description'])
+            ]
+        ];
+
+        $this->validationRules['status_id'] = [
+            "rules" => [
+                "required",
+                "is_not_unique[statuses.id]",
             ],
-            'status_id' => [
-                'id' => 'status_id',
-                'label' => 'Status',
-                'required' => true,
-                'fieldType' => 'dropdown',
-                'helpText' => "Current equipment status",
-                'fieldParams' => [
-                    'options' => (new \App\Models\StatusModel())->getFormDropdownOptions(['name', 'description'])
-                ]
-            ],
-            'parent_id' => [
+            "errors" => [
+                "required" => "You must supply a status for the equipment.",
+                "is_not_unique" => "The inserted status is not valid",
+            ]
+        ];
+
+        $typeSlotModel = model('TypeSlotModel');
+        if($typeSlotModel->hasSlots($this->equipmentType->name)){
+            $this->fields['parent_id'] = [
                 'id' => 'parent_id',
                 'label' => 'Parent ID',
                 'required' => false,
@@ -78,112 +119,64 @@ class EquipmentForm extends Form{
                     'maxlength' => 14,
                     'placeholder' => 'XXXXXXXXXXXXXX'
                 ]
-            ],
-            'serial' => [
-                'id' => 'serial',
-                'required' => false,
-                'fieldType' => 'input',
-                'helpText' => "Equipment serial number",
-                'fieldParams' => [
-                    'maxlength' => EquipmentRules::$serialMaxSize
-                ]
-            ],
-            'comments' => [
-                'id' => 'comments',
-                'required' => false,
-                'fieldType' => 'textarea',
-                'helpText' => "Possible necessary comments on the equipment situtation.",
-                'fieldParams' => [
-                    'rows' => 3
-                ]
-            ],
-        ];
+            ];
 
-        $this->validationRules = [
-            "id" => [
-                "rules" => [
-                    "required",
-                    sprintf("exact_length[%s]", AtlasIdRules::$exactLength),
-                    sprintf("id_is_system[%s]", $this->equipmentType->system),
-                    "id_is_project[20]",
-                    "id_has_valid_institute[institutes.mne]",
-                    "is_unique[equipments.id]"
-                ],
-                "errors" => [
-                    "required" => "You must supply an id for the equipment.",
-                    "exact_length" => "The id must have {param} characters.",
-                    "id_is_system" => sprintf(
-                        "For %s the ID system must be {param} for %s",
-                        $this->equipmentType->label,
-                        AtlasIdRules::$validSystems[$this->equipmentType->system]
-                    ),
-                    "id_is_project" => "The ID project for ATLAS must be {param}",
-                    "is_unique" => "This id already exists.",
-                ]
-            ],
-            "type_name" => [
-                "rules" => [
-                    "required",
-                    "is_not_unique[equipment_types.name]",
-                ],
-                "errors" => [
-                    "required" => "You must supply a type for the equipment.",
-                    "is_not_unique" => "The given type doesn't exist.",
-                ]
-            ],
-            "location_id" => [
-                "rules" => [
-                    "required",
-                    "is_not_unique[locations.id]",
-                ],
-                "errors" => [
-                    "required" => "You must supply a location for the equipment.",
-                    "is_not_unique" => "The inserted location is not valid",
-                ]
-            ],
-            "status_id" => [
-                "rules" => [
-                    "required",
-                    "is_not_unique[statuses.id]",
-                ],
-                "errors" => [
-                    "required" => "You must supply a status for the equipment.",
-                    "is_not_unique" => "The inserted status is not valid",
-                ]
-            ],
-            "parent_id" => [
+            $this->validationRules['parent_id'] = [
                 "rules" => [
                     "permit_empty",
                     sprintf("exact_length[%s]", AtlasIdRules::$exactLength),
                     'id_has_valid_project',
                     "id_has_valid_system",
                     "id_has_valid_institute[institutes.mne]",
-                    sprintf("id_is_valid_%s_parent[{id}]", $this->equipmentType->name)
+                    "is_is_valid_parent[{id}]"
                 ],
                 "errors" => [
                     "required" => "You must supply an id for the equipment.",
                     "exact_length" => "The id must have {param} characters.",
                 ]
+            ];
+        }
+
+        $this->fields['serial'] = [
+            'id' => 'serial',
+            'required' => false,
+            'fieldType' => 'input',
+            'helpText' => "Equipment serial number",
+            'fieldParams' => [
+                'maxlength' => EquipmentRules::$serialMaxSize,
+                'placeholder' => str_repeat('X', EquipmentRules::$serialMaxSize)
+            ]
+        ];
+
+        $this->validationRules['serial'] = [
+            "rules" => [
+                "permit_empty",
+                sprintf("max_length[%d]", EquipmentRules::$serialMaxSize),
+                sprintf("is_type_unique[serial,%d]", $this->equipmentType->id)
             ],
-            "serial" => [
-                "rules" => [
-                    "permit_empty",
-                    sprintf("max_length[%d]", EquipmentRules::$serialMaxSize),
-                    sprintf("is_type_unique[serial,%d]", $this->equipmentType->id)
-                ],
-                "errors" => [
-                    "max_length" => "Serial max size is {param} characters.",
-                    "is_type_unique" => "Serial Number {value} already exists."
-                ]
+            "errors" => [
+                "max_length" => "Serial max size is {param} characters.",
+                "is_type_unique" => "Serial Number {value} already exists."
+            ]
+        ];
+
+        $this->fields['comments'] = [
+            'id' => 'comments',
+            'required' => false,
+            'fieldType' => 'textarea',
+            'helpText' => "Possible necessary comments on the equipment situtation.",
+            'fieldParams' => [
+                'rows' => 3
+            ]
+        ];
+
+        $this->validationRules['comments'] = [
+            "rules" => [
+                sprintf("max_length[%s]", EquipmentRules::$maxCommentsSize)
             ],
-            "comments" => [
-                "rules" => [
-                    sprintf("max_length[%s]", EquipmentRules::$maxCommentsSize)
-                ],
-                "errors" => [
-                    "max_length" => "Comments max size is {param} characthers",
-                ]
-            ],
+            "errors" => [
+                "max_length" => "Comments max size is {param} characthers",
+            ]
         ];
     }
 
@@ -226,9 +219,11 @@ class EquipmentForm extends Form{
 
     public function asEdit(){
 
-        $this->removeRule('id', 'is_unique');
-        $this->addRule('id', 'is_not_unique[equipments.id]', 'This id doesn\'t exist.');
-        $this->setReadOnly('id');
+        if ($this->fieldExists('id')){
+            $this->removeRule('id', 'is_unique');
+            $this->addRule('id', 'is_not_unique[equipments.id]', 'This id doesn\'t exist.');
+            $this->setReadOnly('id');
+        }
 
         $oldRule = $this->removeRule('serial', 'is_type_unique');
         $newRule = str_replace('is_type_unique', 'is_type_not_unique', $oldRule);
@@ -238,12 +233,12 @@ class EquipmentForm extends Form{
         $this->resetRules();
     }
 
-    public static function getTypeForm(string $typeName=null, ?IncomingRequest $request=null): EquipmentForm
+    public static function getTypeForm(string $typeName, ?IncomingRequest $request=null): EquipmentForm
     {
         helper('string');
         $formClass = sprintf('\App\Library\Forms\%sForm', snake2CamelCase($typeName));
         try {
-            return new $formClass($request);
+            return new $formClass($request, $typeName);
         } catch (Error $e){
             $expectedMsg = sprintf(
                 'Class "%s" not found',

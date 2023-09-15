@@ -51,9 +51,6 @@ abstract class LogModel extends BaseModel{
     {
         unset_array_keys($data['data'], $this->insertChangesIgnore);
         $data['data']['id'] = $data['id'];
-        if ($this->table == 'type_slots'){
-            d($data);
-        }
         $operationLog = new OperationLog([
             'changes' => $data['data'],
             'record_id' => $data['id'],

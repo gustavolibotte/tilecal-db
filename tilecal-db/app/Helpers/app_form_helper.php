@@ -12,6 +12,9 @@ function div_wrap(string $divClass, array $components){
 function user_input_field($id, $value, $fieldType, $fieldParams){
     helper('form');
     if ($fieldType == 'hidden'){
+        if (is_null($value)){
+            $value = "";
+        }
         return form_hidden($id, $value);
     }
     $fieldParams['id'] = $id;

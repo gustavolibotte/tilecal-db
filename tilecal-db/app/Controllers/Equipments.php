@@ -77,15 +77,13 @@ class Equipments extends BaseController
 
         if ($this->request->is('post')){
             $form = EquipmentForm::getTypeForm($typeName, $this->request);
-            d($form);
             if ($form->validate()){
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
-                $res = $equipmentModel->insert($equipment);
+                $equipmentModel->insert($equipment);
                 $messenger->addRegisterSuccess();
                 $messenger->dumpMessages();
-                d($res);
-                // return redirect()->to(sprintf('equipments/%s/register', $typeName));
+                return redirect()->to(sprintf('equipments/%s/register', $typeName));
             } else {
                 foreach ($form->getErrors() as $errorMsg){
                     $messenger->addMessage($errorMsg, 'danger');

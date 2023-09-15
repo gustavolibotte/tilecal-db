@@ -21,15 +21,15 @@
         "description": null,
         "slots": [
             {
-                "children": ["3_in_1_board", "fenics"],
+                "type_ids_fit": ["3_in_1_board", "fenics"],
                 "max_count": 1
             },
             {
-                "children": ["pmt"],
+                "type_ids_fit": ["pmt"],
                 "max_count": 1
             },
             {
-                "children": ["hv_divider"],
+                "type_ids_fit": ["hv_divider"],
                 "max_count": 1
             }
         ]
@@ -100,15 +100,15 @@
         "description": null,
         "slots": [
             {
-                "children": ["mainboard"],
+                "type_ids_fit": ["mainboard"],
                 "max_count": 1
             },
             {
-                "children": ["daughterboard"],
+                "type_ids_fit": ["daughterboard"],
                 "max_count": 1
             },
             {
-                "children": ["pmt_block"],
+                "type_ids_fit": ["pmt_block"],
                 "max_count": 12
             }
         ]
@@ -124,7 +124,7 @@
         "description": null,
         "slots": [
             {
-                "children": ["pmt_block"],
+                "type_ids_fit": ["pmt_block"],
                 "max_count": 6
             }
         ]
@@ -140,7 +140,7 @@
         "description": null,
         "slots": [
             {
-                "children": ["mini_drawer"],
+                "type_ids_fit": ["mini_drawer"],
                 "max_count": 4
             }
         ]
@@ -156,11 +156,11 @@
         "description": null,
         "slots": [
             {
-                "children": ["mini_drawer"],
+                "type_ids_fit": ["mini_drawer"],
                 "max_count": 3
             },
             {
-                "children": ["micro_drawer"],
+                "type_ids_fit": ["micro_drawer"],
                 "max_count": 1
             }
         ]

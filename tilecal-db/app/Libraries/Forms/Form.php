@@ -8,8 +8,8 @@ abstract class Form{
 
     protected ?IncomingRequest $request;
     public $validator;
-    public $fields = [];
-    public $validationRules;
+    public array $fields = [];
+    public array $validationRules =[];
     protected bool $isValid = false;
     protected bool $calledValidate= false;
     private array $fieldValues = [];
@@ -103,21 +103,17 @@ abstract class Form{
     protected function removeRule(string $field, string $oldRule): ?string
     {
         helper('app_array');
-        $counter = 0;
-        $found = false;
-        foreach($this->validationRules[$field]['rules'] as &$rule){
+        $foundKey = null;
+        foreach($this->validationRules[$field]['rules'] as $key=>$rule){
             if (str_starts_with($rule, $oldRule)){
-                $found = true;
+                $foundKey = $key;
                 break;
-            } else{
-                $counter++;
-                continue;
             }
         }
-        if ($found){
-            $removedRule = remove_value($counter, $this->validationRules[$field]['rules']);
+        if (!is_null($foundKey)){
+            $removedRule = remove_value($foundKey, $this->validationRules[$field]['rules']);
             if (array_key_exists($oldRule, $this->validationRules[$field]['errors'])){
-                unset($this->validationRules[$field]['errors'][$counter]);
+                unset($this->validationRules[$field]['errors'][$oldRule]);
             }
             return $removedRule;
         }
@@ -151,5 +147,10 @@ abstract class Form{
     {
         helper('app_array');
         remove_value('readOnly', $this->fields[$field]['fieldParams'], false);
+    }
+
+    public function fieldExists(string $fieldName): bool
+    {
+        return array_key_exists($fieldName, $this->fields) && array_key_exists($fieldName, $this->validationRules);
     }
 }

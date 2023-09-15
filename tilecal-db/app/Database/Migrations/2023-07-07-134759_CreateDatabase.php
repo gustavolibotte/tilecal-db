@@ -355,12 +355,12 @@ class CreateDatabase extends Migration
         echo "Creating Type Slots\n";
         $this->addId();
         $this->forge->addField([
-            'parent_type_id' => [
+            'type_id' => [
                 'type' => 'INT',
                 'unsigned'=> true,
                 'null' => false
             ],
-            'children_type_ids' => [
+            'type_ids_fit' => [
                 'type' => 'JSON',
                 'null' => false
             ],
@@ -372,7 +372,7 @@ class CreateDatabase extends Migration
         ]);
         $this->addTimestamps();
         $this->forge->addPrimaryKey('id');
-        $this->forge->addForeignKey('parent_type_id', 'equipment_types', 'id');
+        $this->forge->addForeignKey('type_id', 'equipment_types', 'id');
         $this->forge->createTable('type_slots', true);
         echo "Created Type Slots\n";
     }

@@ -92,11 +92,11 @@ class EquipmentRules{
         $typeName = $params[1];
         $parentId = $value;
 
-        $query = 'SELECT e.id, children_type_ids, max_count FROM equipments e ';
+        $query = 'SELECT e.id, type_ids_fit, max_count FROM equipments e ';
         $query .= 'LEFT JOIN equipment_types et ON e.type_id = et.id ';
         $query .= 'LEFT JOIN type_slots th ON th.parent_type_id = et.id ';
         $query .= sprintf(
-            'WHERE (SELECT id FROM equipment_types WHERE name=\'%s\') MEMBER OF(children_type_ids) ',
+            'WHERE (SELECT id FROM equipment_types WHERE name=\'%s\') MEMBER OF(type_ids_fit) ',
             $typeName
         );
         $query .= sprintf(
@@ -104,11 +104,9 @@ class EquipmentRules{
             $parentId
         );
         $query .= 'LIMIT 1';
-        d($query);
         $query = new RawSql($query);
         $equipmentModel = model('EquipmentModel');
         $parent = $equipmentModel->db->query($query)->getResult();
-        d($parent);
 
         // For some reason the query doesn't work when built with the builder
         // The query checks if exists a slot for the given parent_id that allows this equipment type
@@ -126,10 +124,8 @@ class EquipmentRules{
         }
 
         // Here it means that the parent actually allows this type then we check if there is space to assign it.
-        d($parent);
-        $childrenTypeIds = json_decode($parent->children_type_ids);
+        $childrenTypeIds = json_decode($parent->type_ids_fit);
         $count = $equipmentModel->queryChilds($parentId, $childrenTypeIds, [$childId])->countAllResults();
-        d($count);
         if ($count >= $parent->max_count){
             $error = sprintf(
                 'You cannot assign equipment %s as parent to %s. Parent is already filled with max number of equipments (%s)',

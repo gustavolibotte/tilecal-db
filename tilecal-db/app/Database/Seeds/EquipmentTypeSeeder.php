@@ -24,7 +24,6 @@ class EquipmentTypeSeeder extends BaseSeeder
             }
             $slots = $this->getFormatedSlotArray($row);
             foreach ($slots as $slot){
-                d($slot);
                 $typeSlotModel->insert($slot);
             }
         }
@@ -34,13 +33,14 @@ class EquipmentTypeSeeder extends BaseSeeder
     {
         $equipmentTypeModel = new \App\Models\EquipmentTypeModel();
         $nameToId = $equipmentTypeModel->getCustomArray('name', 'id');
+        $slots = [];
         foreach($row['slots'] as $relation){
-            foreach($relation['children'] as &$child){
+            foreach($relation['type_ids_fit'] as &$child){
                 $child = $nameToId[$child];
             }
             $slots[] = new TypeSlot([
-                'parent_type_id' => $row['id'],
-                'children_type_ids' => $relation['children'],
+                'type_id' => $row['id'],
+                'type_ids_fit' => $relation['type_ids_fit'],
                 'max_count' => $relation['max_count']
             ]);
         }
