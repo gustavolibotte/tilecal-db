@@ -8,7 +8,7 @@
         "params": ["beta", "nominal_hv", "qe", "model"],
         "in_detector": true,
         "description": null,
-        "hierarchy": []
+        "slots": []
     },
     {
         "id": 2,
@@ -19,7 +19,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "hierarchy": [
+        "slots": [
             {
                 "children": ["3_in_1_board", "fenics"],
                 "max_count": 1
@@ -43,7 +43,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "hierarchy": []
+        "slots": []
     },
     {
         "id": 4,
@@ -54,7 +54,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "hierarchy": []
+        "slots": []
     },
     {
         "id": 5,
@@ -65,7 +65,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "hierarchy": []
+        "slots": []
     },
     {
         "id": 6,
@@ -76,7 +76,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "hierarchy": []
+        "slots": []
     },
     {
         "id": 7,
@@ -87,7 +87,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "hierarchy": []
+        "slots": []
     },
     {
         "id": 8,
@@ -98,7 +98,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "hierarchy": [
+        "slots": [
             {
                 "children": ["mainboard"],
                 "max_count": 1
@@ -122,7 +122,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "hierarchy": [
+        "slots": [
             {
                 "children": ["pmt_block"],
                 "max_count": 6
@@ -138,7 +138,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "hierarchy": [
+        "slots": [
             {
                 "children": ["mini_drawer"],
                 "max_count": 4
@@ -154,7 +154,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "hierarchy": [
+        "slots": [
             {
                 "children": ["mini_drawer"],
                 "max_count": 3
@@ -174,7 +174,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "hierarchy": []
+        "slots": []
     },
     {
         "id": 13,
@@ -185,6 +185,6 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "hierarchy": []
+        "slots": []
     }
 ]

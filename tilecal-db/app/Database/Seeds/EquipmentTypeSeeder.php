@@ -2,8 +2,8 @@
 
 namespace App\Database\Seeds;
 
-use App\Entities\TypeHierarchy;
-use App\Models\TypesHierarchyModel;
+use App\Entities\TypeSlot;
+use App\Models\TypeSlotModel;
 
 class EquipmentTypeSeeder extends BaseSeeder
 {
@@ -17,33 +17,33 @@ class EquipmentTypeSeeder extends BaseSeeder
             $equipmentTypeModel->insert($equipmentType);
         }
 
-        $typeHierarchyModel = new TypesHierarchyModel();
+        $typeSlotModel = new TypeSlotModel();
         foreach ($jsonData as $row){
-            if (empty($row['hierarchy'])){
+            if (empty($row['slots'])){
                 continue;
             }
-            $hierarchies = $this->getFormatedHierarchyArray($row);
-            foreach ($hierarchies as $hierarchy){
-                d($hierarchy);
-                $typeHierarchyModel->insert($hierarchy);
+            $slots = $this->getFormatedSlotArray($row);
+            foreach ($slots as $slot){
+                d($slot);
+                $typeSlotModel->insert($slot);
             }
         }
     }
 
-    protected function getFormatedHierarchyArray(array $row): array
+    protected function getFormatedSlotArray(array $row): array
     {
         $equipmentTypeModel = new \App\Models\EquipmentTypeModel();
         $nameToId = $equipmentTypeModel->getCustomArray('name', 'id');
-        foreach($row['hierarchy'] as $relation){
+        foreach($row['slots'] as $relation){
             foreach($relation['children'] as &$child){
                 $child = $nameToId[$child];
             }
-            $hierarchies[] = new TypeHierarchy([
+            $slots[] = new TypeSlot([
                 'parent_type_id' => $row['id'],
                 'children_type_ids' => $relation['children'],
                 'max_count' => $relation['max_count']
             ]);
         }
-        return $hierarchies;
+        return $slots;
     }
 }

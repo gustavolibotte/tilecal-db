@@ -94,7 +94,7 @@ class EquipmentRules{
 
         $query = 'SELECT e.id, children_type_ids, max_count FROM equipments e ';
         $query .= 'LEFT JOIN equipment_types et ON e.type_id = et.id ';
-        $query .= 'LEFT JOIN types_hierarchy th ON th.parent_type_id = et.id ';
+        $query .= 'LEFT JOIN type_slots th ON th.parent_type_id = et.id ';
         $query .= sprintf(
             'WHERE (SELECT id FROM equipment_types WHERE name=\'%s\') MEMBER OF(children_type_ids) ',
             $typeName
@@ -111,7 +111,7 @@ class EquipmentRules{
         d($parent);
 
         // For some reason the query doesn't work when built with the builder
-        // The query checks if exists a hierarchy for the given parent_id that allows this equipment type
+        // The query checks if exists a slot for the given parent_id that allows this equipment type
         if (empty($parent)){
             $error = sprintf(
                 'You cannot assign equipment %s as parent to %s. (Parent doesn\'t allow this child equipment type)',

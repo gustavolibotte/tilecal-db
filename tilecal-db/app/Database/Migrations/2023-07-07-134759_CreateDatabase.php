@@ -350,9 +350,9 @@ class CreateDatabase extends Migration
         echo "Created Equipments to Equipments\n";
     }
 
-    public function createTypesHierarchy()
+    public function createTypeSlots()
     {
-        echo "Creating Types Hierarchy\n";
+        echo "Creating Type Slots\n";
         $this->addId();
         $this->forge->addField([
             'parent_type_id' => [
@@ -373,15 +373,15 @@ class CreateDatabase extends Migration
         $this->addTimestamps();
         $this->forge->addPrimaryKey('id');
         $this->forge->addForeignKey('parent_type_id', 'equipment_types', 'id');
-        $this->forge->createTable('types_hierarchy', true);
-        echo "Created Types Hierarchy\n";
+        $this->forge->createTable('type_slots', true);
+        echo "Created Type Slots\n";
     }
 
     public function up()
     {
         $this->createHist();
         $this->createEquipmentTypes();
-        $this->createTypesHierarchy();
+        $this->createTypeSlots();
         $this->createInstitutes();
         $this->createLocations();
         $this->createStatuses();
@@ -402,7 +402,7 @@ class CreateDatabase extends Migration
         $this->forge->dropTable('institutes', true);
         $this->forge->dropTable('locations', true);
         $this->forge->dropTable('statuses', true);
-        $this->forge->dropTable('types_hierarchy', true);
+        $this->forge->dropTable('types_slots', true);
         $this->forge->dropTable('equipment_types', true);
     }
 }

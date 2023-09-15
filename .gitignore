@@ -20,3 +20,6 @@ vendor/*
 
 # Diagrams
 diagrams/compiled
+
+# Old
+**/old
