@@ -6,11 +6,13 @@ use CodeIgniter\Database\Seeder;
 
 class BaseSeeder extends Seeder
 {
-    protected function readFile($filename){
+    protected function readFile($filepath, bool $dataDir=true){
         helper('path');
-        $fullpath = joinPaths([ROOTPATH, 'data', $filename]);
-        $filedata = file_get_contents($fullpath);
-        if (str_ends_with($fullpath, '.json')){
+        if ($dataDir){
+            $filepath = joinPaths([ROOTPATH, 'data', $filepath]);
+        }
+        $filedata = file_get_contents($filepath);
+        if (str_ends_with($filepath, '.json')){
             $filedata = json_decode($filedata, true);
         }
         return $filedata;

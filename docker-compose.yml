@@ -51,17 +51,23 @@ services:
       - MYSQL_USER=${DB_USERNAME}
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - PMA_PORT=${DB_PORT}
-  oc:
-    image: gitlab-registry.cern.ch/paas-tools/openshift-client
-    container_name: oc-container
-    tty: true
-  # python:
-  #   image: python:3.10.12
-  #   container_name: tilecal-db-python
+  # oc:
+  #   image: gitlab-registry.cern.ch/paas-tools/openshift-client
+  #   container_name: oc-container
   #   tty: true
-  #   volumes:
-  #     - type: bind
-  #       source: ./tilecal-db
-  #       target: /usr/local/tilecal-db
+  data-analysis:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/data_analysis.dockerfile
+    image: tile-db-analysis:${TILECAL_ANALYSIS_VERSION}
+    container_name: tilecal-db-analysis
+    tty: true
+    volumes:
+      - type: bind
+        source: ./
+        target: /root/tilecal-db
+      - type: bind
+        source: ~/cernbox/tilecal-db
+        target: /root/cernbox
 volumes:
   mysqldata:
