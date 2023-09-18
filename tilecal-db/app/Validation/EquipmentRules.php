@@ -2,8 +2,14 @@
 
 namespace App\Validation;
 use App\Models\EquipmentModel;
+use CodeIgniter\Database\RawSql;
+use TypeError;
 
-class DatabaseRules{
+class EquipmentRules{
+
+
+    public static int $serialMaxSize = 36;
+    public static int $maxCommentsSize = 65535; //MySQL max text size
 
     /**
      * Checks if the a value doesn't exist for a given type. A negation of is_type_not_unique
@@ -67,38 +73,68 @@ class DatabaseRules{
         }
         return $approved;
     }
-
+    
     /**
      * Checks if the parent equipment has not reached the max number of childs
      *
      * @param $value  Value given by CodeIgniter validator, considered as an equipment id for the parent id
-     * @param string $params "<max>,<type>,<id>"
-     * <max> is the maximum number of childs of type name <type> the parent equipment can have. <id> is the child equipment id
+     * @param string $params "<child_id>"
+     * <child_id> The id for the child equipment to be used by the parent
      * @param array $data Ignored
-     * @param ?string &$error Error string in the format "The given parent equipment (%s) already has the maximum of linked childs (%d)."
+     * @param ?string &$error Error string, formated automatically by the function
      * 
      * @return bool True if the data was approved on this rule
      */ 
-    public function not_maxed_parent($value, string $params, array $data, ?string &$error): bool
+    public function id_is_valid_parent($value, string $params, array $data, ?string &$error): bool
     {
-        helper('string');
-        $parentId = $value;
         $params = explode(',', $params);
-        $maxChilds = $params[0];
+        $childId = $params[0];
         $typeName = $params[1];
-        $childId = $params[2];
+        $parentId = $value;
+
+        $query = 'SELECT e.id, type_ids_fit, max_count FROM equipments e ';
+        $query .= 'LEFT JOIN equipment_types et ON e.type_id = et.id ';
+        $query .= 'LEFT JOIN type_slots th ON th.parent_type_id = et.id ';
+        $query .= sprintf(
+            'WHERE (SELECT id FROM equipment_types WHERE name=\'%s\') MEMBER OF(type_ids_fit) ',
+            $typeName
+        );
+        $query .= sprintf(
+            'AND e.id = \'%s\' ',
+            $parentId
+        );
+        $query .= 'LIMIT 1';
+        $query = new RawSql($query);
         $equipmentModel = model('EquipmentModel');
-        $count = $equipmentModel->childQuery($parentId, $typeName, [$childId])->countAllResults();
-        $approved = ($count < $maxChilds);
-        if (!$approved){
+        $parent = $equipmentModel->db->query($query)->getResult();
+
+        // For some reason the query doesn't work when built with the builder
+        // The query checks if exists a slot for the given parent_id that allows this equipment type
+        if (empty($parent)){
             $error = sprintf(
-                "The given parent equipment (%s) already has %d %s childs. It is maximum is %d ",
-                $value,
-                $count,
-                snake2Capitalized($typeName),
-                $maxChilds
-            );
+                'You cannot assign equipment %s as parent to %s. (Parent doesn\'t allow this child equipment type)',
+                $parentId,
+                $childId)
+            ;
+            return false;
+        } elseif (is_array($parent)){
+            $parent = $parent[0];
+        } else{
+            throw new TypeError("parent must be null or an array");
         }
-        return $approved;
+
+        // Here it means that the parent actually allows this type then we check if there is space to assign it.
+        $childrenTypeIds = json_decode($parent->type_ids_fit);
+        $count = $equipmentModel->queryChilds($parentId, $childrenTypeIds, [$childId])->countAllResults();
+        if ($count >= $parent->max_count){
+            $error = sprintf(
+                'You cannot assign equipment %s as parent to %s. Parent is already filled with max number of equipments (%s)',
+                $parentId,
+                $childId,
+                $parent->max_count
+            );
+            return false;
+        }
+        return true;
     }
 }

@@ -19,12 +19,6 @@ class EquipmentSeeder extends BaseSeeder
         $fabricator = new Fabricator($fabricatorModel);
         $equipments = $fabricator->make($numEntries);
         $equipments = array_merge(...$equipments);
-        // $spares = $fabricatorModel->makeSpares($equipments, $spareChance);
-        // d(count($spares));
-        // $equipments = array_merge(
-        //     $equipments,
-        //     $spares
-        // );
         $fabricatorModel->setAsObject();
         foreach ($equipments as $equipment){
             $fabricatorModel->insert($equipment);

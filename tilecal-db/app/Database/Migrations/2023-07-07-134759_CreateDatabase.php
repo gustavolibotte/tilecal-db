@@ -72,11 +72,10 @@ class CreateDatabase extends Migration
         ]);
         $this->addTimestamps();
         $this->forge->addPrimaryKey('id');
+        $this->forge->addUniqueKey('name', 'equipment_types_unique_name');
         $this->forge->createTable('equipment_types', true);
 
-
         echo "Created Equipment Types\n";
-
     }
 
     public function createInstitutes(){
@@ -113,6 +112,8 @@ class CreateDatabase extends Migration
         ]);
         $this->addTimestamps();
         $this->forge->addPrimaryKey('id');
+        $this->forge->addUniqueKey('mne', 'intitutes_unique_mne');
+        $this->forge->addUniqueKey('num', 'institutes_unique_num');
         $this->forge->createTable('institutes', true);
 
         echo "Created Institutes\n";
@@ -344,14 +345,43 @@ class CreateDatabase extends Migration
         $this->forge->addPrimaryKey('id');
         $this->forge->addForeignKey('equipment_a_id', 'equipments', 'id');
         $this->forge->addForeignKey('equipment_b_id', 'equipments', 'id');
-        $this->forge->addUniqueKey(['equipment_a_id', 'equipment_b_id'], 'unique_ab_ids');
+        $this->forge->addUniqueKey(['equipment_a_id', 'equipment_b_id'], 'unique_equipment_equipment');
         $this->forge->createTable('equipments_to_equipments', true);
+        echo "Created Equipments to Equipments\n";
+    }
+
+    public function createTypeSlots()
+    {
+        echo "Creating Type Slots\n";
+        $this->addId();
+        $this->forge->addField([
+            'type_id' => [
+                'type' => 'INT',
+                'unsigned'=> true,
+                'null' => false
+            ],
+            'type_ids_fit' => [
+                'type' => 'JSON',
+                'null' => false
+            ],
+            'max_count' => [
+                'type' => 'INT',
+                'unsigned' => true,
+                'null' => false
+            ],
+        ]);
+        $this->addTimestamps();
+        $this->forge->addPrimaryKey('id');
+        $this->forge->addForeignKey('type_id', 'equipment_types', 'id');
+        $this->forge->createTable('type_slots', true);
+        echo "Created Type Slots\n";
     }
 
     public function up()
     {
         $this->createHist();
         $this->createEquipmentTypes();
+        $this->createTypeSlots();
         $this->createInstitutes();
         $this->createLocations();
         $this->createStatuses();
@@ -372,6 +402,7 @@ class CreateDatabase extends Migration
         $this->forge->dropTable('institutes', true);
         $this->forge->dropTable('locations', true);
         $this->forge->dropTable('statuses', true);
+        $this->forge->dropTable('types_slots', true);
         $this->forge->dropTable('equipment_types', true);
     }
 }

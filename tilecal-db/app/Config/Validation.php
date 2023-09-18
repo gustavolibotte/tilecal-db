@@ -25,7 +25,7 @@ class Validation extends BaseConfig
         FormatRules::class,
         FileRules::class,
         \App\Validation\AtlasIdRules::class,
-        \App\Validation\DatabaseRules::class,
+        \App\Validation\EquipmentRules::class,
         \App\Validation\StringRules::class
     ];
 

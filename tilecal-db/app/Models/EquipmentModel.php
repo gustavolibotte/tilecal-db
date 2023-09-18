@@ -260,7 +260,6 @@ class EquipmentModel extends LogModel
     protected function getUpdateLog(array $data): OperationLog
     {
         $old = $this->find($data['id'][0]);
-        d($old);
         $new = $this->mergeTypeParams($data['data']);
         $old = $this->mergeTypeParams($old->toRawArray());
         unset_array_keys($old, $this->updateChangesIgnore);
@@ -411,19 +410,23 @@ class EquipmentModel extends LogModel
      * Joins the desired tables to select only equipments child to a given $parentId
      *
      * @param string $parentId  Equipment Id for the parent id to search for childs
-     * @param ?string $typeName If passed, selects childs only with equipment_types.name = $typeName
+     * @param mixed $typeId
+     * If string selects childs where equipment_types.id = $typeId
+     * If array selectes chuilds where equipment_types.id in $typeId
      * @param ?array $idIgnore Ignores the equipment ids inside this array
      * 
      * @return Self This model instance
      */
-    public function childQuery(string $parentId, ?string $typeName=null, ?array $idIgnore=null): Self
+    public function queryChilds(string $parentId, mixed $typeId=null, ?array $idIgnore=null): Self
     {
         $this->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_b_id', 'left')
             ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
             ->where('equipments_to_equipments.equipment_a_id', $parentId)
             ->where('equipments_to_equipments.type', 'parent');
-        if (!empty($typeName)){
-            $this->where('equipment_types.name', $typeName);
+        if ((!empty($typeId)) && ($typeId instanceof string)){
+            $this->where('equipment_types.id', $typeId);
+        } elseif ((!empty($typeId)) && (is_array($typeId))){
+            $this->whereIn('equipment_types.id', $typeId);
         }
         if (!empty($idIgnore)){
             $this->whereNotIn('equipments.id', $idIgnore);
@@ -433,22 +436,36 @@ class EquipmentModel extends LogModel
     }
 
     /**
-     * Updates the builder to add soft delete condition to joines tables
+     * Updates the builder to add soft delete condition to joined tables
      *
      * @param array $joinedTables Array with the joined table names
 
      * @return Self This model instance
      */
-    protected function withDeletedJoin(array $joinedTables): Self
+    public function withDeletedJoin(array $joinedTables): Self
     {
         if ($this->tempUseSoftDeletes){
             foreach ($joinedTables as $tableName){
                 $this->where(sprintf(
-                    '`%s`.`deleted_at` IS NULL',
-                    $tableName
+                    '`%s`.`%s` IS NULL',
+                    $tableName,
+                    $this->deletedField
                 ));
             }
         }
         return $this;
     }
+
+    // public function join($table, $cond, $type = '', $escape = null): Self
+    // {
+    //     parent::join($table, $cond, $type, $escape);
+    //     if ($this->tempUseSoftDeletes){
+    //         $this->where(sprintf(
+    //             '`%s`.`deleted_at` IS NULL',
+    //             $table
+    //         ));
+    //     }
+    //     return $this;
+    // }
+
 }

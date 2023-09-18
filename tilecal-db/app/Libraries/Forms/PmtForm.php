@@ -29,43 +29,32 @@ class PmtForm extends EquipmentForm{
     {   
         parent::initialize();
         // Alter id and serial rules to follow custom PMT rules
-        $this->fields['id']['required'] = false;
-        $this->fields['id']['helpText'] .= ' For PMTs the id is automatically built if left blank';
-        $this->validationRules['id']['rules'] = [
-            "required",
-            "alpha_numeric",
-            "exact_length[14]",
-            "string_starts_with[20LOCER0]",
-            "string_ends_with[{serial}]",
-            "is_unique[equipments.id]"
-        ];
-        $this->validationRules['id']['errors'] = [
-            "required" => "You must supply an id for the equipment.",
-            "alpha_numeric" => "The id must be alphanumeric.",
-            "exact_length" => "The id must have 14 characters.",
-            "is_unique" => "This id already exists.",
-            "string_starts_with" => "PMT ID must start with 20LOCER0. (20 for ATLAS peoject, LO for optics equipment and CER for CERN).",
-            "string_ends_with" => "The final 6 characters of a PMT barcode must be its serial code."
-        ];
 
-        $this->validationRules['parent_id']['rules'][] = "equipment_is_type[pmt_block]";
-        $this->validationRules['parent_id']['rules'][] = "not_maxed_parent[1,pmt,{id}]";
+        $this->fields['id']['fieldType'] = 'hidden';
+        $this->removeRule('id', 'id_is_system');
+        $this->removeRule('id', 'id_is_project');
+        $this->removeRule('id', 'id_has_valid_institute');
+        $this->addRule('id', 'string_starts_with[20LOCER0]',
+            "PMT ID must start with 20LOCER0. (20 for ATLAS peoject, LO for optics equipment and CER for CERN).");
+        $this->addRule('id', 'string_ends_with[{serial}]',
+            "The final 6 characters of a PMT barcode must be its serial code.");
 
         $this->fields['serial']['required'] = true;
+        $this->fields['serial']['helpText'] .= ' For PMTs the id is automatically built from the serial number';
         $this->fields['serial']['helpText'] .= sprintf(' (Max size of %d characters)', self::$serialMaxSize);
-        $this->fields['serial']['maxlength'] = self::$serialMaxSize;
-        $this->validationRules['serial']['rules'] = [
-            "required",
-            sprintf("max_length[%d]", self::$serialMaxSize),
+        $this->fields['serial']['fieldParams']['maxlength'] = self::$serialMaxSize;
+        $this->fields['serial']['fieldParams']['placeholder'] = str_repeat('X', self::$serialMaxSize);
+        $this->addRule(
+            'serial',
             sprintf('regex_match[%s]', self::$validSerialRegex),
-            sprintf("is_type_unique[serial,%d]", self::$pmtId)
-        ];
-        $this->validationRules['serial']['errors'] = [
-            "required" => "A serial code is required",
-            "max_length" => "Serial max size is {param} characters",
-            'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
-            "is_type_unique" => "There is already a PMT registered with the serial {value}"
-        ];
+            'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.'
+        );
+        $this->addRule(
+            'serial',
+            'required',
+            'PMT registration requires a serial code',
+            'start'
+        );
 
         $this->fields['beta'] = [
             'id' => 'beta',
@@ -149,9 +138,6 @@ class PmtForm extends EquipmentForm{
             ]
         ];
         $this->commentsEnd();
-        $values = $this->getFieldValues();
-        $values['type_label'] = 'PMT';
-        $this->setFieldValues($values);
     }
 
     protected function processRequest()
@@ -160,42 +146,5 @@ class PmtForm extends EquipmentForm{
         $values = $this->getFieldValues();
         $newValues['id'] = "20LOCER0{$values['serial']}";
         $this->setFieldValues($newValues);
-    }
-
-    public function asEdit(){
-
-        $this->fields['id']['fieldParams']['readOnly'] = null;
-        $this->validationRules['id']['rules'] = [
-            "permit_empty",
-            "if_exist",
-            "alpha_numeric",
-            "exact_length[14]",
-            "string_starts_with[20LOCER0]",
-            "string_ends_with[{serial}]",
-            "is_not_unique[equipments.id]"
-        ];
-        $this->validationRules['id']['errors'] = [
-            "alpha_numeric" => "The id must be alphanumeric.",
-            "exact_length" => "The id must have 14 characters.",
-            "is_not_unique" => "This id doesn't exists.",
-            "string_starts_with" => "PMT ID must start with 20LOCER0. (20 for ATLAS peoject, LO for optics equipment and CER for CERN).",
-            "string_ends_with" => "The final 6 characters of a PMT barcode must be its serial code."
-        ];
-
-        $this->fields['serial']['fieldParams']['readOnly'] = null;
-        $this->validationRules['serial']['rules'] = [
-            "required",
-            sprintf("max_length[%d]", self::$serialMaxSize),
-            sprintf('regex_match[%s]', self::$validSerialRegex),
-            sprintf("is_type_not_unique[serial,%d]", self::$pmtId)
-        ];
-        $this->validationRules['serial']['errors'] = [
-            "required" => "A serial code is required",
-            "max_length" => "Serial max size is {param} characters",
-            'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
-            "is_type_not_unique" => "There is no PMT with the serial {value}"
-        ];
-
-        $this->resetRules();
     }
 }

@@ -39,11 +39,11 @@ class Filters extends BaseConfig
             'csrf',
             'request_time',
             'lasturl' => ['except' => 'callback'],
-            'db_transaction'
+            // 'db_transaction'
             // 'invalidchars',
         ],
         'after' => [
-            'db_transaction',
+            // 'db_transaction',
             'toolbar'
             // 'dump_messages'
             // 'db_transaction',

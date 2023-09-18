@@ -8,7 +8,6 @@ namespace App\Models;
 
 use App\Entities\OperationLog;
 use CodeIgniter\Database\Exceptions\DatabaseException;
-use CodeIgniter\Entity\Entity;
 
 abstract class LogModel extends BaseModel{
 

@@ -2,6 +2,9 @@
 
 namespace App\Database\Seeds;
 
+use App\Entities\TypeSlot;
+use App\Models\TypeSlotModel;
+
 class EquipmentTypeSeeder extends BaseSeeder
 {
     public function run()
@@ -13,5 +16,34 @@ class EquipmentTypeSeeder extends BaseSeeder
             $equipmentType = new \App\Entities\EquipmentType($row);
             $equipmentTypeModel->insert($equipmentType);
         }
+
+        $typeSlotModel = new TypeSlotModel();
+        foreach ($jsonData as $row){
+            if (empty($row['slots'])){
+                continue;
+            }
+            $slots = $this->getFormatedSlotArray($row);
+            foreach ($slots as $slot){
+                $typeSlotModel->insert($slot);
+            }
+        }
+    }
+
+    protected function getFormatedSlotArray(array $row): array
+    {
+        $equipmentTypeModel = new \App\Models\EquipmentTypeModel();
+        $nameToId = $equipmentTypeModel->getCustomArray('name', 'id');
+        $slots = [];
+        foreach($row['slots'] as $relation){
+            foreach($relation['type_ids_fit'] as &$child){
+                $child = $nameToId[$child];
+            }
+            $slots[] = new TypeSlot([
+                'type_id' => $row['id'],
+                'type_ids_fit' => $relation['type_ids_fit'],
+                'max_count' => $relation['max_count']
+            ]);
+        }
+        return $slots;
     }
 }

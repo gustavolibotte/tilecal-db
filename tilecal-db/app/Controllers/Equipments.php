@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Library\Forms\EquipmentForm;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
 
@@ -48,7 +49,7 @@ class Equipments extends BaseController
 
         $viewData['editable'] = $this->user->isAuthorized('edit') && !$equipment->isDeleted();
         if ($viewData['editable']){
-            $viewData['editForm'] = new (get_model_form_class($equipment->type_name))();
+            $viewData['editForm'] = EquipmentForm::getTypeForm($equipment->type_name);
             $viewData['editForm']->asEdit();
             $viewData['editForm']->setFieldValues($equipment->toArrayWithTypeParams());
             $viewData['editForm']->setFieldValues(['parent_id' => $equipmentModel->getParentId($equipment->id)]);
@@ -71,12 +72,11 @@ class Equipments extends BaseController
     public function register($typeName='pmt'){
         helper(['form', 'url', 'app_form']);
 
-        $formClass = get_model_form_class($typeName);
         $equipmentModel = new EquipmentModel();
         $messenger = service('messenger');
 
         if ($this->request->is('post')){
-            $form = new $formClass($this->request);
+            $form = EquipmentForm::getTypeForm($typeName, $this->request);
             if ($form->validate()){
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
@@ -91,9 +91,8 @@ class Equipments extends BaseController
                 $messenger->dumpMessages();
             };
         } else{
-            $form = new $formClass();
+            $form = EquipmentForm::getTypeForm($typeName);
         }
-        
         $equipmentTypeModel = new EquipmentTypeModel();
         $type = $equipmentTypeModel->where(sprintf("name = '%s'", $typeName))->first();
         $registerData['model'] = $type;
@@ -110,9 +109,7 @@ class Equipments extends BaseController
 
     public function edit($equipmentId, $typeName)
     {
-        helper(['app_form']);
-        $formClass = get_model_form_class($typeName);
-        $form = new $formClass($this->request);
+        $form = EquipmentForm::getTypeForm($typeName, $this->request);
         $form->asEdit();
         $messenger = service('messenger');
         if ($form->validate()){
