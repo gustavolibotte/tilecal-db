@@ -21,6 +21,7 @@ vendor/*
 # Diagrams
 diagrams/compiled
 
-# Old
+# Custom
 **/old
 __pycache__/
+output/

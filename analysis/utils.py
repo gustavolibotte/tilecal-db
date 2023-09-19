@@ -23,3 +23,7 @@ def greater_than(col: str, value: float, df: pd.DataFrame):
         return True
     else:
         return is_gt
+    
+
+def make_snake_case(string: str) -> str:
+    return string.lower().replace(' ', '_')
