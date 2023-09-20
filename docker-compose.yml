@@ -4,7 +4,7 @@ services:
   web-server:    
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./dockerfiles/web_server.dockerfile
     image: tilecal-db:${TILECAL_DB_VERSION}
     container_name: tilecal-db-web-server
     tty: true
