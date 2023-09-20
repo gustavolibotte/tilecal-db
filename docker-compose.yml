@@ -12,6 +12,9 @@ services:
       - type: bind
         source: ./tilecal-db/
         target: /usr/local/tilecal-db/
+      - type: bind
+        source: ~/cernbox/tilecal-db
+        target: /usr/local/cernbox
     ports:
       - "8080:8080"
     environment:
@@ -51,10 +54,6 @@ services:
       - MYSQL_USER=${DB_USERNAME}
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - PMA_PORT=${DB_PORT}
-  # oc:
-  #   image: gitlab-registry.cern.ch/paas-tools/openshift-client
-  #   container_name: oc-container
-  #   tty: true
   data-analysis:
     build:
       context: .

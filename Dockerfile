@@ -47,8 +47,8 @@ RUN apt install -y zip
 WORKDIR /usr/local/tilecal-db/
 ADD tilecal-db/ /usr/local/tilecal-db/
 RUN composer require codeigniter4/framework:${CI_VERSION}
-# RUN composer create-project codeigniter4/appstarter:4.3.6 ci-app-starter
 RUN composer require jumbojett/openid-connect-php
 RUN composer require firebase/php-jwt
+RUN composer require fakerphp/faker
 
 CMD bash run.sh
