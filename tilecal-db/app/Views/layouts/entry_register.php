@@ -19,12 +19,6 @@
     <div class="tab-pane fade show active" id="register-pane" role="tabpanel" tabindex="0">
       <div class="row">
         <div class="col mt-4" id="form-col">
-          <? if($successMessage): ?>
-            <div class="alert alert-success alert-dismissible" role="alert">
-              <div>Register success</div>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          <? endif; ?>
           <? echo form_open_multipart($formUrl, 'id="register-form"'); ?>
             <? foreach($forms as $formHeader=>$form): ?>
               <h4><? echo $formHeader; ?></h4>

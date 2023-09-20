@@ -46,5 +46,9 @@
     {
         "name": "Lost",
         "description": "The equipment was lost"
+    },
+    {
+        "name": "Unknown",
+        "description": "Current equipment status is unknown"
     }
 ]

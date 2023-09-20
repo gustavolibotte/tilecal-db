@@ -5,12 +5,6 @@
         "institute_mne": "CER"
     },
     {
-        "name": "B174",
-        "description": "CERN Building 174",
-        "institute_mne": "CER"
-
-    },
-    {
         "name": "B171",
         "description": "CERN Building 171",
         "institute_mne": "CER"
@@ -80,5 +74,20 @@
         "name": "Michigan State University",
         "description": null,
         "institute_mne": "MSU"
+    },
+    {
+        "name": "Unknown",
+        "description": "The equipment location is unknown",
+        "institute_mne": null
+    },
+    {
+        "name": "TIM, Cluj Napoca",
+        "description": "National Institute for Research and Development of Isotopic and Molecular Technologies",
+        "institute_mne": null
+    },
+    {
+        "name": "Comenius University Bratislava",
+        "description": null,
+        "institute_mne": "BRA"
     }
 ]
