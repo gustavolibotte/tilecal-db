@@ -43,7 +43,8 @@ class Autoload extends AutoloadConfig
         APP_NAMESPACE => APPPATH, // For custom app namespace
         'Config'      => APPPATH . 'Config',
         'App\Library' =>  APPPATH . 'Libraries',
-        'App\Library\Forms' => APPPATH . 'Libraries/Forms'
+        'App\Library\Forms' => APPPATH . 'Libraries/Forms',
+        'Tests\Support\Models' => APPPATH . '../tests/_support/Models'
     ];
 
     /**

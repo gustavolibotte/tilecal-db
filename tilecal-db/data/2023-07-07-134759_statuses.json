@@ -12,6 +12,10 @@
         "description": "The equipment is stored but not tested at the location"
     },
     {
+        "name": "Testing",
+        "description": "The equipment is being tested"
+    },
+    {
         "name": "Tested",
         "description": "The equipment is stored and was approved on the tests at the location"
     },

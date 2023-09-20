@@ -7,7 +7,6 @@ use App\Models\EquipmentTypeModel;
 use App\Models\StatusModel;
 use App\Models\LocationModel;
 use App\Models\InstituteModel;
-use App\Validation\AtlasIdRules;
 use App\Library\Forms\PmtForm;
 use CodeIgniter\Entity\Entity;
 use Faker\Generator;

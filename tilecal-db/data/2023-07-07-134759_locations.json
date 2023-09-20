@@ -89,5 +89,10 @@
         "name": "Comenius University Bratislava",
         "description": null,
         "institute_mne": "BRA"
+    },
+    {
+        "name": "ATLAS",
+        "description": "The equipment is in the detector",
+        "institute_mne": null
     }
 ]
