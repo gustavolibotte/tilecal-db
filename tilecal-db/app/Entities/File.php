@@ -9,4 +9,9 @@ class File extends BaseEntity
     protected $casts   = [
         "id" => "integer"
     ];
+
+    protected function getMime(): string
+    {
+        return mime_content_type($this->path);
+    }
 }

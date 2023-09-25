@@ -2,11 +2,9 @@
 
 namespace App\Models;
 
-use App\Entities\OperationLog;
-use CodeIgniter\Entity\Entity;
-use CodeIgniter\I18n\Time;
-use CodeIgniter\Database\Exceptions\DataException;
-
+use CodeIgniter\Files\Exceptions\FileNotFoundException;
+use CodeIgniter\Database\ConnectionInterface;
+use CodeIgniter\Validation\ValidationInterface;
 
 class FileModel extends LogModel
 {
@@ -14,13 +12,20 @@ class FileModel extends LogModel
     protected $useAutoIncrement = true;
     protected $returnType       = \App\Entities\File::class;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'mime', 'filedata', 'description'];
+    protected $allowedFields    = ['name', 'description', 'path'];
+    protected bool $copyFile;
+
+    public function __construct(?ConnectionInterface $db = null, ?ValidationInterface $validation = null, bool $copyFile=false)
+    {
+        parent::__construct($db, $validation);
+        $this->copyFile = $copyFile;
+    }
 
     public function initialize(){
         parent::initialize();
         helper(['app_array']);
-        $this->insertChangesIgnore[] = 'filedata';
-        $this->updateChangesIgnore[] = 'filedata';
+        $this->beforeInsert[] = 'moveFile';
+        $this->beforeUpdate[] = 'moveFile';
     }
 
     /**
@@ -42,56 +47,6 @@ class FileModel extends LogModel
         return $result;
     }
 
-    public function getFile($id=null)
-    {
-        $query = $this->select('id, name, mime, description, created_at, updated_at, deleted_at');
-        if (is_null($id)){
-            $result = $query->findAll();
-        }
-        else{
-            $result = $query->find($id);
-        }
-
-        return $result;
-    }
-
-    protected function makeLog(array $data, string $parentMethod): OperationLog
-    {
-        $operationLog = parent::$parentMethod($data);
-        if (array_key_exists('filedata', $operationLog->changes)){
-            $operationLog->filedata = remove_value('filedata', $operationLog->changes['filedata']);
-        }
-        return $operationLog;
-    }
-
-    protected function getInsertLog(array $data): OperationLog
-    {
-        $filedata = remove_value('filedata', $data['data']);
-        $operationLog = parent::getInsertLog($data);
-        $operationLog->filedata = $filedata;
-        return $operationLog;
-    }
-
-    protected function getUpdateLog(array $data): OperationLog
-    {
-        $old = $this->find($data['id']);
-        $filedata = remove_value('filedata', $data['data']);
-        $operationLog = parent::getUpdateLog($data);
-        if ($old->filedata != $filedata){
-            $operationLog->filedata = $filedata;
-        }
-        return $operationLog;
-    }
-
-    protected function getDeleteLog(array $data): OperationLog
-    {
-        $old['data'] = $this->find($data['id'][0])->toRawArray();
-        $old['id'] = $data['id'][0];
-        $operationLog = $this->getInsertLog($old);
-        $operationLog->action = 'delete';
-        return $operationLog;
-    }
-
     public function deleteRelations(int|string|array $id): bool
     {
         $equipments2FilesModel = model('Equipments2FilesModel');
@@ -109,6 +64,46 @@ class FileModel extends LogModel
     protected function deleteRelationsCallback(array $data): array
     {
         $this->deleteRelations($data['id']);
+        return $data;
+    }
+
+    protected function moveFile(array $data): array
+    {
+        helper(['app_array', 'path', 'filesystem']);
+        $appPaths = config('Paths');
+        $filepath = dot_search_with_default('path', $data['data'], null);
+        if (is_null($filepath) || str_starts_with($filepath, $appPaths->uploadedFilesDirectory)){
+            return $data;
+        }
+        if (!get_file_info($filepath)){
+            throw new FileNotFoundException(
+                sprintf(
+                    "The path %s doesn't exist.",
+                    $filepath
+                )
+            );
+        }
+        $time = \Config\Services::time();
+        $now = $time->getRequestTimestamp()->format('Y_m_d_H_i_s_u');
+        $authenticator = \Config\Services::authenticator();
+        $username = $authenticator->getUser()->username;
+        $file = new \CodeIgniter\Files\File($filepath);
+        $extension = sprintf('.%s', $file->guessExtension());
+        if (!str_ends_with($data['data']['name'], $extension)){
+            $data['data']['name'] .= $extension;
+        }
+        $newFilename = sprintf(
+            '%s_%s_%s',
+            $now,
+            $username,
+            $data['data']['name']
+        );
+        $data['data']['path'] = joinPaths([$appPaths->uploadedFilesDirectory, $newFilename]);
+        if ($this->copyFile){
+            copy($filepath, $data['data']['path']);
+        } else{
+            $file->move($appPaths->uploadedFilesDirectory, $newFilename);
+        }
         return $data;
     }
 }

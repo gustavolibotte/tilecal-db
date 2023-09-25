@@ -21,18 +21,22 @@ abstract class Form{
         $this->request = $request;
         $this->validator = \Config\Services::validation(getShared: false);
         $this->initialize();
-        if (!is_null($this->request)){
-            $this->processRequest();
-        }
+        $this->processRequest();
         $this->validator->setRules($this->validationRules);
     }
 
     protected function initialize(){}
 
     protected function processRequest(){
+        $nullRequest = is_null($this->request);
         foreach (array_keys($this->fields) as $key){
             if (!array_key_exists($key, $this->fieldValues)){
-                $this->fieldValues[$key] = $this->request->getVar($key);
+                if ($nullRequest){
+                    $this->fieldValues[$key] = null;
+                } else{
+                    $requestFieldValue = $this->request->getVar($key);
+                    $this->fieldValues[$key] = (empty($requestFieldValue)) ? null : $requestFieldValue;
+                }
             }
         }
     }

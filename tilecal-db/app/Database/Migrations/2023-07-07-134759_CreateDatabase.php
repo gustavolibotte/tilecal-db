@@ -179,13 +179,9 @@ class CreateDatabase extends Migration
                 'constraint' => 100,
                 'null' => false
             ],
-            'mime' => [
+            'path' => [
                 'type' => 'VARCHAR',
-                'constraint' => 50,
-                'null' => false
-            ],
-            'filedata' => [
-                'type' => 'MEDIUMBLOB',
+                'constraint' => 300,
                 'null' => false
             ],
             'description' => [
@@ -304,10 +300,6 @@ class CreateDatabase extends Migration
             'changes' => [
                 'type' => 'JSON',
                 'null' => false
-            ],
-            'filedata' => [
-                'type' => 'MEDIUMBLOB',
-                'null' => true
             ],
             'created_at' => [
                 'type' => 'TIMESTAMP',
