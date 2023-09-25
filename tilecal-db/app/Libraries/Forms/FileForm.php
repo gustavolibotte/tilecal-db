@@ -7,7 +7,7 @@ class FileForm extends Form{
     public int $maxNameSize = 100;
     public int $maxDescriptionSize = 65535;
     public int $minDescriptionSize = 10;
-    public int $maxFileSize = 15000;
+    public int $maxFileSize = 1024000;  //kB
 
     public function initialize(){
 
