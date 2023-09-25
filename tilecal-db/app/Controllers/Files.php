@@ -104,7 +104,6 @@ class Files extends BaseController
         $registerData['pageTitle'] = $title;
         $registerData['pageHeader'] = $title;
         $registerData['forms'] = ['File Info'=> $form];
-        $registerData['successMessage'] = $session->getFlashdata('success');
         $registerData['formUrl'] = uri_string();
         $registerData['cancelUrl'] = base_url('files');
         $messenger->dumpMessages();

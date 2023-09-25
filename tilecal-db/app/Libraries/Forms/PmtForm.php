@@ -58,19 +58,18 @@ class PmtForm extends EquipmentForm{
 
         $this->fields['beta'] = [
             'id' => 'beta',
-            'required' => true,
+            'required' => false,
             'fieldType' => 'input',
             'helpText' => 'Beta must be a postive number',
             'fieldParams' => []
         ];
         $this->validationRules['beta'] = [
             "rules" => [
-                "required",
+                "permit_empty",
                 "decimal",
                 "greater_than[0]"
             ],
             "errors" => [
-                "required" => "You must supply a Beta value for the equipment.",
                 "decimal" => "The Beta param must be a decimal number.",
                 "greater_than" => "The Beta param must be greater than zero."
             ]
@@ -79,19 +78,18 @@ class PmtForm extends EquipmentForm{
         $this->fields['nominal_hv'] = [
             'id' => 'nominal_hv',
             'label' => 'Nominal HV',
-            'required' => true,
+            'required' => false,
             'fieldType' => 'input',
             'helpText' => 'Nominal HV must be a postive number',
             'fieldParams' => []
         ];
         $this->validationRules['nominal_hv'] = [
             "rules" => [
-                "required",
+                "permit_empty",
                 "decimal",
                 "greater_than[0]"
             ],
             "errors" => [
-                "required" => "You must supply a Nominal HV value for the equipment.",
                 "decimal" => "The Nominal HV must be a decimal number.",
                 "greater_than" => "The Hominal HV must be greater than zero."
             ]
@@ -100,19 +98,18 @@ class PmtForm extends EquipmentForm{
         $this->fields['qe'] = [
             'id' => 'qe',
             'label' => 'QE',
-            'required' => true,
+            'required' => false,
             'fieldType' => 'input',
             'helpText' => 'QE must be a postive number',
             'fieldParams' => []
         ];
         $this->validationRules['qe'] = [
             "rules" => [
-                "required",
+                "permit_empty",
                 "decimal",
                 "greater_than[0]"
             ],
             "errors" => [
-                "required" => "You must supply a QE value for the equipment.",
                 "decimal" => "The QE must be a decimal number.",
                 "greater_than" => "The QE must be greater than zero."
             ]
@@ -120,7 +117,7 @@ class PmtForm extends EquipmentForm{
 
         $this->fields['model'] = [
             'id' => 'model',
-            'required' => true,
+            'required' => false,
             'fieldType' => 'dropdown',
             'fieldParams' => [
                 'options' => self::$pmtModelOptions

@@ -58,7 +58,7 @@ class EquipmentForm extends Form{
                     $this->equipmentType->label,
                     AtlasIdRules::$validSystems[$this->equipmentType->system]
                 ),
-                "id_is_project" => "The ID project for ATLAS must be {param}",
+                "id_is_project" => "The ID project for ATLAS must be {param}.",
                 "is_unique" => "This id already exists.",
             ]
         ];
@@ -70,7 +70,9 @@ class EquipmentForm extends Form{
             'fieldType' => 'dropdown',
             'helpText' => "Current equipment location",
             'fieldParams' => [
-                'options' => (new \App\Models\LocationModel())->getFormDropdownOptions(['name', 'description'])
+                'options' => (new \App\Models\LocationModel())
+                    ->orderBy('name')
+                    ->getFormDropdownOptions(['name', 'description'])
             ]
         ];
         
@@ -81,7 +83,7 @@ class EquipmentForm extends Form{
             ],
             "errors" => [
                 "required" => "You must supply a location for the equipment.",
-                "is_not_unique" => "The inserted location is not valid",
+                "is_not_unique" => "The inserted location is not valid.",
             ]
         ];
 
@@ -92,7 +94,9 @@ class EquipmentForm extends Form{
             'fieldType' => 'dropdown',
             'helpText' => "Current equipment status",
             'fieldParams' => [
-                'options' => (new \App\Models\StatusModel())->getFormDropdownOptions(['name', 'description'])
+                'options' => (new \App\Models\StatusModel())
+                    ->orderBy('name')
+                    ->getFormDropdownOptions(['name', 'description'])
             ]
         ];
 
@@ -103,7 +107,7 @@ class EquipmentForm extends Form{
             ],
             "errors" => [
                 "required" => "You must supply a status for the equipment.",
-                "is_not_unique" => "The inserted status is not valid",
+                "is_not_unique" => "The inserted status is not valid.",
             ]
         ];
 
@@ -141,7 +145,7 @@ class EquipmentForm extends Form{
             'id' => 'serial',
             'required' => false,
             'fieldType' => 'input',
-            'helpText' => "Equipment serial number",
+            'helpText' => "Equipment serial number.",
             'fieldParams' => [
                 'maxlength' => EquipmentRules::$serialMaxSize,
                 'placeholder' => str_repeat('X', EquipmentRules::$serialMaxSize)
@@ -175,7 +179,7 @@ class EquipmentForm extends Form{
                 sprintf("max_length[%s]", EquipmentRules::$maxCommentsSize)
             ],
             "errors" => [
-                "max_length" => "Comments max size is {param} characthers",
+                "max_length" => "Comments max size is {param} characthers.",
             ]
         ];
     }

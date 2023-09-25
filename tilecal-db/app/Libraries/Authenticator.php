@@ -29,14 +29,14 @@ class Authenticator{
     private function authenticate(){
         if($this->isMigration){
             $userInfo = [
-                'username' => 'migration.user',
-                'preferredUsername' => 'migration.user',
-                'firstName' => 'Migration',
+                'username' => 'tilep2db',
+                'preferredUsername' => 'tile.phase2db',
+                'firstName' => 'System',
                 'lastName' => 'User',
-                'name' => 'Migration User',
-                'email' => 'migration.user@cern.ch',
+                'name' => 'System User',
+                'email' => 'tile.phase2db@cern.ch',
                 'cernId' => 'XXXXXX',
-                'origEmail' => 'migration.user@cern.ch',
+                'origEmail' => 'tile.phase2db@cern.ch',
                 'language' => 'EN',
                 'sessionState' => 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX',
                 'roles' => ['admin'],

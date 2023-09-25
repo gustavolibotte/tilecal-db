@@ -101,7 +101,6 @@ class Equipments extends BaseController
         $registerData['pageHeader'] = $title;
         $registerData['forms'] = ['Equipment Info'=> $form];
         $registerData['formUrl'] = uri_string();
-        $registerData['successMessage'] = false;
         $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $typeName));
         
         return default_view('equipment/register', $registerData);

@@ -14,9 +14,13 @@ class EquipmentModel extends LogModel
     protected $allowedFields    = [
         'id',
         'type_id',
+        'type_name',
         'owner_id',
+        'owner_mne',
         'location_id',
+        'location_name',
         'status_id',
+        'status_name',
         'parent_id',
         'serial',
         'comments',
@@ -32,6 +36,14 @@ class EquipmentModel extends LogModel
         $this->selectSideTable .= 'equipments.id, ';
         $this->selectSideTable .= 'equipment_types.label as type_label ';
         $this->afterDelete[] = 'deleteRelations';
+        $this->beforeInsert = array_merge(
+            ['substituteFKs'],
+            $this->beforeInsert
+        );
+        $this->beforeUpdate = array_merge(
+            ['substituteFKs'],
+            $this->beforeUpdate
+        );
     }
 
     public function fullQuery(?string $extraSelect=null){
@@ -456,16 +468,41 @@ class EquipmentModel extends LogModel
         return $this;
     }
 
-    // public function join($table, $cond, $type = '', $escape = null): Self
-    // {
-    //     parent::join($table, $cond, $type, $escape);
-    //     if ($this->tempUseSoftDeletes){
-    //         $this->where(sprintf(
-    //             '`%s`.`deleted_at` IS NULL',
-    //             $table
-    //         ));
-    //     }
-    //     return $this;
-    // }
+    protected function substituteFKs(array $data): array
+    {
+        if (array_key_exists('type_name', $data['data'])){
+            $data['data']['type_id'] = $this->getFKId(
+                remove_value('type_name', $data['data']),
+                'name', 'EquipmentTypeModel'
+            );
+        }
+        if (array_key_exists('owner_mne', $data['data'])){
+            $data['data']['owner_id'] = $this->getFKId(
+                remove_value('owner_mne', $data['data']),
+                'mne', 'InstituteModel'
+            );
+        }
+        if (array_key_exists('location_name', $data['data'])){
+            $data['data']['location_id'] = $this->getFKId(
+                remove_value('location_name', $data['data']),
+                'name', 'LocationModel'
+            );
+        }
+        if (array_key_exists('status_name', $data['data'])){
+            $data['data']['status_id'] = $this->getFKId(
+                remove_value('status_name', $data['data']),
+                'name', 'StatusModel'
+            );
+        }
+        return $data;
+    }
+
+    protected function getFKId(mixed $value, string $col, string $modelName): int|string
+    {
+        return model($modelName)
+            ->select('id')
+            ->where($col, $value)
+            ->first()->id;
+    }
 
 }

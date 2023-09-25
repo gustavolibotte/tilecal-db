@@ -28,6 +28,15 @@ function remove_value($key, array &$array, bool $error=true): mixed
     return $value;
 }
 
+function remove_values(array $keys, array &$array, bool $error=true): array
+{
+    $values = array();
+    foreach ($keys as $key){
+        $values[$key] = remove_value($key, $array, $error);
+    }
+    return $values;
+}
+
 /**
  * Uses dot_array_search to search $key in $array, if not found returns $default
  * If $default is null works the same as dot_array_search
@@ -46,4 +55,13 @@ function dot_search_with_default($key, array $array, mixed $default=null) : mixe
     } else {
         return $value;
     }
+}
+
+function remap_values(array $array, array $valueMap): array
+{
+    $remaped = $array;
+    foreach ($remaped as &$remap){
+        $remap = dot_search_with_default($remap, $valueMap, $remap);
+    }
+    return $remaped;
 }
