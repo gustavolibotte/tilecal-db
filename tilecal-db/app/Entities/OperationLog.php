@@ -10,7 +10,19 @@ class OperationLog extends BaseEntity
          "changes" => "json-array"
     ];
 
-    protected $msgIgnore = ['filedata'];
+    protected array $msgIgnore = [
+        'files' => [
+            'mime',
+            'path',
+            'id'
+        ],
+        'equipments' => [
+            'location_id',
+            'status_id',
+            'type_id',
+            'owner_id'
+        ]
+    ];
     
     protected function getMessage(){
         helper('string');
@@ -99,48 +111,6 @@ class OperationLog extends BaseEntity
         return $msg;
     }
 
-    protected function insertEquipmentsMessage(){
-        $msg = 'Entry created with values:';
-        $msg .= '<ul>';
-        foreach ($this->changes as $name=>$value){
-            if ($this->printEquipmentField($name) and !in_array($name, $this->msgIgnore)){
-                $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
-            }
-        }
-        $msg .= '</ul>';
-        return $msg;
-    }
-
-    protected function updateEquipmentsMessage(){
-        $msg = '';
-        if (is_null($this->changes) or (count($this->changes) == 0)){
-            $msg .= 'Submited update with no changes';
-            return $msg;
-        }
-        $msg .= 'Entry updated with values:';
-        $msg .= '<ul>';
-        foreach ($this->changes as $name=>$value){
-            if ($this->printEquipmentField($name) and !in_array($name, $this->msgIgnore)){
-                $value = (is_array($value))? print_r($value, true): $value;
-                $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
-            }
-        }
-        $msg .= '</ul>';
-        return $msg;
-    }
-
-    protected function deleteEquipmentsMessage(){
-        $msg = 'Deleted entry with values:';
-        $msg .= '<ul>';
-        foreach ($this->changes as $name=>$value){
-            if ($this->printEquipmentField($name) and !in_array($name, $this->msgIgnore)){
-                $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
-            }
-        }
-        $msg .= '</ul>';
-        return $msg;
-    }
-
     protected function insertEquipmentsToEquipmentsMessage(): string
     {
         $msg = sprintf('Relates %s %s to %s',
@@ -165,7 +135,7 @@ class OperationLog extends BaseEntity
         $msg = 'Entry created with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
-            if (!in_array($name, $this->msgIgnore)){
+            if (!in_array($name, $this->msgIgnore[$this->table])){
                 $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
             }
         }
@@ -182,7 +152,7 @@ class OperationLog extends BaseEntity
         $msg .= 'Entry updated with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
-            if (!in_array($name, $this->msgIgnore)){
+            if (!in_array($name, $this->msgIgnore[$this->table])){
                 $msg .= sprintf('<li> <b>%s</b> - %s</li>', snake2Capitalized($name), $value);
             }
         }
@@ -194,7 +164,7 @@ class OperationLog extends BaseEntity
         $msg = 'Entry deleted with values:';
         $msg .= '<ul>';
         foreach ($this->changes as $name=>$value){
-            if (!in_array($name, $this->msgIgnore)){
+            if (!in_array($name, $this->msgIgnore[$this->table])){
                 $msg .= sprintf('<li> <b>%s</b> - %s </li>', $name, $value);
             }
         }

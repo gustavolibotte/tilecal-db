@@ -19,7 +19,7 @@ class FileForm extends Form{
                 'fieldType' => 'input',
                 'fieldParams' => [
                     'maxlength' => $this->maxNameSize,
-                    'placeholder' => 'Example: 2023_12_12_pmt_52726_test.pdf'
+                    'placeholder' => 'Example: 2023_12_12_pmt_52726_test_results'
                 ]
             ],
             'file' => [
@@ -85,17 +85,16 @@ class FileForm extends Form{
     }
 
     public function getEntity(){
-        helper('array');
+        helper(['array', 'path']);
         if (!$this->isValid){
             throw new \Exception('To get the equipment you must validate the form first');
         }
-
         $uploadedFile = $this->request->getFile('file');
+        $fieldValues = $this->getFieldValues();
         $file = new \App\Entities\File([
-            'name' => $this->request->getVar('name'),
-            'filedata' => file_get_contents($uploadedFile->getPathname()),
-            'description' => $this->request->getVar('description'),
-            'extension' => $uploadedFile->getMimeType()
+            'name' => $fieldValues['name'],
+            'path' => $uploadedFile->getRealPath(),
+            'description' => $fieldValues['description']
         ]);
         return $file;
     }

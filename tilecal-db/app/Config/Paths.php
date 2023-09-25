@@ -72,4 +72,31 @@ class Paths
      * is used when no value is provided to `Services::renderer()`.
      */
     public string $viewDirectory = __DIR__ . '/../Views';
+
+    /**
+     * ---------------------------------------------------------------
+     * FILE UPLOAD DIRECTORY NAME
+     * ---------------------------------------------------------------
+     *
+     * This variable contains the path where uploaded files
+     * must be moved to after being uploaded to the writable directory.
+     */
+    public string $uploadedFilesDirectory;
+
+    public function __construct()
+    {
+        $this->uploadedFilesDirectory = sprintf(
+            '/eos/user/t/tilep2db/%s/files',
+            getenv('CI_ENVIRONMENT')
+        );
+    }
+
+    /**
+     * ---------------------------------------------------------------
+     * DATA DIRECTORY NAME
+     * ---------------------------------------------------------------
+     *
+     * This variable must contain the name of your "data" directory.
+     */
+    public string $dataDirectory = __DIR__ . '/../../data';
 }

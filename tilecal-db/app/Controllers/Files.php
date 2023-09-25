@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\FileModel;
 use App\Library\Forms\FileForm;
 use App\Models\HistModel;
+use Exception;
 
 class Files extends BaseController
 {
@@ -27,7 +28,7 @@ class Files extends BaseController
     public function view($fileId){
         helper('form');
         $fileModel = new FileModel();
-        $file = $fileModel->withDeleted()->getFile($fileId);
+        $file = $fileModel->withDeleted()->find($fileId);
         if (is_null($file)){
             return redirect('notfound');
         } elseif ($file->isDeleted() && !$this->user->isAuthorized('delete')){
@@ -68,28 +69,26 @@ class Files extends BaseController
     public function download($fileId){
         $fileModel = new FileModel();
         $file = $fileModel->find($fileId);
-        header('Content-Description: File Transfer');
-        header(sprintf('Content-Type: %s', $file->mime));
-        header(sprintf('Content-Disposition: attachment; filename="%s"', $file->name));
-        header('Expires: 0');
-        header('Cache-Control: must-revalidate');
-        header('Pragma: public');
-        header('Content-Length: ' . strlen($file->filedata));
-        echo $file->filedata;
+        $response = $this->response
+            ->download($file->path, null, true)
+            ->setFileName($file->name)
+            ->setContentType($file->mime);
+        return $response;
     }
 
     public function upload(){
-        helper(['form', 'string', 'url', 'message']);
-        $session = \Config\Services::session();
+        helper(['form', 'string', 'url']);
         $messenger = service('messenger');
 
         if ($this->request->is('post')){
             $form = new FileForm($this->request);
             if ($form->validate()){
+                $this->db->transStart();
                 $file = $form->getEntity();
                 $fileModel = new FileModel();
                 $fileModel->insert($file);
                 $messenger->addMessage('File uploaded with success', 'success');
+                $this->db->transComplete();
                 return redirect('files/upload');
             } else {
                 foreach ($form->getErrors() as $errorMsg){
