@@ -94,7 +94,7 @@ class EquipmentRules{
 
         $query = 'SELECT e.id, type_ids_fit, max_count FROM equipments e ';
         $query .= 'LEFT JOIN equipment_types et ON e.type_id = et.id ';
-        $query .= 'LEFT JOIN type_slots th ON th.parent_type_id = et.id ';
+        $query .= 'LEFT JOIN type_slots th ON th.type_id = et.id ';
         $query .= sprintf(
             'WHERE (SELECT id FROM equipment_types WHERE name=\'%s\') MEMBER OF(type_ids_fit) ',
             $typeName
