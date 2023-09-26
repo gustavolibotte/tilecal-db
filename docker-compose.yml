@@ -1,7 +1,7 @@
 name: "tilecal-db"
 version: ${TILECAL_DB_VERSION}
 services:
-  web-server:    
+  web-server:
     build:
       context: .
       dockerfile: ./dockerfiles/web_server.dockerfile
@@ -11,12 +11,12 @@ services:
     volumes:
       - type: bind
         source: ./tilecal-db/
-        target: /usr/local/tilecal-db/
+        target: /var/www/html
       - type: bind
         source: ~/cernbox/tilecal-db
         target: /usr/local/cernbox
     ports:
-      - "8080:8080"
+      - "8080:80"
     environment:
       - ENVIRONMENT=${ENVIRONMENT}
       - CI_ENVIRONMENT=${ENVIRONMENT}
