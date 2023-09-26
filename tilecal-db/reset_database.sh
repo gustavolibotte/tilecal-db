@@ -1,8 +1,9 @@
 #!/bin/bash
-ENVIRONMENT="/eos/user/t/tilep2db/$1/files"
+TILE_DB_FILE_DIRECTORY="/eos/user/t/tilep2db/${CI_ENVIRONMENT}/files"
 if [ ! -d "$TILE_DB_FILE_DIRECTORY" ]; then
     mkdir -p $TILE_DB_FILE_DIRECTORY
 fi
+unset TILE_DB_FILE_DIRECTORY
 
 php spark migrate:rollback
 php spark migrate

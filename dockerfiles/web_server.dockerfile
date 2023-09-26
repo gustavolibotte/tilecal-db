@@ -8,23 +8,6 @@ ENV CI_VERSION "4.3.6"
 LABEL ci_version=${CI_VERSION}
 WORKDIR /root
 
-ENV ENVIRONMENT ""
-ENV BASE_URL ""
-ENV DB_HOSTNAME ""
-ENV DB_DATABASE ""
-ENV DB_USERNAME ""
-ENV DB_PASSWORD ""
-ENV DB_DRIVER ""
-ENV DB_PREFIX ""
-ENV DB_PORT ""
-ENV SSO_ISSUER ""
-ENV SSO_PROVIDER ""
-ENV SSO_CLIENT_ID ""
-ENV SSO_CLIENT_SECRET ""
-ENV SSO_REDIRECT_URL ""
-ENV CERN_PASSWORD ""
-ENV CERN_USERNAME ""
-
 # Installs int php extension
 # https://stackoverflow.com/questions/48674297/php-intl-extension-in-docker-container
 RUN apt-get -y update \
@@ -51,4 +34,4 @@ RUN composer require jumbojett/openid-connect-php
 RUN composer require firebase/php-jwt
 RUN composer require fakerphp/faker
 
-CMD bash run.sh
+CMD php spark serve --host 0.0.0.0

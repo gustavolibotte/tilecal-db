@@ -19,13 +19,15 @@ services:
       - "8080:8080"
     environment:
       - ENVIRONMENT=${ENVIRONMENT}
-      - BASE_URL=http://localhost:8080
-      - DB_HOSTNAME=${DB_HOSTNAME}
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_DRIVER=${DB_DRIVER}
-      - DB_PORT=${DB_PORT}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - CI_ENVIRONMENT=${ENVIRONMENT}
+      - app_baseURL=${app_baseURL}
+      - database_default_hostname=${database_default_hostname}
+      - database_default_database=${database_default_database}
+      - database_default_username=${database_default_username}
+      - database_default_password=${database_default_password}
+      - database_default_DBDriver=${database_default_DBDriver}
+      - database_default_DBPrefix=${database_default_DBPrefix}
+      - database_default_port=${database_default_port}
       - SSO_CLIENT_ID=${SSO_CLIENT_ID}
       - SSO_CLIENT_SECRET=${SSO_CLIENT_SECRET}
       - SSO_ISSUER=${SSO_ISSUER},
