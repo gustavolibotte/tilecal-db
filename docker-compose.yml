@@ -16,7 +16,7 @@ services:
         source: ~/cernbox/tilecal-db
         target: /usr/local/cernbox
     ports:
-      - "8080:80"
+      - "8080:8080"
     environment:
       - ENVIRONMENT=${ENVIRONMENT}
       - CI_ENVIRONMENT=${ENVIRONMENT}

@@ -25,6 +25,7 @@ RUN docker-php-ext-install mysqli
 
 # Defining custom php.ini
 COPY configs/php.ini /usr/local/etc/php/
+COPY configs/ports.conf /etc/apache2/
 
 # Compose installation (zip is required by codeigniter4 installation thrgough composer)
 COPY --from=composer /usr/bin/composer /usr/bin/composer
