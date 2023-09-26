@@ -132,7 +132,7 @@ class EquipmentForm extends Form{
                     'id_has_valid_project',
                     "id_has_valid_system",
                     "id_has_valid_institute[institutes.mne]",
-                    "is_is_valid_parent[{id}]"
+                    "id_is_valid_parent[{id}]"
                 ],
                 "errors" => [
                     "required" => "You must supply an id for the equipment.",
