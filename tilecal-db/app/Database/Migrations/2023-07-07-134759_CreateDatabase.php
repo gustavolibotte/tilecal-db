@@ -312,34 +312,36 @@ class CreateDatabase extends Migration
         echo "Created Hist\n";
     }
 
-    public function Equipments2Equipments()
+    public function ParentChildEquips()
     {
-        echo "Creating Equipments to Equipments\n";
+        echo "Creating Parent Child Equips\n";
         $this->addId();
         $this->forge->addField([
-            'equipment_a_id' => [
+            'parent_equip_id' => [
                 'type' => 'CHAR',
                 'constraint' => 14,
                 'null' => false
             ],
-            'type' => [
-                'type' => 'VARCHAR',
-                'constraint' => 20,
-                'null' => false
-            ],
-            'equipment_b_id' => [
+            'child_equip_id' => [
                 'type' => 'CHAR',
                 'constraint' => 14,
                 'null' => false
             ],
+            'slot_id' => [
+                'type' => 'INT',
+                'unsigned' => true,
+                'null' => false
+            ]
         ]);
         $this->addTimestamps();
         $this->forge->addPrimaryKey('id');
-        $this->forge->addForeignKey('equipment_a_id', 'equipments', 'id');
-        $this->forge->addForeignKey('equipment_b_id', 'equipments', 'id');
-        $this->forge->addUniqueKey(['equipment_a_id', 'equipment_b_id'], 'unique_equipment_equipment');
-        $this->forge->createTable('equipments_to_equipments', true);
-        echo "Created Equipments to Equipments\n";
+        $this->forge->addForeignKey('parent_equip_id', 'equipments', 'id');
+        $this->forge->addForeignKey('child_equip_id', 'equipments', 'id');
+        $this->forge->addForeignKey('slot_id', 'type_slots', 'id');
+        $this->forge->addUniqueKey(['parent_equip_id', 'child_equip_id'], 'unique_parent_child');
+        $this->forge->addUniqueKey(['child_equip_id', 'slot_id'], 'unique_child_slot');
+        $this->forge->createTable('parent_child_equips', true);
+        echo "Created Parent Child Equips\n";
     }
 
     public function createTypeSlots()
@@ -347,26 +349,48 @@ class CreateDatabase extends Migration
         echo "Creating Type Slots\n";
         $this->addId();
         $this->forge->addField([
-            'type_id' => [
+            'name' => [
+                'type' => 'VARCHAR',
+                'constraint' => 30,
+                'null' => false
+            ],
+            'parent_type_id' => [
+                'type' => 'INT',
+                'unsigned'=> true,
+                'null' => false
+            ]
+        ]);
+        $this->addTimestamps();
+        $this->forge->addPrimaryKey('id');
+        $this->forge->addForeignKey('parent_type_id', 'equipment_types', 'id');
+        $this->forge->addUniqueKey(['name', 'parent_type_id']);
+        $this->forge->createTable('type_slots', true);
+        echo "Created Type Slots\n";
+    }
+
+    public function createAllowedTypeSlots()
+    {
+        echo "Creating Allowed Types\n";
+        $this->addId();
+        $this->forge->addField([
+            'slot_id' => [
                 'type' => 'INT',
                 'unsigned'=> true,
                 'null' => false
             ],
-            'type_ids_fit' => [
-                'type' => 'JSON',
-                'null' => false
-            ],
-            'max_count' => [
+            'allowed_type_id' => [
                 'type' => 'INT',
-                'unsigned' => true,
+                'unsigned'=> true,
                 'null' => false
-            ],
+            ]
         ]);
         $this->addTimestamps();
         $this->forge->addPrimaryKey('id');
-        $this->forge->addForeignKey('type_id', 'equipment_types', 'id');
-        $this->forge->createTable('type_slots', true);
-        echo "Created Type Slots\n";
+        $this->forge->addForeignKey('slot_id', 'type_slots', 'id');
+        $this->forge->addForeignKey('allowed_type_id', 'equipment_types', 'id');
+        $this->forge->addUniqueKey(['slot_id', 'allowed_type_id']);
+        $this->forge->createTable('allowed_type_slots', true);
+        echo "Created Allowed Types\n";
     }
 
     public function up()
@@ -374,12 +398,13 @@ class CreateDatabase extends Migration
         $this->createHist();
         $this->createEquipmentTypes();
         $this->createTypeSlots();
+        $this->createAllowedTypeSlots();
         $this->createInstitutes();
         $this->createLocations();
         $this->createStatuses();
         $this->createFiles();
         $this->createEquipments();
-        $this->Equipments2Equipments();
+        $this->ParentChildEquips();
         $this->createEquipments2Files();
     }
 
@@ -387,14 +412,15 @@ class CreateDatabase extends Migration
     {
         // Drop tables in reverse order
         $this->forge->dropTable('hist', true);
-        $this->forge->dropTable('equipments_to_equipments', true);
+        $this->forge->dropTable('parent_child_equips', true);
         $this->forge->dropTable('equipments_to_files', true);
         $this->forge->dropTable('equipments', true);
         $this->forge->dropTable('files', true);
         $this->forge->dropTable('institutes', true);
         $this->forge->dropTable('locations', true);
         $this->forge->dropTable('statuses', true);
-        $this->forge->dropTable('types_slots', true);
+        $this->forge->dropTable('allowed_type_slots', true);
+        $this->forge->dropTable('type_slots', true);
         $this->forge->dropTable('equipment_types', true);
     }
 }

@@ -21,16 +21,16 @@
         "description": null,
         "slots": [
             {
-                "type_ids_fit": ["3_in_1_board", "fenics"],
-                "max_count": 1
+                "name": "pmt_block_electronics_slot",
+                "allowed_type_ids": ["3_in_1_board", "fenics"]
             },
             {
-                "type_ids_fit": ["pmt"],
-                "max_count": 1
+                "name": "pmt_block_pmt_slot",
+                "allowed_type_ids": ["pmt"]
             },
             {
-                "type_ids_fit": ["hv_divider"],
-                "max_count": 1
+                "name": "pmt_block_hv_divider_slot",
+                "allowed_type_ids": ["hv_divider"]
             }
         ]
     },
@@ -100,16 +100,60 @@
         "description": null,
         "slots": [
             {
-                "type_ids_fit": ["mainboard"],
-                "max_count": 1
+                "name": "mini_drawer_mainboard_slot",
+                "allowed_type_ids": ["mainboard"]
             },
             {
-                "type_ids_fit": ["daughterboard"],
-                "max_count": 1
+                "name": "mini_drawer_daughterboard_slot",
+                "allowed_type_ids": ["daughterboard"]
             },
             {
-                "type_ids_fit": ["pmt_block"],
-                "max_count": 12
+                "name": "mini_drawer_pmt_block_slot_1",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_2",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_3",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_4",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_5",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_6",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_7",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_8",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_9",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_10",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_11",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_12",
+                "allowed_type_ids": ["pmt_block"]
             }
         ]
     },
@@ -124,8 +168,28 @@
         "description": null,
         "slots": [
             {
-                "type_ids_fit": ["pmt_block"],
-                "max_count": 6
+                "name": "micro_drawer_pmt_block_slot_1",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "micro_drawer_pmt_block_slot_2",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "micro_drawer_pmt_block_slot_3",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "micro_drawer_pmt_block_slot_4",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "micro_drawer_pmt_block_slot_5",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "micro_drawer_pmt_block_slot_6",
+                "allowed_type_ids": ["pmt_block"]
             }
         ]
     },
@@ -140,8 +204,20 @@
         "description": null,
         "slots": [
             {
-                "type_ids_fit": ["mini_drawer"],
-                "max_count": 4
+                "name": "lbsd_mini_drawer_slot_1",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "lbsd_mini_drawer_slot_2",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "lbsd_mini_drawer_slot_3",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "lbsd_mini_drawer_slot_4",
+                "allowed_type_ids": ["mini_drawer"]
             }
         ]
     },
@@ -156,12 +232,20 @@
         "description": null,
         "slots": [
             {
-                "type_ids_fit": ["mini_drawer"],
-                "max_count": 3
+                "name": "ebsd_mini_drawer_slot_1",
+                "allowed_type_ids": ["mini_drawer"]
             },
             {
-                "type_ids_fit": ["micro_drawer"],
-                "max_count": 1
+                "name": "ebsd_mini_drawer_slot_2",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "ebsd_mini_drawer_slot_3",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "ebsd_micro_drawer_slot_1",
+                "allowed_type_ids": ["micro_drawer"]
             }
         ]
     },

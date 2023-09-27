@@ -44,6 +44,12 @@ type_slots: {
   id: uint {constraint: primary_key}
   name: varchar(30) {constraint: [NN]}
   parent_type_id: uint {constraint: [foreign_key; NN]}
+}
+
+allowed_type_slots: {
+  shape: sql_table
+  id: uint {constraint: primary_key}
+  slot_id: uint {constraint: [foreign_key; NN]}
   allowed_type_id: uint {constraint: [foreign_key; NN]}
 }
 
@@ -133,9 +139,10 @@ equipments.id -- equipments_to_files.equipment_id: id < equipment_id {class: con
 files.id -- equipments_to_files.file_id: id < file_id {class: connection}
 locations.institute_id -- institutes.id: institute_id > id {class: connection}
 type_slots.parent_type_id -- equipment_types.id: parent_type_id > id {class: connection}
-type_slots.allowed_type_id -- equipment_types.id: allowed_type_id > id {class: connection}
 parent_child_equips.parent_equip_id -- equipments.id: parent_equip_id > id {class: connection}
 parent_child_equips.child_equip_id -- equipments.id: child_equip_id - id {class: connection}
+allowed_type_slots.slot_id -- type_slots.id: slot_id > id {class: connection}
+allowed_type_slots.allowed_type_id -- equipment_types.id: allowed_type_id > id {class: connection}
 
 
 equipments.id -- hist.record_id: id < record_id {class: connection}
@@ -147,3 +154,4 @@ files.id -- hist.record_id: id < record_id {class: connection}
 equipments_to_files.id -- hist.record_id: id < record_id {class: connection}
 type_slots.id -- hist.record_id: id < record_id {class: connection}
 parent_child_equips.id -- hist.record_id: id < record_id {class: connection}
+allowed_type_slots.id -- hist.record_id: id < record_id {class: connection}

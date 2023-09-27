@@ -22,6 +22,7 @@ class EquipmentModel extends LogModel
         'status_id',
         'status_name',
         'parent_id',
+        'slot_id',
         'serial',
         'comments',
         'type_params'
@@ -187,11 +188,13 @@ class EquipmentModel extends LogModel
         }
         $data = $data->toRawArray();
         if(array_key_exists('parent_id', $data)){
+            d($data);
             $parentId = remove_value('parent_id', $data);
+            $slotId = remove_value('slot_id', $data);
         }
         $childId = parent::insert($data, true);
-        if(isset($parentId)){
-            $this->addParent($childId, $parentId);
+        if(isset($parentId) && isset($slotId)){
+            $this->addParent($childId, $parentId, $slotId);
         }
         if($returnID){
             return $childId;
@@ -221,21 +224,14 @@ class EquipmentModel extends LogModel
      * 
      * @return bool Always true
      */ 
-    public function addParent(string $childId, string $parentId): bool
+    public function addParent(string $childId, string $parentId, int $slotId): bool
     {
-        $equipment2EquipmentModel = model('Equipments2EquipmentsModel');
-        $childRelation = new Equipment2Equipment([
-            'equipment_a_id' => $childId,
-            'equipment_b_id' => $parentId,
-            'type' => 'child'
+        $parentChildModel = model('ParentChildModel');
+        $parentChildModel->insert([
+            'parent_equip_id' => $parentId,
+            'child_equip_id' => $childId,
+            'slot_id' => $slotId
         ]);
-        $parentRelation = new Equipment2Equipment([
-            'equipment_b_id' => $childId,
-            'equipment_a_id' => $parentId,
-            'type' => 'parent'
-        ]);
-        $equipment2EquipmentModel->insert($parentRelation);
-        $equipment2EquipmentModel->insert($childRelation);
         return true;
     }
 
@@ -260,11 +256,12 @@ class EquipmentModel extends LogModel
         $data = $data->toRawArray();
         if(array_key_exists('parent_id', $data)){
             $parentId = remove_value('parent_id', $data);
+            $slotId = remove_value('slot_id', $data);
         }
         $res = parent::update($id, $data);
         if(isset($parentId)){
             $this->deleteParent($id);
-            $this->addParent($id, $parentId);
+            $this->addParent($id, $parentId, $slotId);
         }
         return $res;
     }
@@ -332,17 +329,13 @@ class EquipmentModel extends LogModel
 
     public function deleteEquipmentRelations(string|array $id): bool
     {
-        $equipments2Equipments = model('Equipments2EquipmentsModel');
-        $whereClause = (is_array($id))? 'orWhereIn': 'orWhere';
-        $relations = $equipments2Equipments
-            ->select('id')
-            ->$whereClause('equipment_a_id', $id)
-            ->$whereClause('equipment_b_id', $id)
+        $parentChildModel = model('parentChildModel');
+        $relations = $parentChildModel
+            ->orWhere('parent_equip_id', $id)
+            ->orWhere('child_equip_id', $id)
             ->findAll();
-        // could call delete but the model doesnt work with  whereIn for some reason
-        // Gives: 'Deletes are not allowed unless they contain a "where" or "like" clause'.
         foreach($relations as $relation){
-             $equipments2Equipments->delete($relation->id, true);
+             $parentChildModel->delete($relation->id, true);
         }
         return true;
     }
@@ -357,23 +350,10 @@ class EquipmentModel extends LogModel
      */ 
     public function deleteParent(string $childId): bool
     {   
-        $parentId = $this->getParentId($childId);
-        $equipment2EquipmentModel = model('Equipments2EquipmentsModel');
-        $relations = $equipment2EquipmentModel
-            ->select('id')
-            ->orWhere(sprintf(
-                "equipment_a_id = %s AND equipment_b_id = %s",
-                $this->db->escape($childId),
-                $this->db->escape($parentId)
-            ))
-            ->orWhere(sprintf(
-                "equipment_a_id = %s AND equipment_b_id = %s",
-                $this->db->escape($parentId),
-                $this->db->escape($childId),
-            ))
-            ->findAll();
+        $parentChildModel = model('ParentChildModel');
+        $relations = $parentChildModel->where('child_equip_id', $childId)->findAll();
         foreach($relations as $relation){
-            $equipment2EquipmentModel->delete($relation->id, purge: true);
+            $parentChildModel->delete($relation->id, purge: true);
         }
         return true;
     }

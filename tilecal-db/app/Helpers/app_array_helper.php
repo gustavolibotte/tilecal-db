@@ -37,6 +37,16 @@ function remove_values(array $keys, array &$array, bool $error=true): array
     return $values;
 }
 
+function remove_value_with_default($key, array &$array, mixed $default=null): mixed
+{
+    if (!array_key_exists($key, $array)){
+        return $default;
+    }
+    $value = $array[$key];
+    unset($array[$key]);
+    return $value;
+}
+
 /**
  * Uses dot_array_search to search $key in $array, if not found returns $default
  * If $default is null works the same as dot_array_search
