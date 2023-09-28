@@ -21,7 +21,9 @@ class OperationLog extends BaseEntity
             'status_id',
             'type_id',
             'owner_id'
-        ]
+        ],
+        'parent_child_equips' => ['id'],
+        'equipments_to_files' => ['id']
     ];
     
     protected function getMessage(){
@@ -111,22 +113,20 @@ class OperationLog extends BaseEntity
         return $msg;
     }
 
-    protected function insertEquipmentsToEquipmentsMessage(): string
+    protected function insertParentChildEquipsMessage(): string
     {
-        $msg = sprintf('Relates %s %s to %s',
-            $this->getEquipmentLink('equipment_a_id'),
-            $this->changes['type'],
-            $this->getEquipmentLink('equipment_b_id')
+        $msg = sprintf('Makes %s parent to %s',
+            $this->getEquipmentLink('parent_equip_id'),
+            $this->getEquipmentLink('child_equip_id')
         );
         return $msg;
     }
 
-    protected function deleteEquipmentsToEquipmentsMessage(): string
+    protected function deleteParentChildEquipsMessage(): string
     {
-        $msg = sprintf('Unrelates %s %s to %s',
-            $this->getEquipmentLink('equipment_a_id'),
-            $this->changes['type'],
-            $this->getEquipmentLink('equipment_b_id')
+        $msg = sprintf('Removes %s parent to %s',
+        $this->getEquipmentLink('parent_equip_id'),
+        $this->getEquipmentLink('child_equip_id')
         );
         return $msg;
     }

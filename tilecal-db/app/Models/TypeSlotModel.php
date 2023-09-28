@@ -12,13 +12,19 @@ class TypeSlotModel extends LogModel
     protected $returnType       = TypeSlot::class;
     protected $allowedFields    = ['name', 'parent_type_id', 'allowed_type_ids'];
 
+    /**
+     * True if the given typeName can be fit in some other equipment type slot
+     *
+     * @param string   $typeName  Name of the equipment type name to check for slots
+     *
+     * @return bool True if is possible to fit the given equipment type in some slot
+     */
     public function hasSlots(string $typeName){
         $result = $this
             ->select('1')
-            ->where(sprintf(
-                '(SELECT id FROM equipment_types WHERE name=\'%s\') MEMBER OF(type_ids_fit)',
-                $typeName,
-            ), escape: false)
+            ->join('allowed_type_slots ats', 'type_slots.id=ats.slot_id', 'left')
+            ->join('equipment_types et', 'ats.allowed_type_id=et.id')
+            ->where('et.name', $typeName)
             ->first();
         return !empty($result);
     }

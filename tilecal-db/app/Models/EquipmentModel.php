@@ -4,7 +4,8 @@ namespace App\Models;
 
 use App\Entities\OperationLog;
 use App\Entities\Equipment;
-use App\Entities\Equipment2Equipment;
+use CodeIgniter\Database\BaseBuilder;
+use CodeIgniter\Model;
 
 
 class EquipmentModel extends LogModel
@@ -47,7 +48,7 @@ class EquipmentModel extends LogModel
         );
     }
 
-    public function fullQuery(?string $extraSelect=null){
+    public function fullQuery(?string $extraSelect=null, BaseBuilder|Model $queryBuilder=null){
         $selectColumns = 'equipments.id as id, ';
         $selectColumns .= 'equipment_types.label as type_label, ';
         $selectColumns .= 'equipment_types.name as type_name, ';
@@ -58,7 +59,6 @@ class EquipmentModel extends LogModel
         $selectColumns .= 'statuses.name as status, ';
         $selectColumns .= 'equipments.owner_id as owner_id, ';
         $selectColumns .= 'institutes.name as owner_name, ';
-        $selectColumns .= 'statuses.name as status, ';
         $selectColumns .= 'equipments.serial, ';
         $selectColumns .= 'equipments.comments, ';
         $selectColumns .= 'equipments.type_params, ';
@@ -68,7 +68,10 @@ class EquipmentModel extends LogModel
         if (!is_null($extraSelect)){
             $selectColumns .= sprintf(', %s', $extraSelect);
         }
-        $query = $this->select($selectColumns)
+        if (is_null($queryBuilder)){
+            $queryBuilder = $this;
+        }
+        $query = $queryBuilder->select($selectColumns)
             ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
             ->join('locations', 'equipments.location_id = locations.id', 'left')
             ->join('statuses', 'equipments.status_id = statuses.id', 'left')
@@ -115,60 +118,40 @@ class EquipmentModel extends LogModel
      * @return array All Equipment instances found
      */ 
     public function getRelatedEquipments(string $id): array
-    {
-        // $parentId = $this->getParentId($id);
-        // $extraSelect = "CASE ";
-        // $extraSelect .= sprintf(
-        //     "WHEN equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.type = %s THEN %s ",
-        //     $this->db->escape($parentId),
-        //     $this->db->escape('child'),
-        //     $this->db->escape('sibling')
-        // );
-        // $extraSelect .= "ELSE equipments_to_equipments.type END AS relation_type";
-        $extraSelect = "equipments_to_equipments.type AS relation_type";
-        // Gets the equipments that have a relation that refers to this equipment
-        $whereQuery = sprintf(
-            "((equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.equipment_a_id != %s)",
-            $this->db->escape($id),
-            $this->db->escape($id)
-        );
-        // Gets this id parent childs
-        // $whereQuery .= sprintf(
-        //     "(equipments_to_equipments.equipment_b_id = %s AND equipments_to_equipments.equipment_a_id != %s AND equipments_to_equipments.type = %s))",
-        //     $this->db->escape($parentId),
-        //     $this->db->escape($id),
-        //     $this->db->escape('child')
-        // );
-        $query = $this->fullQuery($extraSelect)
-            ->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_a_id', 'left')
-            ->where('equipments_to_equipments.equipment_b_id', $id)
-            ->where('equipments_to_equipments.equipment_a_id !=', $id);
-        if ($this->tempUseSoftDeletes){
-            $query->where('equipments_to_equipments.deleted_at IS NULL');
-        }
-        $equipments = $query->findAll();
+    {   
+        $unionExtra = sprintf("%s as relation_type", $this->db->escape('parent'));
+        $unionQuery = $this->fullQuery($unionExtra, db_connect()->table('equipments'))
+            ->join('parent_child_equips pce', 'equipments.id=pce.parent_equip_id', 'left')
+            ->where('pce.child_equip_id', $id);
+
+        $extraQuery = sprintf("%s as relation_type", $this->db->escape('child'));
+        $equipments = $this->fullQuery($extraQuery)
+            ->join('parent_child_equips pce', 'equipments.id=pce.child_equip_id', 'left')
+            ->where('pce.parent_equip_id', $id)
+            ->union($unionQuery)
+            ->findAll();
         return $equipments;
     }
+
 
     /**
      * Returns the parent id from a specific equipment id.
      * Considers that the equipment has only one parent
      * 
-     * @param string $equipmentId The equipment id to get the parent from.
+     * @param string $id The equipment id to get the parent from.
      * 
      * @return ?string The obtained parent id
      */ 
-    public function getParentId(string $equipmentId): ?string
+    public function getParentId(string $id): ?string
     {
-        $parentRelation = $this->select('equipment_b_id as parent_id')
-                               ->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_a_id')
-                               ->where('equipments_to_equipments.equipment_a_id', $equipmentId)
-                               ->where('equipments_to_equipments.type', 'child')
-                               ->first();
+        $parentRelation = model('ParentChildModel')
+            ->select('parent_equip_id')
+            ->where('child_equip_id', $id)
+            ->first();
         if (is_null($parentRelation)){
             return null;
         } else {
-            return $parentRelation->parent_id;
+            return $parentRelation->parent_equip_id;
         }
     }
 
@@ -483,6 +466,25 @@ class EquipmentModel extends LogModel
             ->select('id')
             ->where($col, $value)
             ->first()->id;
+    }
+
+    /**
+     * Returns true if the equipment has a specific slot available for a specific type
+     *
+     * @param string $id  Id of the equipment to check for avaiable slot
+     * @param string $slotName Name of the slot to check
+     * 
+     * @return bool True if the equipment slot is available for a given equipment type
+     */
+    public function hasAvailableSlot(string $id, string $slotName)
+    {
+        $res = $this->builder('parent_child_equips pce')
+            ->select('1')
+            ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
+            ->where('pce.parent_equip_id', $id)
+            ->where('ts.name', $slotName)
+            ->get();
+        return isset($res);
     }
 
 }

@@ -37,8 +37,9 @@ class HistModel extends BaseModel
             $this->db->escape($equipmentId)
         ))
         ->orWhere(sprintf(
-            'table = %s AND JSON_EXTRACT(changes , "$.equipment_b_id") = %s',
-            $this->db->escape('equipments_to_equipments'),
+            'table = %s AND (JSON_EXTRACT(changes , "$.child_equip_id") = %s OR JSON_EXTRACT(changes , "$.parent_equip_id") = %s)' ,
+            $this->db->escape('parent_child_equips'),
+            $this->db->escape($equipmentId),
             $this->db->escape($equipmentId)
         ))
         ->orderBy('hist.created_at', 'DESC')

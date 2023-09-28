@@ -139,6 +139,29 @@ class EquipmentForm extends Form{
                     "exact_length" => "The id must have {param} characters.",
                 ]
             ];
+
+            $this->fields['slot_id'] = [
+                'id' => 'slot_id',
+                'label' => 'Slot',
+                'required' => false,
+                'fieldType' => 'dropdown',
+                'helpText' => "Slot to fit the equipment",
+                'fieldParams' => [
+                    'options' => (new \App\Models\TypeSlotModel())
+                        ->orderBy('name')
+                        ->getFormDropdownOptions(['name', 'description'])
+                ]
+            ];
+
+            $this->validationRules['slot_id'] = [
+                "rules" => [
+                    "required_with[parent_id]",
+                    sprintf("slot_allows_type[%s]", $this->equipmentType->name),
+                ],
+                "errors" => [
+                    "required_with" => "You must supply a slot together with the parent ID."
+                ]
+            ];
         }
 
         $this->fields['serial'] = [
@@ -254,5 +277,15 @@ class EquipmentForm extends Form{
             }
             throw $e;
         } 
+    }
+    
+    protected function processRequest()
+    {
+        $fieldValues = $this->getFieldValues();
+        if (empty($fieldValues['parent_id'])){
+            $fieldValues['parent_id'] = null;
+            $fieldValues['slot_id'] = null;
+        }
+        $this->setFieldValues($fieldValues);
     }
 }
