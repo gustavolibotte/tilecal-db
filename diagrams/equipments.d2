@@ -33,7 +33,7 @@ auxiliary_board: {
 active_hv_divider: {
     HV Divider: {
         shape: class
-        # model*: \"active\"
+        model*: \"active\" or \"passive\"
     }
 }
 
@@ -144,7 +144,7 @@ mainboard: {
 mini_drawer: {
     Mini Drawer: {
         shape: class
-        super_drawer_pos: uint
+        # super_drawer_pos: uint
         # model
     }
 }
@@ -152,7 +152,7 @@ mini_drawer: {
 micro_drawer: {
     Micro Drawer: {
         shape: class
-        super_drawer_pos: uint
+        # super_drawer_pos: uint
         # model: 4 or 5
     }
 }
@@ -160,7 +160,20 @@ micro_drawer: {
 module: {
     Module: {
         shape: class
-        model*: \"LBA\#\#\", \"LBC\#\#\", \"EBA\#\#\" or \"EBC\#\#\"
+        # model*: \"LBA\#\#\", \"LBC\#\#\", \"EBA\#\#\" or \"EBC\#\#\"
+    }
+}
+
+eb_module: {
+    EB Module: {
+        shape: class
+        # model*: \"LBA\#\#\", \"LBC\#\#\", \"EBA\#\#\" or \"EBC\#\#\"
+    }
+}
+
+lb_module: {
+    LB Module: {
+        shape: class
     }
 }
 
@@ -170,27 +183,28 @@ pmt: {
         beta*: float
         qe*: float
         nominal_hv*: float
-        # model*: options bellow
-        # R11187
-        # R7877
-        # R7787
-        # R11187-SEL
-        # R11187-A1
+        model
+        tooltip: model options are: R11187, R7877, R7787, R11187-SEL or R11187-A1
     }
 }
 
 pmt_block: {
     PMT Block: {
         shape: class
-        phase2_pos: int
-        phase1_pos: int
     }
 }
 
-partition: {
-    Partition: {
+eb_partition: {
+    EB Partition: {
         shape: class
-        model*: \"LBA\", \"LBC\", \"EBA\" or \"EBC\"
+        # model*: \"LBA\", \"LBC\", \"EBA\" or \"EBC\"
+    }
+}
+
+lb_partition: {
+    LB Partition: {
+        shape: class
+        # model*: \"LBA\", \"LBC\", \"EBA\" or \"EBC\"
     }
 }
 
@@ -211,9 +225,24 @@ phase1_super_drawer: {
 phase2_super_drawer: {
     Phase 2 Super Drawer: {
         shape: class
-        model*: \"LB\"or \"EB\"
+        # model*: \"LB\"or \"EB\"
     }
 }
+
+phase2_eb_super_drawer: {
+    Phase 2 EB Super Drawer: {
+        shape: class
+        # model*: \"LB\"or \"EB\"
+    }
+}
+
+phase2_lb_super_drawer: {
+    Phase 2 LB Super Drawer: {
+        shape: class
+        # model*: \"LB\"or \"EB\"
+    }
+}
+
 
 ppr_blade: {
     PPr blade: {
@@ -221,9 +250,9 @@ ppr_blade: {
         rack_number: integer
         shelf_number: integer
         slot_number: integer
-        installation_date: timestamp
-        modules: undefined
-        tooltip: Validate what these modules are
+        # installation_date: timestamp
+        # modules: undefined
+        # tooltip: Validate what these modules are
     }
 }
 
