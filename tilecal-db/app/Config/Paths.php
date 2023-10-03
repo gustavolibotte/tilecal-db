@@ -85,10 +85,12 @@ class Paths
 
     public function __construct()
     {
-        $this->uploadedFilesDirectory = sprintf(
-            '/eos/user/t/tilep2db/%s/files',
+        $eosDir = sprintf(
+            '/eos/user/t/tilep2db/%s',
             getenv('CI_ENVIRONMENT')
         );
+        $this->uploadedFilesDirectory = sprintf('%s/files', $eosDir);
+        $this->writableDirectory = sprintf('%s/writable', $eosDir);
     }
 
     /**
