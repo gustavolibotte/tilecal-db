@@ -2,8 +2,6 @@
 
 namespace App\Validation;
 use App\Models\EquipmentModel;
-use CodeIgniter\Database\RawSql;
-use TypeError;
 
 class EquipmentRules{
 
@@ -78,38 +76,43 @@ class EquipmentRules{
      * Checks if the parent equipment has not reached the max number of childs
      *
      * @param $value  Value given by CodeIgniter validator, considered as an equipment id for the parent id
-     * @param string $params "<child_id>"
-     * <child_id> The id for the child equipment to be used by the parent
-     * @param array $data Ignored
+     * @param string $params "<child_id>,<chile_type_label>,<slot_id>"
+     * <child_id> The id for the child equipment to be fit into the parent
+     * <child_type_label> Label for the child equipment type
+     * <slot_id> Id for the slot in which the child equipment will be fit into
+     * @param array $data Ignored, here for compatibility with codeigniter validation api
      * @param ?string &$error Error string, formated automatically by the function
      * 
      * @return bool True if the data was approved on this rule
      */ 
     public function id_is_valid_parent($value, string $params, array $data, ?string &$error): bool
     {
-
+        d($params);
         $params = explode(',', $params);
         $childId = $params[0];
-        $childTypeName = $params[1];
+        $childTypeLabel = $params[1];
         $slotId = $params[2];
+        d($childId);
+        d($childTypeLabel);
+        d($slotId);
         $parentId = $value;
 
         $equipmentModel = model('EquipmentModel');
-        $parentId = $equipmentModel->getParentId($childId);
-        if (!empty($parentId)){
+        $existingParentId = $equipmentModel->getParentId($childId);
+        if (!empty($existingParentId)){
             $error = sprintf(
                 'Equipment %s is already parent to equipment %s.',
-                $parentId,
+                $existingParentId,
                 $childId
             );
             return false;
         }
-        if (!$equipmentModel->hasAvailableSlot($parentId, $slotId, $childTypeName)){
+        if (!$equipmentModel->hasAvailableSlot($parentId, $slotId)){
             $error = sprintf(
-                "Equipment %s doesn't have an available slot for equipment %s of type %s",
+                "Equipment %s doesn't have the available slot for equipment %s of type %s",
                 $parentId,
                 $childId,
-                $childTypeName
+                $childTypeLabel
             );
             return false;
         }

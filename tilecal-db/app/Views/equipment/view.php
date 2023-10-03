@@ -23,8 +23,7 @@
 <?= $this->section('relatedContent') ?>
   <hr>
   <h4> Related Equipments </h4>
-  <p> The table includes the parent and children equipment to the shown equipment 
-    and its siblings (Equipments installed in the same parent)</p>
+  <p> The table includes the parent and children equipment to the shown equipment.</p>
   <? echo view_cell('EquipmentTableCell::fullEquipmentRelated', ['equipmentId' => $entity->id, 'withDeleted' =>  $entity->isDeleted]);?>
   <hr>
   <h4> Related Files </h4>

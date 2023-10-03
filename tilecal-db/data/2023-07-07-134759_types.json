@@ -108,39 +108,39 @@
                 "allowed_type_ids": ["daughterboard"]
             },
             {
-                "name": "mini_drawer_pmt_block_slot_1",
+                "name": "mini_drawer_pmt_block_slot_01",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "mini_drawer_pmt_block_slot_2",
+                "name": "mini_drawer_pmt_block_slot_02",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "mini_drawer_pmt_block_slot_3",
+                "name": "mini_drawer_pmt_block_slot_03",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "mini_drawer_pmt_block_slot_4",
+                "name": "mini_drawer_pmt_block_slot_04",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "mini_drawer_pmt_block_slot_5",
+                "name": "mini_drawer_pmt_block_slot_05",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "mini_drawer_pmt_block_slot_6",
+                "name": "mini_drawer_pmt_block_slot_06",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "mini_drawer_pmt_block_slot_7",
+                "name": "mini_drawer_pmt_block_slot_07",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "mini_drawer_pmt_block_slot_8",
+                "name": "mini_drawer_pmt_block_slot_08",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "mini_drawer_pmt_block_slot_9",
+                "name": "mini_drawer_pmt_block_slot_09",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
@@ -168,27 +168,27 @@
         "description": null,
         "slots": [
             {
-                "name": "micro_drawer_pmt_block_slot_1",
+                "name": "micro_drawer_pmt_block_slot_01",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "micro_drawer_pmt_block_slot_2",
+                "name": "micro_drawer_pmt_block_slot_02",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "micro_drawer_pmt_block_slot_3",
+                "name": "micro_drawer_pmt_block_slot_03",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "micro_drawer_pmt_block_slot_4",
+                "name": "micro_drawer_pmt_block_slot_04",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "micro_drawer_pmt_block_slot_5",
+                "name": "micro_drawer_pmt_block_slot_05",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "micro_drawer_pmt_block_slot_6",
+                "name": "micro_drawer_pmt_block_slot_06",
                 "allowed_type_ids": ["pmt_block"]
             }
         ]
@@ -204,19 +204,19 @@
         "description": null,
         "slots": [
             {
-                "name": "lbsd_mini_drawer_slot_1",
+                "name": "lbsd_mini_drawer_slot_01",
                 "allowed_type_ids": ["mini_drawer"]
             },
             {
-                "name": "lbsd_mini_drawer_slot_2",
+                "name": "lbsd_mini_drawer_slot_02",
                 "allowed_type_ids": ["mini_drawer"]
             },
             {
-                "name": "lbsd_mini_drawer_slot_3",
+                "name": "lbsd_mini_drawer_slot_03",
                 "allowed_type_ids": ["mini_drawer"]
             },
             {
-                "name": "lbsd_mini_drawer_slot_4",
+                "name": "lbsd_mini_drawer_slot_04",
                 "allowed_type_ids": ["mini_drawer"]
             }
         ]
@@ -232,19 +232,19 @@
         "description": null,
         "slots": [
             {
-                "name": "ebsd_mini_drawer_slot_1",
+                "name": "ebsd_mini_drawer_slot_01",
                 "allowed_type_ids": ["mini_drawer"]
             },
             {
-                "name": "ebsd_mini_drawer_slot_2",
+                "name": "ebsd_mini_drawer_slot_02",
                 "allowed_type_ids": ["mini_drawer"]
             },
             {
-                "name": "ebsd_mini_drawer_slot_3",
+                "name": "ebsd_mini_drawer_slot_03",
                 "allowed_type_ids": ["mini_drawer"]
             },
             {
-                "name": "ebsd_micro_drawer_slot_1",
+                "name": "ebsd_micro_drawer_slot_01",
                 "allowed_type_ids": ["micro_drawer"]
             }
         ]

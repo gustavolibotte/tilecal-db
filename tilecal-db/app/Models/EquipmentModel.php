@@ -119,16 +119,22 @@ class EquipmentModel extends LogModel
      */ 
     public function getRelatedEquipments(string $id): array
     {   
-        $unionExtra = sprintf("%s as relation_type", $this->db->escape('parent'));
-        $unionQuery = $this->fullQuery($unionExtra, db_connect()->table('equipments'))
+        $parentExtra = sprintf(
+            "%s as relation_type, ts.name as slot_name",
+            $this->db->escape('parent'));
+        $parentQuery = $this->fullQuery($parentExtra, db_connect()->table('equipments'))
             ->join('parent_child_equips pce', 'equipments.id=pce.parent_equip_id', 'left')
+            ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
             ->where('pce.child_equip_id', $id);
 
-        $extraQuery = sprintf("%s as relation_type", $this->db->escape('child'));
+        $extraQuery = sprintf(
+            "%s as relation_type, ts.name as slot_name",
+            $this->db->escape('child'));
         $equipments = $this->fullQuery($extraQuery)
             ->join('parent_child_equips pce', 'equipments.id=pce.child_equip_id', 'left')
+            ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
             ->where('pce.parent_equip_id', $id)
-            ->union($unionQuery)
+            ->union($parentQuery)
             ->findAll();
         return $equipments;
     }
@@ -171,7 +177,6 @@ class EquipmentModel extends LogModel
         }
         $data = $data->toRawArray();
         if(array_key_exists('parent_id', $data)){
-            d($data);
             $parentId = remove_value('parent_id', $data);
             $slotId = remove_value('slot_id', $data);
         }
@@ -472,19 +477,59 @@ class EquipmentModel extends LogModel
      * Returns true if the equipment has a specific slot available for a specific type
      *
      * @param string $id  Id of the equipment to check for avaiable slot
-     * @param string $slotName Name of the slot to check
+     * @param string $slotId Id of the slot to check
      * 
      * @return bool True if the equipment slot is available for a given equipment type
      */
-    public function hasAvailableSlot(string $id, string $slotName)
+    public function hasAvailableSlot(string $id, string $slotId): bool
+    {
+        $equipHasSlot = $this->equipHasSlot($id, $slotId);
+        d($equipHasSlot);
+        if (!$equipHasSlot){
+            return false;
+        }
+        $slotEmpty = $this->equipSlotIsEmpty($id, $slotId);
+        d($slotEmpty);
+        return $slotEmpty;
+    }
+
+    /**
+     * Returns true if equipment has a specified slot Id
+     *
+     * @param string $id  Id of the equipment to check for slot
+     * @param string $slotId Id of the slot to check
+     * 
+     * @return bool true if equipment has the specified slot
+     */
+    public function equipHasSlot(string $id, string $slotId): bool
+    {
+        $equipHasSlot = $this->select('1')
+            ->join('equipment_types et', 'equipments.type_id = et.id', 'left')
+            ->join('type_slots ts', 'ts.parent_type_id=et.id', 'left')
+            ->where('ts.id', $slotId)
+            ->find($id);
+        return !empty($equipHasSlot);
+    }
+
+    /**
+     * Returns true if the equipment slot is empty
+     * Doesn't check if the equipment can actually have the slot
+     *
+     * @param string $id  Id of the equipment to check for slot
+     * @param string $slotId Id of the slot to check
+     * 
+     * @return bool true if equipment has the specified slot
+     */
+    protected function equipSlotIsEmpty(string $id, string $slotId): bool
     {
         $res = $this->builder('parent_child_equips pce')
             ->select('1')
             ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
             ->where('pce.parent_equip_id', $id)
-            ->where('ts.name', $slotName)
-            ->get();
-        return isset($res);
+            ->where('ts.id', $slotId)
+            ->get()->getResult();
+        d($res);
+        return empty($res);
     }
 
 }

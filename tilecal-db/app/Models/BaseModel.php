@@ -54,7 +54,7 @@ abstract class BaseModel extends Model
     public function getFormDropdownOptions(array $columns, string $separator = ' - '){
         helper('string');
         $entities = $this->asArray()->findAll();
-        $options['null'] = 'Select an option';
+        $options[FORM_SELECT_NULL_OPTION] = 'Select an option';
         foreach ($entities as $entity){
             $first = true;
             $options[$entity['id']] = '';
@@ -95,4 +95,5 @@ abstract class BaseModel extends Model
         }
         return $array;
     }
+
 }

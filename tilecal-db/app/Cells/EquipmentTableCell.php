@@ -58,7 +58,7 @@ class EquipmentTableCell extends BaseCell
 
     public function fullEquipmentRelated(array $params): string
     {
-        helper(['app_array', 'view']);
+        helper(['app_array', 'view', 'string']);
         $equipmentId = dot_array_search('equipmentId', $params);
         $equipmentModel = new \App\Models\EquipmentModel();
         if(dot_search_with_default('withDeleted', $params, false)){

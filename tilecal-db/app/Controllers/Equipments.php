@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Library\Forms\EquipmentForm;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
+use Error;
 
 class Equipments extends BaseController
 {   
@@ -74,9 +75,10 @@ class Equipments extends BaseController
 
         $equipmentModel = new EquipmentModel();
         $messenger = service('messenger');
-
         if ($this->request->is('post')){
             $form = EquipmentForm::getTypeForm($typeName, $this->request);
+            $fieldValues = $form->getFieldValues();
+            d($fieldValues);
             if ($form->validate()){
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();

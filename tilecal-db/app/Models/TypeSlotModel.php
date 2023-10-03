@@ -62,4 +62,11 @@ class TypeSlotModel extends LogModel
             return null;
         }
     }
+
+    public function whereAllowedTypeId(int $id): Self
+    {
+        $this->join('allowed_type_slots ats', 'type_slots.id=ats.slot_id', 'left')
+            ->where('ats.allowed_type_id', $id);
+        return $this;
+    }
 }
