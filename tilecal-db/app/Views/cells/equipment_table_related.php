@@ -2,6 +2,7 @@
   <thead>
     <tr>
       <th>Relation</th>
+      <th>Slot</th>
       <th>ID</th>
       <th>Type</th>
       <th>Location</th>
@@ -17,6 +18,7 @@
       <?php foreach($equipments as $equipment): ?>
       <tr>
         <td> <? echo ucfirst($equipment->relation_type); ?></td>
+        <td> <? echo snake2Capitalized($equipment->slot_name); ?></td>
         <td><a type="button" class="btn btn-primary" href="<?php echo base_url(sprintf('equipments/view/%s', $equipment->id)); ?>"><?php echo $equipment->id; ?></a></td>
         <td><?php echo $equipment->type_label; ?></td>
         <td><?php echo $equipment->location; ?></td>

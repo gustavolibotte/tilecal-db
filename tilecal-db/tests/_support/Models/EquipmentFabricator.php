@@ -8,6 +8,8 @@ use App\Models\StatusModel;
 use App\Models\LocationModel;
 use App\Models\InstituteModel;
 use App\Library\Forms\PmtForm;
+use App\Models\AllowedTypeSlotModel;
+use App\Models\TypeSlotModel;
 use CodeIgniter\Entity\Entity;
 use Faker\Generator;
 
@@ -24,6 +26,8 @@ class EquipmentFabricator extends EquipmentModel
     public array $statuses;
     public InstituteModel $instituteModel;
     public array $institutes;
+    public TypeSlotModel $typeSlotModel;
+    public array $slots;
 
     public int $numCommentsCharacters = 100;
     public $originalReturnType;
@@ -49,6 +53,8 @@ class EquipmentFabricator extends EquipmentModel
         $this->instituteModel = new InstituteModel();
         $this->institutes = $this->instituteModel->getIdArray();
         $this->originalReturnType = $this->returnType;
+        $this->typeSlotModel = new TypeSlotModel();
+        $this->slots = $this->typeSlotModel->getCustomArray(keyField: 'name');
     }
 
     public function queryRandomEquipment(){
@@ -70,10 +76,10 @@ class EquipmentFabricator extends EquipmentModel
     public function fake(Generator &$faker): array
     {
         $pmtBlock = $this->fakePMTBlock($faker);
-        $divider = $this->fakeEquipment($faker, 'hv_divider', $pmtBlock->id);
+        $divider = $this->fakeEquipment($faker, 'hv_divider', $pmtBlock->id, 'pmt_block_hv_divider_slot');
         $divider->model = 'active';
-        $fenics = $this->fakeEquipment($faker, 'fenics', $pmtBlock->id);
-        $pmt = $this->fakePMT($faker, $pmtBlock->id);
+        $fenics = $this->fakeEquipment($faker, 'fenics', $pmtBlock->id, 'pmt_block_electronics_slot');
+        $pmt = $this->fakePMT($faker, $pmtBlock->id, 'pmt_block_pmt_slot');
         $equipments = [
             $pmtBlock,
             $divider,
@@ -85,7 +91,7 @@ class EquipmentFabricator extends EquipmentModel
         return $equipments;
     }
 
-    protected function fakePmt(Generator &$faker, string $parentId=null): Entity
+    protected function fakePmt(Generator &$faker, string $parentId=null, string $slotName=null): Entity
     {
         $type = $this->types['pmt'];
         $location = $faker->randomElement($this->locations);
@@ -93,6 +99,7 @@ class EquipmentFabricator extends EquipmentModel
         $institute = $this->institutes[PmtForm::$pmtOwnerId];
         $entity = new $this->originalReturnType([
             'parent_id' => $parentId,
+            'slot_id' => empty($slotName)? null: $this->slots[$slotName]->id,
             'type_id' => $type->id,
             'location_id' => $location->id,
             'status_id' => $status->id,
@@ -118,9 +125,10 @@ class EquipmentFabricator extends EquipmentModel
         $institute = $faker->randomElement($this->institutes);
         $pos = $faker->randomNumber(2, false);
         $entity = new $this->originalReturnType([
-            'id' => $this->fakeID($faker, 'LO', $institute->mne),
+            'id' => $this->fakeID($faker, $type->system, $institute->mne),
             'type_id' => $type->id,
             'parent_id' => $parentId,
+            'slot_id' => empty($slotName)? null: $this->slots[$slotName]->id,
             'location_id' => $location->id,
             'status_id' => $status->id,
             'owner_id' => $institute->id,
@@ -141,26 +149,6 @@ class EquipmentFabricator extends EquipmentModel
         return $id;
     }
 
-    protected function fakeDefaultEquipment(Generator &$faker, string $typeName, string $parentId=null): Entity
-    {
-        $type = $this->types[$typeName];
-        $location = $faker->randomElement($this->locations);
-        $status = $faker->randomElement($this->statuses);
-        $institute = $faker->randomElement($this->institutes);
-        $entity = new $this->originalReturnType([
-            'id' => $this->fakeID($faker, 'LO', $institute->mne),
-            'type_id' => $type->id,
-            'parent_id' => $parentId,
-            'location_id' => $location->id,
-            'status_id' => $status->id,
-            'owner_id' => $institute->id,
-            'serial' => $faker->regexify(self::$defaultSerialRegex),
-            'comments' => $faker->text($this->numCommentsCharacters),
-            'type_params' => []
-        ]);
-        return $entity;
-    }
-
     public function makeSpares(Generator &$faker, array $equipments): array
     {
         $spares = [];
@@ -176,7 +164,7 @@ class EquipmentFabricator extends EquipmentModel
         return $spares;
     }
 
-    protected function fakeEquipment(Generator &$faker, string $typeName, string $parentId=null): Entity
+    protected function fakeEquipment(Generator &$faker, string $typeName, string $parentId=null, string $slotName=null): Entity
     {
         $method = sprintf('fake%s', snake2CamelCase($typeName));
         try{
@@ -187,9 +175,10 @@ class EquipmentFabricator extends EquipmentModel
             $status = $faker->randomElement($this->statuses);
             $institute = $faker->randomElement($this->institutes);
             $entity = new $this->originalReturnType([
-                'id' => $this->fakeID($faker, 'LO', $institute->mne),
+                'id' => $this->fakeID($faker, $type->system, $institute->mne),
                 'type_id' => $type->id,
                 'parent_id' => $parentId,
+                'slot_id' => empty($slotName)? null: $this->slots[$slotName]->id,
                 'location_id' => $location->id,
                 'status_id' => $status->id,
                 'owner_id' => $institute->id,

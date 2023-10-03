@@ -2,8 +2,6 @@
 
 namespace App\Validation;
 use App\Models\EquipmentModel;
-use CodeIgniter\Database\RawSql;
-use TypeError;
 
 class EquipmentRules{
 
@@ -78,60 +76,43 @@ class EquipmentRules{
      * Checks if the parent equipment has not reached the max number of childs
      *
      * @param $value  Value given by CodeIgniter validator, considered as an equipment id for the parent id
-     * @param string $params "<child_id>"
-     * <child_id> The id for the child equipment to be used by the parent
-     * @param array $data Ignored
+     * @param string $params "<child_id>,<chile_type_label>,<slot_id>"
+     * <child_id> The id for the child equipment to be fit into the parent
+     * <child_type_label> Label for the child equipment type
+     * <slot_id> Id for the slot in which the child equipment will be fit into
+     * @param array $data Ignored, here for compatibility with codeigniter validation api
      * @param ?string &$error Error string, formated automatically by the function
      * 
      * @return bool True if the data was approved on this rule
      */ 
     public function id_is_valid_parent($value, string $params, array $data, ?string &$error): bool
     {
+        d($params);
         $params = explode(',', $params);
         $childId = $params[0];
-        $typeName = $params[1];
+        $childTypeLabel = $params[1];
+        $slotId = $params[2];
+        d($childId);
+        d($childTypeLabel);
+        d($slotId);
         $parentId = $value;
 
-        $query = 'SELECT e.id, type_ids_fit, max_count FROM equipments e ';
-        $query .= 'LEFT JOIN equipment_types et ON e.type_id = et.id ';
-        $query .= 'LEFT JOIN type_slots th ON th.type_id = et.id ';
-        $query .= sprintf(
-            'WHERE (SELECT id FROM equipment_types WHERE name=\'%s\') MEMBER OF(type_ids_fit) ',
-            $typeName
-        );
-        $query .= sprintf(
-            'AND e.id = \'%s\' ',
-            $parentId
-        );
-        $query .= 'LIMIT 1';
-        $query = new RawSql($query);
         $equipmentModel = model('EquipmentModel');
-        $parent = $equipmentModel->db->query($query)->getResult();
-
-        // For some reason the query doesn't work when built with the builder
-        // The query checks if exists a slot for the given parent_id that allows this equipment type
-        if (empty($parent)){
+        $existingParentId = $equipmentModel->getParentId($childId);
+        if (!empty($existingParentId)){
             $error = sprintf(
-                'You cannot assign equipment %s as parent to %s. (Parent doesn\'t allow this child equipment type)',
-                $parentId,
-                $childId)
-            ;
+                'Equipment %s is already parent to equipment %s.',
+                $existingParentId,
+                $childId
+            );
             return false;
-        } elseif (is_array($parent)){
-            $parent = $parent[0];
-        } else{
-            throw new TypeError("parent must be null or an array");
         }
-
-        // Here it means that the parent actually allows this type then we check if there is space to assign it.
-        $childrenTypeIds = json_decode($parent->type_ids_fit);
-        $count = $equipmentModel->queryChilds($parentId, $childrenTypeIds, [$childId])->countAllResults();
-        if ($count >= $parent->max_count){
+        if (!$equipmentModel->hasAvailableSlot($parentId, $slotId)){
             $error = sprintf(
-                'You cannot assign equipment %s as parent to %s. Parent is already filled with max number of equipments (%s)',
+                "Equipment %s doesn't have the available slot for equipment %s of type %s",
                 $parentId,
                 $childId,
-                $parent->max_count
+                $childTypeLabel
             );
             return false;
         }

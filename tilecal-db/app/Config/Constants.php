@@ -92,3 +92,8 @@ define('EVENT_PRIORITY_NORMAL', 100);
  * @deprecated Use \CodeIgniter\Events\Events::PRIORITY_HIGH instead.
  */
 define('EVENT_PRIORITY_HIGH', 10);
+
+/**
+ * @var string FORM_SELECT_NULL_OPTION value for when a "select an option" is active in a select component inside a form
+ */
+define('FORM_SELECT_NULL_OPTION', 'null_option');

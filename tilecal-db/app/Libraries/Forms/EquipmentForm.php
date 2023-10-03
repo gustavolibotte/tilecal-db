@@ -128,15 +128,54 @@ class EquipmentForm extends Form{
             $this->validationRules['parent_id'] = [
                 "rules" => [
                     "permit_empty",
+                    "required_with[slot_id]",
                     sprintf("exact_length[%s]", AtlasIdRules::$exactLength),
                     'id_has_valid_project',
                     "id_has_valid_system",
                     "id_has_valid_institute[institutes.mne]",
-                    sprintf("id_is_valid_parent[{id},%s]", $this->equipmentType->name)
+                    sprintf("id_is_valid_parent[{id},%s,{slot_id}]", $this->equipmentType->label)
                 ],
                 "errors" => [
-                    "required" => "You must supply an id for the equipment.",
+                    "required_with" => "Parent ID is required together with a slot.",
                     "exact_length" => "The id must have {param} characters.",
+                ]
+            ];
+
+            // The select query avoid conflict with multiple id columns from joined tables
+            $slotOptions = model('TypeSlotModel')
+                ->whereAllowedTypeId($this->equipmentType->id)
+                ->select('type_slots.id as id, type_slots.name as name')
+                ->orderBy('name')
+                ->getFormDropdownOptions(['name']);
+            helper('string');
+            array_walk($slotOptions, function (&$value, $key){
+                if ($key != FORM_SELECT_NULL_OPTION){
+                    $value = snake2Capitalized($value);
+                }
+            });
+            $this->fields['slot_id'] = [
+                'id' => 'slot_id',
+                'label' => 'Slot',
+                'required' => false,
+                'fieldType' => 'dropdown',
+                'helpText' => "Slot to fit the equipment",
+                'fieldParams' => [
+                    'options' => $slotOptions
+                ]
+            ];
+
+            $this->validationRules['slot_id'] = [
+                "rules" => [
+                    "permit_empty",
+                    "required_with[parent_id]",
+                    sprintf("slot_allows_type[%s]", $this->equipmentType->id),
+                ],
+                "errors" => [
+                    "required_with" => "You must supply a slot together with the parent ID.",
+                    "slot_allows_type" => sprintf(
+                        "Slot doesn't allow type %s to be fit.",
+                        $this->equipmentType->label
+                    )
                 ]
             ];
         }
@@ -233,8 +272,6 @@ class EquipmentForm extends Form{
         $newRule = str_replace('is_type_unique', 'is_type_not_unique', $oldRule);
         $this->addRule('serial', $newRule, 'The serial {value} doesn\'t exist');
         $this->setReadOnly('serial');
-
-        $this->resetRules();
     }
 
     public static function getTypeForm(string $typeName, ?IncomingRequest $request=null): EquipmentForm

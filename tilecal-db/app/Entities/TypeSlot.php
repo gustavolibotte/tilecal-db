@@ -8,6 +8,6 @@ class TypeSlot extends BaseEntity
     protected $dates   = ['created_at', 'updated_at', 'deleted_at'];
     protected $casts   = [
         'parent_type_id' => 'integer',
-        'type_ids_fit' => 'json-array'
+        'allowed_type_ids' => 'json-array'
     ];
 }

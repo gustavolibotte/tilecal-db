@@ -17,33 +17,45 @@ direction: up
 ...@equipments.active_hv_divider
 # ...@equipments.cooling_hoses
 ...@equipments.daughterboard
-...@equipments.fenics
+...@equipments.eb_partition
+...@equipments.eb_module
 ...@equipments.hv_distribution_board
+...@equipments.lb_module
 ...@equipments.lv_brick
+...@equipments.lb_partition
 ...@equipments.lv_power_supply
 ...@equipments.mainboard
 ...@equipments.mini_drawer
 ...@equipments.micro_drawer
-...@equipments.module
-...@equipments.phase2_super_drawer
+...@equipments.phase2_eb_super_drawer
+...@equipments.phase2_lb_super_drawer
 ...@equipments.pmt
 ...@equipments.pmt_block
+
+PMT Block Electronics Slot: {
+    ...@equipments.fenics
+    ...@equipments.3_in_1_board
+}
 
 # Edge declaration
 
 PMT -> PMT Block: 1 {class: connection}
 PMT Block -> Mini Drawer: 12 {class: connection}
 PMT Block -> Micro Drawer: X {class: connection}
-FENICS -> PMT Block: 1 {class: connection}
+PMT Block Electronics Slot -> PMT Block: 1 {class: connection}
 HV Divider -> PMT Block: 1 {class: connection}
 Mainboard -> Mini Drawer: 1 {class: connection}
 Daughterboard -> Mini Drawer: 1 {class: connection}
-Mini Drawer -> Phase 2 Super Drawer: 3 if EB, 4 if LB {class: connection}
-Micro Drawer -> Phase 2 Super Drawer:  {class: connection}
-Phase 2 Super Drawer -> Module: 1 {class: connection}
-# HV Regulation Board -> Module: 1 {class: connection}
-HV Distribution Board -> Module: 1 per minidrawer {class: connection}
-# Auxiliary Board -> Module: 1 {class: connection}
-LV Power Supply -> Module: 1 {class: connection}
+Mini Drawer -> Phase 2 EB Super Drawer: 3 {class: connection}
+Mini Drawer -> Phase 2 LB Super Drawer: 4 {class: connection}
+Micro Drawer -> Phase 2 EB Super Drawer: 1 {class: connection}
+Phase 2 LB Super Drawer -> LB Module: 1 {class: connection}
+Phase 2 EB Super Drawer -> EB Module: 1 {class:connection}
+HV Distribution Board -> EB Module: 3 {class: connection}
+HV Distribution Board -> LB Module: 4 {class: connection}
+LV Power Supply -> EB Module: 1 {class: connection}
+LV Power Supply -> LB Module: 1 {class: connection}
 LV Brick -> LV Power Supply: 8 {class: connection}
 # Cooling Hoses -> Phase 2 Super Drawer: X {class: connection}
+EB Module -> EB Partition: X {class: connection}
+LB Module -> LB Partition: X {class: connection}

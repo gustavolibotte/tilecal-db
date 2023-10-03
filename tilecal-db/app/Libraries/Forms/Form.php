@@ -35,10 +35,18 @@ abstract class Form{
                     $this->fieldValues[$key] = null;
                 } else{
                     $requestFieldValue = $this->request->getVar($key);
-                    $this->fieldValues[$key] = (empty($requestFieldValue)) ? null : $requestFieldValue;
+                    if ($this->fieldValueIsEmpty($requestFieldValue)){
+                        $this->fieldValues[$key] = null;
+                    } else{
+                        $this->fieldValues[$key] = $requestFieldValue;
+                    }
                 }
             }
         }
+    }
+
+    protected function fieldValueIsEmpty(mixed $value){
+        return empty($value) || ($value == FORM_SELECT_NULL_OPTION);
     }
 
     public function getFieldValues(): array
@@ -56,6 +64,8 @@ abstract class Form{
     }
 
     public function validate(){
+        $this->validator->reset();
+        $this->validator->setRules($this->validationRules);
         $this->isValid = $this->validator->run($this->getFieldValues());
         $this->calledValidate = true;
         return $this->isValid;
@@ -96,12 +106,6 @@ abstract class Form{
     public function removeField(string $fieldName){
         unset($this->fields[$fieldName]);
         unset($this->validationRules[$fieldName]);
-        $this->resetRules();
-    }
-
-    protected function resetRules(){
-        $this->validator->reset();
-        $this->validator->setRules($this->validationRules);
     }
 
     protected function removeRule(string $field, string $oldRule): ?string

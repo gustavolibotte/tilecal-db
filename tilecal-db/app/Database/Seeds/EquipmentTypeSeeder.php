@@ -35,13 +35,13 @@ class EquipmentTypeSeeder extends BaseSeeder
         $nameToId = $equipmentTypeModel->getCustomArray('name', 'id');
         $slots = [];
         foreach($row['slots'] as $relation){
-            foreach($relation['type_ids_fit'] as &$child){
+            foreach($relation['allowed_type_ids'] as &$child){
                 $child = $nameToId[$child];
             }
             $slots[] = new TypeSlot([
-                'type_id' => $row['id'],
-                'type_ids_fit' => $relation['type_ids_fit'],
-                'max_count' => $relation['max_count']
+                'parent_type_id' => $row['id'],
+                'allowed_type_ids' => $relation['allowed_type_ids'],
+                'name' => $relation['name']
             ]);
         }
         return $slots;
