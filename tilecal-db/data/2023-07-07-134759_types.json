@@ -1,0 +1,274 @@
+[
+    {
+        "id": 1,
+        "name": "pmt",
+        "label": "PMT",
+        "system": "LO",
+        "project": 20,
+        "params": ["beta", "nominal_hv", "qe", "model"],
+        "in_detector": true,
+        "description": null,
+        "slots": []
+    },
+    {
+        "id": 2,
+        "name": "pmt_block",
+        "label": "PMT Block",
+        "system": "LO",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "slots": [
+            {
+                "name": "pmt_block_electronics_slot",
+                "allowed_type_ids": ["3_in_1_board", "fenics"]
+            },
+            {
+                "name": "pmt_block_pmt_slot",
+                "allowed_type_ids": ["pmt"]
+            },
+            {
+                "name": "pmt_block_hv_divider_slot",
+                "allowed_type_ids": ["hv_divider"]
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "name": "hv_divider",
+        "label": "HV Divider",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "slots": []
+    },
+    {
+        "id": 4,
+        "name": "3_in_1_board",
+        "label": "3 in 1 Board",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "slots": []
+    },
+    {
+        "id": 5,
+        "name": "fenics",
+        "label": "FENICS",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "slots": []
+    },
+    {
+        "id": 6,
+        "name": "mainboard",
+        "label": "Mainboard",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "slots": []
+    },
+    {
+        "id": 7,
+        "name": "daughterboard",
+        "label": "Daughterboard",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "slots": []
+    },
+    {
+        "id": 8,
+        "name": "mini_drawer",
+        "label": "Mini Drawer",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "slots": [
+            {
+                "name": "mini_drawer_mainboard_slot",
+                "allowed_type_ids": ["mainboard"]
+            },
+            {
+                "name": "mini_drawer_daughterboard_slot",
+                "allowed_type_ids": ["daughterboard"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_01",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_02",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_03",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_04",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_05",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_06",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_07",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_08",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_09",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_10",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_11",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "mini_drawer_pmt_block_slot_12",
+                "allowed_type_ids": ["pmt_block"]
+            }
+        ]
+    },
+    {
+        "id": 9,
+        "name": "micro_drawer",
+        "label": "Micro Drawer",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "slots": [
+            {
+                "name": "micro_drawer_pmt_block_slot_01",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "micro_drawer_pmt_block_slot_02",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "micro_drawer_pmt_block_slot_03",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "micro_drawer_pmt_block_slot_04",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "micro_drawer_pmt_block_slot_05",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "micro_drawer_pmt_block_slot_06",
+                "allowed_type_ids": ["pmt_block"]
+            }
+        ]
+    },
+    {
+        "id": 10,
+        "name": "phase_2_lb_super_drawer",
+        "label": "Phase 2 LB Super Drawer",
+        "system": "LB",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "slots": [
+            {
+                "name": "lbsd_mini_drawer_slot_01",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "lbsd_mini_drawer_slot_02",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "lbsd_mini_drawer_slot_03",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "lbsd_mini_drawer_slot_04",
+                "allowed_type_ids": ["mini_drawer"]
+            }
+        ]
+    },
+    {
+        "id": 11,
+        "name": "phase_2_eb_super_drawer",
+        "label": "Phase 2 EB Super Drawer",
+        "system": "LE",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "slots": [
+            {
+                "name": "ebsd_mini_drawer_slot_01",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "ebsd_mini_drawer_slot_02",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "ebsd_mini_drawer_slot_03",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "ebsd_micro_drawer_slot_01",
+                "allowed_type_ids": ["micro_drawer"]
+            }
+        ]
+    },
+    {
+        "id": 12,
+        "name": "hv_distribution_board",
+        "label": "HV Distribution Board",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "slots": []
+    },
+    {
+        "id": 13,
+        "name": "lv_power_supply",
+        "label": "LV Power Supply",
+        "system": "LL",
+        "project": 20,
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "slots": []
+    }
+]

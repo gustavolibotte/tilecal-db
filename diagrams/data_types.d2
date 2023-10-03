@@ -1,0 +1,24 @@
+
+
+
+file: {
+    File: {
+        shape: class
+        filename
+        comments: Any useful information
+    }
+}
+
+equipment: {
+    Equipment: {
+        shape: class
+        ID*: ATLAS ID
+        model: string
+        location*: Current location
+        status*: Current status
+        owner*: CERN Institute
+        serial: Manufacturer issued serial code
+        comments: string
+        extra_params: Equipment type dependent
+    }
+}

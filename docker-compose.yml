@@ -1,0 +1,74 @@
+name: "tilecal-db"
+version: ${TILECAL_DB_VERSION}
+services:
+  web-server:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/web_server.dockerfile
+    image: tilecal-db:${TILECAL_DB_VERSION}
+    container_name: tilecal-db-web-server
+    tty: true
+    volumes:
+      - type: bind
+        source: ./tilecal-db/
+        target: /var/www/html
+      - type: bind
+        source: ~/cernbox/tilecal-db
+        target: /usr/local/cernbox
+    ports:
+      - "8080:8080"
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT}
+      - CI_ENVIRONMENT=${ENVIRONMENT}
+      - app_baseURL=${app_baseURL}
+      - database_default_hostname=${database_default_hostname}
+      - database_default_database=${database_default_database}
+      - database_default_username=${database_default_username}
+      - database_default_password=${database_default_password}
+      - database_default_DBDriver=${database_default_DBDriver}
+      - database_default_DBPrefix=${database_default_DBPrefix}
+      - database_default_port=${database_default_port}
+      - SSO_CLIENT_ID=${SSO_CLIENT_ID}
+      - SSO_CLIENT_SECRET=${SSO_CLIENT_SECRET}
+      - SSO_ISSUER=${SSO_ISSUER},
+      - SSO_PROVIDER=${SSO_PROVIDER}
+      - SSO_REDIRECT_URL=${SSO_REDIRECT_URL}
+      - CERN_PASSWORD=${CERN_PASSWORD}
+      - CERN_USERNAME=${CERN_USERNAME}
+  database:
+    image: mysql:8.0.28
+    container_name: tilecal-db-mysql
+    volumes:
+      - type: volume
+        source: mysqldata
+        target: /var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+  phpmyadmin:
+    image: phpmyadmin:5.2.1
+    container_name: tilecal-phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=${DB_HOSTNAME}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - PMA_PORT=${DB_PORT}
+  data-analysis:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/data_analysis.dockerfile
+    image: tile-db-analysis:${TILECAL_ANALYSIS_VERSION}
+    container_name: tilecal-db-analysis
+    tty: true
+    volumes:
+      - type: bind
+        source: ./
+        target: /root/tilecal-db
+      - type: bind
+        source: ~/cernbox/tilecal-db
+        target: /root/cernbox
+volumes:
+  mysqldata:

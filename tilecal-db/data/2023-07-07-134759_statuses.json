@@ -1,0 +1,58 @@
+[
+    {
+        "name": "Development",
+        "description": "The equipment is stil being made by the responsible group"
+    },
+    {
+        "name": "Delivered",
+        "description": "The equipment has been delivered at the location"
+    },
+    {
+        "name": "Stored",
+        "description": "The equipment is stored but not tested at the location"
+    },
+    {
+        "name": "Testing",
+        "description": "The equipment is being tested"
+    },
+    {
+        "name": "Tested",
+        "description": "The equipment is stored and was approved on the tests at the location"
+    },
+    {
+        "name": "Installed",
+        "description": "The equipment is installed at ATLAS"
+    },
+    {
+        "name": "Failure",
+        "description": "The equipment showed problems and will be evaluated."
+    },
+    {
+        "name": "Repaired",
+        "description": "The equipment has been repaired but not tested yet"
+    },
+    {
+        "name": "Broken",
+        "description": "The equipment is broken beyond possible solution"
+    },
+    {
+        "name": "Preproduction",
+        "description": "The equipment is in preproduction"
+    },
+    {
+        "name": "Spare",
+        "description": "The equipment is a spare part"
+    },
+    {
+        "name": "Produced",
+        "description": "The equipment has been produces and is waiting delivery"
+    },
+    {
+        "name": "Lost",
+        "description": "The equipment was lost"
+    },
+    {
+        "name": "Unknown",
+        "description": "Current equipment status is unknown"
+    }
+]
