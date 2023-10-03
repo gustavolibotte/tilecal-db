@@ -117,7 +117,7 @@ class PmtForm extends EquipmentForm{
 
         $this->fields['model'] = [
             'id' => 'model',
-            'required' => false,
+            'required' => true,
             'fieldType' => 'dropdown',
             'fieldParams' => [
                 'options' => self::$pmtModelOptions
