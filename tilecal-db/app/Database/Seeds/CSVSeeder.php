@@ -5,13 +5,18 @@ namespace App\Database\Seeds;
 use App\Entities\Equipment;
 use App\Library\DataFrame;
 use CodeIgniter\Entity\Entity;
+use ValueError;
 
 class CSVSeeder extends BaseSeeder
 {
+
     public function run()
     {
         helper('app_array');
-        $csvFilepath = '/usr/local/cernbox/backups/old_database/2023_07_17/2023_09_20_13_02_52_cleaned_pmt_202307171723.csv';
+        $csvFilepath = env('CSV_FILEPATH', null);
+        if (empty($csvFilepath)){
+            throw new ValueError("CSV_FILEPATH was empty.");
+        }
         $equipmentTypeName = 'pmt';
         $colsRename = [
             'type' => 'type_name',

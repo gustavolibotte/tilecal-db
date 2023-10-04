@@ -1,4 +1,8 @@
 #!/bin/bash
+if [[ $CI_ENVIRONMENT == "production" ]]; then
+    echo "Can't reset ${CI_ENVIRONMENT} database"
+    exit 1
+fi
 source setup_directories.sh
 php spark migrate:rollback
 php spark migrate
