@@ -20,6 +20,7 @@ class BaseSeeder extends Seeder
     {
         parent::__construct($config, $db);
         $this->db = db_connect();
+        \Config\Services::authenticator()->setMigration();
     }
 
     protected function readFile($filepath, bool $dataDir=true)
