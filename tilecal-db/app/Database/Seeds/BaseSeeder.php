@@ -20,13 +20,7 @@ class BaseSeeder extends Seeder
     {
         parent::__construct($config, $db);
         $this->db = db_connect();
-        if (!in_array(getenv('CI_ENVIRONMENT'), $this->allowedEnvs)){
-            $errorMsg = sprintf(
-                "Can't seed a database outside envs %s",
-                implode(', ', $this->allowedEnvs)
-            );
-            throw new ValueError($errorMsg);
-        }
+        \Config\Services::authenticator()->setMigration();
     }
 
     protected function readFile($filepath, bool $dataDir=true)
