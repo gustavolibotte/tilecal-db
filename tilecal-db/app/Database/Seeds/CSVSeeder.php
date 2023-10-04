@@ -5,13 +5,18 @@ namespace App\Database\Seeds;
 use App\Entities\Equipment;
 use App\Library\DataFrame;
 use CodeIgniter\Entity\Entity;
+use ValueError;
 
 class CSVSeeder extends BaseSeeder
 {
+
     public function run()
     {
         helper('app_array');
-        $csvFilepath = '/usr/local/cernbox/backups/old_database/2023_07_17/2023_09_20_13_02_52_cleaned_pmt_202307171723.csv';
+        $csvFilepath = env('CSV_FILEPATH', null);
+        if (empty($csvFilepath)){
+            throw new ValueError("CSV_FILEPATH was empty.");
+        }
         $equipmentTypeName = 'pmt';
         $colsRename = [
             'type' => 'type_name',
@@ -22,6 +27,7 @@ class CSVSeeder extends BaseSeeder
         $dataFrame = DataFrame::fromCSV($csvFilepath, $colsRename);
         $equipmentType = model('EquipmentTypeModel')->where('name', $equipmentTypeName)->first();
         $equipmentModel = model('EquipmentModel');
+        $i=0;
         foreach ($dataFrame->data as $entityData){
             if ($entityData['qe'] == ''){
                 $entityData['qe'] = null;
@@ -34,7 +40,9 @@ class CSVSeeder extends BaseSeeder
                 $equipmentType
             );
             $equipment = new Equipment($entityData);
-            $equipmentModel->insert($equipment);
+            $id = $equipmentModel->insert($equipment, returnID: true);
+            echo sprintf("%d: Registered equipment %s\n", $i, $id);
+            $i += 1;
         }
     }
 

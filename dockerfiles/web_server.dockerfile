@@ -18,7 +18,9 @@ RUN apt-get -y update \
 && docker-php-ext-install intl \
 && docker-php-ext-install mysqli \
 && apt-get install -y zip \
-&& apt-get install -y bash
+&& apt-get install -y bash \
+&& apt-get install -y vim \
+&& apt-get install -y nano
 
 # Apache config
 # COPY configs/php.ini /usr/local/etc/php/

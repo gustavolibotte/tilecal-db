@@ -7,7 +7,7 @@ class LocationSeeder extends BaseSeeder
     public function run()
     {
         service('authenticator')->setMigration();
-        $jsonData = $this->readFile('2023-07-07-134759_locations.json');
+        $jsonData = $this->readFile('locations.json');
         $instituteModel = new \App\Models\InstituteModel();
         $locationModel = new \App\Models\LocationModel();
         foreach ($jsonData as $row){
