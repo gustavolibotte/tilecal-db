@@ -2,29 +2,48 @@
 
 namespace App\Models;
 
+use CodeIgniter\Entity\Entity;
+
 class HistModel extends BaseModel
 {
-    protected $table            = 'hist';
     protected $useAutoIncrement = true;
     protected $returnType       = \App\Entities\OperationLog::class;
-    protected $allowedFields    = ['table', 'action', 'record_id', 'changes', 'filedata'];
+    protected $protectFields = false;
+    protected $modelAllowedFields;
 
     // Callbacks
     protected $beforeInsert   = ['addUser', 'addCreatedAt'];
 
     public function initialize()
     {
-        helper('authentication');
+        helper(['authentication', 'app_array']);
     }
 
-    public function addUser($operationInfo){
-        $operationInfo['data']['user'] = service('authenticator')->getUser()->username;
-        return $operationInfo;
+    protected function addUser($data){
+        $data['user'] = service('authenticator')->getUser()->username;
+        return $data;
     }
 
-    public function addCreatedAt($operationInfo){
-        $operationInfo['data']['created_at'] = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
-        return $operationInfo;
+    protected function addCreatedAt($data){
+        $data['created_at'] = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
+        return $data;
+    }
+
+    public function insert($data = null, bool $returnID = true)
+    {
+        if ($data instanceof Entity){
+            $data = $data->toRawArray();
+        }
+        remove_values(['created_at', 'updated_at', 'deleted_at'], $data, false);
+        $data['record_id'] = remove_value('id', $data);
+        $table = remove_value('table', $data);
+        $data = $this->addUser($data);
+        $data = $this->addCreatedAt($data);
+        $builder = $this->db->table(sprintf('%s_hist', $table));
+        $builder->insert($data);
+        if ($returnID){
+            return $data['record_id'];
+        }
     }
 
     public function getEquipmentHist($equipmentId){
