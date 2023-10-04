@@ -27,6 +27,7 @@ class CSVSeeder extends BaseSeeder
         $dataFrame = DataFrame::fromCSV($csvFilepath, $colsRename);
         $equipmentType = model('EquipmentTypeModel')->where('name', $equipmentTypeName)->first();
         $equipmentModel = model('EquipmentModel');
+        $i=0;
         foreach ($dataFrame->data as $entityData){
             if ($entityData['qe'] == ''){
                 $entityData['qe'] = null;
@@ -39,7 +40,9 @@ class CSVSeeder extends BaseSeeder
                 $equipmentType
             );
             $equipment = new Equipment($entityData);
-            $equipmentModel->insert($equipment);
+            $id = $equipmentModel->insert($equipment, returnID: true);
+            echo sprintf("%d: Registered equipment %s\n", $i, $id);
+            $i += 1;
         }
     }
 
