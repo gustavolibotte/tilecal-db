@@ -171,13 +171,12 @@ class EquipmentModel extends LogModel
             throw new \TypeError('Equipment Model insert supports only Equipment as $data');
         }
         $data = $data->toRawArray();
-        $hasParent = array_key_exists('parent_id', $data);
-        if($hasParent){
+        if(array_key_exists('parent_id', $data) || array_key_exists('slot_id', $data)){
             $parentId = remove_value('parent_id', $data);
             $slotId = remove_value('slot_id', $data);
         }
         $childId = parent::insert($data, true);
-        if($hasParent){
+        if(isset($parentId) && isset($slotId)){
             $this->addParent($childId, $parentId, $slotId);
         }
         if($returnID){
@@ -238,13 +237,12 @@ class EquipmentModel extends LogModel
             throw new \TypeError('$id must be passed');
         }
         $data = $data->toRawArray();
-        $hasParent = array_key_exists('parent_id', $data);
-        if($hasParent){
+        if(array_key_exists('parent_id', $data) || array_key_exists('slot_id', $data)){
             $parentId = remove_value('parent_id', $data);
             $slotId = remove_value('slot_id', $data);
         }
         $res = parent::update($id, $data);
-        if($hasParent){
+        if(isset($parentId) && isset($slotId)){
             $this->deleteParent($id);
             $this->addParent($id, $parentId, $slotId);
         }

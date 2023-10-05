@@ -117,12 +117,10 @@ class Equipments extends BaseController
     {
         $form = EquipmentForm::getTypeForm($typeName, $this->request);
         $form->asEdit();
-        d($form->getFieldValues());
         $messenger = service('messenger');
         if ($form->validate()){
             $equipmentModel = model('EquipmentModel');
             $equipment = $form->getEntity();
-            d($equipment);
             $equipmentModel->update($equipmentId, $equipment);
             $messenger->addMessage(
                 sprintf('Edited equipment %s with success', $equipment->id),
