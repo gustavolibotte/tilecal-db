@@ -370,8 +370,7 @@ class CreateDatabase extends Migration
         $this->forge->addForeignKey('parent_equip_id', 'equipments', 'id');
         $this->forge->addForeignKey('child_equip_id', 'equipments', 'id');
         $this->forge->addForeignKey('slot_id', 'type_slots', 'id');
-        $this->forge->addUniqueKey(['parent_equip_id', 'child_equip_id'], 'unique_parent_child');
-        $this->forge->addUniqueKey(['child_equip_id', 'slot_id'], 'unique_child_slot');
+        $this->forge->addUniqueKey('child_equip_id', 'unique_child_equip_id');
         $this->forge->createTable('parent_child_equips', true);
 
         $this->forge->addField($this->getHistFields($fields));

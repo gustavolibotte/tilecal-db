@@ -87,27 +87,14 @@ class EquipmentRules{
      */ 
     public function id_is_valid_parent($value, string $params, array $data, ?string &$error): bool
     {
-        d($params);
         $params = explode(',', $params);
         $childId = $params[0];
         $childTypeLabel = $params[1];
         $slotId = $params[2];
-        d($childId);
-        d($childTypeLabel);
-        d($slotId);
         $parentId = $value;
 
         $equipmentModel = model('EquipmentModel');
-        $existingParentId = $equipmentModel->getParentId($childId);
-        if (!empty($existingParentId)){
-            $error = sprintf(
-                'Equipment %s is already parent to equipment %s.',
-                $existingParentId,
-                $childId
-            );
-            return false;
-        }
-        if (!$equipmentModel->hasAvailableSlot($parentId, $slotId)){
+        if (!$equipmentModel->hasAvailableSlot($parentId, $slotId, $childId)){
             $error = sprintf(
                 "Equipment %s doesn't have the available slot for equipment %s of type %s",
                 $parentId,

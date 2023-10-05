@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Entities\LogEntities\EquipFileRelationLog;
+use App\Entities\LogEntities\ParentChildRelationLog;
+use App\Entities\LogEntities\EquipmentLog;
+use App\Entities\LogEntities\FileLog;
 use CodeIgniter\Entity\Entity;
 
 class HistModel extends BaseModel
@@ -46,34 +50,76 @@ class HistModel extends BaseModel
         }
     }
 
-    public function getEquipmentHist($equipmentId){
-        $hist = $this
-        ->select("hist.id, hist.user, hist.table, hist.action, hist.record_id, hist.changes, hist.created_at")
-        ->orWhere("table = 'equipments' AND record_id = '{$equipmentId}'")
-        ->orWhere(sprintf(
-            'table = %s AND JSON_EXTRACT(changes, "$.equipment_id") = %s',
-            $this->db->escape('equipments_to_files'),
-            $this->db->escape($equipmentId)
-        ))
-        ->orWhere(sprintf(
-            'table = %s AND (JSON_EXTRACT(changes , "$.child_equip_id") = %s OR JSON_EXTRACT(changes , "$.parent_equip_id") = %s)' ,
-            $this->db->escape('parent_child_equips'),
-            $this->db->escape($equipmentId),
-            $this->db->escape($equipmentId)
-        ))
-        ->orderBy('hist.created_at', 'DESC')
-        ->findAll();
+    public function getEquipmentHist($id){
+        $equipmentLogs = $this->db->table('equipments_hist eh')
+            ->join('equipment_types et', 'eh.type_id = et.id', 'left')
+            ->join('statuses s', 'eh.status_id=s.id', 'left')
+            ->join('locations l', 'eh.location_id=l.id', 'left')
+            ->join('institutes i', 'eh.owner_id=i.id', 'left')
+            ->select(
+                'eh.record_id as id, ' .
+                'et.label as type, ' .
+                's.name as status, ' .
+                'l.name as location, ' .
+                'i.name as owner, ' .
+                'eh.serial, ' .
+                'eh.type_params, ' .
+                'eh.comments, ' .
+                'eh.action, ' .
+                'eh.user, ' .
+                'eh.created_at'
+            )
+            ->where('eh.record_id', $id)
+            ->get()->getCustomResultObject(EquipmentLog::class);
+        $equipmentRelationLogs = $this->db->table('parent_child_equips_hist pceh')
+            ->select(
+                'pceh.parent_equip_id, ' .
+                'pceh.child_equip_id, ' .
+                'pceh.action, ' .
+                'pceh.user, ' .
+                'pceh.created_at'
+            )
+            ->orWhere('pceh.parent_equip_id', $id)
+            ->orwhere('pceh.child_equip_id', $id)
+            ->get()->getCustomResultObject(ParentChildRelationLog::class);
+        $fileRelationLogs = $this->db->table('equipments_to_files_hist efh')
+            ->join('files f', 'efh.file_id=f.id', 'left')
+            ->select(
+                'efh.file_id, ' .
+                'f.name as file_name, ' .
+                'efh.equipment_id, ' .
+                'efh.action, ' .
+                'efh.user, ' .
+                'efh.created_at'
+            )
+            ->where('efh.equipment_id', $id)
+            ->get()->getCustomResultObject(EquipFileRelationLog::class);
+        $hist = array_merge(
+            $equipmentLogs,
+            $equipmentRelationLogs,
+            $fileRelationLogs
+        );
         return $hist;
     }
 
-    public function getFileHist($fileId){
-        $fileId = $this->db->escape($fileId);
-        $hist = $this->select("hist.id, hist.user, hist.table, hist.action, hist.record_id, hist.changes, hist.created_at")
-                     ->where("(table = 'files' AND record_id = {$fileId}) OR (table = 'equipments_to_files' AND equipments_to_files.file_id = {$fileId})")
-                     ->join("equipments_to_files", "hist.record_id = equipments_to_files.id", 'left')
-                     ->join("files", "files.id = equipments_to_files.file_id", 'left')
-                     ->orderBy('hist.created_at', 'DESC')
-                     ->findAll();
+    public function getFileHist(int $id){
+        $fileLogs = $this->db->table('files_hist fh')
+            ->select('name, description, user, action, created_at')
+            ->where('id', $id)
+            ->get()->getCustomResultObject(FileLog::class);
+        $fileRelationLogs = $this->db->table('equipments_to_files_hist efh')
+            ->join('files f', 'efh.file_id=f.id', 'left')
+            ->select(
+                'efh.file_id, ' .
+                'f.name as file_name, ' .
+                'efh.equipment_id, ' .
+                'efh.action, ' .
+                'efh.user, ' .
+                'efh.created_at'
+            )
+            ->where('efh.file_id', $id)
+            ->get()->getCustomResultObject(EquipFileRelationLog::class);
+        $hist = array_merge($fileLogs, $fileRelationLogs);
         return $hist;
     }
 }

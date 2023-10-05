@@ -1,9 +1,5 @@
 <?php
 
-// This model re implements CRUD with trans methods so all database operations are made on the same transaction
-// This is important since we are writing in more than one table
-// This also ensures that each operation timestamps are equal
-
 namespace App\Models;
 
 use CodeIgniter\Database\Exceptions\DatabaseException;
@@ -17,25 +13,26 @@ abstract class LogModel extends BaseModel{
     protected array $restoreChangesIgnore = ['updated_at', 'created_at', 'deleted_at'];
     protected array $beforeRestore = [];
     protected array $afterRestore = [];
+    protected string $opTimestamp;
 
     public function initialize()
     {
         helper('app_array');
         parent::initialize();
+        $this->opTimestamp = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
         $this->beforeInsert[] = 'addInsertTimestamps';
         $this->afterInsert[] = 'logInsert';
         $this->beforeUpdate[] = 'addUpdateTimestamps';
-        $this->beforeUpdate[] = 'logUpdate';
-        $this->beforeDelete[] = 'logDelete';
+        $this->afterUpdate[] = 'logUpdate';
         $this->beforeDelete[] = 'addDeleteTimestamps';
+        $this->beforeDelete[] = 'logDelete';
         $this->beforeRestore[] = 'logRestore';
     }
 
     protected function addInsertTimestamps(array $data): array
     {
-        $opTimestamp = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
-        $data['data']['created_at'] = $opTimestamp;
-        $data['data']['updated_at'] = $opTimestamp;
+        $data['data']['created_at'] = $this->opTimestamp;
+        $data['data']['updated_at'] = $this->opTimestamp;
         return $data;
     }
 
@@ -51,7 +48,7 @@ abstract class LogModel extends BaseModel{
 
     protected function addUpdateTimestamps(array $data): array
     {
-        $data['data']['updated_at'] = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
+        $data['data']['updated_at'] = $this->opTimestamp;
         return $data;
     }
 
@@ -67,7 +64,8 @@ abstract class LogModel extends BaseModel{
     {
         $entityData = $this->db->table($this->table)
             ->where('id', $id)
-            ->get()->getResultArray()[0];
+            ->get()->getResultArray();
+        $entityData = $entityData[0];
         $entityData['table'] = $this->table;
         return $entityData;
     }
@@ -77,10 +75,9 @@ abstract class LogModel extends BaseModel{
         if ($data['purge']){
             return $data;
         }
-        $opTimestamp = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
         $builder = $this->builder();
-        $builder->set('deleted_at', $opTimestamp)
-                ->set('updated_at', $opTimestamp)
+        $builder->set('deleted_at', $this->opTimestamp)
+                ->set('updated_at', $this->opTimestamp)
                 ->where('id', $data['id'])
                 ->update();
         return $data;
@@ -106,14 +103,13 @@ abstract class LogModel extends BaseModel{
         foreach($this->beforeRestore as $callback){
             $data = $this->$callback($data);
         }
-        $opTimestamp = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
         $entry = $this->onlyDeleted()->select('id')->find($id);
         if (is_null($entry)){
             throw new DatabaseException('The entry is not deleted to be restored');
         }
         $builder = $this->builder();
         $builder->set('deleted_at', null)
-                ->set('updated_at', $opTimestamp)
+                ->set('updated_at', $this->opTimestamp)
                 ->where('id', $id)
                 ->update();
         $data = ['id' => $id];
