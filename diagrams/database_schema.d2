@@ -117,17 +117,14 @@ equipments_to_files: {
   deleted_at: timestamp utc
 }
 
-hist: {
+table-name_hist: {
   shape: sql_table
   id: uint {constraint: primary_key}
   user: varchar(20) {constraint: NN}
-  table: varchar(30) {constraint: NN}
   action: varchar(15) {constraint: NN}
-  record_id: varchar(14)
-  changes: json {constraint: NN}
-  filedata: mediumblob
+  record_id: varchar(14) or uint {constraint: [foreign_key]}
   created_at: timestamp utc {constraint: [NN default now()]}
-  tooltip: \"record_id\" is a pseudo foreign key the reference is guaranteed by the application. \"action\" can be one of the following: ('insert', 'update' 'delete', 'restore')
+  tooltip: Each table <table-name> has its clone called <table-name>_hist to keep track of changes
 }
 
 
@@ -145,13 +142,13 @@ allowed_type_slots.slot_id -- type_slots.id: slot_id > id {class: connection}
 allowed_type_slots.allowed_type_id -- equipment_types.id: allowed_type_id > id {class: connection}
 
 
-equipments.id -- hist.record_id: id < record_id {class: connection}
-equipment_types.id -- hist.record_id: id < record_id {class: connection}
-institutes.id -- hist.record_id: id < record_id {class: connection}
-locations.id -- hist.record_id: id < record_id {class: connection}
-statuses.id -- hist.record_id: id < record_id {class: connection}
-files.id -- hist.record_id: id < record_id {class: connection}
-equipments_to_files.id -- hist.record_id: id < record_id {class: connection}
-type_slots.id -- hist.record_id: id < record_id {class: connection}
-parent_child_equips.id -- hist.record_id: id < record_id {class: connection}
-allowed_type_slots.id -- hist.record_id: id < record_id {class: connection}
+equipments.id -- table-name_hist.record_id: id < record_id {class: connection}
+equipment_types.id -- table-name_hist.record_id: id < record_id {class: connection}
+institutes.id -- table-name_hist.record_id: id < record_id {class: connection}
+locations.id -- table-name_hist.record_id: id < record_id {class: connection}
+statuses.id -- table-name_hist.record_id: id < record_id {class: connection}
+files.id -- table-name_hist.record_id: id < record_id {class: connection}
+equipments_to_files.id -- table-name_hist.record_id: id < record_id {class: connection}
+type_slots.id -- table-name_hist.record_id: id < record_id {class: connection}
+parent_child_equips.id -- table-name_hist.record_id: id < record_id {class: connection}
+allowed_type_slots.id -- table-name_hist.record_id: id < record_id {class: connection}

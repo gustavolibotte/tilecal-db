@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Entities\ParentChildRelation;
 use App\Entities\OperationLog;
 use App\Entities\Equipment;
 use CodeIgniter\Database\BaseBuilder;
@@ -77,17 +78,12 @@ class EquipmentModel extends LogModel
             ->join('statuses', 'equipments.status_id = statuses.id', 'left')
             ->join('institutes', 'equipments.owner_id = institutes.id', 'left');
         return $query;
-
     }
 
-    public function getEquipment($id=null, $limit=null){
+    public function getEquipment($id=null)
+    {
         $query = $this->fullQuery();
-        if (is_null($id)){
-            $result = ($limit)? $query->findAll($limit): $query->findAll();
-        }
-        else{
-            $result = $query->find($id);
-        }
+        $result = empty($id)? $query->findAll():  $query->find($id);
         return $result;
     }
 
@@ -146,18 +142,17 @@ class EquipmentModel extends LogModel
      * 
      * @param string $id The equipment id to get the parent from.
      * 
-     * @return ?string The obtained parent id
+     * @return ?ParentChildRelation $parentRelation The obtained parent relation
      */ 
-    public function getParentId(string $id): ?string
+    public function getParentRelation(string $id): ?ParentChildRelation
     {
         $parentRelation = model('ParentChildModel')
-            ->select('parent_equip_id')
             ->where('child_equip_id', $id)
             ->first();
         if (is_null($parentRelation)){
             return null;
         } else {
-            return $parentRelation->parent_equip_id;
+            return $parentRelation;
         }
     }
 
@@ -176,7 +171,7 @@ class EquipmentModel extends LogModel
             throw new \TypeError('Equipment Model insert supports only Equipment as $data');
         }
         $data = $data->toRawArray();
-        if(array_key_exists('parent_id', $data)){
+        if(array_key_exists('parent_id', $data) || array_key_exists('slot_id', $data)){
             $parentId = remove_value('parent_id', $data);
             $slotId = remove_value('slot_id', $data);
         }
@@ -242,12 +237,12 @@ class EquipmentModel extends LogModel
             throw new \TypeError('$id must be passed');
         }
         $data = $data->toRawArray();
-        if(array_key_exists('parent_id', $data)){
+        if(array_key_exists('parent_id', $data) || array_key_exists('slot_id', $data)){
             $parentId = remove_value('parent_id', $data);
             $slotId = remove_value('slot_id', $data);
         }
         $res = parent::update($id, $data);
-        if(isset($parentId)){
+        if(isset($parentId) && isset($slotId)){
             $this->deleteParent($id);
             $this->addParent($id, $parentId, $slotId);
         }
@@ -435,6 +430,23 @@ class EquipmentModel extends LogModel
         }
         return $this;
     }
+    
+    // protected function substituteFK(array $data, string $idField, string $uniqueField, string $modelName): array
+    // {
+    //     $idExists = array_key_exists($idField, $data['data']);
+    //     if ($idExists){
+    //             unset($data['data'][$uniqueField]);
+    //             return $data;
+    //     }
+    //     if (array_key_exists($uniqueField, $data['data'])){
+    //         $data['data'][$idField] = model($modelName)
+    //             ->select('id')
+    //             ->where($uniqueField, $data['data'][$uniqueField])
+    //             ->first()->id;
+    //         unset($data['data'][$uniqueField]);
+    //     }
+    //     return $data;
+    // }
 
     protected function substituteFKs(array $data): array
     {
@@ -478,18 +490,17 @@ class EquipmentModel extends LogModel
      *
      * @param string $id  Id of the equipment to check for avaiable slot
      * @param string $slotId Id of the slot to check
+     * @param ?string $childId Child Id to disconsider
      * 
      * @return bool True if the equipment slot is available for a given equipment type
      */
-    public function hasAvailableSlot(string $id, string $slotId): bool
+    public function hasAvailableSlot(string $id, string $slotId, ?string $childId=null): bool
     {
         $equipHasSlot = $this->equipHasSlot($id, $slotId);
-        d($equipHasSlot);
         if (!$equipHasSlot){
             return false;
         }
         $slotEmpty = $this->equipSlotIsEmpty($id, $slotId);
-        d($slotEmpty);
         return $slotEmpty;
     }
 
@@ -517,18 +528,21 @@ class EquipmentModel extends LogModel
      *
      * @param string $id  Id of the equipment to check for slot
      * @param string $slotId Id of the slot to check
+     * @param ?string $childId Child Id to disconsider
      * 
      * @return bool true if equipment has the specified slot
      */
-    protected function equipSlotIsEmpty(string $id, string $slotId): bool
+    protected function equipSlotIsEmpty(string $id, string $slotId, ?string $childId=null): bool
     {
-        $res = $this->builder('parent_child_equips pce')
+        $builder = $this->builder('parent_child_equips pce')
             ->select('1')
             ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
             ->where('pce.parent_equip_id', $id)
-            ->where('ts.id', $slotId)
-            ->get()->getResult();
-        d($res);
+            ->where('ts.id', $slotId);
+        if(!empty($childId)){
+            $builder = $builder->where('pce.child_equip_id !=', $childId);
+        }
+            $res = $builder->get()->getResult();
         return empty($res);
     }
 

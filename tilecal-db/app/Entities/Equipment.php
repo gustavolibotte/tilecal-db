@@ -15,7 +15,8 @@ class Equipment extends BaseEntity
         'beta' => '?float',
         'hv_nominal' => '?float',
         'qe' => '?float',
-        'comments' => '?string'
+        'comments' => '?string',
+        'slot_id' => '?integer'
     ];
 
     public function toArrayWithTypeParams(): array
