@@ -14,7 +14,6 @@ direction: up
 #   ...@equipments.base_equipment
 # }
 
-...@equipments.active_hv_divider
 # ...@equipments.cooling_hoses
 ...@equipments.daughterboard
 ...@equipments.eb_partition
@@ -29,7 +28,6 @@ direction: up
 ...@equipments.micro_drawer
 ...@equipments.phase2_eb_super_drawer
 ...@equipments.phase2_lb_super_drawer
-...@equipments.pmt
 ...@equipments.pmt_block
 
 PMT Block Electronics Slot: {
@@ -37,13 +35,23 @@ PMT Block Electronics Slot: {
     ...@equipments.3_in_1_board
 }
 
+PMT Block HV Divider Slot: {
+    ...@equipments.active_hv_divider
+}
+
+PMT Block PMT Slot: {
+    ...@equipments.pmt
+}
+
+
+
 # Edge declaration
 
-PMT -> PMT Block: 1 {class: connection}
+PMT Block PMT Slot -> PMT Block: 1 {class: connection}
 PMT Block -> Mini Drawer: 12 {class: connection}
 PMT Block -> Micro Drawer: X {class: connection}
 PMT Block Electronics Slot -> PMT Block: 1 {class: connection}
-HV Divider -> PMT Block: 1 {class: connection}
+PMT Block HV Divider Slot -> PMT Block: 1 {class: connection}
 Mainboard -> Mini Drawer: 1 {class: connection}
 Daughterboard -> Mini Drawer: 1 {class: connection}
 Mini Drawer -> Phase 2 EB Super Drawer: 3 {class: connection}
