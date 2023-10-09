@@ -28,7 +28,7 @@ class Equipments extends BaseController
 
     public function view($equipmentId){
         helper(['app_form', 'form']);
-        $equipmentModel = new EquipmentModel();
+        $equipmentModel = model('EquipmentModel');
         $equipment = $equipmentModel->withDeleted()->getEquipment($equipmentId);
 
         if (is_null($equipment)){
@@ -39,7 +39,7 @@ class Equipments extends BaseController
 
         $viewData['infoHeader'] = 'Equipment Info';
         $viewData['entity'] = $equipment;
-        $viewData["histories"] = (new \App\Models\HistModel())->getEquipmentHist($equipmentId);
+        $viewData["histories"] = model('HistModel')->getEquipmentHist($equipmentId);
         $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->id);
 
         if ($equipment->isDeleted()){
@@ -53,7 +53,13 @@ class Equipments extends BaseController
             $viewData['editForm'] = EquipmentForm::getTypeForm($equipment->type_name);
             $viewData['editForm']->asEdit();
             $viewData['editForm']->setFieldValues($equipment->toArrayWithTypeParams());
-            $viewData['editForm']->setFieldValues(['parent_id' => $equipmentModel->getParentId($equipment->id)]);
+            $parentRelation = $equipmentModel->getParentRelation($equipment->id);
+            if (!empty($parentRelation)){
+                $viewData['editForm']->setFieldValues([
+                    'parent_id' => $parentRelation->parent_equip_id,
+                    'slot_id' => $parentRelation->slot_id
+                ]);
+            }
             $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->type_name, $equipment->id));
         }
 
@@ -78,7 +84,6 @@ class Equipments extends BaseController
         if ($this->request->is('post')){
             $form = EquipmentForm::getTypeForm($typeName, $this->request);
             $fieldValues = $form->getFieldValues();
-            d($fieldValues);
             if ($form->validate()){
                 $equipmentModel = new EquipmentModel();
                 $equipment = $form->getEntity();
@@ -114,7 +119,7 @@ class Equipments extends BaseController
         $form->asEdit();
         $messenger = service('messenger');
         if ($form->validate()){
-            $equipmentModel = new EquipmentModel();
+            $equipmentModel = model('EquipmentModel');
             $equipment = $form->getEntity();
             $equipmentModel->update($equipmentId, $equipment);
             $messenger->addMessage(
@@ -132,7 +137,7 @@ class Equipments extends BaseController
 
     public function delete(string $equipmentId)
     {
-        $equipmentModel = new EquipmentModel();
+        $equipmentModel = model('EquipmentModel');
         $equipmentModel->delete($equipmentId);
         $messenger = service('messenger');
         $messenger->addDeleteSuccess();

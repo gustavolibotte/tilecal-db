@@ -76,6 +76,9 @@
         <a class="nav-link active" href="<? echo base_url('help') ?>" style="color: #ffffff;">
           Help
         </a>
+        <li class="nav-link active" style="color: #ffffff;">
+          <? echo $user->username?>
+        </li>
       </ul>
     </div>
   </div>

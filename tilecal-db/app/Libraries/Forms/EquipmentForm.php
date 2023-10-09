@@ -133,10 +133,12 @@ class EquipmentForm extends Form{
                     'id_has_valid_project',
                     "id_has_valid_system",
                     "id_has_valid_institute[institutes.mne]",
+                    "is_not_unique[equipments.id]",
                     sprintf("id_is_valid_parent[{id},%s,{slot_id}]", $this->equipmentType->label)
                 ],
                 "errors" => [
                     "required_with" => "Parent ID is required together with a slot.",
+                    "is_not_unique" => "Parent ID doesn't exist.",
                     "exact_length" => "The id must have {param} characters.",
                 ]
             ];
