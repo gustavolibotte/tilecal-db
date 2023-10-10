@@ -317,10 +317,11 @@ class EquipmentModel extends LogModel
 
     public function deleteEquipmentRelations(string|array $id): bool
     {
+        $whereClause = (is_array($id))? 'orWhereIn': 'orWhere';
         $parentChildModel = model('parentChildModel');
         $relations = $parentChildModel
-            ->orWhere('parent_equip_id', $id)
-            ->orWhere('child_equip_id', $id)
+            ->$whereClause('parent_equip_id', $id)
+            ->$whereClause('child_equip_id', $id)
             ->findAll();
         foreach($relations as $relation){
              $parentChildModel->delete($relation->id, true);
