@@ -167,6 +167,7 @@ class EquipmentModel extends LogModel
      */
     public function insert($data = null, bool $returnID = true)
     {
+        $this->db->transStart();
         if (!($data instanceof Equipment)){
             throw new \TypeError('Equipment Model insert supports only Equipment as $data');
         }
@@ -179,6 +180,7 @@ class EquipmentModel extends LogModel
         if(isset($parentId) && isset($slotId)){
             $this->addParent($childId, $parentId, $slotId);
         }
+        $this->db->transComplete();
         if($returnID){
             return $childId;
         }
@@ -270,7 +272,9 @@ class EquipmentModel extends LogModel
 
     public function delete($id = null, bool $purge = false)
     {
+        $this->db->transStart();
         parent::delete($id, false);
+        $this->db->transComplete();
     }
 
     protected function getDeleteLog(array $data): OperationLog
@@ -312,10 +316,11 @@ class EquipmentModel extends LogModel
 
     public function deleteEquipmentRelations(string|array $id): bool
     {
-        $parentChildModel = model('parentChildModel');
+        $whereClause = (is_array($id))? 'orWhereIn': 'orWhere';
+        $parentChildModel = model('ParentChildModel');
         $relations = $parentChildModel
-            ->orWhere('parent_equip_id', $id)
-            ->orWhere('child_equip_id', $id)
+            ->$whereClause('parent_equip_id', $id)
+            ->$whereClause('child_equip_id', $id)
             ->findAll();
         foreach($relations as $relation){
              $parentChildModel->delete($relation->id, true);
