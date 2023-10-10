@@ -317,7 +317,7 @@ class EquipmentModel extends LogModel
     public function deleteEquipmentRelations(string|array $id): bool
     {
         $whereClause = (is_array($id))? 'orWhereIn': 'orWhere';
-        $parentChildModel = model('parentChildModel');
+        $parentChildModel = model('ParentChildModel');
         $relations = $parentChildModel
             ->$whereClause('parent_equip_id', $id)
             ->$whereClause('child_equip_id', $id)
