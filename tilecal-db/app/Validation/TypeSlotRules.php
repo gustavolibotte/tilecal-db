@@ -18,8 +18,6 @@ class TypeSlotRules
     {
         $slotId = $value;
         $typeId = $params;
-        d($slotId);
-        d($typeId);
         $slot = model('TypeSlotModel')
             ->select('1')
             ->whereAllowedTypeId($typeId)

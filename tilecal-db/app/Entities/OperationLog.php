@@ -10,37 +10,69 @@ class OperationLog extends BaseEntity
          "changes" => "json-array"
     ];
 
-    protected array $msgIgnore = [
-        'files' => [
-            'mime',
-            'path',
-            'id'
-        ],
-        'equipments' => [
-            'location_id',
-            'status_id',
-            'type_id',
-            'owner_id'
-        ],
-        'parent_child_equips' => ['id'],
-        'equipments_to_files' => ['id']
-    ];
+    protected array $msgFields = [];
     
-    protected function getMessage(){
+    protected function getMessage(): string
+    {
         helper('string');
+
         $msgBuilder = sprintf(
-            '%s%sMessage',
-            $this->action, snake2CamelCase($this->table)
+            '%sMessage',
+            $this->action
         );
-        if (method_exists($this, $msgBuilder)){
-            return $this->$msgBuilder();
-        } else{
-            $defaultMsgBuilder = sprintf(
-                'default%sMessage',
-                ucfirst($this->action)
-            );
-            return $this->$defaultMsgBuilder();
+        $msg = $this->$msgBuilder();
+        if ($this->action == 'danger'){
+            $msg = $this->makeDanger($msg);
         }
+        return $msg;
+    }
+
+    protected function makeListItem(string $fieldName, mixed $fieldValue): string
+    {
+        $msg = sprintf(
+            '<li> <b>%s</b> - %s </li>',
+            snake2Capitalized($fieldName),
+            $fieldValue
+        );
+        return $msg;
+    }
+
+    protected function makeMsgList(): string
+    {
+        $msg = '<ul>';
+        foreach ($this->msgFields as $fieldName){
+            $msg .= $this->makeListItem($fieldName, $this->$fieldName);
+        }
+        $msg .= '</ul>';
+        return $msg;
+    }
+
+    protected function insertMessage(): string
+    {
+        $msg = 'Entry created:';
+        $msg .= $this->makeMsgList();
+        return $msg;
+    }
+
+    protected function updateMessage(): string
+    {
+        $msg = 'Entry updated:';
+        $msg .= $this->makeMsgList();
+        return $msg;
+    }
+
+    protected function deleteMessage()
+    {
+        $msg = 'Entry deleted:';
+        $msg .= $this->makeMsgList();
+        return $msg;
+    }
+
+    protected function restoreMessage()
+    {
+        $msg = 'Entry restored:';
+        $msg .= $this->makeMsgList();
+        return $msg;
     }
 
     public function isInsert(){
@@ -69,125 +101,24 @@ class OperationLog extends BaseEntity
         return $msg;
     }
 
-    protected function getFileLink(): string
+    protected function makeFileLink(int $id, ?string $name=null): string
     {
+        $text = empty($name)? $id: $name;
         $fileLink = sprintf(
             '<a type="button" class="link-primary" href="%s">%s</a>',
-            base_url(sprintf('files/view/%s', $this->changes['file_id'])),
-            $this->changes['file_name']
+            base_url(sprintf('files/view/%s', $id)),
+            $text
         );
         return $fileLink;
     }
 
-    protected function getEquipmentLink(string $idField): string
+    protected function makeEquipmentLink(string $id): string
     {
         $equipmentLink = sprintf(
             '<a type="button" class="link-primary" href="%s">%s</a>',
-            base_url(sprintf('equipments/view/%s', $this->changes[$idField])),
-            $this->changes[$idField]
+            base_url(sprintf('equipments/view/%s', $id)),
+            $id
         );
         return $equipmentLink;
-    }
-
-    protected function insertEquipmentsToFilesMessage(){
-        $msg = sprintf('Link between %s and %s created',
-            $this->getFileLink(),
-            $this->getEquipmentLink('equipment_id')
-        );
-        return $msg;
-    }
-
-    protected function deleteEquipmentsToFilesMessage(){
-        $msg = sprintf('Link between %s and %s removed',
-            $this->getFileLink(),
-            $this->getEquipmentLink('equipment_id')
-        );
-        return $msg;
-    }
-
-    protected function restoreEquipmentsToFilesMessage(){
-        $msg = sprintf('Link between %s and %s restored',
-            $this->getFileLink(),
-            $this->getEquipmentLink('equipment_id')
-        );
-        return $msg;
-    }
-
-    protected function insertParentChildEquipsMessage(): string
-    {
-        $msg = sprintf('Makes %s parent to %s',
-            $this->getEquipmentLink('parent_equip_id'),
-            $this->getEquipmentLink('child_equip_id')
-        );
-        return $msg;
-    }
-
-    protected function deleteParentChildEquipsMessage(): string
-    {
-        $msg = sprintf('Removes %s parent to %s',
-        $this->getEquipmentLink('parent_equip_id'),
-        $this->getEquipmentLink('child_equip_id')
-        );
-        return $msg;
-    }
-
-    protected function defaultInsertMessage(){
-        $msg = 'Entry created with values:';
-        $msg .= '<ul>';
-        foreach ($this->changes as $name=>$value){
-            if (!in_array($name, $this->msgIgnore[$this->table])){
-                $msg .= sprintf('<li> <b>%s</b> - %s </li>', snake2Capitalized($name), $value);
-            }
-        }
-        $msg .= '</ul>';
-        return $msg;
-    }
-
-    protected function defaultUpdateMessage(){
-        $msg = '';
-        if (is_null($this->changes)){
-            $msg .= 'submited update with no changes';
-            return $msg;
-        }
-        $msg .= 'Entry updated with values:';
-        $msg .= '<ul>';
-        foreach ($this->changes as $name=>$value){
-            if (!in_array($name, $this->msgIgnore[$this->table])){
-                $msg .= sprintf('<li> <b>%s</b> - %s</li>', snake2Capitalized($name), $value);
-            }
-        }
-        $msg .= '</ul>';
-        return $msg;
-    }
-
-    protected function defaultDeleteMessage(){
-        $msg = 'Entry deleted with values:';
-        $msg .= '<ul>';
-        foreach ($this->changes as $name=>$value){
-            if (!in_array($name, $this->msgIgnore[$this->table])){
-                $msg .= sprintf('<li> <b>%s</b> - %s </li>', $name, $value);
-            }
-        }
-        $msg .= '</ul>';
-        return $msg;
-    }
-
-    protected function defaultRestoreMessage(){
-        $msg = 'Restored this deleted entry';
-        return $msg;
-    }
-
-    static function orderByCreation($a, $b){
-        return $a->created_at <=> $b->created_at;
-    }
-
-    static function orderByCreationReverse($a, $b){
-        return $b->created_at <=> $a->created_at;
-    }
-
-    protected function printEquipmentField(string $fieldName): bool
-    {
-        $printId = ($fieldName == 'parent_id') || (!str_ends_with($fieldName, '_id'));
-        return $printId;
     }
 }

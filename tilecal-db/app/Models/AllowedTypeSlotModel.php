@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use CodeIgniter\Model;
-
 class AllowedTypeSlotModel extends LogModel
 {
     protected $table            = 'allowed_type_slots';

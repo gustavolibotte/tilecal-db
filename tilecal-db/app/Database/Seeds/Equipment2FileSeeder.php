@@ -14,7 +14,7 @@ class Equipment2FileSeeder extends BaseSeeder
         $fileModel = new \App\Models\FileModel();
         $files = $fileModel->select('id, name')->findAll();
 
-        $equipments2FileModel = new \App\Models\Equipment2FileModel();
+        $equipments2FileModel = model('Equipment2FileModel');
         foreach ($equipments as $equipment){
             $file = random_choice($files);
             $data = [
