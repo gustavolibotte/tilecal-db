@@ -4,7 +4,6 @@ namespace App\Library\Forms;
 
 use \App\Models\BaseModel;
 use \App\Entities\Equipment;
-use \App\Entities\AtlasId;
 use App\Entities\EquipmentType;
 use \App\Validation\AtlasIdRules;
 use \App\Validation\EquipmentRules;
@@ -45,7 +44,7 @@ class EquipmentForm extends Form{
             "rules" => [
                 "required",
                 sprintf("exact_length[%s]", AtlasIdRules::$sequentialNumberLength),
-                sprintf("string_starts_with[%s]", $this->equipmentType->barcode_start),
+                sprintf("equip_id_has_valid_start[%s]", $this->equipmentType->barcode_start),
                 "is_unique[equipments.id]"
             ],
             "errors" => [
