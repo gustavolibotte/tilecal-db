@@ -49,38 +49,38 @@ class EquipmentModel extends LogModel
         );
     }
 
-    public function fullQuery(?string $extraSelect=null, BaseBuilder|Model $queryBuilder=null){
-        $selectColumns = 'equipments.id as id, ';
-        $selectColumns .= 'equipment_types.label as type_label, ';
-        $selectColumns .= 'equipment_types.name as type_name, ';
-        $selectColumns .= 'equipments.location_id as location_id, ';
-        $selectColumns .= 'locations.name as location, ';
-        $selectColumns .= 'locations.description as location_description, ';
-        $selectColumns .= 'equipments.status_id as status_id, ';
-        $selectColumns .= 'statuses.name as status, ';
-        $selectColumns .= 'equipments.owner_id as owner_id, ';
-        $selectColumns .= 'institutes.name as owner_name, ';
-        $selectColumns .= 'institutes.mne as owner_mne, ';
-        $selectColumns .= 'equipment_types.project as type_project, ';
-        $selectColumns .= 'equipment_types.system as type_system, ';
-        $selectColumns .= 'equipments.serial, ';
-        $selectColumns .= 'equipments.comments, ';
-        $selectColumns .= 'equipments.type_params, ';
-        $selectColumns .= 'equipments.updated_at, ';
-        $selectColumns .= 'equipments.created_at, ';
-        $selectColumns .= 'equipments.deleted_at ';
-        if (!is_null($extraSelect)){
-            $selectColumns .= sprintf(', %s', $extraSelect);
-        }
+    public function fullQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
+    {
         if (is_null($queryBuilder)){
             $queryBuilder = $this;
         }
-        $query = $queryBuilder->select($selectColumns)
+        $queryBuilder->select('equipments.id as id');
+        $queryBuilder->select('equipment_types.label as type_label');
+        $queryBuilder->select('equipment_types.name as type_name');
+        $queryBuilder->select('equipments.location_id as location_id');
+        $queryBuilder->select('locations.name as location');
+        $queryBuilder->select('locations.description as location_description');
+        $queryBuilder->select('equipments.status_id as status_id');
+        $queryBuilder->select('statuses.name as status');
+        $queryBuilder->select('equipments.owner_id as owner_id');
+        $queryBuilder->select('institutes.name as owner_name');
+        $queryBuilder->select('institutes.mne as owner_mne');
+        $queryBuilder->select('equipment_types.project as type_project');
+        $queryBuilder->select('equipment_types.system as type_system');
+        $queryBuilder->select('equipments.serial');
+        $queryBuilder->select('equipments.comments');
+        $queryBuilder->select('equipments.type_params');
+        $queryBuilder->select('equipments.updated_at');
+        $queryBuilder->select('equipments.created_at');
+        $queryBuilder->select('equipments.deleted_at');
+
+        $queryBuilder = $queryBuilder
             ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
             ->join('locations', 'equipments.location_id = locations.id', 'left')
             ->join('statuses', 'equipments.status_id = statuses.id', 'left')
             ->join('institutes', 'equipments.owner_id = institutes.id', 'left');
-        return $query;
+
+        return $queryBuilder;
     }
 
     public function getEquipment($id=null)
@@ -121,7 +121,8 @@ class EquipmentModel extends LogModel
         $parentExtra = sprintf(
             "%s as relation_type, ts.name as slot_name",
             $this->db->escape('parent'));
-        $parentQuery = $this->fullQuery($parentExtra, db_connect()->table('equipments'))
+        $parentQuery = $this->fullQuery(db_connect()->table('equipments'))
+            ->select($parentExtra)
             ->join('parent_child_equips pce', 'equipments.id=pce.parent_equip_id', 'left')
             ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
             ->where('pce.child_equip_id', $id);
@@ -129,7 +130,7 @@ class EquipmentModel extends LogModel
         $extraQuery = sprintf(
             "%s as relation_type, ts.name as slot_name",
             $this->db->escape('child'));
-        $equipments = $this->fullQuery($extraQuery)
+        $equipments = $this->fullQuery()->select($extraQuery)
             ->join('parent_child_equips pce', 'equipments.id=pce.child_equip_id', 'left')
             ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
             ->where('pce.parent_equip_id', $id)

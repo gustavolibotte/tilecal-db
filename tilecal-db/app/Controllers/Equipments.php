@@ -38,7 +38,6 @@ class Equipments extends BaseController
         }
 
         $viewData['infoHeader'] = 'Equipment Info';
-        d($equipment);
         $viewData['entity'] = $equipment;
         $viewData["histories"] = model('HistModel')->getEquipmentHist($equipmentId);
         $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->id);
