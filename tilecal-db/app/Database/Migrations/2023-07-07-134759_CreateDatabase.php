@@ -91,6 +91,10 @@ class CreateDatabase extends Migration
                 'constraint' => ['LB', 'LE', 'LO', 'LL', 'LC'],
                 'null' => false
             ],
+            'sequential_start' => [
+                'type' => 'VARCHAR',
+                'constraint' => 7
+            ],
             'label' => [
                 'type' => 'VARCHAR',
                 'constraint' => 50,

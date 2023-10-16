@@ -13,6 +13,7 @@ class EquipmentTypeModel extends LogModel
         'system',
         'label',
         'params',
-        'description'
+        'description',
+        'sqeuential_start'
     ];
 }

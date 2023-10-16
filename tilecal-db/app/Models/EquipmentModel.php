@@ -60,6 +60,9 @@ class EquipmentModel extends LogModel
         $selectColumns .= 'statuses.name as status, ';
         $selectColumns .= 'equipments.owner_id as owner_id, ';
         $selectColumns .= 'institutes.name as owner_name, ';
+        $selectColumns .= 'institutes.mne as owner_mne, ';
+        $selectColumns .= 'equipment_types.project as type_project, ';
+        $selectColumns .= 'equipment_types.system as type_system, ';
         $selectColumns .= 'equipments.serial, ';
         $selectColumns .= 'equipments.comments, ';
         $selectColumns .= 'equipments.type_params, ';

@@ -27,4 +27,25 @@ class Equipment extends BaseEntity
         }
         return $array;
     }
+
+    public function getAtlasId(): ?string
+    {
+        if (empty($this->type_project)){
+            return null;
+        }
+        elseif (empty($this->type_system)){
+            return null;
+        }
+        elseif (empty($this->owner_mne)){
+            return null;
+        }
+        $atlasId = sprintf(
+            "%s%s%s%s",
+            $this->type_project,
+            $this->type_system,
+            $this->owner_mne,
+            $this->id
+        );
+        return $atlasId;
+    }
 }
