@@ -33,8 +33,6 @@ services:
       - SSO_ISSUER=${SSO_ISSUER},
       - SSO_PROVIDER=${SSO_PROVIDER}
       - SSO_REDIRECT_URL=${SSO_REDIRECT_URL}
-      - CERN_PASSWORD=${CERN_PASSWORD}
-      - CERN_USERNAME=${CERN_USERNAME}
   database:
     image: mysql:8.0.28
     container_name: tilecal-db-mysql
@@ -52,10 +50,10 @@ services:
     ports:
       - "8081:80"
     environment:
-      - PMA_HOST=${DB_HOSTNAME}
-      - MYSQL_USER=${DB_USERNAME}
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-      - PMA_PORT=${DB_PORT}
+      - PMA_HOST=${database_default_hostname}
+      - MYSQL_USER=${database_default_username}
+      - MYSQL_PASSWORD=${database_default_password}
+      - PMA_PORT=${database_default_port}
   data-analysis:
     build:
       context: .
