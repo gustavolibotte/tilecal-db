@@ -105,47 +105,4 @@ class EquipmentRules{
         }
         return true;
     }
-
-    /**
-     * Checks if the parent equipment has not reached the max number of childs
-     *
-     * @param $value  Value given by CodeIgniter validator, considered as an equipment id for the parent id
-     * @param string $params "<child_id>,<chile_type_label>,<slot_id>"
-     * <child_id> The id for the child equipment to be fit into the parent
-     * <child_type_label> Label for the child equipment type
-     * <slot_id> Id for the slot in which the child equipment will be fit into
-     * @param array $data Ignored, here for compatibility with codeigniter validation api
-     * @param ?string &$error Error string, formated automatically by the function
-     * 
-     * @return bool True if the data was approved on this rule
-     */ 
-    public function equip_id_has_valid_start($value, string $params, array $data, ?string &$error): bool
-    {
-        $id = $value;
-        $sequentialStart = $params;
-        if (empty($params)){
-            $idStart = substr($value, 0, 2);
-            $res = model('EquipmentTypeModel')
-                ->select('label')->select('sequential_start')
-                ->where(sprintf(
-                    "%s REGEXP concat('^', sequential_start, '(.*)')",
-                    $idStart
-                ))
-                ->first();
-            if (empty($res)){
-                return true;
-            }
-            $error = sprintf(
-                '%s can start with %s', $res->label, $res->sequential_start
-            );
-            return false;
-        } elseif (!str_starts_with($id, $sequentialStart)){
-            $error = sprintf(
-                "ID sequential number must start with %s",
-                $sequentialStart
-            );
-            return false;
-        }
-        return true;
-    }
 }

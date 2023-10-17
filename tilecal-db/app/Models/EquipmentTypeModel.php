@@ -14,6 +14,6 @@ class EquipmentTypeModel extends LogModel
         'label',
         'params',
         'description',
-        'sqeuential_start'
+        'id_regex'
     ];
 }

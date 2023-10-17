@@ -44,16 +44,13 @@ class EquipmentForm extends Form{
             "rules" => [
                 "required",
                 sprintf("exact_length[%s]", AtlasIdRules::$sequentialNumberLength),
-                sprintf("equip_id_has_valid_start[%s]", $this->equipmentType->barcode_start),
+                sprintf("regex_match[%s]", $this->equipmentType->id_regex),
                 "is_unique[equipments.id]"
             ],
             "errors" => [
                 "required" => "You must supply an id for the equipment.",
-                "string_starts_with" => sprintf(
-                    "ID must start with {param} for %s.",
-                    $this->equipmentType->label
-                ),
                 "exact_length" => "The ID sequential number must have {param} characters.",
+                "regex_match" => "The ID doesn't follow this equipment ID rules.",
                 "is_unique" => "ID {param} already exists."
             ]
         ];
@@ -68,6 +65,17 @@ class EquipmentForm extends Form{
                 'options' => model('InstituteModel')
                     ->orderBy('name')
                     ->getFormDropdownOptions(['mne', 'name'])
+            ]
+        ];
+
+        $this->validationRules['owner_id'] = [
+            "rules" => [
+                "required",
+                "is_not_unique[institutes.id]",
+            ],
+            "errors" => [
+                "required" => "You must supply an owner for the equipment.",
+                "is_not_unique" => "The inserted owner is not valid.",
             ]
         ];
 
