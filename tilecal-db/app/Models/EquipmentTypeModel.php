@@ -14,6 +14,7 @@ class EquipmentTypeModel extends LogModel
         'label',
         'params',
         'description',
+        'project',
         'id_regex'
     ];
 }
