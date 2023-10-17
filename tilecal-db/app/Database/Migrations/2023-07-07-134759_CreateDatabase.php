@@ -9,7 +9,7 @@ class CreateDatabase extends Migration
 {   
     public array $defaultIdField = [
         'type' => 'INT',
-        'auto_increment' => TRUE,
+        'auto_increment' => true,
         'unsigned' => true
     ];
 
@@ -30,8 +30,14 @@ class CreateDatabase extends Migration
             'null' => true
         ]
     ];
+
+    public array $equipmentIdFieldConfig = [
+        'type'=> 'CHAR',
+        'constraint' => 7,
+        'null' => false
+    ];
     
-    protected function addTImestamps(array $tableFields): array
+    protected function addTimestamps(array $tableFields): array
     {
         return array_merge($tableFields, $this->defaultTimestampFields);
     }
@@ -75,10 +81,19 @@ class CreateDatabase extends Migration
                 'type' => 'BOOLEAN',
                 'null' => false,
             ],
+            'project' => [
+                'type' => 'CHAR',
+                'constraint' => 2,
+                'null' => false
+            ],
             'system' => [
                 'type' => 'ENUM',
                 'constraint' => ['LB', 'LE', 'LO', 'LL', 'LC'],
                 'null' => false
+            ],
+            'id_regex' => [
+                'type' => 'VARCHAR',
+                'constraint' => 50
             ],
             'label' => [
                 'type' => 'VARCHAR',
@@ -94,7 +109,7 @@ class CreateDatabase extends Migration
                 'null' => true
             ]
         ];
-        $fields = $this->addTImestamps($fields);
+        $fields = $this->addTimestamps($fields);
         $this->forge->addField($fields);
         $this->forge->addPrimaryKey('id');
         $this->forge->addUniqueKey('name', 'equipment_types_unique_name');
@@ -250,10 +265,7 @@ class CreateDatabase extends Migration
 
         echo "Creating Equipments\n";
         $fields = [
-            'id' => [
-                'type' => 'CHAR',
-                'constraint' => 14,
-            ],
+            'id' => $this->equipmentIdFieldConfig,
             'type_id' => [
                 'type' => 'INT',
                 'unsigned' => true,
@@ -319,11 +331,7 @@ class CreateDatabase extends Migration
                 'unsigned' => true,
                 'null' => false
             ],
-            'equipment_id' => [
-                'type' => 'CHAR',
-                'constraint' => 14,
-                'null' => false
-            ]
+            'equipment_id' => $this->equipmentIdFieldConfig
         ];
         $fields = $this->addTimestamps($fields);
         $this->forge->addField($fields);

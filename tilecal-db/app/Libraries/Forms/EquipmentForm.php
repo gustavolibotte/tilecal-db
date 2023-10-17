@@ -4,7 +4,6 @@ namespace App\Library\Forms;
 
 use \App\Models\BaseModel;
 use \App\Entities\Equipment;
-use \App\Entities\AtlasId;
 use App\Entities\EquipmentType;
 use \App\Validation\AtlasIdRules;
 use \App\Validation\EquipmentRules;
@@ -44,22 +43,39 @@ class EquipmentForm extends Form{
         $this->validationRules['id'] = [
             "rules" => [
                 "required",
-                sprintf("exact_length[%s]", AtlasIdRules::$exactLength),
-                sprintf("id_is_system[%s]", $this->equipmentType->system),
-                "id_is_project[20]",
-                "id_has_valid_institute[institutes.mne]",
+                sprintf("exact_length[%s]", AtlasIdRules::$sequentialNumberLength),
+                sprintf("regex_match[%s]", $this->equipmentType->id_regex),
                 "is_unique[equipments.id]"
             ],
             "errors" => [
                 "required" => "You must supply an id for the equipment.",
-                "exact_length" => "The id must have {param} characters.",
-                "id_is_system" => sprintf(
-                    "For %s the ID system must be {param} for %s",
-                    $this->equipmentType->label,
-                    AtlasIdRules::$validSystems[$this->equipmentType->system]
-                ),
-                "id_is_project" => "The ID project for ATLAS must be {param}.",
-                "is_unique" => "This id already exists.",
+                "exact_length" => "The ID sequential number must have {param} characters.",
+                "regex_match" => "The ID doesn't follow this equipment ID rules.",
+                "is_unique" => "ID {param} already exists."
+            ]
+        ];
+
+        $this->fields['owner_id'] = [
+            'id' => 'owner_id',
+            'label' => 'Owner Institute',
+            'required' => true,
+            'fieldType' => 'dropdown',
+            'helpText' => "Institute that owns the equipment",
+            'fieldParams' => [
+                'options' => model('InstituteModel')
+                    ->orderBy('name')
+                    ->getFormDropdownOptions(['mne', 'name'])
+            ]
+        ];
+
+        $this->validationRules['owner_id'] = [
+            "rules" => [
+                "required",
+                "is_not_unique[institutes.id]",
+            ],
+            "errors" => [
+                "required" => "You must supply an owner for the equipment.",
+                "is_not_unique" => "The inserted owner is not valid.",
             ]
         ];
 
@@ -70,7 +86,7 @@ class EquipmentForm extends Form{
             'fieldType' => 'dropdown',
             'helpText' => "Current equipment location",
             'fieldParams' => [
-                'options' => (new \App\Models\LocationModel())
+                'options' => model('LocationModel')
                     ->orderBy('name')
                     ->getFormDropdownOptions(['name', 'description'])
             ]
@@ -236,9 +252,6 @@ class EquipmentForm extends Form{
             $value = null_empty($value);
         }
         $equipment = new Equipment($fieldValues);
-        $id = new AtlasId(['id' => $equipment->id]);
-        $owner = (new \App\Models\InstituteModel())->where(sprintf("mne = '%s'", $id->institute))->first();
-        $equipment->owner_id = $owner->id;
         $equipment->type_id = $this->equipmentType->id;
         $typeParams = [];
         foreach ($this->equipmentType->params as $param){
@@ -293,5 +306,25 @@ class EquipmentForm extends Form{
             }
             throw $e;
         } 
+    }
+
+    /**
+     * Sets form's field values
+     * Overwrites default method to preprocess the id value.
+     * When the id is size 14, it supposes that the value is an ATLAS ID
+     * and gets only the sequential number (Last 7 characters).
+     *
+     * @param array $data
+     */
+    public function setFieldValues(array $data)
+    {
+        if (!array_key_exists('id', $data)){
+            return parent::setFieldValues($data);
+        }
+        if (strlen($data['id']) != 14){
+            return parent::setFieldValues($data);
+        }
+        $data['id'] = substr($data['id'], 6, 7);
+        return parent::setFieldValues($data);
     }
 }

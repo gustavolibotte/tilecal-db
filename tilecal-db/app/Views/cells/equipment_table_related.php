@@ -2,7 +2,7 @@
   <thead>
     <tr>
       <th>Relation</th>
-      <th>Slot</th>
+      <th>Connection</th>
       <th>ID</th>
       <th>Type</th>
       <th>Location</th>

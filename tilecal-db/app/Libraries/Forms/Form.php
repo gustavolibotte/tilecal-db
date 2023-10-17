@@ -21,6 +21,9 @@ abstract class Form{
         $this->request = $request;
         $this->validator = \Config\Services::validation(getShared: false);
         $this->initialize();
+        foreach ($this->fields as $name=>$params){
+            $this->fieldValues[$name] = null;
+        }
         $this->processRequest();
         $this->validator->setRules($this->validationRules);
     }
@@ -29,20 +32,18 @@ abstract class Form{
 
     protected function processRequest(){
         $nullRequest = is_null($this->request);
+        $values2Set = [];
         foreach (array_keys($this->fields) as $key){
-            if (!array_key_exists($key, $this->fieldValues)){
-                if ($nullRequest){
-                    $this->fieldValues[$key] = null;
+            if (!$nullRequest){
+                $requestFieldValue = $this->request->getVar($key);
+                if ($this->fieldValueIsEmpty($requestFieldValue)){
+                    $values2Set[$key] = null;
                 } else{
-                    $requestFieldValue = $this->request->getVar($key);
-                    if ($this->fieldValueIsEmpty($requestFieldValue)){
-                        $this->fieldValues[$key] = null;
-                    } else{
-                        $this->fieldValues[$key] = $requestFieldValue;
-                    }
+                    $values2Set[$key] = $requestFieldValue;
                 }
             }
         }
+        $this->setFieldValues($values2Set);
     }
 
     protected function fieldValueIsEmpty(mixed $value){

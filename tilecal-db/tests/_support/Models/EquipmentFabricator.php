@@ -113,7 +113,7 @@ class EquipmentFabricator extends EquipmentModel
                 'model' => $faker->randomElement(PmtForm::$validPmtModelValues)
             ]
         ]);
-        $entity->id = "20LOCER0{$entity->serial}";
+        $entity->id = "0{$entity->serial}";
         return $entity;
     }
 
@@ -125,7 +125,7 @@ class EquipmentFabricator extends EquipmentModel
         $institute = $faker->randomElement($this->institutes);
         $pos = $faker->randomNumber(2, false);
         $entity = new $this->originalReturnType([
-            'id' => $this->fakeID($faker, $type->system, $institute->mne),
+            'id' => $this->fakeID($faker),
             'type_id' => $type->id,
             'parent_id' => $parentId,
             'slot_id' => empty($slotName)? null: $this->slots[$slotName]->id,
@@ -142,11 +142,10 @@ class EquipmentFabricator extends EquipmentModel
         return $entity;
     }
 
-    protected function fakeID(Generator &$faker, string $system, string $instituteMne): string
+    protected function fakeID(Generator &$faker): string
     {
         $sequentialNumber = $faker->regexify(self::$defaultIdSequentialNumber);
-        $id = '20' . $system. $instituteMne . $sequentialNumber;
-        return $id;
+        return $sequentialNumber;
     }
 
     public function makeSpares(Generator &$faker, array $equipments): array
@@ -175,7 +174,7 @@ class EquipmentFabricator extends EquipmentModel
             $status = $faker->randomElement($this->statuses);
             $institute = $faker->randomElement($this->institutes);
             $entity = new $this->originalReturnType([
-                'id' => $this->fakeID($faker, $type->system, $institute->mne),
+                'id' => $this->fakeID($faker),
                 'type_id' => $type->id,
                 'parent_id' => $parentId,
                 'slot_id' => empty($slotName)? null: $this->slots[$slotName]->id,
