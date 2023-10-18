@@ -1,26 +1,26 @@
 [
     {
-        "id": 1,
         "name": "pmt",
         "label": "PMT",
         "system": "LO",
         "project": "20",
-        "id_regex": "/^0[A-Z]{2}[0-9]{4}/",
+        "id_regex": "/0[A-Z]{2}[0-9]{4}/",
         "params": ["beta", "nominal_hv", "qe", "model"],
         "in_detector": true,
         "description": null,
+        "active": 1,
         "slots": []
     },
     {
-        "id": 2,
         "name": "pmt_block",
         "label": "PMT Block",
         "system": "LO",
         "project": "20",
-        "id_regex": "/^25[0-9]{5}/",
+        "id_regex": "/25[0-9]{5}/",
         "params": [],
         "in_detector": true,
         "description": null,
+        "active": 1,
         "slots": [
             {
                 "name": "pmt_block_electronics_slot",
@@ -37,75 +37,75 @@
         ]
     },
     {
-        "id": 3,
         "name": "hv_divider",
-        "label": "HV Divider",
+        "label": "Active HV Divider",
         "system": "LL",
         "project": "20",
-        "id_regex": "/^00[0-9]{5}/",
+        "id_regex": "/00[0-9]{5}/",
         "params": [],
         "in_detector": true,
         "description": null,
+        "active": 1,
         "slots": []
     },
     {
-        "id": 4,
         "name": "3_in_1_board",
         "label": "3 in 1 Board",
         "system": "LL",
         "project": "20",
-        "id_regex": "/^20[0-9]{5}/",
+        "id_regex": "/20[0-9]{5}/",
         "params": [],
         "in_detector": true,
         "description": null,
+        "active": 1,
         "slots": []
     },
     {
-        "id": 5,
         "name": "fenics",
         "label": "FENICS",
         "system": "LL",
         "project": "20",
-        "id_regex": "/^02[0-9]{5}/",
+        "id_regex": "/02[0-9]{5}/",
         "params": [],
         "in_detector": true,
         "description": null,
+        "active": 1,
         "slots": []
     },
     {
-        "id": 6,
         "name": "mainboard",
         "label": "Mainboard",
         "system": "LL",
         "project": "20",
-        "id_regex": "/^10[0-9]{5}/",
+        "id_regex": "/10[0-9]{5}/",
         "params": [],
         "in_detector": true,
         "description": null,
+        "active": 1,
         "slots": []
     },
     {
-        "id": 7,
         "name": "daughterboard",
         "label": "Daughterboard",
         "system": "LL",
         "project": "20",
-        "id_regex": "/^11[0-9]{5}/",
+        "id_regex": "/11[0-9]{5}/",
         "params": [],
         "in_detector": true,
         "description": null,
+        "active": 1,
         "slots": []
     },
     {
-        "id": 8,
         "name": "mini_drawer",
         "label": "Mini Drawer",
         "system": "LL",
         "project": "20",
-        "id_regex": "/^20[0-9]{5}/",
+        "id_regex": "/20[0-9]{5}/",
         "params": [],
         "in_detector": true,
         "description": null,
+        "active": 1,
         "slots": [
             {
                 "name": "mini_drawer_mainboard_slot",
@@ -166,52 +166,90 @@
         ]
     },
     {
-        "id": 9,
-        "name": "micro_drawer",
-        "label": "Micro Drawer",
+        "name": "micro_drawer_4",
+        "label": "Micro Drawer 4",
         "system": "LL",
         "project": "20",
-        "id_regex": "/^21[0-9]{5}/",
+        "id_regex": "/21[0-9]{5}/",
         "params": [],
         "in_detector": true,
         "description": null,
+        "active": 1,
         "slots": [
             {
-                "name": "micro_drawer_pmt_block_slot_01",
+                "name": "micro_drawer_4_pmt_block_slot_01",
                 "allowed_type_ids": ["pmt_block"]
             },
             {
-                "name": "micro_drawer_pmt_block_slot_02",
-                "allowed_type_ids": ["pmt_block"]
-            },
-            {
-                "name": "micro_drawer_pmt_block_slot_03",
-                "allowed_type_ids": ["pmt_block"]
-            },
-            {
-                "name": "micro_drawer_pmt_block_slot_04",
-                "allowed_type_ids": ["pmt_block"]
-            },
-            {
-                "name": "micro_drawer_pmt_block_slot_05",
-                "allowed_type_ids": ["pmt_block"]
-            },
-            {
-                "name": "micro_drawer_pmt_block_slot_06",
+                "name": "micro_drawer_4_pmt_block_slot_02",
                 "allowed_type_ids": ["pmt_block"]
             }
         ]
     },
     {
-        "id": 10,
+        "name": "micro_drawer_5",
+        "label": "Micro Drawer 5",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/21[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": [
+            {
+                "name": "micro_drawer_5_pmt_block_slot_01",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "micro_drawer_5_pmt_block_slot_02",
+                "allowed_type_ids": ["pmt_block"]
+            }
+        ]
+    },
+    {
+        "name": "micro_drawer_6",
+        "label": "Micro Drawer 6",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/21[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": [
+            {
+                "name": "micro_drawer_6_pmt_block_slot_01",
+                "allowed_type_ids": ["pmt_block"]
+            },
+            {
+                "name": "micro_drawer_6_pmt_block_slot_02",
+                "allowed_type_ids": ["pmt_block"]
+            }
+        ]
+    },
+    {
+        "name": "micro_drawer_7",
+        "label": "Micro Drawer 7",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/21[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
         "name": "phase_2_lb_super_drawer",
         "label": "Phase 2 LB Super Drawer",
         "system": "LB",
         "project": "20",
-        "id_regex": "/^22[0-9]{5}/",
+        "id_regex": "/22[0-9]{5}/",
         "params": [],
         "in_detector": true,
         "description": null,
+        "active": 1,
         "slots": [
             {
                 "name": "lbsd_mini_drawer_slot_01",
@@ -232,15 +270,15 @@
         ]
     },
     {
-        "id": 11,
         "name": "phase_2_eb_super_drawer",
         "label": "Phase 2 EB Super Drawer",
         "system": "LE",
         "project": "20",
-        "id_regex": "/^23[0-9]{5}/",
+        "id_regex": "/23[0-9]{5}/",
         "params": [],
         "in_detector": true,
         "description": null,
+        "active": 1,
         "slots": [
             {
                 "name": "ebsd_mini_drawer_slot_01",
@@ -255,9 +293,324 @@
                 "allowed_type_ids": ["mini_drawer"]
             },
             {
-                "name": "ebsd_micro_drawer_slot_01",
-                "allowed_type_ids": ["micro_drawer"]
+                "name": "ebsd_micro_drawer_4_slot_01",
+                "allowed_type_ids": ["micro_drawer_4"]
+            },
+            {
+                "name": "ebsd_micro_drawer_5_slot_01",
+                "allowed_type_ids": ["micro_drawer_5"]
             }
         ]
+    },
+    {
+        "name": "short_phase_2_eb_super_drawer",
+        "label": "Short Phase 2 EB Super Drawer",
+        "system": "LE",
+        "project": "20",
+        "id_regex": "/23[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": [
+            {
+                "name": "ebsd_mini_drawer_slot_01",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "ebsd_mini_drawer_slot_02",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "ebsd_mini_drawer_slot_03",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "ebsd_micro_drawer_6_slot_01",
+                "allowed_type_ids": ["micro_drawer_7"]
+            },
+            {
+                "name": "ebsd_micro_drawer_7_slot_01",
+                "allowed_type_ids": ["micro_drawer_7"]
+            }
+        ]
+    },
+    {
+        "name": "lb_lv_cable",
+        "label": "LB LV Cable",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/26[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "eb_lv_cable",
+        "label": "EB LV Cable",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/27[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "cooling_hoses",
+        "label": "Cooling Hoses",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/28[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "fo_breakout_cables",
+        "label": "FO Breakout Cables",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/29[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "cpm",
+        "label": "CPM",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/32[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "tilecom",
+        "label": "TileCoM",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/34[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "tdaqi",
+        "label": "TDAQi",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/33[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "gbe_switch",
+        "label": "GbE Switch",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/35[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "ipmc",
+        "label": "IPMC",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/36[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "atca_carrier_board",
+        "label": "ATCA Carrier Board",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/31[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": [
+            {
+                "name": "carrier_board_cpm_slot_1",
+                "allowed_type_ids": ["cpm"]
+            },
+            {
+                "name": "carrier_board_cpm_slot_2",
+                "allowed_type_ids": ["cpm"]
+            },
+            {
+                "name": "carrier_board_cpm_slot_3",
+                "allowed_type_ids": ["cpm"]
+            },
+            {
+                "name": "carrier_board_cpm_slot_4",
+                "allowed_type_ids": ["cpm"]
+            },
+            {
+                "name": "carrier_board_tilecom_slot",
+                "allowed_type_ids": ["tilecom"]
+            },
+            {
+                "name": "carrier_board_switch_slot",
+                "allowed_type_ids": ["gbe_switch"]
+            },
+            {
+                "name": "carrier_board_ipmc_slot",
+                "allowed_type_ids": ["ipmc"]
+            },
+            {
+                "name": "carrier_board_tdaqi_slot",
+                "allowed_type_ids": ["tdaqi"]
+            }
+        ]
+    },
+    {
+        "name": "atca_link_board",
+        "label": "ATCA Interface Link Board",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/[0-9]{7}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 0,
+        "slots": []
+    },
+    {
+        "name": "hv_cable",
+        "label": "HV Cable",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/52[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "hv_supply_board",
+        "label": "HV Supply Board",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/51[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "hv_bus_board",
+        "label": "HV Bus Board",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/12[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "lv_box",
+        "label": "LV Box",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/40[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "lv_fuse_box",
+        "label": "LV Fuse Box",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/41[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "lv_bricks",
+        "label": "LV Bricks",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/42[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 0,
+        "slots": []
+    },
+    {
+        "name": "auxiliary_boards",
+        "label": "Auxiliary Boards",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/60[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "ilana",
+        "label": "ILANA",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/[0-9]{7}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 0,
+        "slots": [
+            {
+                "name": "ilana_tilecom_slot",
+                "allowed_type_ids": ["tilecom"]
+            }
+        ]
+    },
+    {
+        "name": "elmb_mb",
+        "label": "ELMB Motherboard",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/43[0-9]{5}/",
+        "params": [],
+        "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
     }
 ]
