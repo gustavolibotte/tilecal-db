@@ -104,6 +104,10 @@ class CreateDatabase extends Migration
                 'type' => 'JSON',
                 'null' => false
             ],
+            'active' =>[
+                'type' => 'TINYINT',
+                'null' => false
+            ],
             'description' => [
                 'type' => 'TEXT',
                 'null' => true

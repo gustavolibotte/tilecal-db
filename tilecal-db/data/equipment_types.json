@@ -8,7 +8,7 @@
         "params": ["beta", "nominal_hv", "qe", "model"],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -20,7 +20,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": [
             {
                 "name": "pmt_block_electronics_slot",
@@ -45,7 +45,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -57,7 +57,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -69,7 +69,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -81,7 +81,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -93,7 +93,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -105,7 +105,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": [
             {
                 "name": "mini_drawer_mainboard_slot",
@@ -174,7 +174,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": [
             {
                 "name": "micro_drawer_4_pmt_block_slot_01",
@@ -195,7 +195,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": [
             {
                 "name": "micro_drawer_5_pmt_block_slot_01",
@@ -216,7 +216,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": [
             {
                 "name": "micro_drawer_6_pmt_block_slot_01",
@@ -237,7 +237,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -249,7 +249,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": [
             {
                 "name": "lbsd_mini_drawer_slot_01",
@@ -278,7 +278,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": [
             {
                 "name": "ebsd_mini_drawer_slot_01",
@@ -311,7 +311,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": [
             {
                 "name": "ebsd_mini_drawer_slot_01",
@@ -344,7 +344,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -356,7 +356,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -368,7 +368,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -380,7 +380,7 @@
         "params": [],
         "in_detector": true,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -392,7 +392,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -404,7 +404,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -416,7 +416,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -428,7 +428,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -440,7 +440,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -452,7 +452,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": [
             {
                 "name": "carrier_board_cpm_slot_1",
@@ -497,7 +497,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": false,
+        "active": 0,
         "slots": []
     },
     {
@@ -509,7 +509,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -521,7 +521,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -533,7 +533,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -545,7 +545,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -557,7 +557,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -569,7 +569,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": false,
+        "active": 0,
         "slots": []
     },
     {
@@ -581,7 +581,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     },
     {
@@ -593,7 +593,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": false,
+        "active": 0,
         "slots": [
             {
                 "name": "ilana_tilecom_slot",
@@ -610,7 +610,7 @@
         "params": [],
         "in_detector": false,
         "description": null,
-        "active": true,
+        "active": 1,
         "slots": []
     }
 ]
