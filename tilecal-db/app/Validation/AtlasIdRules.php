@@ -35,6 +35,12 @@ class AtlasIdRules {
     public static string $sequentialNumberRegex = '^[A-Z0-9]{7}';
 
     /**
+     * Sequential number length
+     * @var string $sequentialNumberLength
+     */
+    public static int $sequentialNumberLength = 7;
+
+    /**
      * Exact Id length
      * @var int $exactLength
      */

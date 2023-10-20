@@ -6,7 +6,6 @@ use App\Controllers\BaseController;
 use App\Library\Forms\EquipmentForm;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
-use Error;
 
 class Equipments extends BaseController
 {   

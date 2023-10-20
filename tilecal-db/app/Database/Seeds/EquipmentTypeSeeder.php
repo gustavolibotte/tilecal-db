@@ -12,9 +12,10 @@ class EquipmentTypeSeeder extends BaseSeeder
         service('authenticator')->setMigration();
         $jsonData = $this->readFile('equipment_types.json');
         $equipmentTypeModel = new \App\Models\EquipmentTypeModel();
-        foreach ($jsonData as $row){
+        foreach ($jsonData as &$row){
             $equipmentType = new \App\Entities\EquipmentType($row);
-            $equipmentTypeModel->insert($equipmentType);
+            $id = $equipmentTypeModel->insert($equipmentType);
+            $row['id'] = $id;
         }
 
         $typeSlotModel = new TypeSlotModel();
