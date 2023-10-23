@@ -1,1 +1,0 @@
-<table class="table table-bordered" id="equipment-table-full"></table>

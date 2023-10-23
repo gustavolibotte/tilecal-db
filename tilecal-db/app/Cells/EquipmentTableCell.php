@@ -26,7 +26,7 @@ class EquipmentTableCell extends BaseCell
 
     public function full(): string
     {
-        return default_view('cells/equipment_table_full');
+        return '<table class="table table-bordered" id="equipment-table-full"></table>';
     }
 
     public function fulljs(): string
