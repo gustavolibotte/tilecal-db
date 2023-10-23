@@ -177,15 +177,26 @@ class Equipments extends BaseController
     public function getEquipments()
     {
         if (!$this->request->isAJAX()){
+            log_message('warning', 'API received a non AJAX request');
             return $this->fail('Requests must be AJAX.', 400);
         }
-        $equipmentModel = model('EquipmentModel')->fullQuery()->asArray();
+        $equipmentModel = model('EquipmentModel')->asArray();
         $equipmentModel = $this->addFilterCondition('id', 'equipments.id', $equipmentModel);
         $equipmentModel = $this->addFilterCondition('type_name', 'equipment_types.name', $equipmentModel);
-        if (!empty($this->request->getVar('deleted'))){
+        
+        if (!empty($this->request->getVar('onlyDeleted'))){
             $equipmentModel = $equipmentModel->onlyDeleted();
+        } elseif (!empty($this->request->getVar('withDeleted'))){
+            $equipmentModel = $equipmentModel->withDeleted();
         }
-        $data = $equipmentModel->findAll();
+
+        $relatedEquipmentId = ($this->request->getVar('relatedEquipmentId'));
+        if (empty($relatedEquipmentId)){
+            $equipmentModel = $equipmentModel->fullQuery();
+            $data = $equipmentModel->findAll();
+        } else {
+            $data = $equipmentModel->getRelatedEquipments($relatedEquipmentId);
+        }
         $res = [
             'status' => 'success'
         ];

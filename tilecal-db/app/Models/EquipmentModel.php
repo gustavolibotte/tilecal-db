@@ -83,6 +83,16 @@ class EquipmentModel extends LogModel
         return $queryBuilder;
     }
 
+    public function fullQueryRelated(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
+    {
+        if (is_null($queryBuilder)){
+            $queryBuilder = $this;
+        }
+        $queryBuilder->fullQuery();
+
+        return $queryBuilder;
+    }
+
     public function getEquipment($id=null)
     {
         $query = $this->fullQuery();
@@ -116,16 +126,17 @@ class EquipmentModel extends LogModel
      * 
      * @return array All Equipment instances found
      */ 
-    public function getRelatedEquipments(string $id): array
+    public function getRelatedEquipments(string|array $id): array
     {   
         $parentExtra = sprintf(
             "%s as relation_type, ts.name as slot_name",
             $this->db->escape('parent'));
+        $whereClause = is_array($id)? 'whereIn': 'where';
         $parentQuery = $this->fullQuery(db_connect()->table('equipments'))
             ->select($parentExtra)
             ->join('parent_child_equips pce', 'equipments.id=pce.parent_equip_id', 'left')
             ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
-            ->where('pce.child_equip_id', $id);
+            ->$whereClause('pce.child_equip_id', $id);
 
         $extraQuery = sprintf(
             "%s as relation_type, ts.name as slot_name",
@@ -133,7 +144,7 @@ class EquipmentModel extends LogModel
         $equipments = $this->fullQuery()->select($extraQuery)
             ->join('parent_child_equips pce', 'equipments.id=pce.child_equip_id', 'left')
             ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
-            ->where('pce.parent_equip_id', $id)
+            ->$whereClause('pce.parent_equip_id', $id)
             ->union($parentQuery)
             ->findAll();
         return $equipments;
