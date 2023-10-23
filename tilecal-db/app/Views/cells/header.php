@@ -18,7 +18,7 @@
             <? endif; ?>
             <li><hr class="dropdown-divider"></li>
             <? foreach ($equipmentTypes as $equipType): ?>
-              <li><a class="dropdown-item" href="<? echo base_url(sprintf('equipments/%s', $equipType->name)); ?>"><?echo $equipType->label;?></a></li>
+              <li><a class="dropdown-item" href="<? echo base_url(sprintf('equipments?type_name=%s', $equipType->name)); ?>"><?echo $equipType->label;?></a></li>
             <? endforeach;?>
           </ul>
         </li>

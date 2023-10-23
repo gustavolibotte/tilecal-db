@@ -26,16 +26,7 @@ class EquipmentTableCell extends BaseCell
 
     public function full(array $params=[]): string
     {
-        helper(['array', 'view']);
-        $typeName = dot_array_search('typeName', $params);
-        $equipmentModel = new \App\Models\EquipmentModel();
-        if (empty($typeName)){
-            $viewData['equipments'] = $equipmentModel->fullQuery()->findAll();
-        } else{
-            $viewData['equipments'] = $equipmentModel->fullQuery()->where('equipment_types.name', $typeName)->findAll();
-        }
-        
-        return view('cells/equipment_table_full', $viewData);
+        return view('cells/equipment_table_full', []);
     }
 
     public function fulljs(): string

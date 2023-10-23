@@ -17,7 +17,7 @@ class Equipments extends BaseController
     {   
         $indexData['pageTitle'] = 'Equipment Index';
         $indexData['pageHeader'] = 'Equipment Index';
-        $indexData['typeName'] = $typeName;
+        $indexData['typeName'] = $this->request->getVar('type_name');
         return default_view('equipment/index', $indexData);
     }
 
@@ -178,7 +178,7 @@ class Equipments extends BaseController
 
     protected function addFilterCondition(string $varName, string $colName, Model $model): Model
     {
-        $var = $this->request->getJsonVar($varName);
+        $var = $this->request->getVar($varName);
         if (!empty($var)){
             if (is_array($var)){
                 $model = $model->whereIn($colName, $var);
