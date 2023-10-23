@@ -15,9 +15,23 @@ class Equipments extends BaseController
 
     public function index($typeName=null)
     {   
-        $indexData['pageTitle'] = 'Equipment Index';
-        $indexData['pageHeader'] = 'Equipment Index';
-        $indexData['typeName'] = $this->request->getVar('type_name');
+        $typeName = $this->request->getVar('type_name');
+        if (!empty($this->request->getVar('deleted'))){
+            $indexData['headerClass'] = 'text-danger';
+            $pageTitle = 'Deleted Equipment Index';
+        } elseif (!empty($typeName)){
+            $indexData['typeName'] = $typeName;
+            $equipmentType = model('EquipmentTypeModel')
+                ->select('label')
+                ->where('name', $typeName)
+                ->first();
+            $pageTitle = sprintf('%s Index', $equipmentType->label);
+        } else{
+            $pageTitle = 'Equipment Index';
+        }
+            $indexData['pageTitle'] = $pageTitle;
+            $indexData['pageHeader'] = $pageTitle;
+        
         return default_view('equipment/index', $indexData);
     }
 
@@ -168,6 +182,9 @@ class Equipments extends BaseController
         $equipmentModel = model('EquipmentModel')->fullQuery()->asArray();
         $equipmentModel = $this->addFilterCondition('id', 'equipments.id', $equipmentModel);
         $equipmentModel = $this->addFilterCondition('type_name', 'equipment_types.name', $equipmentModel);
+        if (!empty($this->request->getVar('deleted'))){
+            $equipmentModel = $equipmentModel->onlyDeleted();
+        }
         $data = $equipmentModel->findAll();
         $res = [
             'status' => 'success'

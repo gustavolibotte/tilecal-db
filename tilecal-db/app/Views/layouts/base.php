@@ -32,7 +32,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.3/toastr.min.js"></script>
-  <script type="text/javascript" src="/assets/js/global.js"></script>
+  <script type="text/javascript" src="/assets/js/toastr_utils.js"></script>
   <script type="text/javascript" src="/assets/js/routes.js"></script>
   <?= $this->renderSection('javascript') ?>
 

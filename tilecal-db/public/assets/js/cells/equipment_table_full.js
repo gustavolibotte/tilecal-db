@@ -1,5 +1,5 @@
 function fetchEquipTableFull(){
-    toastr.info('Loading data.', 'Equipment Index')
+    fixedToastr('Loading data')
     $.ajax({
         type: 'GET',
         url: `/api/equipments/get${window.location.search}`,
@@ -49,7 +49,8 @@ function fetchEquipTableFull(){
                     },
                 ]
             });
-            toastr.success('Loaded.', 'Equipment Index')
+            toastr.clear()
+            toastr.success('Loaded')
         }
     })
 }

@@ -6,7 +6,7 @@
 
 <?= $this->section('content') ?>
   <div class="mt-3">
-    <? echo view_cell('EquipmentTableCell::full', ['typeName' => $typeName]);?>
+    <? echo view_cell('EquipmentTableCell::full');?>
   </div>
 <?= $this->endSection() ?>
 

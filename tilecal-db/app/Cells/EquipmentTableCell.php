@@ -24,27 +24,14 @@ class EquipmentTableCell extends BaseCell
         return $this->getJs('equipment_table_side.js');
     }
 
-    public function full(array $params=[]): string
+    public function full(): string
     {
-        return view('cells/equipment_table_full', []);
+        return default_view('cells/equipment_table_full');
     }
 
     public function fulljs(): string
     {
         return $this->getJs('equipment_table_full.js');
-    }
-
-    public function fullDeleted(): string
-    {
-        helper(['view']);
-        $equipmentModel = new \App\Models\EquipmentModel();
-        $viewData['equipments'] = $equipmentModel->onlyDeleted()->getEquipment();
-        return default_view('cells/equipment_table_full_deleted', $viewData);
-    }
-
-    public function fullDeletedjs(): string
-    {
-        return $this->getJs('equipment_table_full_deleted.js');
     }
 
     public function fullEquipmentRelated(array $params): string

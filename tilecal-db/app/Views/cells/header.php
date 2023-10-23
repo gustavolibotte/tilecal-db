@@ -14,7 +14,7 @@
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="<? echo base_url('equipments'); ?>">Index</a></li>
             <? if ($user->isAuthorized('delete')):?>
-              <li><a class="dropdown-item" href="<? echo base_url('equipments/deleted'); ?>">Deleted</a></li>
+              <li><a class="dropdown-item" href="<? echo base_url('equipments?deleted=true'); ?>">Deleted</a></li>
             <? endif; ?>
             <li><hr class="dropdown-divider"></li>
             <? foreach ($equipmentTypes as $equipType): ?>
