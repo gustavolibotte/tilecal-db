@@ -6,9 +6,13 @@ use App\Controllers\BaseController;
 use App\Library\Forms\EquipmentForm;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
+use CodeIgniter\API\ResponseTrait;
+use CodeIgniter\Model;
 
 class Equipments extends BaseController
-{   
+{
+    use ResponseTrait;
+
     public function index($typeName=null)
     {   
         $indexData['pageTitle'] = 'Equipment Index';
@@ -154,5 +158,34 @@ class Equipments extends BaseController
         $equipmentModel->restore($equipmentId);
         service('messenger')->addRestoreSuccess();
         return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+    }
+
+    public function getEquipments()
+    {
+        if (!$this->request->isAJAX()){
+            return $this->fail('Requests must be AJAX.', 400);
+        }
+        $equipmentModel = model('EquipmentModel')->fullQuery()->asArray();
+        $equipmentModel = $this->addFilterCondition('id', 'equipments.id', $equipmentModel);
+        $equipmentModel = $this->addFilterCondition('type_name', 'equipment_types.name', $equipmentModel);
+        $data = $equipmentModel->findAll();
+        $res = [
+            'status' => 'success'
+        ];
+        $res['data'] = empty($data)? []: $data;
+        return $this->respond($res, 200);
+    }
+
+    protected function addFilterCondition(string $varName, string $colName, Model $model): Model
+    {
+        $var = $this->request->getJsonVar($varName);
+        if (!empty($var)){
+            if (is_array($var)){
+                $model = $model->whereIn($colName, $var);
+            } else{
+                $model = $model->where($colName, $var);
+            }
+        }
+        return $model;
     }
 }

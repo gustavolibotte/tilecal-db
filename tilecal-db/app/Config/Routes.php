@@ -33,6 +33,9 @@ $routes->setAutoRoute(false);
 $routes->get('/', 'Home::index', ['filter' => 'auth:view']);
 $routes->get('callback', 'Callback::callback', ['filter' => 'auth:view']);
 
+// API Routes
+$routes->get('api/equipments/get', 'Equipments::getEquipments', ['filter' => 'auth:view']);
+
 // Equipments routes
 $routes->get('equipments', 'Equipments::index', ['filter' => 'auth:view']);
 $routes->get('equipments/deleted', 'Equipments::deletedIndex', ['filter' => 'auth:delete']);
