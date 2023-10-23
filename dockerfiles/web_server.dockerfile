@@ -23,7 +23,7 @@ RUN apt-get -y update \
 && apt-get install -y nano
 
 # Apache config
-# COPY configs/php.ini /usr/local/etc/php/
+COPY configs/php.ini /usr/local/etc/php/
 # COPY configs/ports.conf /etc/apache2/
 # COPY configs/custom.conf /etc/apache2/conf-available
 # COPY configs/tilep2db-app.conf /etc/apache2/sites-available
