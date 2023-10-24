@@ -173,7 +173,7 @@ class Equipments extends BaseController
         return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
     }
 
-    public function getEquipments()
+    public function get()
     {
         $msg = $this->checkAjaxRequest();
         if (!empty($msg)){
@@ -182,6 +182,14 @@ class Equipments extends BaseController
         $equipmentModel = model('EquipmentModel')->asArray();
         $equipmentModel = $this->addFilterCondition('id', 'equipments.id', $equipmentModel);
         $equipmentModel = $this->addFilterCondition('type_name', 'equipment_types.name', $equipmentModel);
+
+        if (!empty($this->request->getVar('relatedFileId'))){
+            $equipmentModel = $this->addFilterCondition(
+                'relatedFileId',
+                'equipments_to_files.file_id',
+                $equipmentModel->joinFiles()
+            );
+        }
         
         if (!empty($this->request->getVar('onlyDeleted'))){
             $equipmentModel = $equipmentModel->onlyDeleted();

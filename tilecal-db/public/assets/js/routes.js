@@ -3,7 +3,7 @@ function getEquipViewRoute(id){
 }
 
 function getFileViewRoute(id){
-    return `files/view/${id}`
+    return `files/view?id=${id}`
 }
 
 function getFileDownloadRoute(id){

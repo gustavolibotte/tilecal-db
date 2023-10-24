@@ -28,8 +28,9 @@ class Files extends BaseController
         return default_view('files/deleted_index', $indexData);
     }
 
-    public function view($fileId){
+    public function view(){
         helper('form');
+        $fileId = $this->request->getVar('id');
         $fileModel = new FileModel();
         $file = $fileModel->withDeleted()->find($fileId);
         if (is_null($file)){

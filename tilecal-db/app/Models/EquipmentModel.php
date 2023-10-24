@@ -93,6 +93,17 @@ class EquipmentModel extends LogModel
         return $queryBuilder;
     }
 
+    public function joinFiles(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
+    {
+        if (is_null($queryBuilder)){
+            $queryBuilder = $this;
+        }
+        $queryBuilder = $queryBuilder
+            ->join('equipments_to_files', 'equipments.id = equipments_to_files.equipment_id', 'left');
+        
+        return $queryBuilder;
+    }
+
     public function getEquipment($id=null)
     {
         $query = $this->fullQuery();
