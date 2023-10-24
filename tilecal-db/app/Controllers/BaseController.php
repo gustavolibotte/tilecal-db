@@ -11,6 +11,7 @@ use Psr\Log\LoggerInterface;
 use App\Entities\User;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Model;
+
 /**
  * Class BaseController
  *

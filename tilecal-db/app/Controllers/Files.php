@@ -2,17 +2,11 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
-use App\Models\FileModel;
 use App\Library\Forms\FileForm;
-use App\Models\HistModel;
-use CodeIgniter\API\ResponseTrait;
+use CodeIgniter\HTTP\ResponseInterface;
 
-class Files extends BaseController
+class Files extends APIController
 {
-
-    use ResponseTrait;
-
     public function index()
     {
         if (empty($this->request->getVar('onlyDeleted'))){
@@ -87,7 +81,7 @@ class Files extends BaseController
             if ($form->validate()){
                 $this->db->transStart();
                 $file = $form->getEntity();
-                $fileModel = new FileModel();
+                $fileModel = model('FileModel');
                 $fileModel->insert($file);
                 $messenger->addMessage('File uploaded with success', 'success');
                 $this->db->transComplete();
@@ -136,7 +130,7 @@ class Files extends BaseController
         return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
     }
 
-    public function get()
+    public function __get__(): ResponseInterface
     {
         $msg = $this->checkAjaxRequest();
         if (!empty($msg)){

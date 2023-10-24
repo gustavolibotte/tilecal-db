@@ -6,12 +6,11 @@ use App\Controllers\BaseController;
 use App\Library\Forms\EquipmentForm;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
-use CodeIgniter\API\ResponseTrait;
+use CodeIgniter\HTTP\ResponseInterface;
 
-class Equipments extends BaseController
+class Equipments extends APIController
 {
-    use ResponseTrait;
-    
+
     public function index($typeName=null)
     {   
         $typeName = $this->request->getVar('type_name');
@@ -173,12 +172,8 @@ class Equipments extends BaseController
         return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
     }
 
-    public function get()
+    public function __get__(): ResponseInterface
     {
-        $msg = $this->checkAjaxRequest();
-        if (!empty($msg)){
-            return $this->fail($msg, 400);
-        }
         $equipmentModel = model('EquipmentModel')->asArray();
         $equipmentModel = $this->addFilterCondition('id', 'equipments.id', $equipmentModel);
         $equipmentModel = $this->addFilterCondition('type_name', 'equipment_types.name', $equipmentModel);
