@@ -6,7 +6,7 @@
 
 <?= $this->section('content') ?>
   <div class="mt-3">
-    <? echo view_cell('EquipmentTableCell::full');?>
+    <table class="table table-bordered" id="equipment-table-index"></table>
   </div>
 <?= $this->endSection() ?>
 
@@ -15,5 +15,5 @@
   <script src="https://cdn.datatables.net/plug-ins/1.13.4/features/scrollResize/dataTables.scrollResize.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <script type="text/javascript" src="/assets/js/equipment_table_utils.js"></script>
-  <? echo view_cell('EquipmentTableCell::fulljs'); ?> 
+  <script type="text/javascript" src="/assets/js/equipments/index.js"></script> 
 <?= $this->endSection() ?>

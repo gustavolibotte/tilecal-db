@@ -5,7 +5,7 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-  <? echo view_cell('FileTableCell::full'); ?>
+  <table class="table table-bordered" id="file-table-index"></table>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript') ?>
@@ -13,5 +13,5 @@
   <script src="https://cdn.datatables.net/plug-ins/1.13.4/features/scrollResize/dataTables.scrollResize.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <script type="text/javascript" src="/assets/js/file_table_utils.js"></script>
-  <? echo view_cell('FileTableCell::fulljs'); ?>
+  <script type="text/javascript" src="/assets/js/files/index.js"></script>
 <?= $this->endSection() ?>

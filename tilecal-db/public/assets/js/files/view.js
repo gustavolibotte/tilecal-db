@@ -18,7 +18,22 @@ function fetchRelatedEquipsTable(){
             });
             toastr.clear()
             toastr.success('Loaded')
-        }
+        },
+        error: function(response, textStatus, errorThrown){
+            $('#related-equipments-table').DataTable({
+                autoWidth: true,
+                searching: true,
+                paging: true,
+                order: equipmentTableOrder,
+                columns: equipmentTableColumns
+            });
+            toastr.clear()
+            toastrError(
+                response.responseJSON.messages.error,
+                response.responseJSON.status,
+                errorThrown
+            )
+        } 
     })
 }
 
