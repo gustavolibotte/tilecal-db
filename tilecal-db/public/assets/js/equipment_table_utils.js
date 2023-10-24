@@ -35,5 +35,5 @@ equipmentTableColumns = [
     {
         "data": "updated_at",
         "title": "Updated At"
-    },
+    }
 ]

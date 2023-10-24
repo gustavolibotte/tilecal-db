@@ -39,9 +39,9 @@ $routes->get('api/files/get', 'Files::get', ['filter' => 'auth:view']);
 
 // Equipments routes
 $routes->get('equipments', 'Equipments::index', ['filter' => 'auth:view']);
+$routes->get('equipments/view', 'Equipments::view', ['filter' => 'auth:view']);
 $routes->post('equipments/delete/(:alphanum)', 'Equipments::delete/$1', ['filter' => 'auth:delete']);
 $routes->post('equipments/restore/(:alphanum)',  'Equipments::restore/$1', ['filter' => 'auth:delete']);
-$routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1', ['filter' => 'auth:view']);
 
 // Equipment register views
 $routes->get('equipments/(:segment)/register', 'Equipments::register/$1', ['filter' => 'auth:register']);

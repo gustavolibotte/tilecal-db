@@ -38,6 +38,16 @@ class FileModel extends LogModel
         return $queryBuilder;
     }
 
+    public function joinEquipments(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
+    {
+        if (is_null($queryBuilder)){
+            $queryBuilder = $this;
+        }
+        $queryBuilder = $queryBuilder
+            ->join('equipments_to_files', 'files.id = equipments_to_files.file_id', 'left');
+        return $queryBuilder;
+    }
+
     /**
      * Returns an array with all the related files to a specific equipment given its id
      *

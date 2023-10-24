@@ -132,21 +132,9 @@ class Files extends APIController
 
     public function __get__(): ResponseInterface
     {
-        $msg = $this->checkAjaxRequest();
-        if (!empty($msg)){
-            return $this->fail($msg, 400);
-        }
-
         $fileModel = model('FileModel')->asArray();
         $fileModel = $this->addFilterCondition('id', 'files.id', $fileModel);
         $fileModel = $this->addFilterCondition('name', 'files.name', $fileModel);
-
-        $relatedEquipmentId = $this->request->getVar('relatedEquipmentId');
-        if (empty($relatedEquipmentId)){
-            $fileModel = $fileModel->fullQuery();
-        } else {
-            $fileModel = $fileModel->fullQueryRelated();
-        }
 
         $deleteMsg = $this->checkDeletion();
         if (!empty($this->request->getVar('onlyDeleted'))){
@@ -159,6 +147,13 @@ class Files extends APIController
                 return $this->failForbidden(message: $deleteMsg);
             }
             $fileModel = $fileModel->withDeleted();
+        }
+
+        if (!empty($this->request->getVar('relatedEquipmentId'))){
+            $fileModel = $this->addFilterCondition('relatedEquipmentId',
+                'equipments_to_files.equipment_id',
+                $fileModel->joinEquipments()
+            );
         }
 
         $res = ['status' => 'sucesss'];

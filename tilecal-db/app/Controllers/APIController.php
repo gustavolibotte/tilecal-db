@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\HTTP\ResponseInterface;
-use Exception;
+use Throwable;
 
 abstract class APIController extends BaseController
 {
@@ -21,7 +21,7 @@ abstract class APIController extends BaseController
         }
         try{
             return $this->__get__();
-        } catch (Exception $e){
+        } catch (Throwable $e){
             return $this->fail($e->getMessage(), 500);
         }
     }

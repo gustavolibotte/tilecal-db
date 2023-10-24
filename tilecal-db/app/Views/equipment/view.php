@@ -25,13 +25,15 @@
   <hr>
   <h4> Related Equipments </h4>
   <p> The table includes the parent and children equipment to the shown equipment.</p>
-  <? echo view_cell('EquipmentTableCell::fullEquipmentRelated', ['equipmentId' => $entity->id, 'withDeleted' =>  $entity->isDeleted]);?>
+  <table class="table table-bordered" id="related-equipments-table"></table>
   <hr>
   <h4> Related Files </h4>
-  <? echo view_cell('FileTableCell::fullEquipmentRelated', ['equipmentId' => $entity->id, 'withDeleted' =>  $entity->isDeleted]);?>
+  <table class="table table-bordered" id="related-files-table"></table>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript')?>
-  <? echo view_cell('EquipmentTableCell::fullEquipmentRelatedjs'); ?> 
-  <? echo view_cell('FileTableCell::fullEquipmentRelatedjs'); ?> 
+  <script type="text/javascript" src="/assets/js/string_utils.js"></script>
+  <script type="text/javascript" src="/assets/js/file_table_utils.js"></script>
+  <script type="text/javascript" src="/assets/js/equipment_table_utils.js"></script>
+  <script type="text/javascript" src="/assets/js/equipments/view.js"></script>
 <?= $this->endSection() ?>

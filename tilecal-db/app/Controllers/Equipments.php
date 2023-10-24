@@ -33,16 +33,9 @@ class Equipments extends APIController
         return default_view('equipment/index', $indexData);
     }
 
-    public function deletedIndex()
-    {   
-        $indexData['pageTitle'] = 'Deleted Equipment Index';
-        $indexData['pageHeader'] = 'Deleted Equipment Index';
-        $indexData['headerClass'] = 'text-danger';
-        return default_view('equipment/deleted_index', $indexData);
-    }
-
-    public function view($equipmentId){
+    public function view(){
         helper(['app_form', 'form']);
+        $equipmentId = $this->request->getVar('id');
         $equipmentModel = model('EquipmentModel');
         $equipment = $equipmentModel->withDeleted()->getEquipment($equipmentId);
 

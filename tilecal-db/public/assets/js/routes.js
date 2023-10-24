@@ -1,5 +1,5 @@
 function getEquipViewRoute(id){
-    return `/equipments/view/${id}`
+    return `/equipments/view?id=${id}`
 }
 
 function getFileViewRoute(id){
