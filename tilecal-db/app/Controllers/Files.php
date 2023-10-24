@@ -15,23 +15,21 @@ class Files extends BaseController
 
     public function index()
     {
-        $indexData['pageTitle'] = 'File Index';
-        $indexData['pageHeader'] = 'File Index';
+        if (empty($this->request->getVar('onlyDeleted'))){
+            $pageTitle = 'File Index';
+        } else{
+            $indexData['headerClass'] = 'text-danger';
+            $pageTitle = 'Deleted File Index';
+        }
+        $indexData['pageTitle'] = $pageTitle;
+        $indexData['pageHeader'] = $pageTitle;
         return default_view('files/index', $indexData);
-    }
-
-    public function deletedIndex(): string
-    {
-        $indexData['pageTitle'] = 'Deleted File Index';
-        $indexData['pageHeader'] = 'Deleted File Index';
-        $indexData['headerClass'] = 'text-danger';
-        return default_view('files/deleted_index', $indexData);
     }
 
     public function view(){
         helper('form');
         $fileId = $this->request->getVar('id');
-        $fileModel = new FileModel();
+        $fileModel = model('FileModel');
         $file = $fileModel->withDeleted()->find($fileId);
         if (is_null($file)){
             return redirect('notfound');
@@ -42,7 +40,7 @@ class Files extends BaseController
         $viewData['entity'] = $file;
         $viewData['pageHeader'] = sprintf('File %s', $file->name);
         $viewData['infoHeader'] = 'File Info';
-        $viewData['histories'] = (new HistModel())->getFileHist($file->id);
+        $viewData['histories'] = model('HistModel')->getFileHist($file->id);
 
         if ($file->isDeleted()){
             $viewData['pageHeader'] = 'Deleted ' . $viewData['pageHeader'];
@@ -71,7 +69,7 @@ class Files extends BaseController
     }
 
     public function download($fileId){
-        $fileModel = new FileModel();
+        $fileModel = model('FileModel');
         $file = $fileModel->find($fileId);
         $response = $this->response
             ->download($file->path, null, true)
@@ -116,7 +114,7 @@ class Files extends BaseController
 
     public function delete($fileId)
     {
-        $fileModel = new FileModel();
+        $fileModel = model('FileModel');
         $fileModel->delete($fileId);
         $messenger = service('messenger');
         $messenger->addDeleteSuccess();
@@ -130,7 +128,7 @@ class Files extends BaseController
 
     public function restore($fileId)
     {
-        $fileModel = new FileModel();
+        $fileModel = model('FileModel');
         $fileModel->restore($fileId);
         $messenger = service('messenger');
         $messenger->addRestoreSuccess();
@@ -155,6 +153,20 @@ class Files extends BaseController
         } else {
             $fileModel = $fileModel->fullQueryRelated();
         }
+
+        $deleteMsg = $this->checkDeletion();
+        if (!empty($this->request->getVar('onlyDeleted'))){
+            if (!empty($deleteMsg)){
+                return $this->failForbidden(message: $deleteMsg);
+            }
+            $fileModel = $fileModel->onlyDeleted();
+        } elseif (!empty($this->request->getVar('withDeleted'))){
+            if (!empty($deleteMsg)){
+                return $this->failForbidden(message: $deleteMsg);
+            }
+            $fileModel = $fileModel->withDeleted();
+        }
+
         $res = ['status' => 'sucesss'];
         $data = $fileModel->findAll();
         $res['data'] = empty($data)? []: $data;

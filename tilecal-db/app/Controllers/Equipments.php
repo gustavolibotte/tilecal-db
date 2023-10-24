@@ -190,10 +190,17 @@ class Equipments extends BaseController
                 $equipmentModel->joinFiles()
             );
         }
-        
+
+        $deleteMsg = $this->checkDeletion();
         if (!empty($this->request->getVar('onlyDeleted'))){
+            if (!empty($deleteMsg)){
+                return $this->failForbidden(message: $deleteMsg);
+            }
             $equipmentModel = $equipmentModel->onlyDeleted();
         } elseif (!empty($this->request->getVar('withDeleted'))){
+            if (!empty($deleteMsg)){
+                return $this->failForbidden(message: $deleteMsg);
+            }
             $equipmentModel = $equipmentModel->withDeleted();
         }
 

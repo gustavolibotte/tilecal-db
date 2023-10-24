@@ -69,7 +69,7 @@
               <li><a class="dropdown-item" href="<? echo base_url('files/upload'); ?>">Upload</a></li>
             <? endif; ?>
             <? if ($user->isAuthorized('delete')):?>
-              <li><a class="dropdown-item" href="<? echo base_url('files/deleted'); ?>">Deleted</a></li>
+              <li><a class="dropdown-item" href="<? echo base_url('files?onlyDeleted=true'); ?>">Deleted</a></li>
             <? endif; ?>
           </ul>
         </li>
