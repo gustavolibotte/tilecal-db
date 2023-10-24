@@ -49,6 +49,18 @@ class EquipmentModel extends LogModel
         );
     }
 
+    public function minQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
+    {
+        if (is_null($queryBuilder)){
+            $queryBuilder = $this;
+        }
+        $queryBuilder->select('equipments.id as id');
+        $queryBuilder->select('equipment_types.label as type_label');
+        $queryBuilder->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left');
+        return $queryBuilder;
+
+    }
+
     public function fullQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
     {
         if (is_null($queryBuilder)){

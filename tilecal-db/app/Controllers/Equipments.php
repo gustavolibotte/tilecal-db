@@ -168,11 +168,11 @@ class Equipments extends APIController
     public function __get__(): ResponseInterface
     {
         $equipmentModel = model('EquipmentModel')->asArray();
-        $equipmentModel = $this->addFilterCondition('id', 'equipments.id', $equipmentModel);
-        $equipmentModel = $this->addFilterCondition('type_name', 'equipment_types.name', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition('id', 'equipments.id', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition('type_name', 'equipment_types.name', $equipmentModel);
 
         if (!empty($this->request->getVar('relatedFileId'))){
-            $equipmentModel = $this->addFilterCondition(
+            $equipmentModel = $this->parseFilterCondition(
                 'relatedFileId',
                 'equipments_to_files.file_id',
                 $equipmentModel->joinFiles()
@@ -192,9 +192,11 @@ class Equipments extends APIController
             $equipmentModel = $equipmentModel->withDeleted();
         }
 
+        $this->parseOrdering('orderBy', $equipmentModel->getTable(), $equipmentModel);
+        $this->parseReturnType('returnType', $equipmentModel);
+
         $relatedEquipmentId = ($this->request->getVar('relatedEquipmentId'));
         if (empty($relatedEquipmentId)){
-            $equipmentModel = $equipmentModel->fullQuery();
             $data = $equipmentModel->findAll();
         } else {
             $data = $equipmentModel->getRelatedEquipments($relatedEquipmentId);

@@ -133,8 +133,8 @@ class Files extends APIController
     public function __get__(): ResponseInterface
     {
         $fileModel = model('FileModel')->asArray();
-        $fileModel = $this->addFilterCondition('id', 'files.id', $fileModel);
-        $fileModel = $this->addFilterCondition('name', 'files.name', $fileModel);
+        $fileModel = $this->parseFilterCondition('id', 'files.id', $fileModel);
+        $fileModel = $this->parseFilterCondition('name', 'files.name', $fileModel);
 
         $deleteMsg = $this->checkDeletion();
         if (!empty($this->request->getVar('onlyDeleted'))){
@@ -150,7 +150,7 @@ class Files extends APIController
         }
 
         if (!empty($this->request->getVar('relatedEquipmentId'))){
-            $fileModel = $this->addFilterCondition('relatedEquipmentId',
+            $fileModel = $this->parseFilterCondition('relatedEquipmentId',
                 'equipments_to_files.equipment_id',
                 $fileModel->joinEquipments()
             );

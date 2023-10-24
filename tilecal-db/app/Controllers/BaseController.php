@@ -70,19 +70,6 @@ abstract class BaseController extends Controller
         return json_encode($response);
     }
 
-    protected function addFilterCondition(string $varName, string $colName, Model $model): Model
-    {
-        $var = $this->request->getVar($varName);
-        if (!empty($var)){
-            if (is_array($var)){
-                $model = $model->whereIn($colName, $var);
-            } else{
-                $model = $model->where($colName, $var);
-            }
-        }
-        return $model;
-    }
-
     protected function checkAjaxRequest(): ?string
     {
         if (!$this->request->isAJAX()){
