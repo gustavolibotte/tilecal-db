@@ -6,10 +6,13 @@ use App\Controllers\BaseController;
 use App\Models\FileModel;
 use App\Library\Forms\FileForm;
 use App\Models\HistModel;
-use Exception;
+use CodeIgniter\API\ResponseTrait;
 
 class Files extends BaseController
 {
+
+    use ResponseTrait;
+
     public function index()
     {
         $indexData['pageTitle'] = 'File Index';
@@ -132,5 +135,28 @@ class Files extends BaseController
         $messenger->addRestoreSuccess();
         $messenger->dumpMessages();
         return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
+    }
+
+    public function get()
+    {
+        $msg = $this->checkAjaxRequest();
+        if (!empty($msg)){
+            return $this->fail($msg, 400);
+        }
+
+        $fileModel = model('FileModel')->asArray();
+        $fileModel = $this->addFilterCondition('id', 'files.id', $fileModel);
+        $fileModel = $this->addFilterCondition('name', 'files.name', $fileModel);
+
+        $relatedEquipmentId = $this->request->getVar('relatedEquipmentId');
+        if (empty($relatedEquipmentId)){
+            $fileModel = $fileModel->fullQuery();
+        } else {
+            $fileModel = $fileModel->fullQueryRelated();
+        }
+        $res = ['status' => 'sucesss'];
+        $data = $fileModel->findAll();
+        $res['data'] = empty($data)? []: $data;
+        return $this->respond($res, 200);
     }
 }

@@ -7,12 +7,11 @@ use App\Library\Forms\EquipmentForm;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
 use CodeIgniter\API\ResponseTrait;
-use CodeIgniter\Model;
 
 class Equipments extends BaseController
 {
     use ResponseTrait;
-
+    
     public function index($typeName=null)
     {   
         $typeName = $this->request->getVar('type_name');
@@ -176,9 +175,9 @@ class Equipments extends BaseController
 
     public function getEquipments()
     {
-        if (!$this->request->isAJAX()){
-            log_message('warning', 'API received a non AJAX request');
-            return $this->fail('Requests must be AJAX.', 400);
+        $msg = $this->checkAjaxRequest();
+        if (!empty($msg)){
+            return $this->fail($msg, 400);
         }
         $equipmentModel = model('EquipmentModel')->asArray();
         $equipmentModel = $this->addFilterCondition('id', 'equipments.id', $equipmentModel);
@@ -202,18 +201,5 @@ class Equipments extends BaseController
         ];
         $res['data'] = empty($data)? []: $data;
         return $this->respond($res, 200);
-    }
-
-    protected function addFilterCondition(string $varName, string $colName, Model $model): Model
-    {
-        $var = $this->request->getVar($varName);
-        if (!empty($var)){
-            if (is_array($var)){
-                $model = $model->whereIn($colName, $var);
-            } else{
-                $model = $model->where($colName, $var);
-            }
-        }
-        return $model;
     }
 }

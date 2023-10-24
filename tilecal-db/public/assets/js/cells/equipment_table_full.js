@@ -6,11 +6,9 @@ function fetchEquipTableFull(){
         dataType: "json",
         async: true,
         success: function(response){
-            console.log(`Server received ${response.type_name}`)
             $('#equipment-table-full').DataTable({
                 data: response.data,
                 autoWidth: true,
-                rowId: "id",
                 searching: true,
                 paging: true,
                 order: [[7, 'desc']],

@@ -450,23 +450,6 @@ class EquipmentModel extends LogModel
         }
         return $this;
     }
-    
-    // protected function substituteFK(array $data, string $idField, string $uniqueField, string $modelName): array
-    // {
-    //     $idExists = array_key_exists($idField, $data['data']);
-    //     if ($idExists){
-    //             unset($data['data'][$uniqueField]);
-    //             return $data;
-    //     }
-    //     if (array_key_exists($uniqueField, $data['data'])){
-    //         $data['data'][$idField] = model($modelName)
-    //             ->select('id')
-    //             ->where($uniqueField, $data['data'][$uniqueField])
-    //             ->first()->id;
-    //         unset($data['data'][$uniqueField]);
-    //     }
-    //     return $data;
-    // }
 
     protected function substituteFKs(array $data): array
     {

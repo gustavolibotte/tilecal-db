@@ -6,9 +6,7 @@ class FileTableCell extends BaseCell
 {
     public function full()
     {
-        $fileModel = new \App\Models\FileModel();
-        $viewData['files'] = $fileModel->findAll();
-        return default_view('cells/file_table_full', $viewData);
+        return '<table class="table table-bordered" id="file-table-full"></table>';
     }
 
     public function fulljs()

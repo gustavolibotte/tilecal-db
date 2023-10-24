@@ -35,6 +35,7 @@ $routes->get('callback', 'Callback::callback', ['filter' => 'auth:view']);
 
 // API Routes
 $routes->get('api/equipments/get', 'Equipments::getEquipments', ['filter' => 'auth:view']);
+$routes->get('api/files/get', 'Files::get', ['filter' => 'auth:view']);
 
 // Equipments routes
 $routes->get('equipments', 'Equipments::index', ['filter' => 'auth:view']);
