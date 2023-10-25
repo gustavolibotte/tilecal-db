@@ -34,8 +34,6 @@ class PmtForm extends EquipmentForm{
         $this->removeRule('id', 'id_is_system');
         $this->removeRule('id', 'id_is_project');
         $this->removeRule('id', 'id_has_valid_institute');
-        $this->addRule('id', 'string_starts_with[20LOCER0]',
-            "PMT ID must start with 20LOCER0. (20 for ATLAS peoject, LO for optics equipment and CER for CERN).");
         $this->addRule('id', 'string_ends_with[{serial}]',
             "The final 6 characters of a PMT barcode must be its serial code.");
 
