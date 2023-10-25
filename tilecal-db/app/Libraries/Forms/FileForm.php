@@ -7,15 +7,14 @@ class FileForm extends Form{
     public int $maxNameSize = 100;
     public int $maxDescriptionSize = 65535;
     public int $minDescriptionSize = 10;
-    public int $maxFileSize = 1024000;  //kB
-
+    public int $maxFileSize = 512;  //MB
     public function initialize(){
 
         $this->fields = [
             'name' => [
                 'id' => 'name',
                 'required' => true,
-                'helpText' => sprintf("Max of %d characthers", $this->maxNameSize),
+                'helpText' => sprintf("Max of %d characters", $this->maxNameSize),
                 'fieldType' => 'input',
                 'fieldParams' => [
                     'maxlength' => $this->maxNameSize,
@@ -25,7 +24,7 @@ class FileForm extends Form{
             'file' => [
                 'id' => 'file',
                 'required' => true,
-                'helpText' => sprintf("Max size: %d kB", $this->maxFileSize),
+                'helpText' => sprintf("Max size: %d MB", $this->maxFileSize),
                 'fieldType' => 'upload',
                 'fieldParams' => [
                     'placeholder' => 'Select a file for upload'
@@ -34,7 +33,7 @@ class FileForm extends Form{
             'description' => [
                 'id' => 'description',
                 'required' => true,
-                'helpText' => sprintf("At least %d and max of %d characthers",
+                'helpText' => sprintf("At least %d and max of %d characters",
                                       $this->minDescriptionSize,
                                       $this->maxDescriptionSize),
                 'fieldType' => 'textarea',

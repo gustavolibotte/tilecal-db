@@ -2,9 +2,10 @@
 
 <?= $this->section('table') ?>
   <h4 class="text-center">Last Edited Equipments</h4>
-  <? echo view_cell('EquipmentTableCell::side');?>
+  <table class="table table-bordered" id="equipment-side-table"></table>
 <?= $this->endSection() ?>
 
 <? $this->section('javascript')?>
-<? echo view_cell('EquipmentTableCell::sidejs');?>
+  <script type="text/javascript" src="/assets/js/equipment_table_utils.js"></script>
+  <script type="text/javascript" src="/assets/js/equipments/register.js"></script>
 <?= $this->endSection() ?>

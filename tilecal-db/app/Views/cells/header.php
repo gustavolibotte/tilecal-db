@@ -14,11 +14,11 @@
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="<? echo base_url('equipments'); ?>">Index</a></li>
             <? if ($user->isAuthorized('delete')):?>
-              <li><a class="dropdown-item" href="<? echo base_url('equipments/deleted'); ?>">Deleted</a></li>
+              <li><a class="dropdown-item" href="<? echo base_url('equipments?onlyDeleted=true'); ?>">Deleted</a></li>
             <? endif; ?>
             <li><hr class="dropdown-divider"></li>
             <? foreach ($equipmentTypes as $equipType): ?>
-              <li><a class="dropdown-item" href="<? echo base_url(sprintf('equipments/%s', $equipType->name)); ?>"><?echo $equipType->label;?></a></li>
+              <li><a class="dropdown-item" href="<? echo base_url(sprintf('equipments?type_name=%s', $equipType->name)); ?>"><?echo $equipType->label;?></a></li>
             <? endforeach;?>
           </ul>
         </li>
@@ -69,7 +69,7 @@
               <li><a class="dropdown-item" href="<? echo base_url('files/upload'); ?>">Upload</a></li>
             <? endif; ?>
             <? if ($user->isAuthorized('delete')):?>
-              <li><a class="dropdown-item" href="<? echo base_url('files/deleted'); ?>">Deleted</a></li>
+              <li><a class="dropdown-item" href="<? echo base_url('files?onlyDeleted=true'); ?>">Deleted</a></li>
             <? endif; ?>
           </ul>
         </li>

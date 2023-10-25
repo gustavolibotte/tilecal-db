@@ -10,6 +10,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use App\Entities\User;
 use CodeIgniter\Database\BaseConnection;
+use CodeIgniter\Model;
 
 /**
  * Class BaseController
@@ -67,5 +68,22 @@ abstract class BaseController extends Controller
         $response['data'] = $data;
         $response['recordsFiltered'] = count($data);
         return json_encode($response);
+    }
+
+    protected function checkAjaxRequest(): ?string
+    {
+        if (!$this->request->isAJAX()){
+            log_message('warning', 'API received a non AJAX request');
+            return 'Requests must be AJAX.';
+        }
+        return null;
+    }
+
+    protected function checkDeletion(): ?string
+    {
+        if (!$this->user->isAuthorized('delete')){
+            return 'You are not allowed to access deleted items';
+        }
+        return null;
     }
 }

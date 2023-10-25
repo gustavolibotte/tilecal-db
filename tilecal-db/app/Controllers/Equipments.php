@@ -6,27 +6,36 @@ use App\Controllers\BaseController;
 use App\Library\Forms\EquipmentForm;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
+use CodeIgniter\HTTP\ResponseInterface;
 
-class Equipments extends BaseController
-{   
+class Equipments extends APIController
+{
+
     public function index($typeName=null)
     {   
-        $indexData['pageTitle'] = 'Equipment Index';
-        $indexData['pageHeader'] = 'Equipment Index';
-        $indexData['typeName'] = $typeName;
+        $typeName = $this->request->getVar('type_name');
+        if (!empty($this->request->getVar('deleted'))){
+            $indexData['headerClass'] = 'text-danger';
+            $pageTitle = 'Deleted Equipment Index';
+        } elseif (!empty($typeName)){
+            $indexData['typeName'] = $typeName;
+            $equipmentType = model('EquipmentTypeModel')
+                ->select('label')
+                ->where('name', $typeName)
+                ->first();
+            $pageTitle = sprintf('%s Index', $equipmentType->label);
+        } else{
+            $pageTitle = 'Equipment Index';
+        }
+            $indexData['pageTitle'] = $pageTitle;
+            $indexData['pageHeader'] = $pageTitle;
+        
         return default_view('equipment/index', $indexData);
     }
 
-    public function deletedIndex()
-    {   
-        $indexData['pageTitle'] = 'Deleted Equipment Index';
-        $indexData['pageHeader'] = 'Deleted Equipment Index';
-        $indexData['headerClass'] = 'text-danger';
-        return default_view('equipment/deleted_index', $indexData);
-    }
-
-    public function view($equipmentId){
+    public function view(){
         helper(['app_form', 'form']);
+        $equipmentId = $this->request->getVar('id');
         $equipmentModel = model('EquipmentModel');
         $equipment = $equipmentModel->withDeleted()->getEquipment($equipmentId);
 
@@ -154,5 +163,48 @@ class Equipments extends BaseController
         $equipmentModel->restore($equipmentId);
         service('messenger')->addRestoreSuccess();
         return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+    }
+
+    public function __get__(): ResponseInterface
+    {
+        $equipmentModel = model('EquipmentModel')->asArray();
+        $equipmentModel = $this->parseFilterCondition('id', 'equipments.id', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition('type_name', 'equipment_types.name', $equipmentModel);
+
+        if (!empty($this->request->getVar('relatedFileId'))){
+            $equipmentModel = $this->parseFilterCondition(
+                'relatedFileId',
+                'equipments_to_files.file_id',
+                $equipmentModel->joinFiles()
+            );
+        }
+
+        $deleteMsg = $this->checkDeletion();
+        if (!empty($this->request->getVar('onlyDeleted'))){
+            if (!empty($deleteMsg)){
+                return $this->failForbidden(message: $deleteMsg);
+            }
+            $equipmentModel = $equipmentModel->onlyDeleted();
+        } elseif (!empty($this->request->getVar('withDeleted'))){
+            if (!empty($deleteMsg)){
+                return $this->failForbidden(message: $deleteMsg);
+            }
+            $equipmentModel = $equipmentModel->withDeleted();
+        }
+
+        $this->parseOrdering('orderBy', $equipmentModel->getTable(), $equipmentModel);
+        $this->parseReturnType('returnType', $equipmentModel);
+
+        $relatedEquipmentId = ($this->request->getVar('relatedEquipmentId'));
+        if (empty($relatedEquipmentId)){
+            $data = $equipmentModel->findAll();
+        } else {
+            $data = $equipmentModel->getRelatedEquipments($relatedEquipmentId);
+        }
+        $res = [
+            'status' => 'success'
+        ];
+        $res['data'] = empty($data)? []: $data;
+        return $this->respond($res, 200);
     }
 }
