@@ -9,25 +9,35 @@ use \App\Entities\User;
 class Authenticator{
 
     private bool $isMigration;
+    private ?User $user;
 
     public function __construct(?bool $isMigration=false)
     {
         $this->isMigration = is_null($isMigration)? false: $isMigration;
+        $this->user = null;
     }
 
-    public function getUser()
+    public function getUser(): User
     {   
+        if (!is_null($this->user)){
+            return $this->user;
+        }
         $session = service('session');
         if($session->get('isLogged')){
-            $user = new User($session->get('userInfo'));
-        } else {
-            $user = $this->authenticate();
+            $this->user = new User($session->get('userInfo'));
+            $this->log_message('info', 'User already authenticated');
+            return $this->user;
         }
-        return $user;
+        $this->log_message('info', 'User not authenticated');
+        $this->user = $this->authenticate();
+        $this->log_message('info', 'User authenticated');
+        return $this->user;
     }
 
-    private function authenticate(){
+    private function authenticate(): User
+    {
         if($this->isMigration){
+            $this->log_message('info', 'Generating migration logging info.');
             $userInfo = [
                 'username' => 'tilep2db',
                 'preferredUsername' => 'tile.phase2db',
@@ -44,6 +54,7 @@ class Authenticator{
                 'nonce' => 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
             ];
         } elseif(getenv('CI_ENVIRONMENT') == 'local'){
+            $this->log_message('info', 'Generating local logging info.');
             $userInfo = [
                 'username' => 'anakin.skywalker',
                 'preferredUsername' => 'darth.vader',
@@ -60,6 +71,7 @@ class Authenticator{
                 'nonce' => 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
             ];
         } else{
+            $this->log_message('info', 'Logging using SSO with implicit flow.');
             $userInfo = $this->implicitFlow();
         }
         $session = service('session');
@@ -120,5 +132,27 @@ class Authenticator{
     {
         $this->isMigration = false;
         return $this;
+    }
+
+    /**
+     * Custom log_message function fot the authenticator.
+     * The log_message retreives the user from the authenticator service. If the service
+     * used log_message function without special conditions it could fall into
+     * an infinite recursion. This method ovewrites the username with null in when the
+     * user is not authenticated to avoid this scenarios.
+     *
+     * @param string $level Log level
+     * @param string $message Log message
+     * 
+     * @return mixed return of log_message 
+     */
+    private function log_message(string $level, string $message): mixed
+    {
+        $username = is_null($this->user)? null: $this->user->username;
+        return log_message(
+            $level,
+            $message,
+            ['username' => $username]
+        );
     }
 }

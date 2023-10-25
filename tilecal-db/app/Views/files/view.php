@@ -11,9 +11,10 @@
 <?= $this->section('relatedContent') ?>
   <hr>
   <h4>Related Equipments</h4>
-  <? echo view_cell('EquipmentTableCell::fullFileRelated', ['fileId' => $entity->id, 'withDeleted' => $entity->isDeleted()]);?>
+  <table class="table table-bordered" id="related-equipments-table"></table>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript')?>
-  <? echo view_cell('EquipmentTableCell::fullFileRelatedjs'); ?> 
+  <script type="text/javascript" src="/assets/js/equipment_table_utils.js"></script>
+  <script type="text/javascript" src="/assets/js/files/view.js"></script>
 <?= $this->endSection() ?>

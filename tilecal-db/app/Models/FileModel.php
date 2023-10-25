@@ -5,6 +5,8 @@ namespace App\Models;
 use CodeIgniter\Files\Exceptions\FileNotFoundException;
 use CodeIgniter\Database\ConnectionInterface;
 use CodeIgniter\Validation\ValidationInterface;
+use CodeIgniter\Database\BaseBuilder;
+use CodeIgniter\Model;
 
 class FileModel extends LogModel
 {
@@ -26,6 +28,34 @@ class FileModel extends LogModel
         helper(['app_array']);
         $this->beforeInsert[] = 'moveFile';
         $this->beforeUpdate[] = 'moveFile';
+    }
+
+    public function minQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
+    {
+        if (is_null($queryBuilder)){
+            $queryBuilder = $this;
+        }
+        $queryBuilder->select('files.id as id');
+        $queryBuilder->select('files.name as name');
+        return $queryBuilder;
+    }
+
+    public function fullQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
+    {
+        if (is_null($queryBuilder)){
+            $queryBuilder = $this;
+        }
+        return $queryBuilder;
+    }
+
+    public function joinEquipments(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
+    {
+        if (is_null($queryBuilder)){
+            $queryBuilder = $this;
+        }
+        $queryBuilder = $queryBuilder
+            ->join('equipments_to_files', 'files.id = equipments_to_files.file_id', 'left');
+        return $queryBuilder;
     }
 
     /**

@@ -10,6 +10,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use App\Entities\User;
 use CodeIgniter\Database\BaseConnection;
+use CodeIgniter\Model;
 
 /**
  * Class BaseController
@@ -56,9 +57,17 @@ abstract class BaseController extends Controller
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
-        helper('view');
+        helper(['view', 'url']);
         $this->user = service('authenticator')->getUser();
         $this->db = db_connect();
+        log_message(
+            'info',
+            '{requestMethod} - {uri}',
+            [
+                'requestMethod' => strtoupper($this->request->getMethod()),
+                'uri' => uri_string()
+            ]
+            );
     }
 
     public function buildDataTablesResponse($data)
@@ -67,5 +76,22 @@ abstract class BaseController extends Controller
         $response['data'] = $data;
         $response['recordsFiltered'] = count($data);
         return json_encode($response);
+    }
+
+    protected function checkAjaxRequest(): ?string
+    {
+        if (!$this->request->isAJAX()){
+            log_message('warning', 'API received a non AJAX request');
+            return 'Requests must be AJAX.';
+        }
+        return null;
+    }
+
+    protected function checkDeletion(): ?string
+    {
+        if (!$this->user->isAuthorized('delete')){
+            return 'You are not allowed to access deleted items';
+        }
+        return null;
     }
 }

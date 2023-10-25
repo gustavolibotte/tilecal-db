@@ -6,6 +6,7 @@ use CodeIgniter\Config\BaseService;
 use App\Library\Authenticator;
 use App\Library\Messenger;
 use App\Library\Time;
+use App\Library\AppLogger;
 
 /**
  * Services Configuration file.
@@ -36,7 +37,7 @@ class Services extends BaseService
     public static function authenticator($getShared=true)
     {   
         if($getShared){
-            return static::getSharedInstance('Authenticator');
+            return static::getSharedInstance('authenticator');
         }
         return new Authenticator();
     }
@@ -55,5 +56,19 @@ class Services extends BaseService
             return static::getSharedInstance('messenger');
         }
         return new Messenger();
+    }
+
+    /**
+     * Extension of the CodeIgniter Logger class with an extension of
+     * the log method.
+     *
+     * @return AppLogger
+     */
+    public static function logger($getShared=true): AppLogger
+    {   
+        if($getShared){
+            return static::getSharedInstance('logger');
+        }
+        return new AppLogger(config('Logger'));
     }
 }

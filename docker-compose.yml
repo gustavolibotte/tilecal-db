@@ -44,29 +44,19 @@ services:
       - "3306:3306"
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-  phpmyadmin:
-    image: phpmyadmin:5.2.1
-    container_name: tilecal-phpmyadmin
-    ports:
-      - "8081:80"
-    environment:
-      - PMA_HOST=${database_default_hostname}
-      - MYSQL_USER=${database_default_username}
-      - MYSQL_PASSWORD=${database_default_password}
-      - PMA_PORT=${database_default_port}
-  data-analysis:
-    build:
-      context: .
-      dockerfile: ./dockerfiles/data_analysis.dockerfile
-    image: tile-db-analysis:${TILECAL_ANALYSIS_VERSION}
-    container_name: tilecal-db-analysis
-    tty: true
-    volumes:
-      - type: bind
-        source: ./
-        target: /root/tilecal-db
-      - type: bind
-        source: ~/cernbox/tilecal-db
-        target: /root/cernbox
+  # data-analysis:
+  #   build:
+  #     context: .
+  #     dockerfile: ./dockerfiles/data_analysis.dockerfile
+  #   image: tile-db-analysis:${TILECAL_ANALYSIS_VERSION}
+  #   container_name: tilecal-db-analysis
+  #   tty: true
+  #   volumes:
+  #     - type: bind
+  #       source: ./
+  #       target: /root/tilecal-db
+  #     - type: bind
+  #       source: ~/cernbox/tilecal-db
+  #       target: /root/cernbox
 volumes:
   mysqldata:

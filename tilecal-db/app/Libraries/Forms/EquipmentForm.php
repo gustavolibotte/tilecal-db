@@ -16,7 +16,7 @@ class EquipmentForm extends Form{
     public string $typeName;
     public EquipmentType $equipmentType;
 
-    public function __construct(?IncomingRequest $request=null, string $typeName)
+    public function __construct(string $typeName, ?IncomingRequest $request=null)
     {
         $this->equipmentType = model('EquipmentTypeModel')
             ->where('name', $typeName)
@@ -294,14 +294,14 @@ class EquipmentForm extends Form{
         helper('string');
         $formClass = sprintf('\App\Library\Forms\%sForm', snake2CamelCase($typeName));
         try {
-            return new $formClass($request, $typeName);
+            return new $formClass($typeName, $request);
         } catch (Error $e){
             $expectedMsg = sprintf(
                 'Class "%s" not found',
                 $formClass
             );
             if($e->getMessage() == $expectedMsg){
-                $form = new Self($request, $typeName);
+                $form = new Self($typeName, $request);
                 return $form;
             }
             throw $e;
@@ -324,7 +324,7 @@ class EquipmentForm extends Form{
         if (strlen($data['id']) != 14){
             return parent::setFieldValues($data);
         }
-        $data['id'] = substr($data['id'], 6, 7);
+        $data['id'] = substr($data['id'], 7, 7);
         return parent::setFieldValues($data);
     }
 }
