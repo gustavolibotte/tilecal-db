@@ -28,6 +28,7 @@
   <table class="table table-bordered" id="related-equipments-table"></table>
   <hr>
   <h4> Related Files </h4>
+  <p> All files that are related to this equipment.</p>
   <table class="table table-bordered" id="related-files-table"></table>
 <?= $this->endSection() ?>
 

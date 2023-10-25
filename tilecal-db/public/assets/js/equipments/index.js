@@ -1,30 +1,25 @@
 function fetchEquipTableIndex(){
     fixedToastr('Loading data')
+    const tableParams = {
+        autoWidth: true,
+        searching: true,
+        paging: true,
+        order: equipmentTableOrder,
+        columns: equipmentTableColumns
+    }
     $.ajax({
         type: 'GET',
         url: `/api/equipments/get${window.location.search}`,
         dataType: "json",
         async: true,
         success: function(response){
-            $('#equipment-table-index').DataTable({
-                data: response.data,
-                autoWidth: true,
-                searching: true,
-                paging: true,
-                order: equipmentTableOrder,
-                columns: equipmentTableColumns
-            });
+            tableParams.data = response.data
+            $('#equipment-table-index').DataTable(tableParams);
             toastr.clear()
             toastr.success('Loaded')
         },
         error: function(response, textStatus, errorThrown){
-            $('#equipment-table-index').DataTable({
-                autoWidth: true,
-                searching: true,
-                paging: true,
-                order: equipmentTableOrder,
-                columns: equipmentTableColumns
-            });
+            $('#equipment-table-index').DataTable(tableParams);
             toastr.clear()
             toastrError(
                 response.responseJSON.messages.error,
