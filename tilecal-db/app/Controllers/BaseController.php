@@ -57,9 +57,17 @@ abstract class BaseController extends Controller
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
-        helper('view');
+        helper(['view', 'url']);
         $this->user = service('authenticator')->getUser();
         $this->db = db_connect();
+        log_message(
+            'info',
+            '{requestMethod} - {uri}',
+            [
+                'requestMethod' => strtoupper($this->request->getMethod()),
+                'uri' => uri_string()
+            ]
+            );
     }
 
     public function buildDataTablesResponse($data)

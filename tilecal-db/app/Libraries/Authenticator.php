@@ -71,7 +71,7 @@ class Authenticator{
                 'nonce' => 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
             ];
         } else{
-            $this->log_message('info', 'Logging user with SSO.');
+            $this->log_message('info', 'Logging using SSO with implicit flow.');
             $userInfo = $this->implicitFlow();
         }
         $session = service('session');
@@ -82,7 +82,6 @@ class Authenticator{
 
     private function implicitFlow(): array
     {
-        $this->log_message('info', 'OIDC authentication implicit flow');
         $requestClient = \Config\Services::curlrequest();
         $response = $requestClient->get(getenv('SSO_PROVIDER') . '/.well-known/openid-configuration');
         $config = json_decode($response->getBody());
