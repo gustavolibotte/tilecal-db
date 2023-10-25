@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Library\Forms\FileForm;
 use CodeIgniter\HTTP\ResponseInterface;
+use Exception;
 
 class Files extends APIController
 {
@@ -135,6 +136,8 @@ class Files extends APIController
         $fileModel = model('FileModel')->asArray();
         $fileModel = $this->parseFilterCondition('id', 'files.id', $fileModel);
         $fileModel = $this->parseFilterCondition('name', 'files.name', $fileModel);
+        $this->parseOrdering('orderBy', 'files', $fileModel);
+        $this->parseReturnType('returnType', $fileModel);
 
         $deleteMsg = $this->checkDeletion();
         if (!empty($this->request->getVar('onlyDeleted'))){

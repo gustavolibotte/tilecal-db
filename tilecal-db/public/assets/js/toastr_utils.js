@@ -1,18 +1,11 @@
-function fixedToastr(message, title=null, level='info'){
-    const timeOut = toastr.options.timeOut
-    const extendedTimeOut = toastr.options.extendedTimeOut
-    const closeButton = toastr.options.closeButton
-    toastr.options.timeOut = 0
-    toastr.options.extendedTimeOut = 0
-    toastr.options.closeButton = true
+function fixedToastr(message, title=null, level='info', extraParams={}){
+    const fixedToastrParams = {timeOut:0, extendedTimeOut:0, closeButton:true}
+    Object.assign(fixedToastrParams, extraParams)
     if (level == 'info'){
-        toastr.info(message, title)
+        toastr.info(message, title, fixedToastrParams)
     } else if (level == 'error'){
-        toastr.error(message, title)
+        toastr.error(message, title, fixedToastrParams)
     }
-    toastr.options.timeOut = timeOut
-    toastr.options.extendedTimeOut = extendedTimeOut
-    toastr.options.closeButton = closeButton
 }
 
 function setToastrOptions(){
@@ -20,11 +13,15 @@ function setToastrOptions(){
     toastr.options.progressBar = true;
 }
 
-function toastrError(message, errorCode, errorThrown){
+function toastrError(message, errorCode, errorThrown, title=null){
+    if (!(title instanceof String)){
+        title = ''
+    }
     fixedToastr(
-        message,
-        `${errorCode} - ${errorThrown}`,
-        'error'
+        `${errorCode} - ${errorThrown}</br>${message}`,
+        title,
+        'error',
+        {allowHtml: true}
     )
 }
 

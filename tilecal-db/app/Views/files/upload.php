@@ -2,9 +2,10 @@
 
 <?= $this->section('table') ?>
   <h4 class="text-center">Uploaded Files</h4>
-  <? echo view_cell('FileTableCell::side');?>
+  <table class="table table-bordered" id="file-table-side"></table>
 <?= $this->endSection() ?>
 
 <? $this->section('javascript')?>
-<? echo view_cell('FileTableCell::sidejs');?>
+  <script type="text/javascript" src="/assets/js/file_table_utils.js"></script>
+  <script type="text/javascript" src="/assets/js/files/upload.js"></script>
 <?= $this->endSection() ?>

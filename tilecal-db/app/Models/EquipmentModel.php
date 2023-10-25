@@ -58,7 +58,6 @@ class EquipmentModel extends LogModel
         $queryBuilder->select('equipment_types.label as type_label');
         $queryBuilder->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left');
         return $queryBuilder;
-
     }
 
     public function fullQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model

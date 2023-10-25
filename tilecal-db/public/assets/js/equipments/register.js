@@ -21,7 +21,11 @@ function fetchEquipmentSideTable(){
                 autoWidth: true,
                 searching: true,
                 paging: true,
-                columns: tableColumns
+                columns: tableColumns,
+                searching: false,
+                scrollColapse: true,
+                scrollY: '70vh',
+                order: [],
             });
             toastr.clear()
             toastr.success('Loaded', 'Last Edited Equipments')
@@ -31,7 +35,11 @@ function fetchEquipmentSideTable(){
                 autoWidth: true,
                 searching: true,
                 paging: true,
-                columns: tableColumns
+                columns: tableColumns,
+                searching: false,
+                scrollColapse: true,
+                scrollY: '70vh',
+                order: [],
             });
             toastr.clear()
             toastrError(

@@ -30,6 +30,16 @@ class FileModel extends LogModel
         $this->beforeUpdate[] = 'moveFile';
     }
 
+    public function minQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
+    {
+        if (is_null($queryBuilder)){
+            $queryBuilder = $this;
+        }
+        $queryBuilder->select('files.id as id');
+        $queryBuilder->select('files.name as name');
+        return $queryBuilder;
+    }
+
     public function fullQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
     {
         if (is_null($queryBuilder)){
