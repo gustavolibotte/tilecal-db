@@ -36,9 +36,12 @@ class Services extends BaseService
 
     public static function authenticator($getShared=true)
     {   
+        // echo "Getting authenticator service\n";
         if($getShared){
+            // echo "Got shared authenticator service\n";
             return static::getSharedInstance('authenticator');
         }
+        // echo "Got new authenticator service\n";
         return new Authenticator();
     }
 

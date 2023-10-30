@@ -19,7 +19,6 @@ class BaseSeeder extends Seeder
     public function __construct(Database $config, ?BaseConnection $db = null)
     {
         parent::__construct($config, $db);
-        $this->db = db_connect();
         \Config\Services::authenticator()->setMigration();
     }
 

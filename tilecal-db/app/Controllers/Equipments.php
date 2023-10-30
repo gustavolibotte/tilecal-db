@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Library\DataFrame;
+use App\Library\Forms\EquipmentBatchRegisterForm;
 use App\Library\Forms\EquipmentForm;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
@@ -84,17 +86,37 @@ class Equipments extends APIController
         return default_view('equipment/view', $viewData);
     }
 
+    public function batchRegister()
+    {
+        helper(['form', 'url', 'app_form']);
+        if ($this->request->is('post')){
+            $form = new EquipmentBatchRegisterForm($this->request);
+            if ($form->validate()){
+                $formData = $form->getData();
+                $dataFrame = new DataFrame();
+            }
+        } else{
+            $form = new EquipmentBatchRegisterForm();
+        }
+        $viewData['forms'] = ['' => $form];
+        $viewData['formUrl'] = uri_string();
+        $viewData['pageTitle'] = 'Batch Register';
+        $viewData['pageHeader'] = 'Batch Equipment Register';
+        $viewData['cancelUrl'] = '#';
+        return default_view('layouts/register_single_tab', $viewData);
+
+    }
+
     public function register($typeName='pmt'){
         helper(['form', 'url', 'app_form']);
 
-        $equipmentModel = new EquipmentModel();
+        $equipmentModel = model('equipmentModel');
         $messenger = service('messenger');
         if ($this->request->is('post')){
             $form = EquipmentForm::getTypeForm($typeName, $this->request);
-            $fieldValues = $form->getFieldValues();
             if ($form->validate()){
-                $equipmentModel = new EquipmentModel();
-                $equipment = $form->getEntity();
+                $equipmentModel = model('equipmentModel');
+                $equipment = $form->getValidatedData();
                 $equipmentModel->insert($equipment);
                 $messenger->addRegisterSuccess();
                 $messenger->dumpMessages();
@@ -128,7 +150,7 @@ class Equipments extends APIController
         $messenger = service('messenger');
         if ($form->validate()){
             $equipmentModel = model('EquipmentModel');
-            $equipment = $form->getEntity();
+            $equipment = $form->getValidatedData();
             $equipmentModel->update($equipmentId, $equipment);
             $messenger->addMessage(
                 sprintf('Edited equipment %s with success', $equipment->id),

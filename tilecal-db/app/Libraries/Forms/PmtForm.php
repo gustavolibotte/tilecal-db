@@ -135,11 +135,11 @@ class PmtForm extends EquipmentForm{
         $this->commentsEnd();
     }
 
-    protected function processRequest()
+    public function setFieldValues($data)
     {
-        parent::processRequest();
-        $values = $this->getFieldValues();
-        $newValues['id'] = "20LOCER0{$values['serial']}";
-        $this->setFieldValues($newValues);
+        if (array_key_exists('serial', $data)){
+            $data['id'] = sprintf('0%s', $data['serial']);
+        }
+        return parent::setFieldValues($data);
     }
 }

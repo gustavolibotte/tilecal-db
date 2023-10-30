@@ -35,8 +35,7 @@ class EquipmentForm extends Form{
             'helpText' => "Equipment's barcode value following ATLAS identification rules.",
             'fieldType' => 'input',
             'fieldParams' => [
-                'maxlength' => 14,
-                'placeholder' => 'XXXXXXXXXXXXXX'
+                'maxlength' => 14
             ]
         ];
 
@@ -241,12 +240,9 @@ class EquipmentForm extends Form{
         ];
     }
 
-    public function getEntity(): Equipment
+    public function getData(): Equipment
     {
         helper(['array', 'cast']);
-        if (!$this->isValid){
-            throw new \Exception('To get the equipment you must validate the form first');
-        }
         $fieldValues = $this->getFieldValues();
         foreach ($fieldValues as $key=>&$value){
             $value = null_empty($value);

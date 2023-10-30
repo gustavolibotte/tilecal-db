@@ -40,6 +40,8 @@ $routes->get('api/files/get', 'Files::get', ['filter' => 'auth:view']);
 // Equipments routes
 $routes->get('equipments', 'Equipments::index', ['filter' => 'auth:view']);
 $routes->get('equipments/view', 'Equipments::view', ['filter' => 'auth:view']);
+$routes->get('equipments/batch-register', 'Equipments::batchRegister', ['filter' => 'auth:edit']);
+$routes->post('equipments/batch-register', 'Equipments::batchRegister', ['filter' => 'auth:edit']);
 $routes->post('equipments/delete/(:alphanum)', 'Equipments::delete/$1', ['filter' => 'auth:delete']);
 $routes->post('equipments/restore/(:alphanum)',  'Equipments::restore/$1', ['filter' => 'auth:delete']);
 

@@ -81,7 +81,7 @@ class Files extends APIController
             $form = new FileForm($this->request);
             if ($form->validate()){
                 $this->db->transStart();
-                $file = $form->getEntity();
+                $file = $form->getValidatedData();
                 $fileModel = model('FileModel');
                 $fileModel->insert($file);
                 $messenger->addMessage('File uploaded with success', 'success');

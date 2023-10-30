@@ -27,10 +27,15 @@ class AppLogger extends Logger
     public function log($level, $message, array $context = []): bool
     {
         $requestTimestamp = service('Time')->getRequestTimestamp();
+        $authenticator = \Config\Services::authenticator();
+        // requestIsAuthenticated is called to avoid loging problems when calling the session
+        // inside the authenticator
         if (array_key_exists('username', $context)){
             $username = $context['username'];
+        } elseif($authenticator->requestIsAuthenticated()) {
+            $username = $authenticator->getUser()->username;
         } else {
-            $username = service('authenticator')->getUser()->username;
+            $username = null;
         }
         // Adding placeholders for line and file that will be handled by parent::log
         $message = sprintf(

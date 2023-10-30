@@ -209,10 +209,8 @@ class EquipmentModel extends LogModel
             throw new \TypeError('Equipment Model insert supports only Equipment as $data');
         }
         $data = $data->toRawArray();
-        if(array_key_exists('parent_id', $data) || array_key_exists('slot_id', $data)){
-            $parentId = remove_value('parent_id', $data);
-            $slotId = remove_value('slot_id', $data);
-        }
+        $parentId = remove_value('parent_id', $data, false);
+        $slotId = remove_value('slot_id', $data, false);
         $childId = parent::insert($data, true);
         if(isset($parentId) && isset($slotId)){
             $this->addParent($childId, $parentId, $slotId);
