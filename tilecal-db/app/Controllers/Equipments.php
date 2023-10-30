@@ -2,10 +2,10 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
-use App\Library\DataFrame;
 use App\Library\Forms\EquipmentBatchRegisterForm;
 use App\Library\Forms\EquipmentForm;
+use App\Library\Writers\CSVFileWriter;
+use App\Library\Readers\CSVFileReader;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -89,11 +89,30 @@ class Equipments extends APIController
     public function batchRegister()
     {
         helper(['form', 'url', 'app_form']);
+        $messenger = \Config\Services::messenger();
         if ($this->request->is('post')){
             $form = new EquipmentBatchRegisterForm($this->request);
             if ($form->validate()){
-                $formData = $form->getData();
-                $dataFrame = new DataFrame();
+                $formData = $form->getValidatedData();
+                $csvFile = new CSVFileReader($formData['file']->getTempName());
+                $equipmentForm = EquipmentForm::getTypeForm($formData['type_name']);
+                $filepath = $this->validateEquipmentFile($csvFile, $equipmentForm);
+                if (!empty($filepath)) {
+                    $response = $this->response
+                        ->download($filepath, null, true)
+                        ->setFileName('register_log.csv')
+                        ->setContentType('text/csv');
+                    $messenger->addMessage(
+                        'Found errors on the file. Check the log file.',
+                        'danger'
+                    );
+                    $messenger->dumpMessages();
+                }
+            } else{
+                foreach ($form->getErrors() as $errorMsg){
+                    $messenger->addMessage($errorMsg, 'danger');
+                }
+                $messenger->dumpMessages();
             }
         } else{
             $form = new EquipmentBatchRegisterForm();
@@ -103,6 +122,10 @@ class Equipments extends APIController
         $viewData['pageTitle'] = 'Batch Register';
         $viewData['pageHeader'] = 'Batch Equipment Register';
         $viewData['cancelUrl'] = '#';
+        if (isset($response)){
+            echo default_view('layouts/register_single_tab', $viewData);
+            return $response;
+        }
         return default_view('layouts/register_single_tab', $viewData);
 
     }
@@ -228,5 +251,41 @@ class Equipments extends APIController
         ];
         $res['data'] = empty($data)? []: $data;
         return $this->respond($res, 200);
+    }
+
+    protected function validateEquipmentFile($fileReader, $form)
+    {
+        helper('filesystem');
+        $foundError = false;
+        $logFilepath = tempnam(
+            config('Paths')->writableDirectory . '/created', ''
+        );
+        $fileWriter = (new CSVFileWriter($logFilepath))->open();
+        $equipmentModel = model('EquipmentModel');
+        $this->db->transBegin();
+        foreach ($fileReader as $iRow=>$row){
+            $form->setFieldValues($row);
+            if ($form->validate()){
+                $equipmentModel->insert($row);
+            } else{
+                $foundError = true;
+                foreach($form->getErrors() as $field=>$errorMsg){
+                    $fileWriter->addLine([
+                        $iRow,
+                        $field,
+                        $errorMsg
+                    ]);
+                }
+            }
+        }
+        $fileWriter->close();
+        if ($foundError){
+            $this->db->transRollback();
+            return $logFilepath;
+        } else{
+            $this->db->transCommit();
+            delete_files($logFilepath);
+            return null;
+        }
     }
 }

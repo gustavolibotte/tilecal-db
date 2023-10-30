@@ -204,7 +204,7 @@ class EquipmentModel extends LogModel
      */
     public function insert($data = null, bool $returnID = true)
     {
-        $this->db->transStart();
+        $this->db->transBegin();
         if (!($data instanceof Equipment)){
             throw new \TypeError('Equipment Model insert supports only Equipment as $data');
         }
@@ -215,7 +215,7 @@ class EquipmentModel extends LogModel
         if(isset($parentId) && isset($slotId)){
             $this->addParent($childId, $parentId, $slotId);
         }
-        $this->db->transComplete();
+        $this->db->transCommit();
         if($returnID){
             return $childId;
         }
@@ -307,9 +307,9 @@ class EquipmentModel extends LogModel
 
     public function delete($id = null, bool $purge = false)
     {
-        $this->db->transStart();
+        $this->db->transBegin();
         parent::delete($id, false);
-        $this->db->transComplete();
+        $this->db->transCommit();
     }
 
     protected function getDeleteLog(array $data): OperationLog

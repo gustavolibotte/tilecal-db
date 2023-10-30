@@ -8,8 +8,8 @@ class EquipmentBatchRegisterForm extends Form{
     public function initialize(){
         parent::initialize();
 
-        $this->fields['type_id'] = [
-            'id' => 'type_id',
+        $this->fields['type_name'] = [
+            'id' => 'type_name',
             'label' => 'Equipment Type',
             'required' => true,
             'fieldType' => 'dropdown',
@@ -17,14 +17,14 @@ class EquipmentBatchRegisterForm extends Form{
             'fieldParams' => [
                 'options' => model('EquipmentTypeModel')
                     ->orderBy('label')
-                    ->getFormDropdownOptions(['label'])
+                    ->getCustomArray('name', 'label')
             ]
         ];
 
-        $this->validationRules['type_id'] = [
+        $this->validationRules['type_name'] = [
             "rules" => [
                 "required",
-                "is_not_unique[equipment_types.id]",
+                "is_not_unique[equipment_types.name]",
             ],
             "errors" => [
                 "required" => "You must supply an equipment type for registering.",
@@ -45,11 +45,13 @@ class EquipmentBatchRegisterForm extends Form{
         $this->validationRules['file'] = [
             "rules" => [
                 "uploaded[file]", 
-                sprintf("max_size[file,%d]", 1)
+                sprintf("max_size[file,%d]", 1),
+                "ext_in[file,csv]"
             ],
             "errors" => [
                 "uploaded" => "You must upload a file.",
-                "max_size" => sprintf('Max file size is %d MB', AppFileRules::$maxFileSize)
+                "max_size" => sprintf('Max file size is %d MB', AppFileRules::$maxFileSize),
+                "ext_in" => "Only csv files are supported for batch registering."
             ]
         ];
     }

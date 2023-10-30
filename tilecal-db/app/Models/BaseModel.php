@@ -77,11 +77,18 @@ abstract class BaseModel extends Model
     {
         $nullValue = is_null($valueField);
         if(!$nullValue){
-            $this->select(sprintf(
-                '`%s`, `%s`',
-                $keyField,
-                $valueField
-            ));
+            if ($keyField == $valueField){
+                $this->select(sprintf(
+                    '`%s`',
+                    $keyField
+                ));
+            } else{
+                $this->select(sprintf(
+                    '`%s`, `%s`',
+                    $keyField,
+                    $valueField
+                ));
+            }
         }
         $results = (is_null($ids))? $this->findAll(): $this->find($ids);
         if ($nullValue) {

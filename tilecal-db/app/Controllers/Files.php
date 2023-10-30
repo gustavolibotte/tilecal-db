@@ -80,12 +80,10 @@ class Files extends APIController
         if ($this->request->is('post')){
             $form = new FileForm($this->request);
             if ($form->validate()){
-                $this->db->transStart();
                 $file = $form->getValidatedData();
                 $fileModel = model('FileModel');
                 $fileModel->insert($file);
                 $messenger->addMessage('File uploaded with success', 'success');
-                $this->db->transComplete();
                 return redirect('files/upload');
             } else {
                 foreach ($form->getErrors() as $errorMsg){

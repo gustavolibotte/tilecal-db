@@ -14,4 +14,5 @@ if [ ! -d "$APP_WRITABLE_DIR" ]; then
     mkdir -p "${APP_WRITABLE_DIR}/logs"
     mkdir -p "${APP_WRITABLE_DIR}/session"
     mkdir -p "${APP_WRITABLE_DIR}/uploads"
+    mkdir -p "${APP_WRITABLE_DIR}/created"
 fi
