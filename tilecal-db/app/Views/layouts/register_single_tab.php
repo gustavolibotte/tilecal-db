@@ -14,7 +14,6 @@
             <? foreach($forms as $formHeader=>$form): ?>
               <h4><? echo $formHeader; ?></h4>
               <? echo $form->toHTML(); ?>
-              <hr>
             <? endforeach;?>
             <div class="row">
               <div class="col mt-4 text-right">
@@ -23,6 +22,8 @@
               </div>
             </div>
           </form>
+          <hr>
+          <?= $this->renderSection('help') ?>
         </div>
       </div>
     </div>

@@ -124,7 +124,7 @@ class Equipments extends APIController
         $viewData['pageTitle'] = 'Batch Register';
         $viewData['pageHeader'] = 'Batch Equipment Register';
         $viewData['cancelUrl'] = url_to('equipment_index');
-        return default_view('layouts/register_single_tab', $viewData);
+        return default_view('equipment/batch_register', $viewData);
 
     }
 
@@ -253,16 +253,27 @@ class Equipments extends APIController
 
     protected function validateEquipmentFile($fileReader, EquipmentValidator $validator)
     {
-        helper('filesystem');
+        helper(['filesystem', 'app_array']);
         $foundError = false;
         $logFilepath = tempnam(config('Paths')->validationLogsDirectory, '');
         $fileWriter = (new CSVFileWriter($logFilepath))->open();
         $fileWriter->addLine([
             'row', 'field', 'error'
         ]); // Writing the header
+        // Needs to rename the reader's header because the front end fields
+        // have user friendly names
+        $colRename = [
+            'owner_institute' => 'owner_mne',
+            'location' => 'location_name',
+            'status' => 'status_name'
+        ];
         $equipmentModel = model('EquipmentModel');
         $this->db->transBegin();
         foreach ($fileReader as $iRow=>$row){
+            $row = rename_array_keys($row , $colRename);
+            // Removes some fields that may conflict with the type defined in the validator
+            remove_value('type_name', $row, false);
+            remove_value('type_id', $row, false);
             $validator->clearFields()->setFieldValues($row);
             if ($validator->validate()){
                 $rowData = $validator->getValidatedData();
