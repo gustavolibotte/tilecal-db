@@ -8,6 +8,8 @@ use App\Library\Writers\CSVFileWriter;
 use App\Library\Readers\CSVFileReader;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
+use App\Validation\Validators\EntryValidator;
+use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class Equipments extends APIController
@@ -95,9 +97,11 @@ class Equipments extends APIController
             if ($form->validate()){
                 $formData = $form->getValidatedData();
                 $csvFile = new CSVFileReader($formData['file']->getTempName());
-                $equipmentForm = EquipmentForm::getTypeForm($formData['type_name']);
-                $filepath = $this->validateEquipmentFile($csvFile, $equipmentForm);
-                if (!empty($filepath)) {
+                $equipValidator = EquipmentValidator::getFromTypeName($formData['type_name']);
+                $filepath = $this->validateEquipmentFile($csvFile, $equipValidator);
+                if (empty($filepath)) {
+                    $messenger->addRegisterSuccess();
+                } else{
                     $splitted = splitPath($filepath);
                     $messenger->addMessage(sprintf(
                         'Found errors on the file. ' .
@@ -247,21 +251,25 @@ class Equipments extends APIController
         return $this->respond($res, 200);
     }
 
-    protected function validateEquipmentFile($fileReader, $form)
+    protected function validateEquipmentFile($fileReader, EquipmentValidator $validator)
     {
         helper('filesystem');
         $foundError = false;
         $logFilepath = tempnam(config('Paths')->validationLogsDirectory, '');
         $fileWriter = (new CSVFileWriter($logFilepath))->open();
+        $fileWriter->addLine([
+            'row', 'field', 'error'
+        ]); // Writing the header
         $equipmentModel = model('EquipmentModel');
         $this->db->transBegin();
         foreach ($fileReader as $iRow=>$row){
-            $form->setFieldValues($row);
-            if ($form->validate()){
-                $equipmentModel->insert($row);
+            $validator->clearFields()->setFieldValues($row);
+            if ($validator->validate()){
+                $rowData = $validator->getValidatedData();
+                $equipmentModel->insert($rowData);
             } else{
                 $foundError = true;
-                foreach($form->getErrors() as $field=>$errorMsg){
+                foreach($validator->getErrors() as $field=>$errorMsg){
                     $fileWriter->addLine([
                         $iRow,
                         $field,

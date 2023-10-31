@@ -8,20 +8,22 @@ use Throwable;
 class CSVFileReader implements Iterator{
 
     public string $filepath;
-    private $handle;
-    private array $header = [];
+    private $handle = null;
+    private ?array $header = null;
     private int $iRow = -1;
 
     private array $row = [];
 
     private string $separator;
 
+    private bool $hasHeader;
 
-    public function __construct(string $filepath, string $separator=',')
+
+    public function __construct(string $filepath, string $separator=',', bool $hasHeader=true)
     {
         $this->filepath = $filepath;
-        $this->handle = null;
         $this->separator = $separator;
+        $this->hasHeader = $hasHeader;
     }
 
     public function rewind(): void
@@ -32,7 +34,9 @@ class CSVFileReader implements Iterator{
             $this->clear();
         }
         if (($this->handle = fopen($this->filepath, "r")) !== FALSE) {
-            $this->header = fgetcsv($this->handle, null, $this->separator);
+            if ($this->hasHeader) {
+                $this->header = fgetcsv($this->handle, null, $this->separator);
+            }
             $this->next();
         } else{
             throw new FileException("Could not open file");
