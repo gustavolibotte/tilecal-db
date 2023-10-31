@@ -6,8 +6,12 @@ function joinPaths(array $subPaths): string
     return $joinedPath;
 }
 
-function has_extension(string $path): bool
+function splitPath(string $path): array
 {
-    $exploded = explode('.', $path);
-    return count($exploded) > 1;
+    $splitted = explode(DIRECTORY_SEPARATOR, $path);
+    $tail = array_pop($splitted);
+    return [
+        'base' => implode(DIRECTORY_SEPARATOR, $splitted),
+        'tail' => $tail
+    ];
 }

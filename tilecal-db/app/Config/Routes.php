@@ -38,7 +38,10 @@ $routes->get('api/equipments/get', 'Equipments::get', ['filter' => 'auth:view'])
 $routes->get('api/files/get', 'Files::get', ['filter' => 'auth:view']);
 
 // Equipments routes
-$routes->get('equipments', 'Equipments::index', ['filter' => 'auth:view']);
+$routes->get('equipments', 'Equipments::index', [
+    'filter' => 'auth:view',
+    'as' => 'equipment_index'
+]);
 $routes->get('equipments/view', 'Equipments::view', ['filter' => 'auth:view']);
 $routes->get('equipments/batch-register', 'Equipments::batchRegister', ['filter' => 'auth:edit']);
 $routes->post('equipments/batch-register', 'Equipments::batchRegister', ['filter' => 'auth:edit']);
@@ -58,6 +61,10 @@ $routes->get('files/view', 'Files::view', ['filter' => 'auth:view']);
 $routes->get('files/upload', 'Files::upload', ['filter' => 'auth:upload']);
 $routes->post('files/upload', 'Files::upload', ['filter' => 'auth:upload']);
 $routes->get('files/(:alphanum)', 'Files::download/$1', ['filter' => 'auth:download']);
+$routes->get('validation/(:alphanum)', 'Files::downloadValidationLog/$1', [
+    'filter' => 'auth:download',
+    'as' => 'download_validation_log'
+]);
 
 // Errors
 $routes->get('unauthorized', 'Errors::unauthorized');

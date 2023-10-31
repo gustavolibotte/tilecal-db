@@ -111,12 +111,12 @@ class Files extends APIController
         $fileModel->delete($fileId);
         $messenger = service('messenger');
         $messenger->addDeleteSuccess();
+        $messenger->dumpMessages();
         if ($this->user->isAuthorized('delete')){
             return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
         } else {
             return redirect('files');
         }
-        $messenger->dumpMessages();
     }
 
     public function restore($fileId)
@@ -161,5 +161,15 @@ class Files extends APIController
         $data = $fileModel->findAll();
         $res['data'] = empty($data)? []: $data;
         return $this->respond($res, 200);
+    }
+
+    public function downloadValidationLog($filename)
+    {
+        $filepath = sprintf('%s/%s', config('Paths')->validationLogsDirectory, $filename);
+        $response = $this->response
+            ->download($filepath, null, true)
+            ->setFileName('validation_log.csv')
+            ->setContentType('text/csv');
+        return $response;
     }
 }

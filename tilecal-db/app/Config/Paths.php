@@ -82,6 +82,7 @@ class Paths
      * must be moved to after being uploaded to the writable directory.
      */
     public string $uploadedFilesDirectory;
+    public string $validationLogsDirectory;
 
     public function __construct()
     {
@@ -91,6 +92,7 @@ class Paths
         );
         $this->uploadedFilesDirectory = sprintf('%s/files', $eosDir);
         $this->writableDirectory = sprintf('%s/writable', $eosDir);
+        $this->validationLogsDirectory = sprintf('%s/validation_logs', $this->writableDirectory);
     }
 
     /**

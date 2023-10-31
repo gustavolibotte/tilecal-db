@@ -6,7 +6,7 @@ class MessagesCell extends BaseCell
 {
     public function showMessages(){
 
-        $messages = service('messenger')->getMessages();
+        $messages = \Config\Services::messenger()->getMessages();
         if (empty($messages)){
             return '';
         }

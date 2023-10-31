@@ -88,7 +88,7 @@ class Equipments extends APIController
 
     public function batchRegister()
     {
-        helper(['form', 'url', 'app_form']);
+        helper(['form', 'url', 'app_form', 'path']);
         $messenger = \Config\Services::messenger();
         if ($this->request->is('post')){
             $form = new EquipmentBatchRegisterForm($this->request);
@@ -98,21 +98,19 @@ class Equipments extends APIController
                 $equipmentForm = EquipmentForm::getTypeForm($formData['type_name']);
                 $filepath = $this->validateEquipmentFile($csvFile, $equipmentForm);
                 if (!empty($filepath)) {
-                    $response = $this->response
-                        ->download($filepath, null, true)
-                        ->setFileName('register_log.csv')
-                        ->setContentType('text/csv');
-                    $messenger->addMessage(
-                        'Found errors on the file. Check the log file.',
+                    $splitted = splitPath($filepath);
+                    $messenger->addMessage(sprintf(
+                        'Found errors on the file. ' .
+                        '<a href="%s">Download validation log.</a>',
+                        url_to('download_validation_log', $splitted['tail'])
+                        ),
                         'danger'
                     );
-                    $messenger->dumpMessages();
                 }
             } else{
                 foreach ($form->getErrors() as $errorMsg){
                     $messenger->addMessage($errorMsg, 'danger');
                 }
-                $messenger->dumpMessages();
             }
         } else{
             $form = new EquipmentBatchRegisterForm();
@@ -121,11 +119,7 @@ class Equipments extends APIController
         $viewData['formUrl'] = uri_string();
         $viewData['pageTitle'] = 'Batch Register';
         $viewData['pageHeader'] = 'Batch Equipment Register';
-        $viewData['cancelUrl'] = '#';
-        if (isset($response)){
-            echo default_view('layouts/register_single_tab', $viewData);
-            return $response;
-        }
+        $viewData['cancelUrl'] = url_to('equipment_index');
         return default_view('layouts/register_single_tab', $viewData);
 
     }
@@ -257,9 +251,7 @@ class Equipments extends APIController
     {
         helper('filesystem');
         $foundError = false;
-        $logFilepath = tempnam(
-            config('Paths')->writableDirectory . '/created', ''
-        );
+        $logFilepath = tempnam(config('Paths')->validationLogsDirectory, '');
         $fileWriter = (new CSVFileWriter($logFilepath))->open();
         $equipmentModel = model('EquipmentModel');
         $this->db->transBegin();

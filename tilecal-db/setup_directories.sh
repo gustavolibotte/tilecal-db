@@ -9,10 +9,14 @@ fi
 
 if [ ! -d "$APP_WRITABLE_DIR" ]; then
     mkdir -p $APP_WRITABLE_DIR
+    
+    # Default CI paths
     mkdir -p "${APP_WRITABLE_DIR}/cache"
     mkdir -p "${APP_WRITABLE_DIR}/debugbar"
     mkdir -p "${APP_WRITABLE_DIR}/logs"
     mkdir -p "${APP_WRITABLE_DIR}/session"
     mkdir -p "${APP_WRITABLE_DIR}/uploads"
-    mkdir -p "${APP_WRITABLE_DIR}/created"
+
+    # Custom paths
+    mkdir -p "${APP_WRITABLE_DIR}/validation_logs"
 fi
