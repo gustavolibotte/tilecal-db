@@ -35,23 +35,26 @@ class EquipmentBatchRegisterForm extends Form{
         $this->fields['file'] = [
             'id' => 'file',
             'required' => true,
-            'helpText' => sprintf("Max size: %d MB", AppFileRules::$maxFileSize),
+            'helpText' => sprintf("Max size: %d MB", AppFileRules::getMaxFileSize('MB')),
             'fieldType' => 'upload',
             'fieldParams' => [
                 'placeholder' => 'Select a file for upload'
             ]
         ];
 
+        $notCsvMsg = "Only csv files are supported for batch registering.";
         $this->validationRules['file'] = [
             "rules" => [
                 "uploaded[file]", 
-                sprintf("max_size[file,%d]", 1),
+                sprintf("max_size[file,%d]", AppFileRules::getMaxFileSize('kB')),
+                "mime_in[file,text/csv]",
                 "ext_in[file,csv]"
             ],
             "errors" => [
                 "uploaded" => "You must upload a file.",
-                "max_size" => sprintf('Max file size is %d MB', AppFileRules::$maxFileSize),
-                "ext_in" => "Only csv files are supported for batch registering."
+                "max_size" => $this->fields['file']['helpText'],
+                "mime_in" => $notCsvMsg,
+                "ext_in" => $notCsvMsg
             ]
         ];
     }

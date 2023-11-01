@@ -104,7 +104,7 @@ class Equipments extends APIController
                 } else{
                     $splitted = splitPath($filepath);
                     $messenger->addMessage(sprintf(
-                        'Found errors on the file. ' .
+                        'Found errors in the file data. ' .
                         '<a href="%s">Download validation log.</a>',
                         url_to('download_validation_log', $splitted['tail'])
                         ),
@@ -267,6 +267,7 @@ class Equipments extends APIController
             'location' => 'location_name',
             'status' => 'status_name'
         ];
+        $colRenameFlipped = array_flip($colRename);
         $equipmentModel = model('EquipmentModel');
         $this->db->transBegin();
         foreach ($fileReader as $iRow=>$row){
@@ -281,9 +282,11 @@ class Equipments extends APIController
             } else{
                 $foundError = true;
                 foreach($validator->getErrors() as $field=>$errorMsg){
+                    // Maps the fields back to the front end name
+                    $fieldName = dot_search_with_default($field, $colRenameFlipped, $field);
                     $fileWriter->addLine([
                         $iRow,
-                        $field,
+                        $fieldName,
                         $errorMsg
                     ]);
                 }

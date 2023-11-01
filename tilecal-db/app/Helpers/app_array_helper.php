@@ -53,6 +53,7 @@ function remove_value_with_default($key, array &$array, mixed $default=null): mi
  *
  * @param $key Value key
  * @param array $array Array to search
+ * @param mixed $default Default value to return if a value for $key is not found
  * 
  * @return mixed The value or $default
  */ 
