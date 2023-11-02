@@ -96,17 +96,29 @@ class Equipments extends APIController
             $form = new EquipmentBatchRegisterForm($this->request);
             if ($form->validate()){
                 $formData = $form->getValidatedData();
-                $csvFile = new CSVFileReader($formData['file']->getTempName());
                 $equipValidator = EquipmentValidator::getFromTypeName($formData['type_name']);
-                $filepath = $this->validateEquipmentFile($csvFile, $equipValidator);
-                if (empty($filepath)) {
+                // Needs to rename the fields because the front end fields
+                // have user friendly names
+                $colRename = [
+                    'owner_institute' => 'owner_mne',
+                    'location' => 'location_name',
+                    'status' => 'status_name',
+                    'owner' => 'owner_mne'
+                ];
+                $fileValidationResult = $equipValidator->validateFileData(
+                    $formData['file']->getTempName(),
+                    $colRename,
+                    'EquipmentModel'
+                );
+                if ($fileValidationResult['status']) {
                     $messenger->addRegisterSuccess();
                 } else{
-                    $splitted = splitPath($filepath);
+                    $filepath = $fileValidationResult['logFilepath'];
+                    $filename = splitPath($filepath)['tail'];
                     $messenger->addMessage(sprintf(
                         'Found errors in the file data. ' .
                         '<a href="%s">Download validation log.</a>',
-                        url_to('download_validation_log', $splitted['tail'])
+                        url_to('download_validation_log', $filename)
                         ),
                         'danger'
                     );
@@ -125,7 +137,6 @@ class Equipments extends APIController
         $viewData['pageHeader'] = 'Batch Equipment Register';
         $viewData['cancelUrl'] = url_to('equipment_index');
         return default_view('equipment/batch_register', $viewData);
-
     }
 
     public function register($typeName='pmt'){
@@ -249,67 +260,5 @@ class Equipments extends APIController
         ];
         $res['data'] = empty($data)? []: $data;
         return $this->respond($res, 200);
-    }
-
-    protected function validateEquipmentFile($fileReader, EquipmentValidator $validator)
-    {
-        helper(['filesystem', 'app_array']);
-        $foundError = false;
-        $logFilepath = tempnam(config('Paths')->validationLogsDirectory, '');
-        $fileWriter = (new CSVFileWriter($logFilepath))->open();
-        $fileWriter->addLine([
-            'row', 'field', 'error'
-        ]); // Writing the header in the output file
-        // Needs to rename the fields because the front end fields
-        // have user friendly names
-        $colRename = [
-            'owner_institute' => 'owner_mne',
-            'location' => 'location_name',
-            'status' => 'status_name',
-            'owner' => 'owner_mne'
-        ];
-        $colRenameFlipped = array_flip($colRename);
-        $equipmentModel = model('EquipmentModel');
-        $this->db->transException(true)->transBegin();
-        foreach ($fileReader as $iRow=>$row){
-            $row = rename_array_keys($row , $colRename);
-            // Removes some fields that may conflict with the type defined in the validator
-            remove_value('type_name', $row, false);
-            remove_value('type_id', $row, false);
-            $validator->clearState()->setFieldValues($row);
-            if ($validator->validate()){
-                try{
-                    $rowData = $validator->getValidatedData();
-                    $equipmentModel->insert($rowData);
-                } catch (Throwable $e){
-                    $fileWriter->addLine([
-                        $iRow,
-                        null,
-                        $e->getMessage()
-                    ]);
-                    break;
-                }
-            } else{
-                $foundError = true;
-                foreach($validator->getErrors() as $field=>$errorMsg){
-                    // Maps the fields back to the front end name
-                    $fieldName = dot_search_with_default($field, $colRenameFlipped, $field);
-                    $fileWriter->addLine([
-                        $iRow,
-                        $fieldName,
-                        $errorMsg
-                    ]);
-                }
-            }
-        }
-        $fileWriter->close();
-        if ($foundError || ($this->db->transStatus() === false)){
-            $this->db->transRollback();
-            return $logFilepath;
-        } else{
-            $this->db->transCommit();
-            delete_files($logFilepath);
-            return null;
-        }
     }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Validation\Validators;
 use ValueError;
+use App\Library\Writers\CSVFileWriter;
+use App\Library\Readers\CSVFileReader;
+use Throwable;
 
 abstract class EntryValidator
 {
@@ -121,5 +124,61 @@ abstract class EntryValidator
     {
         $this->fieldValues = [];
         return $this;
+    }
+
+    public function validateFileData(string $filepath, array $fieldRename=[], string $modelName): ?array
+    {
+        helper(['filesystem', 'app_array']);
+        $foundError = false;
+        $fieldRenameFlipped = array_flip($fieldRename);
+        $dataModel = model($modelName);
+        $db = db_connect();
+        $inputFile = new CSVFileReader($filepath, headerRename:$fieldRename);
+        $logFilepath = tempnam(config('Paths')->validationLogsDirectory, '');
+        $fileWriter = (new CSVFileWriter($logFilepath))->open();
+        $fileWriter->addLine([
+            'row', 'field', 'error'
+        ]); // Writing the header in the output file
+        $db->transException(true)->transBegin();
+        foreach ($inputFile as $iRow=>$row){
+            // Removes some fields that may conflict with the type defined in the validator
+            remove_value('type_name', $row, false);
+            remove_value('type_id', $row, false);
+            $this->clearState()->setFieldValues($row);
+            if ($this->validate()){
+                try{
+                    $rowData = $this->getValidatedData();
+                    $dataModel->insert($rowData);
+                } catch (Throwable $e){
+                    $foundError = true;
+                    $fileWriter->addLine([
+                        $iRow,
+                        'InternalError',
+                        $e->getMessage()
+                    ]);
+                    break;
+                }
+            } else{
+                $foundError = true;
+                foreach($this->getErrors() as $field=>$errorMsg){
+                    // Maps the fields back to the front end name
+                    $fieldName = dot_search_with_default($field, $fieldRenameFlipped, $field);
+                    $fileWriter->addLine([
+                        $iRow,
+                        $fieldName,
+                        $errorMsg
+                    ]);
+                }
+            }
+        }
+        $fileWriter->close();
+        if ($foundError || ($db->transStatus() === false)){
+            $db->transRollback();
+            return ['status' => false, 'logFilepath' => $logFilepath];
+        } else{
+            $db->transCommit();
+            delete_files($logFilepath);
+            return  ['status' => true, 'logFilepath' => null];
+        }
     }
 }

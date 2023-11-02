@@ -18,12 +18,19 @@ class CSVFileReader implements Iterator{
 
     private bool $hasHeader;
 
+    public array $headerRename;
 
-    public function __construct(string $filepath, string $separator=',', bool $hasHeader=true)
+
+    public function __construct(
+        string $filepath,
+        string $separator=',',
+        bool $hasHeader=true,
+        array $headerRename=[])
     {
         $this->filepath = $filepath;
         $this->separator = $separator;
         $this->hasHeader = $hasHeader;
+        $this->headerRename = $headerRename;
     }
 
     public function rewind(): void
@@ -75,6 +82,7 @@ class CSVFileReader implements Iterator{
 
     public function next()
     {
+        helper('app_array');
         try{
             $row = fgetcsv($this->handle);
             if ($row === FALSE) {
@@ -85,7 +93,11 @@ class CSVFileReader implements Iterator{
                 if (empty($value)){
                     $value = null;
                 }
-                $this->row[$this->header[$iCol]] = $value;
+                $headerName = $this->header[$iCol];
+                if (!empty($this->headerRename)){
+                    $headerName = dot_search_with_default($headerName, $this->headerRename, $headerName);
+                }
+                $this->row[$headerName] = $value;
             }
             $this->iRow++;
         }  catch (Throwable $e){
