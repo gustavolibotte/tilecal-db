@@ -18,7 +18,7 @@ class Equipments extends APIController
     public function index($typeName=null)
     {   
         $typeName = $this->request->getVar('type_name');
-        if (!empty($this->request->getVar('deleted'))){
+        if (!empty($this->request->getVar('onlyDeleted'))){
             $indexData['headerClass'] = 'text-danger';
             $pageTitle = 'Deleted Equipment Index';
         } elseif (!empty($typeName)){
@@ -37,9 +37,8 @@ class Equipments extends APIController
         return default_view('equipment/index', $indexData);
     }
 
-    public function view(){
+    public function view(string $equipmentId){
         helper(['app_form', 'form']);
-        $equipmentId = $this->request->getVar('id');
         $equipmentModel = model('EquipmentModel');
         $equipment = $equipmentModel->withDeleted()->getEquipment($equipmentId);
 
@@ -72,17 +71,18 @@ class Equipments extends APIController
                     'slot_id' => $parentRelation->slot_id
                 ]);
             }
-            $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->type_name, $equipment->id));
+            $viewData['editUrl'] = url_to('equipment_edit', $equipment->id);
+
         }
 
         $viewData['deletable'] = $this->user->isAuthorized('delete') && !$equipment->isDeleted();
         if ($viewData['deletable']){
-            $viewData['deleteUrl'] = base_url(sprintf('equipments/delete/%s', $equipment->id));
+            $viewData['deleteUrl'] = url_to('equipment_delete', $equipment->id);
         }
 
         $viewData['restorable'] = $this->user->isAuthorized('delete') && $equipment->isDeleted();
         if ($viewData['restorable']){
-            $viewData['restoreUrl'] = base_url(sprintf('equipments/restore/%s', $equipment->id));
+            $viewData['restoreUrl'] = url_to('equipment_restore', $equipment->id);
         }
 
         return default_view('equipment/view', $viewData);
@@ -112,6 +112,7 @@ class Equipments extends APIController
                 );
                 if ($fileValidationResult['status']) {
                     $messenger->addRegisterSuccess();
+                    $form->clear();
                 } else{
                     $filepath = $fileValidationResult['logFilepath'];
                     $filename = splitPath($filepath)['tail'];
@@ -131,6 +132,7 @@ class Equipments extends APIController
         } else{
             $form = new EquipmentBatchRegisterForm();
         }
+        $messenger->dumpMessages();
         $viewData['forms'] = ['' => $form];
         $viewData['formUrl'] = uri_string();
         $viewData['pageTitle'] = 'Batch Register';
@@ -170,18 +172,19 @@ class Equipments extends APIController
         $registerData['pageHeader'] = $title;
         $registerData['forms'] = ['Equipment Info'=> $form];
         $registerData['formUrl'] = uri_string();
-        $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $typeName));
-        
+        $registerData['cancelUrl'] = url_to('equipment_index_type', $typeName);
+
         return default_view('equipment/register', $registerData);
     }
 
-    public function edit($equipmentId, $typeName)
+    public function edit($equipmentId)
     {
-        $form = EquipmentForm::getTypeForm($typeName, $this->request);
+        $equipmentModel = model('EquipmentModel');
+        $equipment = model('EquipmentModel')->fullQuery()->find($equipmentId);
+        $form = EquipmentForm::getTypeForm($equipment->type_name, $this->request);
         $form->asEdit();
         $messenger = service('messenger');
         if ($form->validate()){
-            $equipmentModel = model('EquipmentModel');
             $equipment = $form->getValidatedData();
             $equipmentModel->update($equipmentId, $equipment);
             $messenger->addMessage(
@@ -194,7 +197,7 @@ class Equipments extends APIController
             }
         }
         $messenger->dumpMessages();
-        return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+        return redirect()->route('equipment_view', [$equipmentId]);
     }
 
     public function delete(string $equipmentId)
@@ -205,9 +208,9 @@ class Equipments extends APIController
         $messenger->addDeleteSuccess();
         $messenger->dumpMessages();
         if ($this->user->isAuthorized('delete')){
-            return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+            return redirect()->route('equipment_view', [$equipmentId]);
         } else {
-            return redirect('equipments');
+            return redirect()->route('equipment_index');
         }
     }
 
@@ -216,7 +219,7 @@ class Equipments extends APIController
         $equipmentModel = new EquipmentModel();
         $equipmentModel->restore($equipmentId);
         service('messenger')->addRestoreSuccess();
-        return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+        return redirect()->route('equipment_view', [$equipmentId]);
     }
 
     public function __get__(): ResponseInterface

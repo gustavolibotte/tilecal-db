@@ -18,26 +18,25 @@ class Messenger{
         ];
     }
 
-    // public function addMessages(array $params)
-    // {
-    //     foreach ($params as $param){
-    //         $this->addMessage($param['message'], $param['type']);
-    //     }
-    // }
+    public function addMessages(array $params)
+    {
+        foreach ($params as $param){
+            $this->addMessage($param['message'], $param['type']);
+        }
+    }
 
-    // public function dumpMessages()
-    // {
-    //     $session = \Config\Services::session();
-    //     $session->set('messages', $this->messages);
-    // }
+    public function dumpMessages()
+    {
+        $session = \Config\Services::session();
+        $session->set('messages', $this->messages);
+    }
 
     public function getMessages(): ?array
     {
-        // $session = \Config\Services::session();
-        // $messages = $session->get('messages');
-        // $session->remove('messages');
-        // return $messages;
-        return $this->messages;
+        $session = \Config\Services::session();
+        $messages = $session->get('messages');
+        $session->remove('messages');
+        return $messages;
     }
 
     public function addDeleteSuccess()

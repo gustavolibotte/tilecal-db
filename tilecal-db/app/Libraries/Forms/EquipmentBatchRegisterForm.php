@@ -17,7 +17,7 @@ class EquipmentBatchRegisterForm extends Form{
             'fieldParams' => [
                 'options' => model('EquipmentTypeModel')
                     ->orderBy('label')
-                    ->getCustomArray('name', 'label')
+                    ->getFormDropdownOptions(['label'], value:'name')
             ]
         ];
 

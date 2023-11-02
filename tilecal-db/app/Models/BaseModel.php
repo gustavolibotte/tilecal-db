@@ -51,21 +51,21 @@ abstract class BaseModel extends Model
         return $results;
     }
 
-    public function getFormDropdownOptions(array $columns, string $separator = ' - '){
+    public function getFormDropdownOptions(array $columns, string $separator = ' - ', string $value='id'){
         helper('string');
         $entities = $this->asArray()->findAll();
         $options[FORM_SELECT_NULL_OPTION] = 'Select an option';
         foreach ($entities as $entity){
             $first = true;
-            $options[$entity['id']] = '';
+            $options[$entity[$value]] = '';
             foreach ($columns as $colName){
                 if (!empty($entity[$colName])){
                     if ($first){
-                        $options[$entity['id']] = $entity[$colName];
+                        $options[$entity[$value]] = $entity[$colName];
                         $first = false;
                     } else{
-                        $options[$entity['id']] .= $separator;
-                        $options[$entity['id']] .= $entity[$colName];
+                        $options[$entity[$value]] .= $separator;
+                        $options[$entity[$value]] .= $entity[$colName];
                     }
                 }
             }
@@ -91,6 +91,7 @@ abstract class BaseModel extends Model
             }
         }
         $results = (is_null($ids))? $this->findAll(): $this->find($ids);
+        $array = [];
         if ($nullValue) {
             foreach ($results as $result){
                 $array[$result->$keyField] = $result;

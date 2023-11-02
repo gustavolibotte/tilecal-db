@@ -12,13 +12,13 @@
             Equipments
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="<? echo base_url('equipments'); ?>">Index</a></li>
+            <li><a class="dropdown-item" href="<? echo url_to('equipment_index'); ?>">Index</a></li>
             <? if ($user->isAuthorized('delete')):?>
-              <li><a class="dropdown-item" href="<? echo base_url('equipments?onlyDeleted=true'); ?>">Deleted</a></li>
+              <li><a class="dropdown-item" href="<? echo url_to('equipment_index_deleted'); ?>">Deleted</a></li>
             <? endif; ?>
             <li><hr class="dropdown-divider"></li>
             <? foreach ($equipmentTypes as $equipType): ?>
-              <li><a class="dropdown-item" href="<? echo base_url(sprintf('equipments?type_name=%s', $equipType->name)); ?>"><?echo $equipType->label;?></a></li>
+              <li><a class="dropdown-item" href="<? echo url_to('equipment_index_type', $equipType->name);?>"><?echo $equipType->label;?></a></li>
             <? endforeach;?>
           </ul>
         </li>
@@ -51,10 +51,10 @@
               Register
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="<? echo base_url('equipments/batch-register')?>">Batch Register</a></li>
+              <li><a class="dropdown-item" href="<? echo url_to('equipment_batch_register'); ?>">Batch Register</a></li>
               <li><hr class="dropdown-divider"></li>
               <? foreach ($equipmentTypes as $equipType): ?>
-                <li><a class="dropdown-item" href="<? echo base_url(sprintf('equipments/%s/register', $equipType->name)); ?>"><?echo $equipType->label;?></a></li>
+                <li><a class="dropdown-item" href="<? echo url_to('equipment_register_type', $equipType->name); ?>"><?echo $equipType->label;?></a></li>
               <? endforeach;?>
             </ul>
           </li>
@@ -64,12 +64,12 @@
             Files
           </a>
           <ul class="dropdown-menu" style="color: #ffffff;">
-            <li><a class="dropdown-item" href="<? echo base_url('files'); ?>">Index</a></li>
+            <li><a class="dropdown-item" href="<? echo url_to('file_index'); ?>">Index</a></li>
             <? if ($user->isAuthorized('upload')):?>
-              <li><a class="dropdown-item" href="<? echo base_url('files/upload'); ?>">Upload</a></li>
+              <li><a class="dropdown-item" href="<? echo url_to('file_upload'); ?>">Upload</a></li>
             <? endif; ?>
             <? if ($user->isAuthorized('delete')):?>
-              <li><a class="dropdown-item" href="<? echo base_url('files?onlyDeleted=true'); ?>">Deleted</a></li>
+              <li><a class="dropdown-item" href="<? echo url_to('file_index_deleted'); ?>">Deleted</a></li>
             <? endif; ?>
           </ul>
         </li>

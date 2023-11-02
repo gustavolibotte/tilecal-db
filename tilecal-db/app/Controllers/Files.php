@@ -21,9 +21,8 @@ class Files extends APIController
         return default_view('files/index', $indexData);
     }
 
-    public function view(){
+    public function view($fileId){
         helper('form');
-        $fileId = $this->request->getVar('id');
         $fileModel = model('FileModel');
         $file = $fileModel->withDeleted()->find($fileId);
         if (is_null($file)){
@@ -52,12 +51,14 @@ class Files extends APIController
         }
         $viewData['deletable'] = $this->user->isAuthorized('delete') && (!$file->isDeleted());
         if ($viewData['deletable']){
-            $viewData['deleteUrl'] = base_url(sprintf('files/delete/%d', $file->id));
+            // $viewData['deleteUrl'] = base_url(sprintf('files/delete/%d', $file->id));
+            $viewData['deleteUrl'] = url_to('file_delete', $file->id);
         }
 
         $viewData['restorable'] = $this->user->isAuthorized('delete') && $file->isDeleted();
         if ($viewData['restorable']){
-            $viewData['restoreUrl'] = base_url(sprintf('files/restore/%s', $file->id));
+            // $viewData['restoreUrl'] = base_url(sprintf('files/restore/%s', $file->id));
+            $viewData['restoreUrl'] = url_to('file_restore', $file->id);
         }
 
         return default_view('files/view', $viewData);
@@ -65,7 +66,13 @@ class Files extends APIController
 
     public function download($fileId){
         $fileModel = model('FileModel');
+        if ($this->user->isAuthorized('delete')){
+            $fileModel->withDeleted();
+        }
         $file = $fileModel->find($fileId);
+        if (is_null($file)){
+            return $this->notFound();
+        }
         $response = $this->response
             ->download($file->path, null, true)
             ->setFileName($file->name)
@@ -84,7 +91,7 @@ class Files extends APIController
                 $fileModel = model('FileModel');
                 $fileModel->insert($file);
                 $messenger->addMessage('File uploaded with success', 'success');
-                return redirect('files/upload');
+                return redirect('file_upload');
             } else {
                 foreach ($form->getErrors() as $errorMsg){
                     $messenger->addMessage($errorMsg, 'danger');
@@ -99,7 +106,8 @@ class Files extends APIController
         $registerData['pageHeader'] = $title;
         $registerData['forms'] = ['File Info'=> $form];
         $registerData['formUrl'] = uri_string();
-        $registerData['cancelUrl'] = base_url('files');
+        // $registerData['cancelUrl'] = base_url('files');
+        $registerData['cancelUrl'] = url_to('file_index');
         $messenger->dumpMessages();
 
         return default_view('files/upload', $registerData);
@@ -113,9 +121,11 @@ class Files extends APIController
         $messenger->addDeleteSuccess();
         $messenger->dumpMessages();
         if ($this->user->isAuthorized('delete')){
-            return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
+            // return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
+            return redirect()->route('file_view', [$fileId]);
+
         } else {
-            return redirect('files');
+            return redirect()->route('file_index');
         }
     }
 
@@ -126,7 +136,8 @@ class Files extends APIController
         $messenger = service('messenger');
         $messenger->addRestoreSuccess();
         $messenger->dumpMessages();
-        return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
+        // return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
+        return redirect()->route('file_view', [$fileId]);
     }
 
     public function __get__(): ResponseInterface

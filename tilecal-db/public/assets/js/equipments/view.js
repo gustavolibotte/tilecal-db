@@ -1,7 +1,6 @@
-function fetchRelatedEquipTable(){
+function fetchRelatedEquipTable(equipmentId){
     fixedToastr('Loading Data', 'Related Equipments Table')
-    const searchParams = new URLSearchParams(window.location.search);
-    const requestUrl = `/api/equipments/get?relatedEquipmentId=${searchParams.get('id')}`
+    const requestUrl = `/api/equipments/get?relatedEquipmentId=${equipmentId}`
     var tableColumns = [
         {
             "render": function(data, type, row, meta){return capitalize(row.relation_type)},
@@ -39,14 +38,13 @@ function fetchRelatedEquipTable(){
                 response.responseJSON.status,
                 errorThrown
             )
-        } 
+        }
     })
 }
 
-function fetchRelatedFilesTable(){
+function fetchRelatedFilesTable(equipmentId){
     fixedToastr('Loading data', 'Related Files Table');
-    const searchParams = new URLSearchParams(window.location.search);
-    const requestUrl = `/api/files/get?relatedEquipmentId=${searchParams.get('id')}`
+    const requestUrl = `/api/files/get?relatedEquipmentId=${equipmentId}`
     const tableParams = {
         autoWidth: true,
         searching: true,
@@ -78,8 +76,9 @@ function fetchRelatedFilesTable(){
 }
 
 function fetchData(){
-    fetchRelatedEquipTable()
-    fetchRelatedFilesTable()
+    const equipmentId = getEquipmentIdFromViewRoute(window.location.href)
+    fetchRelatedEquipTable(equipmentId)
+    fetchRelatedFilesTable(equipmentId)
 }
 
 $(document).ready(fetchData)

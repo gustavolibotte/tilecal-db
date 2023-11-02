@@ -15,6 +15,15 @@ abstract class APIController extends BaseController
 
     abstract protected function __get__(): ResponseInterface;
 
+    protected function checkAjaxRequest(): ?string
+    {
+        if (!$this->request->isAJAX()){
+            log_message('warning', 'API received a non AJAX request');
+            return 'Requests must be AJAX.';
+        }
+        return null;
+    }
+
     public function get(): ResponseInterface
     {
         $msg = $this->checkAjaxRequest();
