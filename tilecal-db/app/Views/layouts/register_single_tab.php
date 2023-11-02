@@ -15,12 +15,8 @@
               <h4><? echo $formHeader; ?></h4>
               <? echo $form->toHTML(); ?>
             <? endforeach;?>
-            <div class="row">
-              <div class="col mt-4 text-right">
-                <a type="button" href="<? echo $cancelUrl ?>" class="btn btn-danger">Cancel</a>
-                <button type="submit" form="register-form" class="btn btn-success" id="register-form-submit-button" aria-pressed="true">Register</button>
-              </div>
-            </div>
+            <a type="button" href="<? echo $cancelUrl ?>" class="btn btn-danger">Cancel</a>
+            <button type="submit" form="register-form" class="btn btn-success" id="register-form-submit-button" aria-pressed="true">Register</button>
           </form>
           <hr>
           <?= $this->renderSection('help') ?>
