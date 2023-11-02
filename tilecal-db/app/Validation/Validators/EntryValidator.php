@@ -117,7 +117,7 @@ abstract class EntryValidator
         return $this;
     }
 
-    public function clearFields(): Self
+    public function clearState(): Self
     {
         $this->fieldValues = [];
         return $this;

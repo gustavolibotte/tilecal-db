@@ -8,9 +8,9 @@ use App\Library\Writers\CSVFileWriter;
 use App\Library\Readers\CSVFileReader;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
-use App\Validation\Validators\EntryValidator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
+use Throwable;
 
 class Equipments extends APIController
 {
@@ -259,26 +259,36 @@ class Equipments extends APIController
         $fileWriter = (new CSVFileWriter($logFilepath))->open();
         $fileWriter->addLine([
             'row', 'field', 'error'
-        ]); // Writing the header
-        // Needs to rename the reader's header because the front end fields
+        ]); // Writing the header in the output file
+        // Needs to rename the fields because the front end fields
         // have user friendly names
         $colRename = [
             'owner_institute' => 'owner_mne',
             'location' => 'location_name',
-            'status' => 'status_name'
+            'status' => 'status_name',
+            'owner' => 'owner_mne'
         ];
         $colRenameFlipped = array_flip($colRename);
         $equipmentModel = model('EquipmentModel');
-        $this->db->transBegin();
+        $this->db->transException(true)->transBegin();
         foreach ($fileReader as $iRow=>$row){
             $row = rename_array_keys($row , $colRename);
             // Removes some fields that may conflict with the type defined in the validator
             remove_value('type_name', $row, false);
             remove_value('type_id', $row, false);
-            $validator->clearFields()->setFieldValues($row);
+            $validator->clearState()->setFieldValues($row);
             if ($validator->validate()){
-                $rowData = $validator->getValidatedData();
-                $equipmentModel->insert($rowData);
+                try{
+                    $rowData = $validator->getValidatedData();
+                    $equipmentModel->insert($rowData);
+                } catch (Throwable $e){
+                    $fileWriter->addLine([
+                        $iRow,
+                        null,
+                        $e->getMessage()
+                    ]);
+                    break;
+                }
             } else{
                 $foundError = true;
                 foreach($validator->getErrors() as $field=>$errorMsg){
@@ -293,7 +303,7 @@ class Equipments extends APIController
             }
         }
         $fileWriter->close();
-        if ($foundError){
+        if ($foundError || ($this->db->transStatus() === false)){
             $this->db->transRollback();
             return $logFilepath;
         } else{
