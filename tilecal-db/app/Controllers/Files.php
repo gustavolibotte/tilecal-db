@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Library\Forms\FileForm;
 use CodeIgniter\HTTP\ResponseInterface;
-use Exception;
+use ValueError;
 
 class Files extends APIController
 {
@@ -35,7 +35,6 @@ class Files extends APIController
         $viewData['pageHeader'] = sprintf('File %s', $file->name);
         $viewData['infoHeader'] = 'File Info';
         $viewData['histories'] = model('HistModel')->getFileHist($file->id);
-        d($viewData['histories']);
 
         if ($file->isDeleted()){
             $viewData['pageHeader'] = 'Deleted ' . $viewData['pageHeader'];
@@ -181,5 +180,20 @@ class Files extends APIController
             ->setFileName('validation_log.csv')
             ->setContentType('text/csv');
         return $response;
+    }
+
+    public function __getHist__(): ResponseInterface
+    {
+        $id = $this->request->getVar('id');
+        if (empty($id)){
+            throw new ValueError('An id value must be given.');
+        }
+        $history = model('HistModel')
+            ->getFileHist($id);
+        $res = [
+            'status' => 'success',
+            'data' => $history
+        ];
+        return $this->respond($res, 200);
     }
 }

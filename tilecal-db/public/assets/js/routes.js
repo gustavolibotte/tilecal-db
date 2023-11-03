@@ -11,20 +11,23 @@ function getFileDownloadRoute(id){
 }
 
 function getEquipmentIdFromViewRoute(routeStr){
-    [,id] = splitRoute(routeStr)
-    return id
+    splitted = splitRoute(routeStr)
+    return splitted.tail
 }
 
 function getFileIdFromViewRoute(routeStr){
-    [,id] = splitRoute(routeStr)
-    return id
+    splitted = splitRoute(routeStr)
+    return splitted.tail
 }
 
 function splitRoute(routeStr){
     const splitted = routeStr.split('/')
     const tail = splitted.pop()
     const base = splitted.join('/')
-    return base, tail
+    return {
+        "base": base, 
+        "tail": tail
+    }
 }
 
 getEquipmentRoute = '/api/equipments/get'

@@ -61,10 +61,63 @@ function fetchRelatedFilesTable(equipmentId){
             tableParams.data = response.data
             $('#related-files-table').DataTable(tableParams);
             toastr.clear()
-            toastr.success('Loaded')
+            toastr.success('Loaded', 'Related Files Table')
         },
         error: function(response, textStatus, errorThrown){
             $('#related-files-table').DataTable(tableParams);
+            toastr.clear()
+            toastrError(
+                response.responseJSON.messages.error,
+                response.responseJSON.status,
+                errorThrown
+            )
+        }
+    })
+}
+
+function fetchHistTable(equipmentId){
+    fixedToastr('Loading data', 'Equip Hist Table');
+    const requestUrl = `/api/equipments/getHist`
+    const tableParams = {
+        autoWidth: true,
+        searching: true,
+        paging: true,
+        order: [[0, 'desc']],
+        columns: [
+            {
+                "render": function(data, type, row, meta){
+                    return `<b>${row.created_at}</b>`
+                },
+                "title": "Created at"
+            },
+            {
+                "render": function(data, type, row, meta){
+                    return `<b>${row.user}</b>`
+                },
+                "title": "User"
+            },
+            {
+                "render": function(data, type, row, meta){
+                    return getHistMessage(row)
+                },
+                "title": "Description"
+            }
+        ]
+    }
+    $.ajax({
+        type: 'GET',
+        url: requestUrl,
+        dataType: "json",
+        async: true,
+        data: {"id": equipmentId},
+        success: function(response){
+            tableParams.data = response.data
+            $('#history-table-full').DataTable(tableParams);
+            toastr.clear()
+            toastr.success('Loaded', 'Equip Hist Table')
+        },
+        error: function(response, textStatus, errorThrown){
+            $('#history-table-full').DataTable(tableParams);
             toastr.clear()
             toastrError(
                 response.responseJSON.messages.error,
@@ -79,6 +132,7 @@ function fetchData(){
     const equipmentId = getEquipmentIdFromViewRoute(window.location.href)
     fetchRelatedEquipTable(equipmentId)
     fetchRelatedFilesTable(equipmentId)
+    // fetchHistTable(equipmentId)
 }
 
 $(document).ready(fetchData)

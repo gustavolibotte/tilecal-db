@@ -22,7 +22,7 @@
             <div class="col">
               <h4><? echo $infoHeader; ?></h4>
             </div>
-            <div class="col-2 text-end">
+            <div class="col-5 text-end">
               <? if ($editable): ?>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-modal">
                   Edit
@@ -38,6 +38,9 @@
                   Restore
                 </button>
               <? endif;?>
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                  Launch demo modal
+              </button>
             </div>
           </div>
           <div class="row">
@@ -60,7 +63,7 @@
         <div class="col mt-4" id="history-info-col">
           <h4>Change history</h4>
           <p>Ordered from the most recent operation to the oldest</p>
-          <? echo view_cell('HistoryTableCell::full', ['histories' => $histories]);?>
+          <table class="row-border" id="history-table-full">
         </div>
       </div>
     </div>
@@ -107,7 +110,7 @@
   <? endif;?>
 
   <? if($restorable): ?>
-    <div class="modal fade" id="restore-modal" tabindex="-1" aria-labelledby="restore-modal-label" aria-hidden="true">
+    <div class="modal fade" id="restore-modal" tabindex="-1" aria-labelledby="restore-modal" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -124,12 +127,30 @@
       </div>
     </div>
   <? endif;?>
+
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript') ?>
   <script src="https://cdn.datatables.net/v/dt/jq-3.6.0/dt-1.13.4/b-2.3.6/datatables.min.js"></script>
   <script src="https://cdn.datatables.net/plug-ins/1.13.4/features/scrollResize/dataTables.scrollResize.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-  <? echo view_cell('HistoryTableCell::fulljs'); ?>
   <?= $this->renderSection('javascript') ?> 
 <?= $this->endSection() ?>

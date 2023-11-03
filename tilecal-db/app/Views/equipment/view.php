@@ -36,5 +36,6 @@
   <script type="text/javascript" src="/assets/js/string_utils.js"></script>
   <script type="text/javascript" src="/assets/js/file_table_utils.js"></script>
   <script type="text/javascript" src="/assets/js/equipment_table_utils.js"></script>
+  <script type="text/javascript" src="/assets/js/hist_msg.js"></script>
   <script type="text/javascript" src="/assets/js/equipments/view.js"></script>
 <?= $this->endSection() ?>

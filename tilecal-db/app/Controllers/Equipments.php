@@ -4,13 +4,11 @@ namespace App\Controllers;
 
 use App\Library\Forms\EquipmentBatchRegisterForm;
 use App\Library\Forms\EquipmentForm;
-use App\Library\Writers\CSVFileWriter;
-use App\Library\Readers\CSVFileReader;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
-use Throwable;
+use ValueError;
 
 class Equipments extends APIController
 {
@@ -50,7 +48,7 @@ class Equipments extends APIController
 
         $viewData['infoHeader'] = 'Equipment Info';
         $viewData['entity'] = $equipment;
-        $viewData["histories"] = model('HistModel')->getEquipmentHist($equipmentId);
+        // $viewData["histories"] = model('HistModel')->getEquipmentHist($equipmentId);
         $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->id);
 
         if ($equipment->isDeleted()){
@@ -262,6 +260,21 @@ class Equipments extends APIController
             'status' => 'success'
         ];
         $res['data'] = empty($data)? []: $data;
+        return $this->respond($res, 200);
+    }
+
+    public function __getHist__(): ResponseInterface
+    {
+        $id = $this->request->getVar('id');
+        if (empty($id)){
+            throw new ValueError('An id value must be given.');
+        }
+        $history = model('HistModel')
+            ->getEquipmentHist($id);
+        $res = [
+            'status' => 'success',
+            'data' => $history
+        ];
         return $this->respond($res, 200);
     }
 }
