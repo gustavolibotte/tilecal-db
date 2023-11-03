@@ -13,7 +13,6 @@ function fetchRelatedEquipTable(equipmentId){
     ]
     tableColumns = tableColumns.concat(equipmentTableColumns)
     const tableParams = {
-        autoWidth: true,
         searching: true,
         paging: true,
         order: [[9, 'desc']],
@@ -46,7 +45,6 @@ function fetchRelatedFilesTable(equipmentId){
     fixedToastr('Loading data', 'Related Files Table');
     const requestUrl = `/api/files/get?relatedEquipmentId=${equipmentId}`
     const tableParams = {
-        autoWidth: true,
         searching: true,
         paging: true,
         order: fileTableOrder,
@@ -79,9 +77,10 @@ function fetchHistTable(equipmentId){
     fixedToastr('Loading data', 'Equip Hist Table');
     const requestUrl = `/api/equipments/getHist`
     const tableParams = {
-        autoWidth: true,
         searching: true,
-        paging: true,
+        dom: 'lfrtip',
+        pageLength: 3,
+        lengthMenu: [1, 3, 5, 10, 15, 20],
         order: [[0, 'desc']],
         columns: [
             {
@@ -132,7 +131,7 @@ function fetchData(){
     const equipmentId = getEquipmentIdFromViewRoute(window.location.href)
     fetchRelatedEquipTable(equipmentId)
     fetchRelatedFilesTable(equipmentId)
-    // fetchHistTable(equipmentId)
+    fetchHistTable(equipmentId)
 }
 
 $(document).ready(fetchData)

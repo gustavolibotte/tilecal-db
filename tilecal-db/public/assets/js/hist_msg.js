@@ -41,7 +41,7 @@ function getFileHistMessage(data){
 }
 
 function getFileRelHistMessage(data){
-    return `Links ${getEquipLink(data.equip_id)} to ${getFileLink(data.file_id, data.file_name)}`
+    return `Links ${getEquipLink(data.equipment_id)} to ${getFileLink(data.file_id, data.file_name)}`
 }
 
 function getParentRelHistMessage(data){
