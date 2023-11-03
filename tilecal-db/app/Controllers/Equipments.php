@@ -154,7 +154,7 @@ class Equipments extends APIController
                 $equipmentModel->insert($equipment);
                 $messenger->addRegisterSuccess();
                 $messenger->dumpMessages();
-                return redirect()->to(sprintf('equipments/%s/register', $typeName));
+                return redirect()->route('equipment_register', [$typeName]);
             } else {
                 foreach ($form->getErrors() as $errorMsg){
                     $messenger->addMessage($errorMsg, 'danger');

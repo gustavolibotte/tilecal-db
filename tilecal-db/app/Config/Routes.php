@@ -30,7 +30,10 @@ $routes->setAutoRoute(false);
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'Home::index', ['filter' => 'auth:view']);
+$routes->get('/', 'Home::index', [
+    'filter' => 'auth:view',
+    'as' => 'home'
+]);
 $routes->get('callback', 'Callback::callback', ['filter' => 'auth:view']);
 
 // Equipment routes
@@ -56,7 +59,7 @@ $routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1', [
 ]);
 $routes->match(['get', 'post'], 'equipments/register/(:segment)', 'Equipments::register/$1', [
     'filter' => 'auth:register',
-    'as' => 'equipment_register_type'
+    'as' => 'equipment_register'
 ]);
 $routes->match(['get', 'post'], 'equipments/batch-register', 'Equipments::batchRegister', [
     'filter' => 'auth:register',

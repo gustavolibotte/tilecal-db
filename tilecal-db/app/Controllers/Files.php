@@ -26,15 +26,16 @@ class Files extends APIController
         $fileModel = model('FileModel');
         $file = $fileModel->withDeleted()->find($fileId);
         if (is_null($file)){
-            return redirect('notfound');
+            return $this->notFound();
         } elseif ($file->isDeleted() && !$this->user->isAuthorized('delete')){
-            return redirect ('deleted-entry');
+            return $this->deletedEntry();
         }
 
         $viewData['entity'] = $file;
         $viewData['pageHeader'] = sprintf('File %s', $file->name);
         $viewData['infoHeader'] = 'File Info';
         $viewData['histories'] = model('HistModel')->getFileHist($file->id);
+        d($viewData['histories']);
 
         if ($file->isDeleted()){
             $viewData['pageHeader'] = 'Deleted ' . $viewData['pageHeader'];
@@ -121,7 +122,6 @@ class Files extends APIController
         $messenger->addDeleteSuccess();
         $messenger->dumpMessages();
         if ($this->user->isAuthorized('delete')){
-            // return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
             return redirect()->route('file_view', [$fileId]);
 
         } else {
@@ -136,7 +136,6 @@ class Files extends APIController
         $messenger = service('messenger');
         $messenger->addRestoreSuccess();
         $messenger->dumpMessages();
-        // return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
         return redirect()->route('file_view', [$fileId]);
     }
 

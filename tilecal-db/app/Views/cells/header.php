@@ -54,7 +54,7 @@
               <li><a class="dropdown-item" href="<? echo url_to('equipment_batch_register'); ?>">Batch Register</a></li>
               <li><hr class="dropdown-divider"></li>
               <? foreach ($equipmentTypes as $equipType): ?>
-                <li><a class="dropdown-item" href="<? echo url_to('equipment_register_type', $equipType->name); ?>"><?echo $equipType->label;?></a></li>
+                <li><a class="dropdown-item" href="<? echo url_to('equipment_register', $equipType->name); ?>"><?echo $equipType->label;?></a></li>
               <? endforeach;?>
             </ul>
           </li>

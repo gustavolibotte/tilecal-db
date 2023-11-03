@@ -105,7 +105,7 @@ class HistModel extends BaseModel
     public function getFileHist(int $id){
         $fileLogs = $this->db->table('files_hist fh')
             ->select('name, description, user, action, created_at')
-            ->where('id', $id)
+            ->where('record_id', $id)
             ->get()->getCustomResultObject(FileLog::class);
         $fileRelationLogs = $this->db->table('equipments_to_files_hist efh')
             ->join('files f', 'efh.file_id=f.id', 'left')
