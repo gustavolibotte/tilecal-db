@@ -11,7 +11,7 @@
 <?= $this->section('relatedContent') ?>
   <hr>
   <h4>Related Equipments</h4>
-  <table class="table table-bordered" id="related-equipments-table"></table>
+  <table class="table table-bordered" id="related-equipments-table" style="width:100%"></table>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript')?>

@@ -2,7 +2,6 @@ function fetchRelatedEquipsTable(fileId){
     fixedToastr('Loading data', 'Related Equipments Table')
     const requestUrl = `/api/equipments/get`
     const tableParams = {
-        autoWidth: true,
         searching: true,
         paging: true,
         order: equipmentTableOrder,
