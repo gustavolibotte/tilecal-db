@@ -78,7 +78,6 @@ function fetchHistTable(equipmentId){
     const requestUrl = `/api/equipments/getHist`
     const tableParams = {
         searching: true,
-        dom: 'lfrtip',
         pageLength: 3,
         lengthMenu: [1, 3, 5, 10, 15, 20],
         order: [[0, 'desc']],

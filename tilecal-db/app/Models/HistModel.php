@@ -104,21 +104,25 @@ class HistModel extends BaseModel
 
     public function getFileHist(int $id){
         $fileLogs = $this->db->table('files_hist fh')
-            ->select('name, description, user, action, created_at')
+            ->select("'file' as hist_type")
+            ->select('name')
+            ->select('description')
+            ->select('user')
+            ->select('action')
+            ->select('created_at')
             ->where('record_id', $id)
-            ->get()->getCustomResultObject(FileLog::class);
+            ->get()->getResultArray();
         $fileRelationLogs = $this->db->table('equipments_to_files_hist efh')
             ->join('files f', 'efh.file_id=f.id', 'left')
-            ->select(
-                'efh.file_id, ' .
-                'f.name as file_name, ' .
-                'efh.equipment_id, ' .
-                'efh.action, ' .
-                'efh.user, ' .
-                'efh.created_at'
-            )
+            ->select("'file_rel' as hist_type")
+            ->select('efh.file_id')
+            ->select('f.name as file_name')
+            ->select('efh.equipment_id')
+            ->select('efh.action')
+            ->select('efh.user')
+            ->select('efh.created_at')
             ->where('efh.file_id', $id)
-            ->get()->getCustomResultObject(EquipFileRelationLog::class);
+            ->get()->getResultArray();
         $hist = array_merge($fileLogs, $fileRelationLogs);
         return $hist;
     }

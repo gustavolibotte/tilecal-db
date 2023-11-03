@@ -36,7 +36,7 @@ $routes->get('/', 'Home::index', [
 ]);
 $routes->get('callback', 'Callback::callback', ['filter' => 'auth:view']);
 
-// Equipment routes
+// API routes
 $routes->get('api/equipments/get', 'Equipments::get', [
     'filter' => 'auth:view',
     'as' => 'equipment_get'
@@ -45,6 +45,16 @@ $routes->get('api/equipments/getHist', 'Equipments::getHist', [
     'filter' => 'auth:view',
     'as' => 'equipment_get_hist'
 ]);
+$routes->get('api/files/get', 'Files::get', [
+    'filter' => 'auth:view',
+    'as' => 'file_get'
+]);
+$routes->get('api/files/getHist', 'Files::getHist', [
+    'filter' => 'auth:view',
+    'as' => 'file_get_hist'
+]);
+
+// Equipment page routes
 $routes->get('equipments', 'Equipments::index', [
     'filter' => 'auth:view',
     'as' => 'equipment_index'
@@ -84,10 +94,6 @@ $routes->post('equipments/restore/(:alphanum)',  'Equipments::restore/$1', [
 
 
 // File routes
-$routes->get('api/files/get', 'Files::get', [
-    'filter' => 'auth:view',
-    'as' => 'file_get'
-]);
 $routes->get('files', 'Files::index', [
     'filter' => 'auth:view',
     'as' => 'file_index'
