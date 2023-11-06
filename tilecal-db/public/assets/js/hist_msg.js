@@ -13,7 +13,7 @@ function getHistMessage(data){
 }
 
 function getEquipHistMessage(data){
-    var msg = getEntryOperation(data)
+    var msg = ''
     msg += "<ul>"
     msg += listEntries(data, [
         'id',
@@ -30,7 +30,7 @@ function getEquipHistMessage(data){
 }
 
 function getFileHistMessage(data){
-    var msg = getEntryOperation(data)
+    var msg = ''
     msg += "<ul>"
     msg += listEntries(data, [
         'name',
@@ -41,11 +41,11 @@ function getFileHistMessage(data){
 }
 
 function getFileRelHistMessage(data){
-    return `Links ${getEquipLink(data.equipment_id)} to ${getFileLink(data.file_id, data.file_name)}`
+    return `Link ${getEquipLink(data.equipment_id)} to ${getFileLink(data.file_id, data.file_name)}`
 }
 
 function getParentRelHistMessage(data){
-    return `Make ${getEquipLink(data.parent_equip_id)} parent to ${getEquipLink(data.child_equip_id)}`
+    return `${getEquipLink(data.parent_equip_id)} parent to ${getEquipLink(data.child_equip_id)}`
 }
 
 function listEntries(data, fields){

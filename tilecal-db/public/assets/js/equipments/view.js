@@ -89,10 +89,14 @@ function fetchHistTable(equipmentId){
                 "title": "Created at"
             },
             {
-                "render": function(data, type, row, meta){
-                    return `<b>${row.user}</b>`
-                },
+                "data": "user",
                 "title": "User"
+            },
+            {
+                "render": function(data, type, row, meta){
+                    return capitalize(row.action)
+                },
+                "title": "Action"
             },
             {
                 "render": function(data, type, row, meta){
