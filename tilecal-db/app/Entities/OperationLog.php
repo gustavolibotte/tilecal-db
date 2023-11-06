@@ -106,7 +106,7 @@ class OperationLog extends BaseEntity
         $text = empty($name)? $id: $name;
         $fileLink = sprintf(
             '<a type="button" class="link-primary" href="%s">%s</a>',
-            base_url(sprintf('files/view?id=%s', $id)),
+            url_to('file_view', $id),
             $text
         );
         return $fileLink;
@@ -116,7 +116,7 @@ class OperationLog extends BaseEntity
     {
         $equipmentLink = sprintf(
             '<a type="button" class="link-primary" href="%s">%s</a>',
-            base_url(sprintf('equipments/view/%s', $id)),
+            url_to('equipment_view', $id),
             $id
         );
         return $equipmentLink;

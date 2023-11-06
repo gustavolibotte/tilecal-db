@@ -1,13 +1,33 @@
 function getEquipViewRoute(id){
-    return `/equipments/view?id=${id}`
+    return `/equipments/view/${id}`
 }
 
 function getFileViewRoute(id){
-    return `/files/view?id=${id}`
+    return `/files/view/${id}`
 }
 
 function getFileDownloadRoute(id){
     return `/files/download/${id}`
+}
+
+function getEquipmentIdFromViewRoute(routeStr){
+    splitted = splitRoute(routeStr)
+    return splitted.tail
+}
+
+function getFileIdFromViewRoute(routeStr){
+    splitted = splitRoute(routeStr)
+    return splitted.tail
+}
+
+function splitRoute(routeStr){
+    const splitted = routeStr.split('/')
+    const tail = splitted.pop()
+    const base = splitted.join('/')
+    return {
+        "base": base, 
+        "tail": tail
+    }
 }
 
 getEquipmentRoute = '/api/equipments/get'

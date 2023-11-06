@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Library\Forms\FileForm;
 use CodeIgniter\HTTP\ResponseInterface;
-use Exception;
+use ValueError;
 
 class Files extends APIController
 {
@@ -21,15 +21,14 @@ class Files extends APIController
         return default_view('files/index', $indexData);
     }
 
-    public function view(){
+    public function view($fileId){
         helper('form');
-        $fileId = $this->request->getVar('id');
         $fileModel = model('FileModel');
         $file = $fileModel->withDeleted()->find($fileId);
         if (is_null($file)){
-            return redirect('notfound');
+            return $this->notFound();
         } elseif ($file->isDeleted() && !$this->user->isAuthorized('delete')){
-            return redirect ('deleted-entry');
+            return $this->deletedEntry();
         }
 
         $viewData['entity'] = $file;
@@ -52,12 +51,14 @@ class Files extends APIController
         }
         $viewData['deletable'] = $this->user->isAuthorized('delete') && (!$file->isDeleted());
         if ($viewData['deletable']){
-            $viewData['deleteUrl'] = base_url(sprintf('files/delete/%d', $file->id));
+            // $viewData['deleteUrl'] = base_url(sprintf('files/delete/%d', $file->id));
+            $viewData['deleteUrl'] = url_to('file_delete', $file->id);
         }
 
         $viewData['restorable'] = $this->user->isAuthorized('delete') && $file->isDeleted();
         if ($viewData['restorable']){
-            $viewData['restoreUrl'] = base_url(sprintf('files/restore/%s', $file->id));
+            // $viewData['restoreUrl'] = base_url(sprintf('files/restore/%s', $file->id));
+            $viewData['restoreUrl'] = url_to('file_restore', $file->id);
         }
 
         return default_view('files/view', $viewData);
@@ -65,7 +66,13 @@ class Files extends APIController
 
     public function download($fileId){
         $fileModel = model('FileModel');
+        if ($this->user->isAuthorized('delete')){
+            $fileModel->withDeleted();
+        }
         $file = $fileModel->find($fileId);
+        if (is_null($file)){
+            return $this->notFound();
+        }
         $response = $this->response
             ->download($file->path, null, true)
             ->setFileName($file->name)
@@ -80,13 +87,11 @@ class Files extends APIController
         if ($this->request->is('post')){
             $form = new FileForm($this->request);
             if ($form->validate()){
-                $this->db->transStart();
-                $file = $form->getEntity();
+                $file = $form->getValidatedData();
                 $fileModel = model('FileModel');
                 $fileModel->insert($file);
                 $messenger->addMessage('File uploaded with success', 'success');
-                $this->db->transComplete();
-                return redirect('files/upload');
+                return redirect('file_upload');
             } else {
                 foreach ($form->getErrors() as $errorMsg){
                     $messenger->addMessage($errorMsg, 'danger');
@@ -101,7 +106,8 @@ class Files extends APIController
         $registerData['pageHeader'] = $title;
         $registerData['forms'] = ['File Info'=> $form];
         $registerData['formUrl'] = uri_string();
-        $registerData['cancelUrl'] = base_url('files');
+        // $registerData['cancelUrl'] = base_url('files');
+        $registerData['cancelUrl'] = url_to('file_index');
         $messenger->dumpMessages();
 
         return default_view('files/upload', $registerData);
@@ -113,12 +119,13 @@ class Files extends APIController
         $fileModel->delete($fileId);
         $messenger = service('messenger');
         $messenger->addDeleteSuccess();
-        if ($this->user->isAuthorized('delete')){
-            return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
-        } else {
-            return redirect('files');
-        }
         $messenger->dumpMessages();
+        if ($this->user->isAuthorized('delete')){
+            return redirect()->route('file_view', [$fileId]);
+
+        } else {
+            return redirect()->route('file_index');
+        }
     }
 
     public function restore($fileId)
@@ -128,7 +135,7 @@ class Files extends APIController
         $messenger = service('messenger');
         $messenger->addRestoreSuccess();
         $messenger->dumpMessages();
-        return redirect()->to(base_url(sprintf('files/view/%s', $fileId)));
+        return redirect()->route('file_view', [$fileId]);
     }
 
     public function __get__(): ResponseInterface
@@ -162,6 +169,31 @@ class Files extends APIController
         $res = ['status' => 'sucesss'];
         $data = $fileModel->findAll();
         $res['data'] = empty($data)? []: $data;
+        return $this->respond($res, 200);
+    }
+
+    public function downloadValidationLog($filename)
+    {
+        $filepath = sprintf('%s/%s', config('Paths')->validationLogsDirectory, $filename);
+        $response = $this->response
+            ->download($filepath, null, true)
+            ->setFileName('validation_log.csv')
+            ->setContentType('text/csv');
+        return $response;
+    }
+
+    public function __getHist__(): ResponseInterface
+    {
+        $id = $this->request->getVar('id');
+        if (empty($id)){
+            throw new ValueError('An id value must be given.');
+        }
+        $history = model('HistModel')
+            ->getFileHist($id);
+        $res = [
+            'status' => 'success',
+            'data' => $history
+        ];
         return $this->respond($res, 200);
     }
 }

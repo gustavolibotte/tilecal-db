@@ -11,10 +11,17 @@ abstract class Form{
     public array $fields = [];
     public array $validationRules =[];
     protected bool $isValid = false;
-    protected bool $calledValidate= false;
     private array $fieldValues = [];
 
-    public abstract function getEntity();
+    protected abstract function getData();
+
+    public function getValidatedData()
+    {
+        if (!$this->isValid){
+            throw new \Exception("Can only get Data after data is validated");
+        }
+        return $this->getData();
+    }
 
     public function __construct(?IncomingRequest $request=null)
     {
@@ -33,13 +40,17 @@ abstract class Form{
     protected function processRequest(){
         $nullRequest = is_null($this->request);
         $values2Set = [];
-        foreach (array_keys($this->fields) as $key){
+        foreach ($this->fields as $fieldName=>$fieldParams){
             if (!$nullRequest){
-                $requestFieldValue = $this->request->getVar($key);
-                if ($this->fieldValueIsEmpty($requestFieldValue)){
-                    $values2Set[$key] = null;
+                if ($fieldParams['fieldType'] === 'upload'){
+                    $requestFieldValue = $this->request->getFile($fieldName);
                 } else{
-                    $values2Set[$key] = $requestFieldValue;
+                    $requestFieldValue = $this->request->getVar($fieldName);
+                }
+                if ($this->fieldValueIsEmpty($requestFieldValue)){
+                    $values2Set[$fieldName] = null;
+                } else{
+                    $values2Set[$fieldName] = $requestFieldValue;
                 }
             }
         }
@@ -57,6 +68,7 @@ abstract class Form{
 
     public function setFieldValues(array $data)
     {
+        $this->isValid = false;
         foreach (array_keys($data) as $key){
             if (array_key_exists($key, $this->fields)){
                 $this->fieldValues[$key] = $data[$key];
@@ -68,14 +80,10 @@ abstract class Form{
         $this->validator->reset();
         $this->validator->setRules($this->validationRules);
         $this->isValid = $this->validator->run($this->getFieldValues());
-        $this->calledValidate = true;
         return $this->isValid;
     }
 
     public function getErrors(){
-        if (!$this->calledValidate){
-            throw new \Exception("can only call getErrors after calling validate.");
-        }
         return $this->validator->getErrors();
     }
 
@@ -101,7 +109,6 @@ abstract class Form{
     public function clear(){
         $this->isValid = false;
         $this->request = null;
-        $this->calledValidate = false;
     }
 
     public function removeField(string $fieldName){

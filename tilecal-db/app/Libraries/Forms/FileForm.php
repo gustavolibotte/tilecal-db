@@ -83,11 +83,8 @@ class FileForm extends Form{
         ];
     }
 
-    public function getEntity(){
+    public function getData(){
         helper(['array', 'path']);
-        if (!$this->isValid){
-            throw new \Exception('To get the equipment you must validate the form first');
-        }
         $uploadedFile = $this->request->getFile('file');
         $fieldValues = $this->getFieldValues();
         $file = new \App\Entities\File([

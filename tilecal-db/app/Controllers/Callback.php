@@ -11,7 +11,7 @@ class Callback extends BaseController
         $session = \Config\Services::session();
         $lastUrl = $session->get('lastURL');
         if (empty($lastUrl) || str_ends_with($lastUrl, 'callback')){
-            return redirect()->to(base_url());
+            return redirect()->route('home');
         } else{
             return redirect()->to($lastUrl);
         }

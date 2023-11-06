@@ -2,11 +2,13 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Library\Forms\EquipmentBatchRegisterForm;
 use App\Library\Forms\EquipmentForm;
 use App\Models\EquipmentModel;
 use App\Models\EquipmentTypeModel;
+use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
+use ValueError;
 
 class Equipments extends APIController
 {
@@ -14,7 +16,7 @@ class Equipments extends APIController
     public function index($typeName=null)
     {   
         $typeName = $this->request->getVar('type_name');
-        if (!empty($this->request->getVar('deleted'))){
+        if (!empty($this->request->getVar('onlyDeleted'))){
             $indexData['headerClass'] = 'text-danger';
             $pageTitle = 'Deleted Equipment Index';
         } elseif (!empty($typeName)){
@@ -33,9 +35,8 @@ class Equipments extends APIController
         return default_view('equipment/index', $indexData);
     }
 
-    public function view(){
+    public function view(string $equipmentId){
         helper(['app_form', 'form']);
-        $equipmentId = $this->request->getVar('id');
         $equipmentModel = model('EquipmentModel');
         $equipment = $equipmentModel->withDeleted()->getEquipment($equipmentId);
 
@@ -47,7 +48,7 @@ class Equipments extends APIController
 
         $viewData['infoHeader'] = 'Equipment Info';
         $viewData['entity'] = $equipment;
-        $viewData["histories"] = model('HistModel')->getEquipmentHist($equipmentId);
+        // $viewData["histories"] = model('HistModel')->getEquipmentHist($equipmentId);
         $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->id);
 
         if ($equipment->isDeleted()){
@@ -68,37 +69,90 @@ class Equipments extends APIController
                     'slot_id' => $parentRelation->slot_id
                 ]);
             }
-            $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $equipment->type_name, $equipment->id));
+            $viewData['editUrl'] = url_to('equipment_edit', $equipment->id);
+
         }
 
         $viewData['deletable'] = $this->user->isAuthorized('delete') && !$equipment->isDeleted();
         if ($viewData['deletable']){
-            $viewData['deleteUrl'] = base_url(sprintf('equipments/delete/%s', $equipment->id));
+            $viewData['deleteUrl'] = url_to('equipment_delete', $equipment->id);
         }
 
         $viewData['restorable'] = $this->user->isAuthorized('delete') && $equipment->isDeleted();
         if ($viewData['restorable']){
-            $viewData['restoreUrl'] = base_url(sprintf('equipments/restore/%s', $equipment->id));
+            $viewData['restoreUrl'] = url_to('equipment_restore', $equipment->id);
         }
 
         return default_view('equipment/view', $viewData);
     }
 
+    public function batchRegister()
+    {
+        helper(['form', 'url', 'app_form', 'path']);
+        $messenger = \Config\Services::messenger();
+        if ($this->request->is('post')){
+            $form = new EquipmentBatchRegisterForm($this->request);
+            if ($form->validate()){
+                $formData = $form->getValidatedData();
+                $equipValidator = EquipmentValidator::getFromTypeName($formData['type_name']);
+                // Needs to rename the fields because the front end fields
+                // have user friendly names
+                $colRename = [
+                    'owner_institute' => 'owner_mne',
+                    'location' => 'location_name',
+                    'status' => 'status_name',
+                    'owner' => 'owner_mne'
+                ];
+                $fileValidationResult = $equipValidator->validateFileData(
+                    $formData['file']->getTempName(),
+                    $colRename,
+                    'EquipmentModel'
+                );
+                if ($fileValidationResult['status']) {
+                    $messenger->addRegisterSuccess();
+                    $form->clear();
+                } else{
+                    $filepath = $fileValidationResult['logFilepath'];
+                    $filename = splitPath($filepath)['tail'];
+                    $messenger->addMessage(sprintf(
+                        'Found errors in the file data. ' .
+                        '<a href="%s">Download validation log.</a>',
+                        url_to('download_validation_log', $filename)
+                        ),
+                        'danger'
+                    );
+                }
+            } else{
+                foreach ($form->getErrors() as $errorMsg){
+                    $messenger->addMessage($errorMsg, 'danger');
+                }
+            }
+        } else{
+            $form = new EquipmentBatchRegisterForm();
+        }
+        $messenger->dumpMessages();
+        $viewData['forms'] = ['' => $form];
+        $viewData['formUrl'] = uri_string();
+        $viewData['pageTitle'] = 'Batch Register';
+        $viewData['pageHeader'] = 'Batch Equipment Register';
+        $viewData['cancelUrl'] = url_to('equipment_index');
+        return default_view('equipment/batch_register', $viewData);
+    }
+
     public function register($typeName='pmt'){
         helper(['form', 'url', 'app_form']);
 
-        $equipmentModel = new EquipmentModel();
+        $equipmentModel = model('equipmentModel');
         $messenger = service('messenger');
         if ($this->request->is('post')){
             $form = EquipmentForm::getTypeForm($typeName, $this->request);
-            $fieldValues = $form->getFieldValues();
             if ($form->validate()){
-                $equipmentModel = new EquipmentModel();
-                $equipment = $form->getEntity();
+                $equipmentModel = model('equipmentModel');
+                $equipment = $form->getValidatedData();
                 $equipmentModel->insert($equipment);
                 $messenger->addRegisterSuccess();
                 $messenger->dumpMessages();
-                return redirect()->to(sprintf('equipments/%s/register', $typeName));
+                return redirect()->route('equipment_register', [$typeName]);
             } else {
                 foreach ($form->getErrors() as $errorMsg){
                     $messenger->addMessage($errorMsg, 'danger');
@@ -116,19 +170,20 @@ class Equipments extends APIController
         $registerData['pageHeader'] = $title;
         $registerData['forms'] = ['Equipment Info'=> $form];
         $registerData['formUrl'] = uri_string();
-        $registerData['cancelUrl'] = base_url(sprintf('equipments/%s', $typeName));
-        
+        $registerData['cancelUrl'] = url_to('equipment_index_type', $typeName);
+
         return default_view('equipment/register', $registerData);
     }
 
-    public function edit($equipmentId, $typeName)
+    public function edit($equipmentId)
     {
-        $form = EquipmentForm::getTypeForm($typeName, $this->request);
+        $equipmentModel = model('EquipmentModel');
+        $equipment = model('EquipmentModel')->fullQuery()->find($equipmentId);
+        $form = EquipmentForm::getTypeForm($equipment->type_name, $this->request);
         $form->asEdit();
         $messenger = service('messenger');
         if ($form->validate()){
-            $equipmentModel = model('EquipmentModel');
-            $equipment = $form->getEntity();
+            $equipment = $form->getValidatedData();
             $equipmentModel->update($equipmentId, $equipment);
             $messenger->addMessage(
                 sprintf('Edited equipment %s with success', $equipment->id),
@@ -140,7 +195,7 @@ class Equipments extends APIController
             }
         }
         $messenger->dumpMessages();
-        return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+        return redirect()->route('equipment_view', [$equipmentId]);
     }
 
     public function delete(string $equipmentId)
@@ -151,9 +206,9 @@ class Equipments extends APIController
         $messenger->addDeleteSuccess();
         $messenger->dumpMessages();
         if ($this->user->isAuthorized('delete')){
-            return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+            return redirect()->route('equipment_view', [$equipmentId]);
         } else {
-            return redirect('equipments');
+            return redirect()->route('equipment_index');
         }
     }
 
@@ -162,7 +217,7 @@ class Equipments extends APIController
         $equipmentModel = new EquipmentModel();
         $equipmentModel->restore($equipmentId);
         service('messenger')->addRestoreSuccess();
-        return redirect()->to(base_url(sprintf('equipments/view/%s', $equipmentId)));
+        return redirect()->route('equipment_view', [$equipmentId]);
     }
 
     public function __get__(): ResponseInterface
@@ -205,6 +260,21 @@ class Equipments extends APIController
             'status' => 'success'
         ];
         $res['data'] = empty($data)? []: $data;
+        return $this->respond($res, 200);
+    }
+
+    public function __getHist__(): ResponseInterface
+    {
+        $id = $this->request->getVar('id');
+        if (empty($id)){
+            throw new ValueError('An id value must be given.');
+        }
+        $history = model('HistModel')
+            ->getEquipmentHist($id);
+        $res = [
+            'status' => 'success',
+            'data' => $history
+        ];
         return $this->respond($res, 200);
     }
 }

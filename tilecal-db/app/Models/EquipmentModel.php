@@ -204,20 +204,18 @@ class EquipmentModel extends LogModel
      */
     public function insert($data = null, bool $returnID = true)
     {
-        $this->db->transStart();
+        $this->db->transBegin();
         if (!($data instanceof Equipment)){
             throw new \TypeError('Equipment Model insert supports only Equipment as $data');
         }
         $data = $data->toRawArray();
-        if(array_key_exists('parent_id', $data) || array_key_exists('slot_id', $data)){
-            $parentId = remove_value('parent_id', $data);
-            $slotId = remove_value('slot_id', $data);
-        }
+        $parentId = remove_value('parent_id', $data, false);
+        $slotId = remove_value('slot_id', $data, false);
         $childId = parent::insert($data, true);
         if(isset($parentId) && isset($slotId)){
             $this->addParent($childId, $parentId, $slotId);
         }
-        $this->db->transComplete();
+        $this->db->transCommit();
         if($returnID){
             return $childId;
         }
@@ -309,9 +307,9 @@ class EquipmentModel extends LogModel
 
     public function delete($id = null, bool $purge = false)
     {
-        $this->db->transStart();
+        $this->db->transBegin();
         parent::delete($id, false);
-        $this->db->transComplete();
+        $this->db->transCommit();
     }
 
     protected function getDeleteLog(array $data): OperationLog

@@ -53,6 +53,7 @@ function remove_value_with_default($key, array &$array, mixed $default=null): mi
  *
  * @param $key Value key
  * @param array $array Array to search
+ * @param mixed $default Default value to return if a value for $key is not found
  * 
  * @return mixed The value or $default
  */ 
@@ -74,4 +75,22 @@ function remap_values(array $array, array $valueMap): array
         $remap = dot_search_with_default($remap, $valueMap, $remap);
     }
     return $remaped;
+}
+
+/**
+ * Renames the keys from an array
+ *
+ * @param array $array Array to be remapped
+ * @param array $keyMap Array with $oldName=>$newName for the $array keys
+ * 
+ * @return array $array with the keys renamed.
+ */ 
+function rename_array_keys(array $array, array $keyMap): array
+{
+    foreach ($keyMap as $oldName => $newName) {
+        if (array_key_exists($oldName, $array)) {
+            $array[$newName] = remove_value($oldName, $array);
+        }
+    }
+    return $array;
 }
