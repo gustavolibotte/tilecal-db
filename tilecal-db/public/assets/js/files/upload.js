@@ -25,7 +25,6 @@ function fetchFileSideTable(){
             tableParams.data = response.data
             $('#file-table-side').DataTable(tableParams);
             toastr.clear()
-            toastr.success('Loaded', toastrTitle)
         },
         error: function(response, textStatus, errorThrown){
             $('#file-table-side').DataTable(tableParams);

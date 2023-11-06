@@ -16,7 +16,6 @@ function fetchFileTableFull(){
             tableParams.data = response.data
             $('#file-table-index').DataTable(tableParams);
             toastr.clear()
-            toastr.success('Loaded')
         },
         error: function(response, textStatus, errorThrown){
             $('#file-table-index').DataTable(tableParams);

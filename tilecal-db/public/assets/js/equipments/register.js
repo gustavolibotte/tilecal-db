@@ -28,7 +28,6 @@ function fetchEquipmentSideTable(){
             tableParams.data = response.data
             $('#equipment-side-table').DataTable(tableParams);
             toastr.clear()
-            toastr.success('Loaded', 'Last Edited Equipments')
         },
         error: function(response, textStatus, errorThrown){
             $('#equipment-side-table').DataTable(tableParams);

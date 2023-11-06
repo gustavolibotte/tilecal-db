@@ -16,7 +16,6 @@ function fetchEquipTableIndex(){
             tableParams.data = response.data
             $('#equipment-table-index').DataTable(tableParams);
             toastr.clear()
-            toastr.success('Loaded')
         },
         error: function(response, textStatus, errorThrown){
             $('#equipment-table-index').DataTable(tableParams);

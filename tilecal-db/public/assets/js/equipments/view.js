@@ -27,7 +27,6 @@ function fetchRelatedEquipTable(equipmentId){
             tableParams.data = response.data
             $('#related-equipments-table').DataTable(tableParams);
             toastr.clear()
-            toastr.success('Loaded', 'Related Equipments Table')
         },
         error: function(response, textStatus, errorThrown){
             $('#related-equipments-table').DataTable(tableParams);
@@ -59,7 +58,6 @@ function fetchRelatedFilesTable(equipmentId){
             tableParams.data = response.data
             $('#related-files-table').DataTable(tableParams);
             toastr.clear()
-            toastr.success('Loaded', 'Related Files Table')
         },
         error: function(response, textStatus, errorThrown){
             $('#related-files-table').DataTable(tableParams);
@@ -116,7 +114,6 @@ function fetchHistTable(equipmentId){
             tableParams.data = response.data
             $('#history-table-full').DataTable(tableParams);
             toastr.clear()
-            toastr.success('Loaded', 'Equip Hist Table')
         },
         error: function(response, textStatus, errorThrown){
             $('#history-table-full').DataTable(tableParams);
