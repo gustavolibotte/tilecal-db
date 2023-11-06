@@ -15,7 +15,7 @@ class Equipments extends APIController
 
     public function index($typeName=null)
     {   
-        $typeName = $this->request->getVar('type_name');
+        $typeName = $this->request->getVar('typeName');
         if (!empty($this->request->getVar('onlyDeleted'))){
             $indexData['headerClass'] = 'text-danger';
             $pageTitle = 'Deleted Equipment Index';
@@ -224,7 +224,7 @@ class Equipments extends APIController
     {
         $equipmentModel = model('EquipmentModel')->asArray();
         $equipmentModel = $this->parseFilterCondition('id', 'equipments.id', $equipmentModel);
-        $equipmentModel = $this->parseFilterCondition('type_name', 'equipment_types.name', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition('typeName', 'equipment_types.name', $equipmentModel);
 
         if (!empty($this->request->getVar('relatedFileId'))){
             $equipmentModel = $this->parseFilterCondition(
