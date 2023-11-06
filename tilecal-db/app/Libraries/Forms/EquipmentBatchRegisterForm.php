@@ -5,6 +5,8 @@ use App\Validation\AppFileRules;
 
 class EquipmentBatchRegisterForm extends Form{
 
+    static int $maxFileSize = 50;   // 50 kB
+
     public function initialize(){
         parent::initialize();
 
@@ -35,7 +37,7 @@ class EquipmentBatchRegisterForm extends Form{
         $this->fields['file'] = [
             'id' => 'file',
             'required' => true,
-            'helpText' => sprintf("Max size: %d MB", AppFileRules::getMaxFileSize('MB')),
+            'helpText' => sprintf("Max size: %d kB", Self::$maxFileSize),
             'fieldType' => 'upload',
             'fieldParams' => [
                 'placeholder' => 'Select a file for upload'
@@ -46,7 +48,7 @@ class EquipmentBatchRegisterForm extends Form{
         $this->validationRules['file'] = [
             "rules" => [
                 "uploaded[file]", 
-                sprintf("max_size[file,%d]", AppFileRules::getMaxFileSize('kB')),
+                sprintf("max_size[file,%d]", Self::$maxFileSize),
                 "mime_in[file,text/csv]",
                 "ext_in[file,csv]"
             ],

@@ -7,7 +7,7 @@ class FileForm extends Form{
     public int $maxNameSize = 100;
     public int $maxDescriptionSize = 65535;
     public int $minDescriptionSize = 10;
-    public int $maxFileSize = 512;  //MB
+    public int $maxFileSize = 100;  //kB
     public function initialize(){
 
         $this->fields = [
@@ -24,7 +24,7 @@ class FileForm extends Form{
             'file' => [
                 'id' => 'file',
                 'required' => true,
-                'helpText' => sprintf("Max size: %d MB", $this->maxFileSize),
+                'helpText' => sprintf("Max size: %d kB", $this->maxFileSize),
                 'fieldType' => 'upload',
                 'fieldParams' => [
                     'placeholder' => 'Select a file for upload'
@@ -65,7 +65,7 @@ class FileForm extends Form{
                 ],
                 "errors" => [
                     "uploaded" => "You must upload a file.",
-                    "max_size" => sprintf('Max file size is %d KB', $this->maxFileSize)
+                    "max_size" => sprintf('Max file size is %d kB', $this->maxFileSize)
                 ]
             ],
             "description" => [
