@@ -286,25 +286,6 @@ class EquipmentModel extends LogModel
         return $res;
     }
 
-    protected function getUpdateLog(array $data): OperationLog
-    {
-        $old = $this->find($data['id'][0]);
-        $new = $this->mergeTypeParams($data['data']);
-        $old = $this->mergeTypeParams($old->toRawArray());
-        unset_array_keys($old, $this->updateChangesIgnore);
-        unset_array_keys($new, $this->updateChangesIgnore);
-        $changes = $this->getChangedFields($old, $new);
-        $changes = $this->addForeignLabels($changes);
-
-        $operationLog = new OperationLog([
-            'changes' => $changes,
-            'record_id' => $data['id'][0],
-            'action' =>'update',
-            'table' => $this->table
-        ]);
-        return $operationLog;
-    }
-
     public function delete($id = null, bool $purge = false)
     {
         $this->db->transBegin();

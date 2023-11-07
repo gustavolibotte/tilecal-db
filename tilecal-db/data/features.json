@@ -1,0 +1,70 @@
+[
+    {
+        "name": "home",
+        "status": "active"
+    },
+    {
+        "name": "equipment_index",
+        "status": "active"
+    },
+    {
+        "name": "equipment_delete",
+        "status": "active"
+    },
+    {
+        "name": "equipment_view",
+        "status": "active"
+    },
+    {
+        "name": "equipment_batch_register",
+        "status": "active"
+    },
+    {
+        "name": "equipment_register",
+        "status": "active"
+    },
+    {
+        "name": "equipment_edit",
+        "status": "active"
+    },
+    {
+        "name": "equipment_restore",
+        "status": "active"
+    },
+    {
+        "name": "api_equipment_get",
+        "status": "active"
+    },
+    {
+        "name": "file_index",
+        "status": "active"
+    },
+    {
+        "name": "file_view",
+        "status": "active"
+    },
+    {
+        "name": "file_download",
+        "status": "active"
+    },
+    {
+        "name": "file_upload",
+        "status": "active"
+    },
+    { 
+        "name": "file_delete",
+        "status": "active"
+    },
+    { 
+        "name": "file_restore",
+        "status": "active"
+    },
+    {
+        "name": "api_file_get",
+        "status": "active"
+    },
+    {
+        "name": "oidc_callback",
+        "status": "active"
+    }
+]
