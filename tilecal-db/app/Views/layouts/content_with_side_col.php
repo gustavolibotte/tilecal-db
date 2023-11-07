@@ -1,10 +1,5 @@
 <?= $this->extend('layouts/base') ?>
 
-<?= $this->section('css') ?>
-  <link rel="stylesheet" type="text/css" href="<?php echo base_url('assets/css/content-side-col.css'); ?>">
-  <?= $this->renderSection('css') ?>
-<?= $this->endSection() ?>
-
 <?= $this->section('content') ?>
   <div class="row">
     <div class="col-3 mt-4" id="side-table-col" style="overflow-y: scroll;">

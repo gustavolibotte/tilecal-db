@@ -35,7 +35,8 @@ class EquipmentForm extends Form{
             'helpText' => "Equipment's barcode value following ATLAS identification rules.",
             'fieldType' => 'input',
             'fieldParams' => [
-                'maxlength' => 14
+                'maxlength' => 14,
+                'placeholder' => 'XXXXXXXXXXXXXX'
             ]
         ];
 
