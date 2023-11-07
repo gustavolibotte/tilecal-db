@@ -55,6 +55,10 @@
         "name": "file_delete",
         "status": "active"
     },
+    {
+        "name": "file_edit",
+        "status": "active"
+    },
     { 
         "name": "file_restore",
         "status": "active"
@@ -66,5 +70,9 @@
     {
         "name": "oidc_callback",
         "status": "active"
+    },
+    {
+        "name": "help",
+        "status": "deactivated"
     }
 ]

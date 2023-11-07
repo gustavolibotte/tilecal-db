@@ -8,7 +8,7 @@ class FeatureControl extends Migration
 {
     public function up()
     {
-        echo "Creating features table";
+        echo "Creating features table.\n";
         $fields = [
             'id' => [
                 'type' => 'INT',
