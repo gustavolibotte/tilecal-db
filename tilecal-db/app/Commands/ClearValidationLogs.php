@@ -33,7 +33,7 @@ class ClearValidationLogs extends BaseCommand
      *
      * @var string
      */
-    protected $usage = 'command:name [arguments] [options]';
+    protected $usage = 'command:name';
 
     /**
      * The Command's Arguments

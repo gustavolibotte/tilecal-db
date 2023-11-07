@@ -7,6 +7,7 @@ source setup_directories.sh
 php spark migrate:rollback
 php spark migrate
 php spark db:seed Cleaner
+php spark db:seed FeatureSeeder
 php spark db:seed InstituteSeeder
 php spark db:seed StatusSeeder
 php spark db:seed LocationSeeder

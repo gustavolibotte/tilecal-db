@@ -15,6 +15,10 @@ class Equipments extends APIController
 
     public function index($typeName=null)
     {   
+        $feature = model('FeatureModel')->findName('equipment_index');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
         $typeName = $this->request->getVar('typeName');
         if (!empty($this->request->getVar('onlyDeleted'))){
             $indexData['headerClass'] = 'text-danger';
@@ -23,8 +27,16 @@ class Equipments extends APIController
             $indexData['typeName'] = $typeName;
             $equipmentType = model('EquipmentTypeModel')
                 ->select('label')
+                ->select('active')
                 ->where('name', $typeName)
                 ->first();
+            if (is_null($equipmentType)){
+                return $this->notFound(
+                    sprintf("Equipment type with name %s dowsn't exist", $typeName)
+                );
+            } elseif (!$equipmentType->active){
+                return $this->serviceUnavailable();
+            }
             $pageTitle = sprintf('%s Index', $equipmentType->label);
         } else{
             $pageTitle = 'Equipment Index';
@@ -36,6 +48,12 @@ class Equipments extends APIController
     }
 
     public function view(string $equipmentId){
+
+        $feature = model('FeatureModel')->findName('equipment_view');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
         helper(['app_form', 'form']);
         $equipmentModel = model('EquipmentModel');
         $equipment = $equipmentModel->withDeleted()->getEquipment($equipmentId);
@@ -88,6 +106,11 @@ class Equipments extends APIController
 
     public function batchRegister()
     {
+        $feature = model('FeatureModel')->findName('equipment_batch_register');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
         helper(['form', 'url', 'app_form', 'path']);
         $messenger = \Config\Services::messenger();
         if ($this->request->is('post')){
@@ -140,6 +163,12 @@ class Equipments extends APIController
     }
 
     public function register($typeName='pmt'){
+
+        $feature = model('FeatureModel')->findName('equipment_register');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
         helper(['form', 'url', 'app_form']);
 
         $equipmentModel = model('equipmentModel');
@@ -177,6 +206,11 @@ class Equipments extends APIController
 
     public function edit($equipmentId)
     {
+        $feature = model('FeatureModel')->findName('equipment_edit');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
         $equipmentModel = model('EquipmentModel');
         $equipment = model('EquipmentModel')->fullQuery()->find($equipmentId);
         $form = EquipmentForm::getTypeForm($equipment->type_name, $this->request);
@@ -200,6 +234,11 @@ class Equipments extends APIController
 
     public function delete(string $equipmentId)
     {
+        $feature = model('FeatureModel')->findName('equipment_delete');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
         $equipmentModel = model('EquipmentModel');
         $equipmentModel->delete($equipmentId);
         $messenger = service('messenger');
@@ -214,6 +253,10 @@ class Equipments extends APIController
 
     public function restore(string $equipmentId)
     {
+        $feature = model('FeatureModel')->findName('equipment_restore');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
         $equipmentModel = new EquipmentModel();
         $equipmentModel->restore($equipmentId);
         service('messenger')->addRestoreSuccess();
@@ -222,6 +265,11 @@ class Equipments extends APIController
 
     public function __get__(): ResponseInterface
     {
+        $feature = model('FeatureModel')->findName('api_equipment_get');
+        if (!$feature->isActive()){
+            return $this->fail("", 503);
+        }
+
         $equipmentModel = model('EquipmentModel')->asArray();
         $equipmentModel = $this->parseFilterCondition('id', 'equipments.id', $equipmentModel);
         $equipmentModel = $this->parseFilterCondition('typeName', 'equipment_types.name', $equipmentModel);

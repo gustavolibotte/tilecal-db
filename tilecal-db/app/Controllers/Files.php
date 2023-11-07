@@ -10,6 +10,12 @@ class Files extends APIController
 {
     public function index()
     {
+
+        $feature = model('FeatureModel')->findName('file_index');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
         if (empty($this->request->getVar('onlyDeleted'))){
             $pageTitle = 'File Index';
         } else{
@@ -21,7 +27,14 @@ class Files extends APIController
         return default_view('files/index', $indexData);
     }
 
-    public function view($fileId){
+    public function view($fileId)
+    {
+
+        $feature = model('FeatureModel')->findName('file_view');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
         helper('form');
         $fileModel = model('FileModel');
         $file = $fileModel->withDeleted()->find($fileId);
@@ -64,7 +77,13 @@ class Files extends APIController
         return default_view('files/view', $viewData);
     }
 
-    public function download($fileId){
+    public function download($fileId)
+    {
+        $feature = model('FeatureModel')->findName('file_download');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
         $fileModel = model('FileModel');
         if ($this->user->isAuthorized('delete')){
             $fileModel->withDeleted();
@@ -80,7 +99,14 @@ class Files extends APIController
         return $response;
     }
 
-    public function upload(){
+    public function upload()
+    {
+
+        $feature = model('FeatureModel')->findName('file_upload');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
         helper(['form', 'string', 'url']);
         $messenger = service('messenger');
 
@@ -115,6 +141,12 @@ class Files extends APIController
 
     public function delete($fileId)
     {
+
+        $feature = model('FeatureModel')->findName('file_delete');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
         $fileModel = model('FileModel');
         $fileModel->delete($fileId);
         $messenger = service('messenger');
@@ -130,6 +162,11 @@ class Files extends APIController
 
     public function restore($fileId)
     {
+        $feature = model('FeatureModel')->findName('file_restore');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
         $fileModel = model('FileModel');
         $fileModel->restore($fileId);
         $messenger = service('messenger');
@@ -140,6 +177,12 @@ class Files extends APIController
 
     public function __get__(): ResponseInterface
     {
+
+        $feature = model('FeatureModel')->findName('api_file_get');
+        if (!$feature->isActive()){
+            return $this->fail("", 503);
+        }
+
         $fileModel = model('FileModel')->asArray();
         $fileModel = $this->parseFilterCondition('id', 'files.id', $fileModel);
         $fileModel = $this->parseFilterCondition('name', 'files.name', $fileModel);

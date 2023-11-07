@@ -109,8 +109,11 @@ abstract class BaseController extends Controller
         return default_view('errors/http_error', $viewData);
     }
 
-    public function notFound(){
+    public function notFound(?string $extraMsg=null){
         $errorMsg = 'This page was not found, please check if the link is valid. If you think this is an error please contact an admin.';
+        if (!is_null($extraMsg)){
+            $errorMsg += sprintf(' %s', $extraMsg);
+        }
         $this->response->setStatusCode(404, $errorMsg);
         $viewData = [
             'errorText' => '404 Not Found',
@@ -129,6 +132,19 @@ abstract class BaseController extends Controller
             'errorText' => '403 Deleted',
             'errorMessage' => $errorMsg,
             'pageTitle' => 'Deleted entry',
+            'pageHeader' => ''
+        ];
+        return default_view('errors/http_error', $viewData);
+    }
+
+    public function serviceUnavailable()
+    {
+        $errorMsg = 'This service is currently unavailable. If you think this is an error, please contact an Admin.';
+        $this->response->setStatusCode(503, $errorMsg);
+        $viewData = [
+            'errorText' => '503 Service Unavailable',
+            'errorMessage' => $errorMsg,
+            'pageTitle' => 'Service Unavailable',
             'pageHeader' => ''
         ];
         return default_view('errors/http_error', $viewData);
