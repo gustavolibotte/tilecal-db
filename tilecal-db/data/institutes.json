@@ -1076,5 +1076,10 @@
     "num": "040",
     "place": "MADISON",
     "country": "UNITED STATES"
+  },
+  {
+    "name": "ITIM, Cluj Napoca",
+    "mne": "CLJ",
+    "country": "ROMANIA"
   }
 ]
