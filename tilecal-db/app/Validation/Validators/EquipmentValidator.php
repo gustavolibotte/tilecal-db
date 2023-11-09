@@ -43,8 +43,8 @@ class EquipmentValidator extends EntryValidator
             ],
             "errors" => [
                 "required" => "You must supply an id for the equipment.",
-                "exact_length" => "The ID sequential number must have {param} characters.",
-                "regex_match" => "The ID doesn't follow this equipment ID rules.",
+                "exact_length" => "The ID sequential number must have {param} characters. Value given: {value}",
+                "regex_match" => "The ID doesn't follow this equipment ID rules. Value given: {value}",
                 "is_unique" => "ID {value} already exists."
             ]
         ];
@@ -57,7 +57,7 @@ class EquipmentValidator extends EntryValidator
             ],
             "errors" => [
                 "required_without" => "You must supply an owner for the equipment.",
-                "is_not_unique" => "The inserted owner is not valid.",
+                "is_not_unique" => "The inserted owner is not valid. Value given {value}",
             ]
         ];
 

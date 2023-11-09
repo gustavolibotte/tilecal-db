@@ -174,10 +174,11 @@ class Equipments extends APIController
         $equipmentModel = model('equipmentModel');
         $messenger = service('messenger');
         if ($this->request->is('post')){
+            $validator = EquipmentValidator::getFromTypeName($typeName);
+            $validator->addRequest($this->request);
             $form = EquipmentForm::getTypeForm($typeName, $this->request);
-            if ($form->validate()){
-                $equipmentModel = model('equipmentModel');
-                $equipment = $form->getValidatedData();
+            if ($validator->validate()){
+                $equipment = $validator->getValidatedData();
                 $equipmentModel->insert($equipment);
                 $messenger->addRegisterSuccess();
                 $messenger->dumpMessages();
@@ -191,7 +192,7 @@ class Equipments extends APIController
         } else{
             $form = EquipmentForm::getTypeForm($typeName);
         }
-        $equipmentTypeModel = new EquipmentTypeModel();
+        $equipmentTypeModel = model('EquipmentTypeModel');
         $type = $equipmentTypeModel->where(sprintf("name = '%s'", $typeName))->first();
         $registerData['model'] = $type;
         $title = sprintf('Register %s', $type->label);
@@ -257,7 +258,7 @@ class Equipments extends APIController
         if (!$feature->isActive()){
             return $this->serviceUnavailable();
         }
-        $equipmentModel = new EquipmentModel();
+        $equipmentModel = model('EquipmentModel');
         $equipmentModel->restore($equipmentId);
         service('messenger')->addRestoreSuccess();
         return redirect()->route('equipment_view', [$equipmentId]);
