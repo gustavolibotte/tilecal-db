@@ -1,10 +1,9 @@
 <?php
 
 namespace App\Database\Migrations;
+use App\Library\BaseMigration;
 
-use CodeIgniter\Database\Migration;
-
-class BiggerRegex extends Migration
+class BiggerRegex extends BaseMigration
 {
     public function up()
     {

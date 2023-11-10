@@ -7,6 +7,8 @@ use App\Entities\OperationLog;
 use App\Entities\Equipment;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Model;
+use CodeIgniter\Validation\Exceptions\ValidationException;
+use TypeError;
 
 
 class EquipmentModel extends LogModel
@@ -27,7 +29,9 @@ class EquipmentModel extends LogModel
         'slot_id',
         'serial',
         'comments',
-        'type_params'
+        'type_params',
+        'detector_location_id',
+        'detector_location_name'
     ];
 
     // Custom
@@ -206,7 +210,7 @@ class EquipmentModel extends LogModel
     {
         $this->db->transBegin();
         if (!($data instanceof Equipment)){
-            throw new \TypeError('Equipment Model insert supports only Equipment as $data');
+            throw new TypeError('Equipment Model insert supports only Equipment as $data');
         }
         $data = $data->toRawArray();
         $parentId = remove_value('parent_id', $data, false);
@@ -268,10 +272,10 @@ class EquipmentModel extends LogModel
     public function update($id = null, $data = null): bool
     {
         if (!($data instanceof Equipment)){
-            throw new \TypeError('Equipment Model insert supports only Equipment as $data');
+            throw new TypeError('Equipment Model insert supports only Equipment as $data');
         }
         if (is_null($id)){
-            throw new \TypeError('$id must be passed');
+            throw new TypeError('$id must be passed');
         }
         $data = $data->toRawArray();
         if(array_key_exists('parent_id', $data) || array_key_exists('slot_id', $data)){
@@ -454,31 +458,71 @@ class EquipmentModel extends LogModel
 
     protected function substituteFKs(array $data): array
     {
-        if (array_key_exists('type_name', $data['data'])){
-            $data['data']['type_id'] = $this->getFKId(
-                remove_value('type_name', $data['data']),
-                'name', 'EquipmentTypeModel'
-            );
-        }
-        if (array_key_exists('owner_mne', $data['data'])){
-            $data['data']['owner_id'] = $this->getFKId(
-                remove_value('owner_mne', $data['data']),
-                'mne', 'InstituteModel'
-            );
-        }
-        if (array_key_exists('location_name', $data['data'])){
-            $data['data']['location_id'] = $this->getFKId(
-                remove_value('location_name', $data['data']),
-                'name', 'LocationModel'
-            );
-        }
-        if (array_key_exists('status_name', $data['data'])){
-            $data['data']['status_id'] = $this->getFKId(
-                remove_value('status_name', $data['data']),
-                'name', 'StatusModel'
-            );
-        }
+        $data = $this->substituteFK(
+            'type_id',
+            'type_name',
+            'name',
+            'EquipmentTypeModel',
+            $data
+        );
+        $data = $this->substituteFK(
+            'owner_id',
+            'owner_mne',
+            'mne',
+            'InstituteModel',
+            $data
+        );
+        $data = $this->substituteFK(
+            'location_id',
+            'location_name',
+            'name',
+            'LocationModel',
+            $data
+        );
+        $data = $this->substituteFK(
+            'status_id',
+            'status_name',
+            'name',
+            'StatusModel',
+            $data
+        );
+        $data = $this->substituteFK(
+            'detector_location_id',
+            'detector_location_name',
+            'name',
+            'DetectorLocationModel',
+            $data
+        );
         return $data;
+    }
+
+    protected function substituteFK(string $fkField,
+        string $aliasField,
+        string $aliasCol,
+        string $modelName,
+        array $data,
+        bool $nullableFK=false): array
+    {
+        $fkExists = array_key_exists($fkField, $data['data']);
+        $aliasExists = array_key_exists($aliasField, $data['data']);
+        if ($fkExists && $aliasExists){
+            remove_value($aliasField, $data['data']);
+        } elseif ($fkExists && !$aliasExists){
+            return $data;
+        } elseif (!$fkExists && $aliasExists){
+            $id = model($modelName)
+            ->select('id')
+            ->where($aliasCol, remove_value($aliasField, $data['data']))
+            ->first()->id;
+            $data['data'][$fkField] = $id;
+            return $data;
+        } else{
+            if ($nullableFK){
+                return $data;
+            } else{
+                throw new ValidationException(sprintf('Could not get a FK ID for %s', $fkField));
+            }
+        }
     }
 
     protected function getFKId(mixed $value, string $col, string $modelName): int|string

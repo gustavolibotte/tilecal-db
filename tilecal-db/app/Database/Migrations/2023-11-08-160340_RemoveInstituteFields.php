@@ -1,10 +1,9 @@
 <?php
 
 namespace App\Database\Migrations;
+use App\Library\BaseMigration;
 
-use CodeIgniter\Database\Migration;
-
-class RemoveInstituteFields extends Migration
+class RemoveInstituteFields extends BaseMigration
 {
     public function up()
     {
