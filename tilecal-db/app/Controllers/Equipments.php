@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Library\Forms\EquipmentBatchRegisterForm;
 use App\Library\Forms\EquipmentForm;
+use App\Validation\Validators\BatchRegisterValidator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
 use ValueError;
@@ -112,9 +113,9 @@ class Equipments extends APIController
         helper(['form', 'url', 'app_form', 'path']);
         $messenger = \Config\Services::messenger();
         if ($this->request->is('post')){
-            $form = new EquipmentBatchRegisterForm($this->request);
-            if ($form->validate()){
-                $formData = $form->getValidatedData();
+            $validator = (new BatchRegisterValidator())->addRequest($this->request);
+            if ($validator->validate()){
+                $formData = $validator->getValidatedData();
                 $equipValidator = EquipmentValidator::getFromTypeName($formData['type_name']);
                 // Needs to rename the fields because the front end fields
                 // have user friendly names
@@ -131,7 +132,8 @@ class Equipments extends APIController
                 );
                 if ($fileValidationResult['status']) {
                     $messenger->addRegisterSuccess();
-                    $form->clear();
+                    $validator->clearState();
+                    $equipValidator->clearState();
                 } else{
                     $filepath = $fileValidationResult['logFilepath'];
                     $filename = splitPath($filepath)['tail'];
@@ -144,13 +146,12 @@ class Equipments extends APIController
                     );
                 }
             } else{
-                foreach ($form->getErrors() as $errorMsg){
+                foreach ($validator->getErrors() as $errorMsg){
                     $messenger->addMessage($errorMsg, 'danger');
                 }
             }
-        } else{
-            $form = new EquipmentBatchRegisterForm();
         }
+        $form = new EquipmentBatchRegisterForm($this->request);
         $messenger->dumpMessages();
         $viewData['forms'] = ['' => $form];
         $viewData['formUrl'] = uri_string();
