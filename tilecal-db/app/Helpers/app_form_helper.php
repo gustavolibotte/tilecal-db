@@ -73,14 +73,3 @@ function form_field(string $id,
     $fieldStr = div_wrap('mb-3', $components);
     return $fieldStr;
 }
-
-function get_model_form_class(string $typeName): string
-{
-    helper('string');
-    if ($typeName != 'pmt'){
-        return '\App\Library\Forms\EquipmentForm';
-    }
-    $typeName = snake2CamelCase($typeName);
-    $formClass = sprintf('\App\Library\Forms\%sForm', $typeName);
-    return $formClass;
-}

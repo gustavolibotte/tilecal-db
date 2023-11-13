@@ -442,7 +442,8 @@ class EquipmentModel extends LogModel
             'detector_location_name',
             'name',
             'DetectorLocationModel',
-            $data
+            $data,
+            nullableFK: true
         );
         return $data;
     }
@@ -458,6 +459,7 @@ class EquipmentModel extends LogModel
         $aliasExists = array_key_exists($aliasField, $data['data']);
         if ($fkExists && $aliasExists){
             remove_value($aliasField, $data['data']);
+            return $data;
         } elseif ($fkExists && !$aliasExists){
             return $data;
         } elseif (!$fkExists && $aliasExists){

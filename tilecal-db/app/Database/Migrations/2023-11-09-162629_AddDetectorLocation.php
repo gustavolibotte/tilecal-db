@@ -10,6 +10,7 @@ class AddDetectorLocation extends BaseMigration
         $addFields = ['detector_location_id' => $this->getDefaultFKFieldConfig()];
         $addFields['detector_location_id']['after'] = 'location_id';
         $this->forge->addColumn('equipments', $addFields);
+        $this->forge->addColumn('equipments_hist', $addFields);
 
         $detectorLocationFields = [
             'id' => $this->defaultIdField,

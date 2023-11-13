@@ -4,8 +4,6 @@ namespace App\Controllers;
 
 use App\Library\Forms\EquipmentBatchRegisterForm;
 use App\Library\Forms\EquipmentForm;
-use App\Models\EquipmentModel;
-use App\Models\EquipmentTypeModel;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
 use ValueError;
@@ -176,7 +174,7 @@ class Equipments extends APIController
         if ($this->request->is('post')){
             $validator = EquipmentValidator::getFromTypeName($typeName);
             $validator->addRequest($this->request);
-            $form = EquipmentForm::getTypeForm($typeName, $this->request);
+            d($validator->getFieldValues());
             if ($validator->validate()){
                 $equipment = $validator->getValidatedData();
                 $equipmentModel->insert($equipment);
@@ -184,10 +182,11 @@ class Equipments extends APIController
                 $messenger->dumpMessages();
                 return redirect()->route('equipment_register', [$typeName]);
             } else {
-                foreach ($form->getErrors() as $errorMsg){
+                foreach ($validator->getErrors() as $errorMsg){
                     $messenger->addMessage($errorMsg, 'danger');
                 }
                 $messenger->dumpMessages();
+                $form = EquipmentForm::getTypeForm($typeName, $this->request);
             };
         } else{
             $form = EquipmentForm::getTypeForm($typeName);
@@ -211,21 +210,21 @@ class Equipments extends APIController
         if (!$feature->isActive()){
             return $this->serviceUnavailable();
         }
-
         $equipmentModel = model('EquipmentModel');
         $equipment = model('EquipmentModel')->fullQuery()->find($equipmentId);
-        $form = EquipmentForm::getTypeForm($equipment->type_name, $this->request);
-        $form->asEdit();
+        $validator = EquipmentValidator::getFromTypeName($equipment->type_name)
+            ->addRequest($this->request)
+            ->asEdit();
         $messenger = service('messenger');
-        if ($form->validate()){
-            $equipment = $form->getValidatedData();
+        if ($validator->validate()){
+            $equipment = $validator->getValidatedData();
             $equipmentModel->update($equipmentId, $equipment);
             $messenger->addMessage(
                 sprintf('Edited equipment %s with success', $equipment->id),
                 'success'
             );
         } else{
-            foreach ($form->getErrors() as $errorMsg){
+            foreach ($validator->getErrors() as $errorMsg){
                 $messenger->addMessage($errorMsg, 'danger');
             }
         }

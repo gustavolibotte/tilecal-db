@@ -71,7 +71,17 @@ class EquipmentValidator extends EntryValidator
                 "required_without" => $this->validationRules["owner_id"]["errors"]["required_without"],
                 "is_not_unique" => $this->validationRules["owner_id"]["errors"]["is_not_unique"]
             ]
-            ];
+        ];
+
+        $this->validationRules['detector_location_id'] = [
+            "rules" => [
+                "permit_empty",
+                "is_not_unique[detector_locations.id]",
+            ],
+            "errors" => [
+                "is_not_unique" => "The inserted detector location is not valid."
+            ]
+        ];
 
         $this->validationRules['location_id'] = [
             "rules" => [
@@ -188,5 +198,15 @@ class EquipmentValidator extends EntryValidator
         }
         $data['id'] = substr($data['id'], 7, 7);
         return parent::setFieldValues($data);
+    }
+
+    public function asEdit(): self
+    {
+        $this->removeRule('id', 'is_unique');
+        $this->addRule('id', 'is_not_unique[equipments.id]', 'This id doesn\'t exist.');
+        $oldRule = $this->removeRule('serial', 'is_type_unique');
+        $newRule = str_replace('is_type_unique', 'is_type_not_unique', $oldRule);
+        $this->addRule('serial', $newRule, 'The serial {value} doesn\'t exist');
+        return $this;
     }
 }

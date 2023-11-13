@@ -104,7 +104,7 @@ class EquipmentFabricator extends EquipmentModel
             'location_id' => $location->id,
             'status_id' => $status->id,
             'owner_id' => $institute->id,
-            'serial' => $faker->regexify(PmtForm::$validSerialRegex),
+            'id' => $faker->regexify($type->id_regex),
             'comments' => $faker->text($this->numCommentsCharacters),
             'type_params' => [
                 'beta' => $faker->randomFloat(3, 6, 8),
@@ -113,7 +113,7 @@ class EquipmentFabricator extends EquipmentModel
                 'model' => $faker->randomElement(PmtForm::$validPmtModelValues)
             ]
         ]);
-        $entity->id = "0{$entity->serial}";
+        $entity->serial = substr($entity->id, 1, 6);
         return $entity;
     }
 
@@ -125,7 +125,7 @@ class EquipmentFabricator extends EquipmentModel
         $institute = $faker->randomElement($this->institutes);
         $pos = $faker->randomNumber(2, false);
         $entity = new $this->originalReturnType([
-            'id' => $this->fakeID($faker),
+            'id' => $faker->regexify($type->id_regex),
             'type_id' => $type->id,
             'parent_id' => $parentId,
             'slot_id' => empty($slotName)? null: $this->slots[$slotName]->id,
@@ -134,18 +134,13 @@ class EquipmentFabricator extends EquipmentModel
             'owner_id' => $institute->id,
             'serial' => $faker->regexify(self::$defaultSerialRegex),
             'comments' => $faker->text($this->numCommentsCharacters),
-            'type_params' => [
-                'phase1_pos' => $pos,
-                'phase2_pos' => $pos,
-            ]
+            'type_params' => []
+            // 'type_params' => [
+            //     'phase1_pos' => $pos,
+            //     'phase2_pos' => $pos,
+            // ]
         ]);
         return $entity;
-    }
-
-    protected function fakeID(Generator &$faker): string
-    {
-        $sequentialNumber = $faker->regexify(self::$defaultIdSequentialNumber);
-        return $sequentialNumber;
     }
 
     public function makeSpares(Generator &$faker, array $equipments): array
@@ -174,7 +169,7 @@ class EquipmentFabricator extends EquipmentModel
             $status = $faker->randomElement($this->statuses);
             $institute = $faker->randomElement($this->institutes);
             $entity = new $this->originalReturnType([
-                'id' => $this->fakeID($faker),
+                'id' => $faker->regexify($type->id_regex),
                 'type_id' => $type->id,
                 'parent_id' => $parentId,
                 'slot_id' => empty($slotName)? null: $this->slots[$slotName]->id,
