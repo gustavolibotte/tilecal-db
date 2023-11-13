@@ -22,7 +22,7 @@ abstract class EntryValidator
         $this->initialize();
     }
 
-    abstract public function asEdit();
+    public function asEdit(){}
 
     protected function initialize(){}
 

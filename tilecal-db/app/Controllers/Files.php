@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Library\Forms\FileForm;
+use App\Validation\Validators\FileValidator;
 use CodeIgniter\HTTP\ResponseInterface;
 use ValueError;
 
@@ -111,17 +112,18 @@ class Files extends APIController
         $messenger = service('messenger');
 
         if ($this->request->is('post')){
-            $form = new FileForm($this->request);
-            if ($form->validate()){
-                $file = $form->getValidatedData();
+            $validator = (new FileValidator())->addRequest($this->request);
+            if ($validator->validate()){
+                $file = $validator->getValidatedData();
                 $fileModel = model('FileModel');
                 $fileModel->insert($file);
                 $messenger->addMessage('File uploaded with success', 'success');
                 return redirect('file_upload');
             } else {
-                foreach ($form->getErrors() as $errorMsg){
+                foreach ($validator->getErrors() as $errorMsg){
                     $messenger->addMessage($errorMsg, 'danger');
                 };
+                $form = new FileForm($this->request);
             }
         } else{
             $form = new FileForm();
@@ -132,7 +134,6 @@ class Files extends APIController
         $registerData['pageHeader'] = $title;
         $registerData['forms'] = ['File Info'=> $form];
         $registerData['formUrl'] = uri_string();
-        // $registerData['cancelUrl'] = base_url('files');
         $registerData['cancelUrl'] = url_to('file_index');
         $messenger->dumpMessages();
 
