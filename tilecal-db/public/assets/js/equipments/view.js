@@ -15,7 +15,7 @@ function fetchRelatedEquipTable(equipmentId){
     const tableParams = {
         searching: true,
         paging: true,
-        order: [[9, 'desc']],
+        order: [[10, 'desc']],
         columns: tableColumns
     }
     $.ajax({

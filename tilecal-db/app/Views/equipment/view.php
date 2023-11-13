@@ -9,6 +9,7 @@
   <? else: ?>
     <li class="list-group-item"><b>Location</b>: <? echo $entity->location?> </li>
   <? endif; ?>
+  <li class="list-group-item"><b>Detector Location</b>: <? echo $entity->detector_location?> </li>
   <li class="list-group-item"><b>Status</b>: <? echo $entity->status?> </li>
   <li class="list-group-item"><b>Owner</b>: <? echo $entity->owner_name?> </li>
   <li class="list-group-item"><b>Serial</b>: <? echo $entity->serial?> </li>
