@@ -5,7 +5,7 @@
         "system": "LO",
         "project": "20",
         "id_regex": "/0[A-Z]{2}[0-9]{4}/",
-        "params": ["beta", "nominal_hv", "qe", "model"],
+        "params": ["beta", "nominal_hv", "qe", "model", "phase1_position"],
         "in_detector": true,
         "description": null,
         "active": 1,

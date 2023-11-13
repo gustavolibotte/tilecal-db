@@ -12,7 +12,10 @@ class PmtValidator extends EquipmentValidator
         'R11187-A1'
     ];
     public static string $validSerialRegex = '/^[A-Z]{2}[0-9]{4}/';
-    public static int $serialMaxSize = 36;
+    public static int $pmtSerialMaxSize = 6;
+
+    public static int $smallestPmtPosition = 0;
+    public static int $biggestPmtPosition = 48;
 
     public function initialize()
     {
@@ -77,6 +80,19 @@ class PmtValidator extends EquipmentValidator
             "errors" => [
                 "required" => "You must supply a PMT model for the equipment.",
                 "in_list" => "The PMT model value is not valid. Choose one of {param}",
+            ]
+        ];
+
+        $this->validationRules['phase1_position'] = [
+            "rules" => [
+                "if_exist",
+                "permit_empty",
+                sprintf("greater_than_equal_to[%d]", self::$smallestPmtPosition),
+                sprintf("less_than_equal_to[%d]", self::$biggestPmtPosition),
+            ],
+            "errors" => [
+                "greater_than_equal_to" => "Min value for position is {param}.",
+                "less_than_equal_to" => "Max value for position is {param}",
             ]
         ];
     }

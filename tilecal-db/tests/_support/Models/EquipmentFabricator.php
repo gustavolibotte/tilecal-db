@@ -10,6 +10,7 @@ use App\Models\InstituteModel;
 use App\Library\Forms\PmtForm;
 use App\Models\AllowedTypeSlotModel;
 use App\Models\TypeSlotModel;
+use App\Validation\Validators\PmtValidator;
 use CodeIgniter\Entity\Entity;
 use Faker\Generator;
 
@@ -51,7 +52,7 @@ class EquipmentFabricator extends EquipmentModel
         $this->statusModel = new StatusModel();
         $this->statuses = $this->statusModel->getCustomArray(keyField: 'name');
         $this->instituteModel = new InstituteModel();
-        $this->institutes = $this->instituteModel->getIdArray();
+        $this->institutes = $this->instituteModel->getCustomArray(keyField: 'mne');
         $this->originalReturnType = $this->returnType;
         $this->typeSlotModel = new TypeSlotModel();
         $this->slots = $this->typeSlotModel->getCustomArray(keyField: 'name');
@@ -96,7 +97,7 @@ class EquipmentFabricator extends EquipmentModel
         $type = $this->types['pmt'];
         $location = $faker->randomElement($this->locations);
         $status = $faker->randomElement($this->statuses);
-        $institute = $this->institutes[PmtForm::$pmtOwnerId];
+        $institute = $this->institutes['CER'];
         $entity = new $this->originalReturnType([
             'parent_id' => $parentId,
             'slot_id' => empty($slotName)? null: $this->slots[$slotName]->id,
@@ -110,7 +111,11 @@ class EquipmentFabricator extends EquipmentModel
                 'beta' => $faker->randomFloat(3, 6, 8),
                 'nominal_hv' => $faker->numberBetween(600, 800),
                 'qe' => $faker->randomFloat(1, 20, 25),
-                'model' => $faker->randomElement(PmtForm::$validPmtModelValues)
+                'model' => $faker->randomElement(PmtValidator::$validPmtModelValues),
+                'phase1_position' => $faker->numberBetween(
+                    PmtValidator::$smallestPmtPosition,
+                    PmtValidator::$biggestPmtPosition
+                )
             ]
         ]);
         $entity->serial = substr($entity->id, 1, 6);

@@ -73,3 +73,8 @@ function form_field(string $id,
     $fieldStr = div_wrap('mb-3', $components);
     return $fieldStr;
 }
+
+function get_blank_dropdown(): array
+{
+    return [FORM_SELECT_NULL_OPTION => 'Select an option'];
+}
