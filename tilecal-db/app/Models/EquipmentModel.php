@@ -88,12 +88,14 @@ class EquipmentModel extends LogModel
         $queryBuilder->select('equipments.updated_at');
         $queryBuilder->select('equipments.created_at');
         $queryBuilder->select('equipments.deleted_at');
+        $queryBuilder->select('detector_locations.name as detector_location_name');
 
         $queryBuilder = $queryBuilder
             ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
             ->join('locations', 'equipments.location_id = locations.id', 'left')
             ->join('statuses', 'equipments.status_id = statuses.id', 'left')
-            ->join('institutes', 'equipments.owner_id = institutes.id', 'left');
+            ->join('institutes', 'equipments.owner_id = institutes.id', 'left')
+            ->join('detector_locations', 'equipments.detector_location_id=detector_locations.id', 'left');
 
         return $queryBuilder;
     }
@@ -225,20 +227,6 @@ class EquipmentModel extends LogModel
         }
     }
 
-    protected function getInsertLog(array $data): OperationLog
-    {
-        $data['data'] = $this->mergeTypeParams($data['data']);
-        unset_array_keys($data['data'], $this->insertChangesIgnore);
-        $data['data'] = $this->addForeignLabels($data['data']);
-        $operationLog = new OperationLog([
-            'record_id' => $data['id'],
-            'table' => $this->table,
-            'changes' => $data['data'],
-            'action' => 'insert'
-        ]);
-        return $operationLog;
-    }
-
     /**
      * Adds parent relation between child and parent.
      * Assumes that conditions were validated before
@@ -295,22 +283,6 @@ class EquipmentModel extends LogModel
         $this->db->transBegin();
         parent::delete($id, false);
         $this->db->transCommit();
-    }
-
-    protected function getDeleteLog(array $data): OperationLog
-    {
-        $changes = $this->find($data['id'][0])->toRawArray();
-        $changes = $this->mergeTypeParams($changes);
-        unset_array_keys($changes, $this->deleteChangesIgnore);
-        $changes = $this->addForeignLabels($changes);
-
-        $operationLog = new OperationLog([
-            'changes' => $changes,
-            'record_id' => $data['id'][0],
-            'action' =>'delete',
-            'table' => $this->table
-        ]);
-        return $operationLog;
     }
 
     protected function deleteRelations(array $data): array
@@ -384,27 +356,6 @@ class EquipmentModel extends LogModel
         return $data;
     }
 
-    protected function addForeignLabels(array $changes): array
-    {
-        if (array_key_exists('type_id', $changes)){
-            $type = (new \App\Models\EquipmentTypeModel())->find($changes['type_id']);
-            $changes['type'] = $type->label;
-        }
-        if (array_key_exists('location_id', $changes)){
-            $location = (new \App\Models\LocationModel())->find($changes['location_id']);
-            $changes['location'] = $location->name;
-        }
-        if (array_key_exists('status_id', $changes)){
-            $status = (new \App\Models\StatusModel())->find($changes['status_id']);
-            $changes['status'] = $status->name;
-        }
-        if (array_key_exists('owner_id', $changes)){
-            $institute = (new \App\Models\InstituteModel())->find($changes['owner_id']);
-            $changes['owner'] = $institute->name;
-        }
-        return $changes;
-    }
-
     /**
      * Updates the builder to select child equipments
      * Joins the desired tables to select only equipments child to a given $parentId
@@ -417,7 +368,7 @@ class EquipmentModel extends LogModel
      * 
      * @return Self This model instance
      */
-    public function queryChilds(string $parentId, mixed $typeId=null, ?array $idIgnore=null): Self
+    public function queryChildren(string $parentId, mixed $typeId=null, ?array $idIgnore=null): Self
     {
         $this->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_b_id', 'left')
             ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
@@ -523,14 +474,6 @@ class EquipmentModel extends LogModel
                 throw new ValidationException(sprintf('Could not get a FK ID for %s', $fkField));
             }
         }
-    }
-
-    protected function getFKId(mixed $value, string $col, string $modelName): int|string
-    {
-        return model($modelName)
-            ->select('id')
-            ->where($col, $value)
-            ->first()->id;
     }
 
     /**

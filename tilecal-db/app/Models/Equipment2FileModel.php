@@ -29,16 +29,4 @@ class Equipment2FileModel extends LogModel
         $operationLog->changes = $changes;
         return $operationLog;
     }
-
-    protected function getInsertLog(array $data): OperationLog
-    {
-        $operationLog = parent::getInsertLog($data);
-        return $this->addName($data['data']['file_id'], $operationLog);
-    }
-
-    protected function getDeleteLog(array $data): OperationLog
-    {
-        $operationLog = parent::getDeleteLog($data);
-        return $this->addName($operationLog->changes['file_id'], $operationLog);
-    }
 }
