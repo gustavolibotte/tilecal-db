@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Entities\ParentChildRelation;
-use App\Entities\OperationLog;
 use App\Entities\Equipment;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Model;

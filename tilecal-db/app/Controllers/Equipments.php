@@ -120,6 +120,7 @@ class Equipments extends APIController
                 // Needs to rename the fields because the front end fields
                 // have user friendly names
                 $colRename = [
+                    'detector_location' => 'detector_location_name',
                     'owner_institute' => 'owner_mne',
                     'location' => 'location_name',
                     'status' => 'status_name',

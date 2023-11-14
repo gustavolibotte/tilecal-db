@@ -159,10 +159,16 @@ abstract class EntryValidator
                     $dataModel->insert($rowData);
                 } catch (Throwable $e){
                     $foundError = true;
+                    $message = sprintf(
+                        '%s. %s: %d',
+                        $e->getMessage(),
+                        $e->getFile(),
+                        $e->getLine()
+                    );
                     $fileWriter->addLine([
                         $iRow,
                         'InternalError',
-                        $e->getMessage()
+                        $message
                     ]);
                     break;
                 }

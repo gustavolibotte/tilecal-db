@@ -83,6 +83,16 @@ class EquipmentValidator extends EntryValidator
             ]
         ];
 
+        $this->validationRules['detector_location_name'] = [
+            "rules" => [
+                "permit_empty",
+                "is_not_unique[detector_locations.name]",
+            ],
+            "errors" => [
+                "is_not_unique" => "The inserted detector location is not valid."
+            ]
+        ];
+
         $this->validationRules['location_id'] = [
             "rules" => [
                 "if_exist",
@@ -158,12 +168,12 @@ class EquipmentValidator extends EntryValidator
         helper(['array', 'cast']);
         $fieldValues = $this->getFieldValues();
         $equipment = new Equipment($fieldValues);
-        $equipment->type_id = $this->equipmentType->id;
-        $equipment->type_name = $this->equipmentType->name;
         $typeParams = [];
         foreach ($this->equipmentType->params as $param){
-            $typeParams[$param] = dot_search_with_default($param, $fieldValues);
+            $typeParams[$param] = remove_value($param, $fieldValues, false);
         }
+        $equipment->type_id = $this->equipmentType->id;
+        $equipment->type_name = $this->equipmentType->name;
         $equipment->type_params = $typeParams;
         return $equipment;
     }

@@ -11,7 +11,7 @@ class PmtValidator extends EquipmentValidator
         'R11187-SEL',
         'R11187-A1'
     ];
-    public static string $validSerialRegex = '/^[A-Z]{2}[0-9]{4}/';
+    public static string $validSerialRegex = '/^[A-Z0-9]{4}/';
     public static int $pmtSerialMaxSize = 6;
 
     public static int $smallestPmtPosition = 0;
