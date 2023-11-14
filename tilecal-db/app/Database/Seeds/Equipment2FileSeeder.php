@@ -8,7 +8,6 @@ class Equipment2FileSeeder extends BaseSeeder
     public function run()
     {
         helper('random');
-        service('authenticator')->setMigration();
         $equipmentModel = new \App\Models\EquipmentModel();
         $equipments = $equipmentModel->select('id')->findAll();
         $fileModel = new \App\Models\FileModel();

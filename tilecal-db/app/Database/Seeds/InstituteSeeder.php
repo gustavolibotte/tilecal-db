@@ -6,7 +6,6 @@ class InstituteSeeder extends BaseSeeder
 {
     public function run()
     {
-        service('authenticator')->setMigration();
         $jsonData = $this->readFile('institutes.json');
         $instituteModel = new \App\Models\InstituteModel();
         foreach ($jsonData as $row){

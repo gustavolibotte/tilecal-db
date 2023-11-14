@@ -15,6 +15,14 @@ class EquipmentValidator extends EntryValidator
     public static int $serialMaxSize = 36;
     public static int $maxCommentsSize = 65535; //MySQL max text size
 
+    public array $fieldRename = [
+        'detector_location' => 'detector_location_name',
+        'owner_institute' => 'owner_mne',
+        'location' => 'location_name',
+        'status' => 'status_name',
+        'owner' => 'owner_mne'
+    ];
+
     public function __construct(EquipmentType|string $equipmentType)
     {
         if ($equipmentType instanceof EquipmentType){
@@ -167,11 +175,11 @@ class EquipmentValidator extends EntryValidator
     {
         helper(['array', 'cast']);
         $fieldValues = $this->getFieldValues();
-        $equipment = new Equipment($fieldValues);
         $typeParams = [];
         foreach ($this->equipmentType->params as $param){
             $typeParams[$param] = remove_value($param, $fieldValues, false);
         }
+        $equipment = new Equipment($fieldValues);
         $equipment->type_id = $this->equipmentType->id;
         $equipment->type_name = $this->equipmentType->name;
         $equipment->type_params = $typeParams;

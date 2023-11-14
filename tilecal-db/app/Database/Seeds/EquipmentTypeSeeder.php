@@ -9,7 +9,6 @@ class EquipmentTypeSeeder extends BaseSeeder
 {
     public function run()
     {
-        service('authenticator')->setMigration();
         $jsonData = $this->readFile('equipment_types.json');
         $equipmentTypeModel = new \App\Models\EquipmentTypeModel();
         foreach ($jsonData as &$row){

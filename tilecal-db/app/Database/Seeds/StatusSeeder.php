@@ -7,7 +7,6 @@ class StatusSeeder extends BaseSeeder
 {
     public function run()
     {
-        service('authenticator')->setMigration();
         $jsonData = $this->readFile('statuses.json');
         $statusModel = new \App\Models\StatusModel();
         foreach ($jsonData as $row){
