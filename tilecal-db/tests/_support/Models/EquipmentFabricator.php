@@ -10,6 +10,7 @@ use App\Models\InstituteModel;
 use App\Library\Forms\PmtForm;
 use App\Models\AllowedTypeSlotModel;
 use App\Models\TypeSlotModel;
+use App\Validation\Validators\PmtValidator;
 use CodeIgniter\Entity\Entity;
 use Faker\Generator;
 
@@ -51,7 +52,7 @@ class EquipmentFabricator extends EquipmentModel
         $this->statusModel = new StatusModel();
         $this->statuses = $this->statusModel->getCustomArray(keyField: 'name');
         $this->instituteModel = new InstituteModel();
-        $this->institutes = $this->instituteModel->getIdArray();
+        $this->institutes = $this->instituteModel->getCustomArray(keyField: 'mne');
         $this->originalReturnType = $this->returnType;
         $this->typeSlotModel = new TypeSlotModel();
         $this->slots = $this->typeSlotModel->getCustomArray(keyField: 'name');
@@ -96,7 +97,7 @@ class EquipmentFabricator extends EquipmentModel
         $type = $this->types['pmt'];
         $location = $faker->randomElement($this->locations);
         $status = $faker->randomElement($this->statuses);
-        $institute = $this->institutes[PmtForm::$pmtOwnerId];
+        $institute = $this->institutes['CER'];
         $entity = new $this->originalReturnType([
             'parent_id' => $parentId,
             'slot_id' => empty($slotName)? null: $this->slots[$slotName]->id,
@@ -104,16 +105,20 @@ class EquipmentFabricator extends EquipmentModel
             'location_id' => $location->id,
             'status_id' => $status->id,
             'owner_id' => $institute->id,
-            'serial' => $faker->regexify(PmtForm::$validSerialRegex),
+            'id' => $faker->regexify($type->id_regex),
             'comments' => $faker->text($this->numCommentsCharacters),
             'type_params' => [
                 'beta' => $faker->randomFloat(3, 6, 8),
                 'nominal_hv' => $faker->numberBetween(600, 800),
                 'qe' => $faker->randomFloat(1, 20, 25),
-                'model' => $faker->randomElement(PmtForm::$validPmtModelValues)
+                'model' => $faker->randomElement(PmtValidator::$validPmtModelValues),
+                'phase1_position' => $faker->numberBetween(
+                    PmtValidator::$smallestPmtPosition,
+                    PmtValidator::$biggestPmtPosition
+                )
             ]
         ]);
-        $entity->id = "0{$entity->serial}";
+        $entity->serial = substr($entity->id, 1, 6);
         return $entity;
     }
 
@@ -125,7 +130,7 @@ class EquipmentFabricator extends EquipmentModel
         $institute = $faker->randomElement($this->institutes);
         $pos = $faker->randomNumber(2, false);
         $entity = new $this->originalReturnType([
-            'id' => $this->fakeID($faker),
+            'id' => $faker->regexify($type->id_regex),
             'type_id' => $type->id,
             'parent_id' => $parentId,
             'slot_id' => empty($slotName)? null: $this->slots[$slotName]->id,
@@ -134,18 +139,13 @@ class EquipmentFabricator extends EquipmentModel
             'owner_id' => $institute->id,
             'serial' => $faker->regexify(self::$defaultSerialRegex),
             'comments' => $faker->text($this->numCommentsCharacters),
-            'type_params' => [
-                'phase1_pos' => $pos,
-                'phase2_pos' => $pos,
-            ]
+            'type_params' => []
+            // 'type_params' => [
+            //     'phase1_pos' => $pos,
+            //     'phase2_pos' => $pos,
+            // ]
         ]);
         return $entity;
-    }
-
-    protected function fakeID(Generator &$faker): string
-    {
-        $sequentialNumber = $faker->regexify(self::$defaultIdSequentialNumber);
-        return $sequentialNumber;
     }
 
     public function makeSpares(Generator &$faker, array $equipments): array
@@ -174,7 +174,7 @@ class EquipmentFabricator extends EquipmentModel
             $status = $faker->randomElement($this->statuses);
             $institute = $faker->randomElement($this->institutes);
             $entity = new $this->originalReturnType([
-                'id' => $this->fakeID($faker),
+                'id' => $faker->regexify($type->id_regex),
                 'type_id' => $type->id,
                 'parent_id' => $parentId,
                 'slot_id' => empty($slotName)? null: $this->slots[$slotName]->id,

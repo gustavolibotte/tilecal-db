@@ -20,10 +20,9 @@ abstract class EntryValidator
     {
         $this->validator = \Config\Services::validation(getShared: false);
         $this->initialize();
-        // foreach ($this->validationRules as $field => $rules) {
-        //     $this->fieldValues[$field] = null;
-        // }
     }
+
+    public function asEdit(){}
 
     protected function initialize(){}
 
@@ -88,7 +87,7 @@ abstract class EntryValidator
 
     protected function fieldValueIsEmpty(mixed $value)
     {
-        return empty($value) || ($value == FORM_SELECT_NULL_OPTION);
+        return empty($value) || ($value === FORM_SELECT_NULL_OPTION);
     }
 
     public function getFieldValues(): array
@@ -111,12 +110,21 @@ abstract class EntryValidator
     {
         foreach ($this->validationRules as $fieldName=>$fieldParams){
             $requestValue = $request->getVar($fieldName);
-            if (is_null($reuqestValue)){
+            if ($this->fieldValueIsEmpty($requestValue)){
                 $requestValue = $request->getFile($fieldName);
+                if ($this->fieldValueIsEmpty($requestValue)){
+                    continue;
+                }
             }
             $values2Set[$fieldName] = $requestValue;
         }
         $this->setFieldValues($values2Set);
+        return $this;
+    }
+
+    public function withRequest($request): Self
+    {
+        $this->validator->withRequest($request);
         return $this;
     }
 
@@ -151,10 +159,16 @@ abstract class EntryValidator
                     $dataModel->insert($rowData);
                 } catch (Throwable $e){
                     $foundError = true;
+                    $message = sprintf(
+                        '%s. %s: %d',
+                        $e->getMessage(),
+                        $e->getFile(),
+                        $e->getLine()
+                    );
                     $fileWriter->addLine([
                         $iRow,
                         'InternalError',
-                        $e->getMessage()
+                        $message
                     ]);
                     break;
                 }

@@ -4,8 +4,7 @@ namespace App\Controllers;
 
 use App\Library\Forms\EquipmentBatchRegisterForm;
 use App\Library\Forms\EquipmentForm;
-use App\Models\EquipmentModel;
-use App\Models\EquipmentTypeModel;
+use App\Validation\Validators\BatchRegisterValidator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
 use ValueError;
@@ -114,13 +113,14 @@ class Equipments extends APIController
         helper(['form', 'url', 'app_form', 'path']);
         $messenger = \Config\Services::messenger();
         if ($this->request->is('post')){
-            $form = new EquipmentBatchRegisterForm($this->request);
-            if ($form->validate()){
-                $formData = $form->getValidatedData();
+            $validator = (new BatchRegisterValidator())->addRequest($this->request);
+            if ($validator->validate()){
+                $formData = $validator->getValidatedData();
                 $equipValidator = EquipmentValidator::getFromTypeName($formData['type_name']);
                 // Needs to rename the fields because the front end fields
                 // have user friendly names
                 $colRename = [
+                    'detector_location' => 'detector_location_name',
                     'owner_institute' => 'owner_mne',
                     'location' => 'location_name',
                     'status' => 'status_name',
@@ -133,7 +133,8 @@ class Equipments extends APIController
                 );
                 if ($fileValidationResult['status']) {
                     $messenger->addRegisterSuccess();
-                    $form->clear();
+                    $validator->clearState();
+                    $equipValidator->clearState();
                 } else{
                     $filepath = $fileValidationResult['logFilepath'];
                     $filename = splitPath($filepath)['tail'];
@@ -146,13 +147,12 @@ class Equipments extends APIController
                     );
                 }
             } else{
-                foreach ($form->getErrors() as $errorMsg){
+                foreach ($validator->getErrors() as $errorMsg){
                     $messenger->addMessage($errorMsg, 'danger');
                 }
             }
-        } else{
-            $form = new EquipmentBatchRegisterForm();
         }
+        $form = new EquipmentBatchRegisterForm($this->request);
         $messenger->dumpMessages();
         $viewData['forms'] = ['' => $form];
         $viewData['formUrl'] = uri_string();
@@ -174,24 +174,26 @@ class Equipments extends APIController
         $equipmentModel = model('equipmentModel');
         $messenger = service('messenger');
         if ($this->request->is('post')){
-            $form = EquipmentForm::getTypeForm($typeName, $this->request);
-            if ($form->validate()){
-                $equipmentModel = model('equipmentModel');
-                $equipment = $form->getValidatedData();
+            $validator = EquipmentValidator::getFromTypeName($typeName);
+            $validator->addRequest($this->request);
+            d($validator->getFieldValues());
+            if ($validator->validate()){
+                $equipment = $validator->getValidatedData();
                 $equipmentModel->insert($equipment);
                 $messenger->addRegisterSuccess();
                 $messenger->dumpMessages();
                 return redirect()->route('equipment_register', [$typeName]);
             } else {
-                foreach ($form->getErrors() as $errorMsg){
+                foreach ($validator->getErrors() as $errorMsg){
                     $messenger->addMessage($errorMsg, 'danger');
                 }
                 $messenger->dumpMessages();
+                $form = EquipmentForm::getTypeForm($typeName, $this->request);
             };
         } else{
             $form = EquipmentForm::getTypeForm($typeName);
         }
-        $equipmentTypeModel = new EquipmentTypeModel();
+        $equipmentTypeModel = model('EquipmentTypeModel');
         $type = $equipmentTypeModel->where(sprintf("name = '%s'", $typeName))->first();
         $registerData['model'] = $type;
         $title = sprintf('Register %s', $type->label);
@@ -210,21 +212,21 @@ class Equipments extends APIController
         if (!$feature->isActive()){
             return $this->serviceUnavailable();
         }
-
         $equipmentModel = model('EquipmentModel');
         $equipment = model('EquipmentModel')->fullQuery()->find($equipmentId);
-        $form = EquipmentForm::getTypeForm($equipment->type_name, $this->request);
-        $form->asEdit();
+        $validator = EquipmentValidator::getFromTypeName($equipment->type_name)
+            ->addRequest($this->request)
+            ->asEdit();
         $messenger = service('messenger');
-        if ($form->validate()){
-            $equipment = $form->getValidatedData();
+        if ($validator->validate()){
+            $equipment = $validator->getValidatedData();
             $equipmentModel->update($equipmentId, $equipment);
             $messenger->addMessage(
                 sprintf('Edited equipment %s with success', $equipment->id),
                 'success'
             );
         } else{
-            foreach ($form->getErrors() as $errorMsg){
+            foreach ($validator->getErrors() as $errorMsg){
                 $messenger->addMessage($errorMsg, 'danger');
             }
         }
@@ -257,7 +259,7 @@ class Equipments extends APIController
         if (!$feature->isActive()){
             return $this->serviceUnavailable();
         }
-        $equipmentModel = new EquipmentModel();
+        $equipmentModel = model('EquipmentModel');
         $equipmentModel->restore($equipmentId);
         service('messenger')->addRestoreSuccess();
         return redirect()->route('equipment_view', [$equipmentId]);

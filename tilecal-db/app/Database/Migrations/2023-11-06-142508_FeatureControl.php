@@ -1,10 +1,9 @@
 <?php
 
 namespace App\Database\Migrations;
+use App\Library\BaseMigration;
 
-use CodeIgniter\Database\Migration;
-
-class FeatureControl extends Migration
+class FeatureControl extends BaseMigration
 {
     public function up()
     {

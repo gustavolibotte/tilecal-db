@@ -5,7 +5,10 @@ use ValueError;
 
 class AppFileRules {
 
-    private static int $maxFileSize = 512000000;  //Bytes
+    private static int $maxFileSize = 5000000;  //Bytes
+    public static int $maxNameSize = 100;
+    public static int $maxDescriptionSize = 65535;
+    public static int $minDescriptionSize = 10;
 
     public static function getMaxFileSize(string $size): int
     {

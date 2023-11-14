@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use App\Entities\ParentChildRelation;
-use App\Entities\OperationLog;
 use App\Entities\Equipment;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Model;
+use CodeIgniter\Validation\Exceptions\ValidationException;
+use TypeError;
 
 
 class EquipmentModel extends LogModel
@@ -27,7 +28,9 @@ class EquipmentModel extends LogModel
         'slot_id',
         'serial',
         'comments',
-        'type_params'
+        'type_params',
+        'detector_location_id',
+        'detector_location_name'
     ];
 
     // Custom
@@ -84,12 +87,14 @@ class EquipmentModel extends LogModel
         $queryBuilder->select('equipments.updated_at');
         $queryBuilder->select('equipments.created_at');
         $queryBuilder->select('equipments.deleted_at');
+        $queryBuilder->select('detector_locations.name as detector_location_name');
 
         $queryBuilder = $queryBuilder
             ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
             ->join('locations', 'equipments.location_id = locations.id', 'left')
             ->join('statuses', 'equipments.status_id = statuses.id', 'left')
-            ->join('institutes', 'equipments.owner_id = institutes.id', 'left');
+            ->join('institutes', 'equipments.owner_id = institutes.id', 'left')
+            ->join('detector_locations', 'equipments.detector_location_id=detector_locations.id', 'left');
 
         return $queryBuilder;
     }
@@ -206,7 +211,7 @@ class EquipmentModel extends LogModel
     {
         $this->db->transBegin();
         if (!($data instanceof Equipment)){
-            throw new \TypeError('Equipment Model insert supports only Equipment as $data');
+            throw new TypeError('Equipment Model insert supports only Equipment as $data');
         }
         $data = $data->toRawArray();
         $parentId = remove_value('parent_id', $data, false);
@@ -219,20 +224,6 @@ class EquipmentModel extends LogModel
         if($returnID){
             return $childId;
         }
-    }
-
-    protected function getInsertLog(array $data): OperationLog
-    {
-        $data['data'] = $this->mergeTypeParams($data['data']);
-        unset_array_keys($data['data'], $this->insertChangesIgnore);
-        $data['data'] = $this->addForeignLabels($data['data']);
-        $operationLog = new OperationLog([
-            'record_id' => $data['id'],
-            'table' => $this->table,
-            'changes' => $data['data'],
-            'action' => 'insert'
-        ]);
-        return $operationLog;
     }
 
     /**
@@ -268,10 +259,10 @@ class EquipmentModel extends LogModel
     public function update($id = null, $data = null): bool
     {
         if (!($data instanceof Equipment)){
-            throw new \TypeError('Equipment Model insert supports only Equipment as $data');
+            throw new TypeError('Equipment Model insert supports only Equipment as $data');
         }
         if (is_null($id)){
-            throw new \TypeError('$id must be passed');
+            throw new TypeError('$id must be passed');
         }
         $data = $data->toRawArray();
         if(array_key_exists('parent_id', $data) || array_key_exists('slot_id', $data)){
@@ -291,22 +282,6 @@ class EquipmentModel extends LogModel
         $this->db->transBegin();
         parent::delete($id, false);
         $this->db->transCommit();
-    }
-
-    protected function getDeleteLog(array $data): OperationLog
-    {
-        $changes = $this->find($data['id'][0])->toRawArray();
-        $changes = $this->mergeTypeParams($changes);
-        unset_array_keys($changes, $this->deleteChangesIgnore);
-        $changes = $this->addForeignLabels($changes);
-
-        $operationLog = new OperationLog([
-            'changes' => $changes,
-            'record_id' => $data['id'][0],
-            'action' =>'delete',
-            'table' => $this->table
-        ]);
-        return $operationLog;
     }
 
     protected function deleteRelations(array $data): array
@@ -380,27 +355,6 @@ class EquipmentModel extends LogModel
         return $data;
     }
 
-    protected function addForeignLabels(array $changes): array
-    {
-        if (array_key_exists('type_id', $changes)){
-            $type = (new \App\Models\EquipmentTypeModel())->find($changes['type_id']);
-            $changes['type'] = $type->label;
-        }
-        if (array_key_exists('location_id', $changes)){
-            $location = (new \App\Models\LocationModel())->find($changes['location_id']);
-            $changes['location'] = $location->name;
-        }
-        if (array_key_exists('status_id', $changes)){
-            $status = (new \App\Models\StatusModel())->find($changes['status_id']);
-            $changes['status'] = $status->name;
-        }
-        if (array_key_exists('owner_id', $changes)){
-            $institute = (new \App\Models\InstituteModel())->find($changes['owner_id']);
-            $changes['owner'] = $institute->name;
-        }
-        return $changes;
-    }
-
     /**
      * Updates the builder to select child equipments
      * Joins the desired tables to select only equipments child to a given $parentId
@@ -413,7 +367,7 @@ class EquipmentModel extends LogModel
      * 
      * @return Self This model instance
      */
-    public function queryChilds(string $parentId, mixed $typeId=null, ?array $idIgnore=null): Self
+    public function queryChildren(string $parentId, mixed $typeId=null, ?array $idIgnore=null): Self
     {
         $this->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_b_id', 'left')
             ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
@@ -454,39 +408,73 @@ class EquipmentModel extends LogModel
 
     protected function substituteFKs(array $data): array
     {
-        if (array_key_exists('type_name', $data['data'])){
-            $data['data']['type_id'] = $this->getFKId(
-                remove_value('type_name', $data['data']),
-                'name', 'EquipmentTypeModel'
-            );
-        }
-        if (array_key_exists('owner_mne', $data['data'])){
-            $data['data']['owner_id'] = $this->getFKId(
-                remove_value('owner_mne', $data['data']),
-                'mne', 'InstituteModel'
-            );
-        }
-        if (array_key_exists('location_name', $data['data'])){
-            $data['data']['location_id'] = $this->getFKId(
-                remove_value('location_name', $data['data']),
-                'name', 'LocationModel'
-            );
-        }
-        if (array_key_exists('status_name', $data['data'])){
-            $data['data']['status_id'] = $this->getFKId(
-                remove_value('status_name', $data['data']),
-                'name', 'StatusModel'
-            );
-        }
+        $data = $this->substituteFK(
+            'type_id',
+            'type_name',
+            'name',
+            'EquipmentTypeModel',
+            $data
+        );
+        $data = $this->substituteFK(
+            'owner_id',
+            'owner_mne',
+            'mne',
+            'InstituteModel',
+            $data
+        );
+        $data = $this->substituteFK(
+            'location_id',
+            'location_name',
+            'name',
+            'LocationModel',
+            $data
+        );
+        $data = $this->substituteFK(
+            'status_id',
+            'status_name',
+            'name',
+            'StatusModel',
+            $data
+        );
+        $data = $this->substituteFK(
+            'detector_location_id',
+            'detector_location_name',
+            'name',
+            'DetectorLocationModel',
+            $data,
+            nullableFK: true
+        );
         return $data;
     }
 
-    protected function getFKId(mixed $value, string $col, string $modelName): int|string
+    protected function substituteFK(string $fkField,
+        string $aliasField,
+        string $aliasCol,
+        string $modelName,
+        array $data,
+        bool $nullableFK=false): array
     {
-        return model($modelName)
+        $fkExists = array_key_exists($fkField, $data['data']);
+        $aliasExists = array_key_exists($aliasField, $data['data']);
+        if ($fkExists && $aliasExists){
+            remove_value($aliasField, $data['data']);
+            return $data;
+        } elseif ($fkExists && !$aliasExists){
+            return $data;
+        } elseif (!$fkExists && $aliasExists){
+            $id = model($modelName)
             ->select('id')
-            ->where($col, $value)
+            ->where($aliasCol, remove_value($aliasField, $data['data']))
             ->first()->id;
+            $data['data'][$fkField] = $id;
+            return $data;
+        } else{
+            if ($nullableFK){
+                return $data;
+            } else{
+                throw new ValidationException(sprintf('Could not get a FK ID for %s', $fkField));
+            }
+        }
     }
 
     /**

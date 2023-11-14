@@ -1,7 +1,7 @@
 function getEquipmentIdButton(id){
     return `<a type="button" class="btn btn-primary" href="${getEquipViewRoute(id)}">${id}</a>`;
 }
-equipmentTableOrder = [[7, 'desc']]
+equipmentTableOrder = [[8, 'desc']]
 
 equipmentTableColumns = [
     {
@@ -15,6 +15,10 @@ equipmentTableColumns = [
     {
         "data": "location",
         "title": "Location"
+    },
+    {
+        "data": "detector_location_name",
+        "title": "Detector Location"
     },
     {
         "data": "status",

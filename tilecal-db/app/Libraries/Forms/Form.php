@@ -7,54 +7,43 @@ use ValueError;
 abstract class Form{
 
     protected ?IncomingRequest $request;
-    public $validator;
     public array $fields = [];
-    public array $validationRules =[];
-    protected bool $isValid = false;
-    private array $fieldValues = [];
-
-    protected abstract function getData();
-
-    public function getValidatedData()
-    {
-        if (!$this->isValid){
-            throw new \Exception("Can only get Data after data is validated");
-        }
-        return $this->getData();
-    }
+    private array $fieldValues;
 
     public function __construct(?IncomingRequest $request=null)
     {
         $this->request = $request;
         $this->validator = \Config\Services::validation(getShared: false);
         $this->initialize();
+        if (!is_null($request)){
+            $this->processRequest($request);
+        }
+    }
+
+    protected function initialize(){
+        $this->fieldValues = [];
         foreach ($this->fields as $name=>$params){
             $this->fieldValues[$name] = null;
         }
-        $this->processRequest();
-        $this->validator->setRules($this->validationRules);
     }
 
-    protected function initialize(){}
-
-    protected function processRequest(){
-        $nullRequest = is_null($this->request);
+    protected function processRequest($request): Self
+    {
         $values2Set = [];
         foreach ($this->fields as $fieldName=>$fieldParams){
-            if (!$nullRequest){
-                if ($fieldParams['fieldType'] === 'upload'){
-                    $requestFieldValue = $this->request->getFile($fieldName);
-                } else{
-                    $requestFieldValue = $this->request->getVar($fieldName);
-                }
-                if ($this->fieldValueIsEmpty($requestFieldValue)){
-                    $values2Set[$fieldName] = null;
-                } else{
-                    $values2Set[$fieldName] = $requestFieldValue;
-                }
+            if ($fieldParams['fieldType'] === 'upload'){
+                $requestFieldValue = $request->getFile($fieldName);
+            } else{
+                $requestFieldValue = $request->getVar($fieldName);
+            }
+            if ($this->fieldValueIsEmpty($requestFieldValue)){
+                $values2Set[$fieldName] = null;
+            } else{
+                $values2Set[$fieldName] = $requestFieldValue;
             }
         }
         $this->setFieldValues($values2Set);
+        return $this;
     }
 
     protected function fieldValueIsEmpty(mixed $value){
@@ -74,17 +63,6 @@ abstract class Form{
                 $this->fieldValues[$key] = $data[$key];
             }
         }
-    }
-
-    public function validate(){
-        $this->validator->reset();
-        $this->validator->setRules($this->validationRules);
-        $this->isValid = $this->validator->run($this->getFieldValues());
-        return $this->isValid;
-    }
-
-    public function getErrors(){
-        return $this->validator->getErrors();
     }
 
     public function toHTML(){
@@ -109,49 +87,12 @@ abstract class Form{
     public function clear(){
         $this->isValid = false;
         $this->request = null;
+        $this->initialize();
     }
 
     public function removeField(string $fieldName){
         unset($this->fields[$fieldName]);
         unset($this->validationRules[$fieldName]);
-    }
-
-    protected function removeRule(string $field, string $oldRule): ?string
-    {
-        helper('app_array');
-        $foundKey = null;
-        foreach($this->validationRules[$field]['rules'] as $key=>$rule){
-            if (str_starts_with($rule, $oldRule)){
-                $foundKey = $key;
-                break;
-            }
-        }
-        if (!is_null($foundKey)){
-            $removedRule = remove_value($foundKey, $this->validationRules[$field]['rules']);
-            if (array_key_exists($oldRule, $this->validationRules[$field]['errors'])){
-                unset($this->validationRules[$field]['errors'][$oldRule]);
-            }
-            return $removedRule;
-        }
-        return null;
-    }
-
-    protected function addRule(string $field, string $rule, ?string $error = null, string $where='end')
-    {   
-        if ($where == 'end'){
-            $this->validationRules[$field]['rules'][] = $rule;
-        } elseif ($where == 'start'){
-            $this->validationRules[$field]['rules'] = array_merge(
-                [$rule],
-                $this->validationRules[$field]['rules']
-            );
-        } else{
-            throw new ValueError("where param only supports 'end' and 'start' values");
-        }
-        if (!is_null($error)){
-            $ruleName = explode('[', $rule)[0];
-            $this->validationRules[$field]['errors'][$ruleName] = $error;
-        }
     }
 
     protected function setReadOnly(string $field)
@@ -167,6 +108,6 @@ abstract class Form{
 
     public function fieldExists(string $fieldName): bool
     {
-        return array_key_exists($fieldName, $this->fields) && array_key_exists($fieldName, $this->validationRules);
+        return array_key_exists($fieldName, $this->fields);
     }
 }

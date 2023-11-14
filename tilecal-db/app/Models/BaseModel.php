@@ -52,9 +52,9 @@ abstract class BaseModel extends Model
     }
 
     public function getFormDropdownOptions(array $columns, string $separator = ' - ', string $value='id'){
-        helper('string');
+        helper(['string', 'app_form']);
         $entities = $this->asArray()->findAll();
-        $options[FORM_SELECT_NULL_OPTION] = 'Select an option';
+        $options = get_blank_dropdown();
         foreach ($entities as $entity){
             $first = true;
             $options[$entity[$value]] = '';
