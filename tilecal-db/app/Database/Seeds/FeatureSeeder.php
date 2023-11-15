@@ -6,7 +6,6 @@ class FeatureSeeder extends BaseSeeder
 {
     public function run()
     {
-        service('authenticator')->setMigration();
         $jsonData = $this->readFile('features.json');
         $featureModel = model('FeatureModel');
         foreach ($jsonData as $row){

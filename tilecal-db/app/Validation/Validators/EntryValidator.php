@@ -1,20 +1,24 @@
 <?php
 
 namespace App\Validation\Validators;
+use App\Library\Loggers\BlankLogger;
 use ValueError;
 use App\Library\Writers\CSVFileWriter;
 use App\Library\Readers\CSVFileReader;
 use Throwable;
+use Psr\Log\LoggerInterface;
 
 abstract class EntryValidator
 {
     public array $validationRules = [];
 
-    private array $fieldValues = [];
+    private array $fieldValues;
 
     private $validator;
 
     private bool $isValid = false;
+
+    public array $fieldRename = [];
 
     public function __construct()
     {
@@ -24,7 +28,10 @@ abstract class EntryValidator
 
     public function asEdit(){}
 
-    protected function initialize(){}
+    protected function initialize()
+    {
+        $this->fieldValues = array_fill_keys(array_keys($this->validationRules), null);
+    }
 
     protected function getData(){return $this->getFieldValues();}
 
@@ -134,13 +141,86 @@ abstract class EntryValidator
         return $this;
     }
 
-    public function validateFileData(string $filepath, array $fieldRename=[], string $modelName): ?array
+    public static function validateFile(
+        string $filepath,
+        EntryValidator $validator,
+        string $modelName,
+        array $fieldRename=[],
+        ?LoggerInterface $logger=null): bool
+    {
+        helper(['filesystem', 'app_array']);
+        helper(['filesystem', 'app_array']);
+        $foundError = false;
+        $fieldRenameFlipped = array_flip($fieldRename);
+        $dataModel = model($modelName);
+        if (is_null($logger)){
+            $logger = new BlankLogger();
+        }
+        $db = db_connect();
+        if (empty($fieldRename)){
+            $fieldRename = $validator->fieldRename;
+        }
+        $inputFile = new CSVFileReader($filepath, headerRename:$fieldRename);
+        $db->transException(true)->transBegin();
+        foreach ($inputFile as $iRow=>$row){
+            // Removes some fields that may conflict with the type defined in the validator
+            remove_value('type_name', $row, false);
+            remove_value('type_id', $row, false);
+            $validator->clearState()->setFieldValues($row);
+            if ($validator->validate()){
+                try{
+                    $rowData = $validator->getValidatedData();
+                    $dataModel->insert($rowData);
+                    $logger->info('{row} Inserted with success', ['row' => $iRow]);
+                } catch (Throwable $e){
+                    $foundError = true;
+                    $message = sprintf(
+                        '%s. %s: %d %s%s',
+                        $e->getMessage(),
+                        $e->getFile(),
+                        $e->getLine(),
+                        PHP_EOL,
+                        $e->getTraceAsString()
+                    );
+                    $logger->critical($message);
+                    break;
+                }
+            } else{
+                $foundError = true;
+                foreach($validator->getErrors() as $field=>$errorMsg){
+                    // Maps the fields back to the front end name
+                    $fieldName = dot_search_with_default($field, $fieldRenameFlipped, $field);
+                    $logger->error(
+                        'Row {iRow} - {fieldName} - {message}',
+                        [
+                            'iRow' => $iRow,
+                            'fieldName' => $fieldName,
+                            'message' => $errorMsg
+                        ]
+                    );
+                }
+            }
+        }
+        if ($foundError || ($db->transStatus() === false)){
+            $db->transRollback();
+            return false;
+        } else{
+            $db->transCommit();
+            return true;
+        }
+
+    }
+
+    public function validateFileData(string $filepath, string $modelName, array $fieldRename=[]): ?array
     {
         helper(['filesystem', 'app_array']);
         $foundError = false;
         $fieldRenameFlipped = array_flip($fieldRename);
         $dataModel = model($modelName);
         $db = db_connect();
+        if (empty($fieldRename)){
+            $fieldRename = $this->fieldRename;
+        }
         $inputFile = new CSVFileReader($filepath, headerRename:$fieldRename);
         $logFilepath = tempnam(config('Paths')->validationLogsDirectory, '');
         $fileWriter = (new CSVFileWriter($logFilepath))->open();

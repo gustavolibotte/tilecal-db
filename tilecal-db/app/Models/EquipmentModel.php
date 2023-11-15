@@ -454,17 +454,20 @@ class EquipmentModel extends LogModel
         array $data,
         bool $nullableFK=false): array
     {
-        $fkExists = array_key_exists($fkField, $data['data']);
-        $aliasExists = array_key_exists($aliasField, $data['data']);
-        if ($fkExists && $aliasExists){
-            remove_value($aliasField, $data['data']);
+        $fkValue = remove_value($fkField, $data['data'], false);
+        $emptyFK = empty($fkValue);
+        $aliasValue = remove_value($aliasField, $data['data'], false);
+        $emptyAlias = empty($aliasValue);
+        if (!$emptyFK && !$emptyAlias){
+            $data['data'][$fkField] = $fkValue;
             return $data;
-        } elseif ($fkExists && !$aliasExists){
+        } elseif (!$emptyFK && $emptyAlias){
+            $data['data'][$fkField] = $fkValue;
             return $data;
-        } elseif (!$fkExists && $aliasExists){
+        } elseif ($emptyFK && !$emptyAlias){
             $id = model($modelName)
             ->select('id')
-            ->where($aliasCol, remove_value($aliasField, $data['data']))
+            ->where($aliasCol, $emptyAlias)
             ->first()->id;
             $data['data'][$fkField] = $id;
             return $data;

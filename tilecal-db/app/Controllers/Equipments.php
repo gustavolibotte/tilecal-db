@@ -119,16 +119,8 @@ class Equipments extends APIController
                 $equipValidator = EquipmentValidator::getFromTypeName($formData['type_name']);
                 // Needs to rename the fields because the front end fields
                 // have user friendly names
-                $colRename = [
-                    'detector_location' => 'detector_location_name',
-                    'owner_institute' => 'owner_mne',
-                    'location' => 'location_name',
-                    'status' => 'status_name',
-                    'owner' => 'owner_mne'
-                ];
                 $fileValidationResult = $equipValidator->validateFileData(
                     $formData['file']->getTempName(),
-                    $colRename,
                     'EquipmentModel'
                 );
                 if ($fileValidationResult['status']) {
@@ -176,7 +168,6 @@ class Equipments extends APIController
         if ($this->request->is('post')){
             $validator = EquipmentValidator::getFromTypeName($typeName);
             $validator->addRequest($this->request);
-            d($validator->getFieldValues());
             if ($validator->validate()){
                 $equipment = $validator->getValidatedData();
                 $equipmentModel->insert($equipment);

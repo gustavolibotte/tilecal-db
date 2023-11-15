@@ -1,5 +1,5 @@
 function fetchEquipTableIndex(){
-    fixedToastr('Loading data')
+    toastr.info('Loading data')
     const tableParams = {
         autoWidth: true,
         searching: true,

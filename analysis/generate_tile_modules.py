@@ -10,7 +10,7 @@ barrel_sides = [
 ]
 n_drawers = 64
 tile_modules = [{"name": f'{side}{drawer:02d}'} 
-    for side, drawer in product(barrel_sides, range(1, n_drawers+1))]
+    for side, drawer in product(barrel_sides, range(n_drawers+1))]
 output_dir = '/root/tilecal-db/tilecal-db/data'
 filename = 'tile_modules.json'
 

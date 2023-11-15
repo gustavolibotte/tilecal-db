@@ -8,12 +8,12 @@ use \App\Entities\User;
 
 class Authenticator{
 
-    private bool $isMigration;
+    private bool $isSystem;
     private ?User $user;
 
-    public function __construct(?bool $isMigration=false)
+    public function __construct(?bool $isSystem=false)
     {
-        $this->isMigration = is_null($isMigration)? false: $isMigration;
+        $this->isSystem = is_null($isSystem)? false: $isSystem;
         $this->user = null;
     }
 
@@ -41,7 +41,7 @@ class Authenticator{
 
     private function authenticate(): User
     {
-        if($this->isMigration){
+        if($this->isSystem){
             log_message('info', 'Generating migration logging info.');
             $userInfo = [
                 'username' => 'tilep2db',
@@ -127,37 +127,15 @@ class Authenticator{
         return $userInfo;
     }
 
-    public function setMigration(): self
+    public function setSystem(): self
     {
-        $this->isMigration = true;
+        $this->isSystem = true;
         return $this;
     }
 
-    public function unsetMigration(): self
+    public function unsetSystem(): self
     {
-        $this->isMigration = false;
+        $this->isSystem = false;
         return $this;
     }
-
-    // /**
-    //  * Custom log_message function fot the authenticator.
-    //  * The log_message retreives the user from the authenticator service. If the service
-    //  * used log_message function without special conditions it could fall into
-    //  * an infinite recursion. This method ovewrites the username with null in when the
-    //  * user is not authenticated to avoid this scenarios.
-    //  *
-    //  * @param string $level Log level
-    //  * @param string $message Log message
-    //  * 
-    //  * @return mixed return of log_message 
-    //  */
-    // private function log_message(string $level, string $message): mixed
-    // {
-    //     $username = is_null($this->user)? null: $this->user->username;
-    //     return log_message(
-    //         $level,
-    //         $message,
-    //         ['username' => $username]
-    //     );
-    // }
 }

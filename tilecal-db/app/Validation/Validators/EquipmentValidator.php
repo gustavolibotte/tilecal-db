@@ -15,6 +15,14 @@ class EquipmentValidator extends EntryValidator
     public static int $serialMaxSize = 36;
     public static int $maxCommentsSize = 65535; //MySQL max text size
 
+    public array $fieldRename = [
+        'detector_location' => 'detector_location_name',
+        'owner_institute' => 'owner_mne',
+        'location' => 'location_name',
+        'status' => 'status_name',
+        'owner' => 'owner_mne'
+    ];
+
     public function __construct(EquipmentType|string $equipmentType)
     {
         if ($equipmentType instanceof EquipmentType){
@@ -51,8 +59,8 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['owner_id'] = [
             "rules" => [
-                "if_exist",
                 "required_without[owner_mne]",
+                "if_exist",
                 "is_not_unique[institutes.id]",
             ],
             "errors" => [
@@ -63,8 +71,8 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['owner_mne'] = [
             "rules" => [
-                "if_exist",
                 "required_without[owner_id]",
+                "if_exist",
                 "is_not_unique[institutes.mne]"
             ],
             "errors" => [
@@ -76,6 +84,7 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['detector_location_id'] = [
             "rules" => [
                 "permit_empty",
+                "if_exist",
                 "is_not_unique[detector_locations.id]",
             ],
             "errors" => [
@@ -86,6 +95,7 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['detector_location_name'] = [
             "rules" => [
                 "permit_empty",
+                "if_exist",
                 "is_not_unique[detector_locations.name]",
             ],
             "errors" => [
@@ -95,8 +105,8 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['location_id'] = [
             "rules" => [
-                "if_exist",
                 "required_without[location_name]",
+                "if_exist",
                 "is_not_unique[locations.id]",
             ],
             "errors" => [
@@ -107,8 +117,8 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['location_name'] = [
             "rules" => [
-                "if_exist",
                 "required_without[location_id]",
+                "if_exist",
                 "is_not_unique[locations.name]",
             ],
             "errors" => [
@@ -119,8 +129,8 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['status_id'] = [
             "rules" => [
-                "if_exist",
                 "required_without[status_name]",
+                "if_exist",
                 "is_not_unique[statuses.id]",
             ],
             "errors" => [
@@ -131,8 +141,8 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['status_name'] = [
             "rules" => [
-                "if_exist",
                 "required_without[status_id]",
+                "if_exist",
                 "is_not_unique[statuses.name]",
             ],
             "errors" => [
@@ -167,11 +177,11 @@ class EquipmentValidator extends EntryValidator
     {
         helper(['array', 'cast']);
         $fieldValues = $this->getFieldValues();
-        $equipment = new Equipment($fieldValues);
         $typeParams = [];
         foreach ($this->equipmentType->params as $param){
             $typeParams[$param] = remove_value($param, $fieldValues, false);
         }
+        $equipment = new Equipment($fieldValues);
         $equipment->type_id = $this->equipmentType->id;
         $equipment->type_name = $this->equipmentType->name;
         $equipment->type_params = $typeParams;
