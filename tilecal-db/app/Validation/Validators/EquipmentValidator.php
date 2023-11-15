@@ -59,8 +59,8 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['owner_id'] = [
             "rules" => [
-                "if_exist",
                 "required_without[owner_mne]",
+                "if_exist",
                 "is_not_unique[institutes.id]",
             ],
             "errors" => [
@@ -71,8 +71,8 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['owner_mne'] = [
             "rules" => [
-                "if_exist",
                 "required_without[owner_id]",
+                "if_exist",
                 "is_not_unique[institutes.mne]"
             ],
             "errors" => [
@@ -84,6 +84,7 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['detector_location_id'] = [
             "rules" => [
                 "permit_empty",
+                "if_exist",
                 "is_not_unique[detector_locations.id]",
             ],
             "errors" => [
@@ -94,6 +95,7 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['detector_location_name'] = [
             "rules" => [
                 "permit_empty",
+                "if_exist",
                 "is_not_unique[detector_locations.name]",
             ],
             "errors" => [
@@ -103,8 +105,8 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['location_id'] = [
             "rules" => [
-                "if_exist",
                 "required_without[location_name]",
+                "if_exist",
                 "is_not_unique[locations.id]",
             ],
             "errors" => [
@@ -115,8 +117,8 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['location_name'] = [
             "rules" => [
-                "if_exist",
                 "required_without[location_id]",
+                "if_exist",
                 "is_not_unique[locations.name]",
             ],
             "errors" => [
@@ -127,8 +129,8 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['status_id'] = [
             "rules" => [
-                "if_exist",
                 "required_without[status_name]",
+                "if_exist",
                 "is_not_unique[statuses.id]",
             ],
             "errors" => [
@@ -139,8 +141,8 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['status_name'] = [
             "rules" => [
-                "if_exist",
                 "required_without[status_id]",
+                "if_exist",
                 "is_not_unique[statuses.name]",
             ],
             "errors" => [

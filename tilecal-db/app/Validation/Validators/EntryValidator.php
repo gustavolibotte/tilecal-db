@@ -12,7 +12,7 @@ abstract class EntryValidator
 {
     public array $validationRules = [];
 
-    private array $fieldValues = [];
+    private array $fieldValues;
 
     private $validator;
 
@@ -28,7 +28,10 @@ abstract class EntryValidator
 
     public function asEdit(){}
 
-    protected function initialize(){}
+    protected function initialize()
+    {
+        $this->fieldValues = array_fill_keys(array_keys($this->validationRules), null);
+    }
 
     protected function getData(){return $this->getFieldValues();}
 
