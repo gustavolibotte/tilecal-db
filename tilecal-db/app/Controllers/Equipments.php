@@ -168,7 +168,6 @@ class Equipments extends APIController
         if ($this->request->is('post')){
             $validator = EquipmentValidator::getFromTypeName($typeName);
             $validator->addRequest($this->request);
-            d($validator->getFieldValues());
             if ($validator->validate()){
                 $equipment = $validator->getValidatedData();
                 $equipmentModel->insert($equipment);
