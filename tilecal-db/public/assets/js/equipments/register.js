@@ -1,5 +1,5 @@
 function fetchEquipmentSideTable(){
-    fixedToastr('Loading data', 'Last Edited Equipments')
+    toastr.info('Loading data', 'Last Edited Equipments')
     const tableParams = {
         autoWidth: true,
         searching: true,

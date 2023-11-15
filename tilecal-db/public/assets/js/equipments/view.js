@@ -1,5 +1,5 @@
 function fetchRelatedEquipTable(equipmentId){
-    fixedToastr('Loading Data', 'Related Equipments Table')
+    toastr.info('Loading Data', 'Related Equipments Table')
     const requestUrl = `/api/equipments/get?relatedEquipmentId=${equipmentId}`
     var tableColumns = [
         {
@@ -41,7 +41,7 @@ function fetchRelatedEquipTable(equipmentId){
 }
 
 function fetchRelatedFilesTable(equipmentId){
-    fixedToastr('Loading data', 'Related Files Table');
+    toastr.info('Loading data', 'Related Files Table');
     const requestUrl = `/api/files/get?relatedEquipmentId=${equipmentId}`
     const tableParams = {
         searching: true,
@@ -72,7 +72,7 @@ function fetchRelatedFilesTable(equipmentId){
 }
 
 function fetchHistTable(equipmentId){
-    fixedToastr('Loading data', 'Equip Hist Table');
+    toastr.info('Loading data', 'Equip Hist Table');
     const requestUrl = `/api/equipments/getHist`
     const tableParams = {
         searching: true,

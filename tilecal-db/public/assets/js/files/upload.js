@@ -1,6 +1,6 @@
 function fetchFileSideTable(){
     const toastrTitle = 'Uploaded Files'
-    fixedToastr('Loading data', toastrTitle)
+    toastr.info('Loading data', toastrTitle)
     const tableParams = {
         autoWidth: true,
         searching: true,
