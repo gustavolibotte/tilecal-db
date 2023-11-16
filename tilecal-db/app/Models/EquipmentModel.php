@@ -467,7 +467,7 @@ class EquipmentModel extends LogModel
         } elseif ($emptyFK && !$emptyAlias){
             $id = model($modelName)
             ->select('id')
-            ->where($aliasCol, $emptyAlias)
+            ->where($aliasCol, $aliasValue)
             ->first()->id;
             $data['data'][$fkField] = $id;
             return $data;
