@@ -21,4 +21,18 @@ class AppFileRules {
         }
         throw new ValueError(sprintf('%s not valid for $size', $size));
     }
+
+    public function local_mime_in($value, string $params, array $data, ?string &$error): bool
+    {
+        $filepath = $value;
+        $validMimes = explode(',', $params);
+        $fileMime = mime_content_type($filepath);
+        return in_array($fileMime, $validMimes);
+    }
+
+    public function local_file_exists($value): bool
+    {
+        $filepath = $value;
+        return file_exists($filepath);
+    }
 }

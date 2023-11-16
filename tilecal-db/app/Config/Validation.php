@@ -26,7 +26,8 @@ class Validation extends BaseConfig
         \App\Validation\AtlasIdRules::class,
         \App\Validation\EquipmentRules::class,
         \App\Validation\StringRules::class,
-        \App\Validation\TypeSlotRules::class
+        \App\Validation\TypeSlotRules::class,
+        \App\Validation\AppFileRules::class
     ];
 
     /**
