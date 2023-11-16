@@ -10,7 +10,6 @@ class EquipmentSeeder extends BaseSeeder
     public function run()
     {
         helper(['random', 'app_array']);
-        service('authenticator')->setMigration();
         $numEntries = 100;
         $spareChance = 0.1;
         $deleteChance = 0.03;

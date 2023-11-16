@@ -56,44 +56,44 @@ class HistModel extends BaseModel
             ->join('statuses s', 'eh.status_id=s.id', 'left')
             ->join('locations l', 'eh.location_id=l.id', 'left')
             ->join('institutes i', 'eh.owner_id=i.id', 'left')
-            ->select(
-                'eh.record_id as id, ' .
-                'et.label as type, ' .
-                's.name as status, ' .
-                'l.name as location, ' .
-                'i.name as owner, ' .
-                'eh.serial, ' .
-                'eh.type_params, ' .
-                'eh.comments, ' .
-                'eh.action, ' .
-                'eh.user, ' .
-                'eh.created_at'
-            )
+            ->select("'equip' as hist_type")
+            ->select('eh.record_id as id')
+            ->select('et.label as type')
+            ->select('s.name as status')
+            ->select('l.name as location')
+            ->select('i.name as owner')
+            ->select('eh.serial')
+            ->select('eh.type_params')
+            ->select('eh.comments')
+            ->select('eh.action')
+            ->select('eh.user')
+            ->select('eh.created_at')
             ->where('eh.record_id', $id)
-            ->get()->getCustomResultObject(EquipmentLog::class);
+            ->get()->getResultArray();
+        array_walk($equipmentLogs, function (&$value, $key){
+            $value['type_params'] = json_decode($value['type_params'], true);
+        });
         $equipmentRelationLogs = $this->db->table('parent_child_equips_hist pceh')
-            ->select(
-                'pceh.parent_equip_id, ' .
-                'pceh.child_equip_id, ' .
-                'pceh.action, ' .
-                'pceh.user, ' .
-                'pceh.created_at'
-            )
+            ->select("'parent_rel' as hist_type")
+            ->select('pceh.parent_equip_id')
+            ->select('pceh.child_equip_id')
+            ->select('pceh.action')
+            ->select('pceh.user')
+            ->select('pceh.created_at')
             ->orWhere('pceh.parent_equip_id', $id)
             ->orwhere('pceh.child_equip_id', $id)
-            ->get()->getCustomResultObject(ParentChildRelationLog::class);
+            ->get()->getResultArray();
         $fileRelationLogs = $this->db->table('equipments_to_files_hist efh')
             ->join('files f', 'efh.file_id=f.id', 'left')
-            ->select(
-                'efh.file_id, ' .
-                'f.name as file_name, ' .
-                'efh.equipment_id, ' .
-                'efh.action, ' .
-                'efh.user, ' .
-                'efh.created_at'
-            )
+            ->select("'file_rel' as hist_type")
+            ->select('efh.file_id')
+            ->select('f.name as file_name')
+            ->select('efh.equipment_id')
+            ->select('efh.action')
+            ->select('efh.user')
+            ->select('efh.created_at')
             ->where('efh.equipment_id', $id)
-            ->get()->getCustomResultObject(EquipFileRelationLog::class);
+            ->get()->getResultArray();
         $hist = array_merge(
             $equipmentLogs,
             $equipmentRelationLogs,
@@ -104,21 +104,25 @@ class HistModel extends BaseModel
 
     public function getFileHist(int $id){
         $fileLogs = $this->db->table('files_hist fh')
-            ->select('name, description, user, action, created_at')
-            ->where('id', $id)
-            ->get()->getCustomResultObject(FileLog::class);
+            ->select("'file' as hist_type")
+            ->select('name')
+            ->select('description')
+            ->select('user')
+            ->select('action')
+            ->select('created_at')
+            ->where('record_id', $id)
+            ->get()->getResultArray();
         $fileRelationLogs = $this->db->table('equipments_to_files_hist efh')
             ->join('files f', 'efh.file_id=f.id', 'left')
-            ->select(
-                'efh.file_id, ' .
-                'f.name as file_name, ' .
-                'efh.equipment_id, ' .
-                'efh.action, ' .
-                'efh.user, ' .
-                'efh.created_at'
-            )
+            ->select("'file_rel' as hist_type")
+            ->select('efh.file_id')
+            ->select('f.name as file_name')
+            ->select('efh.equipment_id')
+            ->select('efh.action')
+            ->select('efh.user')
+            ->select('efh.created_at')
             ->where('efh.file_id', $id)
-            ->get()->getCustomResultObject(EquipFileRelationLog::class);
+            ->get()->getResultArray();
         $hist = array_merge($fileLogs, $fileRelationLogs);
         return $hist;
     }

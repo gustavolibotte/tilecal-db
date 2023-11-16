@@ -6,7 +6,7 @@ use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 
-class DbTransaction implements FilterInterface
+class FeatureValidation implements FilterInterface
 {
     /**
      * Do whatever processing this filter needs to do.
@@ -25,8 +25,7 @@ class DbTransaction implements FilterInterface
      */
     public function before(RequestInterface $request, $arguments = null)
     {
-        $db = db_connect();
-        $db->transStart();
+        //
     }
 
     /**
@@ -43,7 +42,6 @@ class DbTransaction implements FilterInterface
      */
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
-        $db = db_connect();
-        $db->transComplete();
+        //
     }
 }

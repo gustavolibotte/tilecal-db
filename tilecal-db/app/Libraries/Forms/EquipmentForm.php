@@ -2,10 +2,7 @@
 
 namespace App\Library\Forms;
 
-use \App\Models\BaseModel;
-use \App\Entities\Equipment;
 use App\Entities\EquipmentType;
-use \App\Validation\AtlasIdRules;
 use \App\Validation\EquipmentRules;
 use \CodeIgniter\HTTP\IncomingRequest;
 use Error;
@@ -40,21 +37,6 @@ class EquipmentForm extends Form{
             ]
         ];
 
-        $this->validationRules['id'] = [
-            "rules" => [
-                "required",
-                sprintf("exact_length[%s]", AtlasIdRules::$sequentialNumberLength),
-                sprintf("regex_match[%s]", $this->equipmentType->id_regex),
-                "is_unique[equipments.id]"
-            ],
-            "errors" => [
-                "required" => "You must supply an id for the equipment.",
-                "exact_length" => "The ID sequential number must have {param} characters.",
-                "regex_match" => "The ID doesn't follow this equipment ID rules.",
-                "is_unique" => "ID {param} already exists."
-            ]
-        ];
-
         $this->fields['owner_id'] = [
             'id' => 'owner_id',
             'label' => 'Owner Institute',
@@ -65,17 +47,6 @@ class EquipmentForm extends Form{
                 'options' => model('InstituteModel')
                     ->orderBy('name')
                     ->getFormDropdownOptions(['mne', 'name'])
-            ]
-        ];
-
-        $this->validationRules['owner_id'] = [
-            "rules" => [
-                "required",
-                "is_not_unique[institutes.id]",
-            ],
-            "errors" => [
-                "required" => "You must supply an owner for the equipment.",
-                "is_not_unique" => "The inserted owner is not valid.",
             ]
         ];
 
@@ -91,15 +62,17 @@ class EquipmentForm extends Form{
                     ->getFormDropdownOptions(['name', 'description'])
             ]
         ];
-        
-        $this->validationRules['location_id'] = [
-            "rules" => [
-                "required",
-                "is_not_unique[locations.id]",
-            ],
-            "errors" => [
-                "required" => "You must supply a location for the equipment.",
-                "is_not_unique" => "The inserted location is not valid.",
+
+        $this->fields['detector_location_id'] = [
+            'id' => 'detector_location_id',
+            'label' => 'Detector Location',
+            'required' => false,
+            'fieldType' => 'dropdown',
+            'helpText' => 'Where in the detector this equipment should be.',
+            'fieldParams' => [
+                'options' => model('DetectorLocationModel')
+                    ->orderBy('name')
+                    ->getFormDropdownOptions(['name'])
             ]
         ];
 
@@ -110,20 +83,9 @@ class EquipmentForm extends Form{
             'fieldType' => 'dropdown',
             'helpText' => "Current equipment status",
             'fieldParams' => [
-                'options' => (new \App\Models\StatusModel())
+                'options' => model('StatusModel')
                     ->orderBy('name')
                     ->getFormDropdownOptions(['name', 'description'])
-            ]
-        ];
-
-        $this->validationRules['status_id'] = [
-            "rules" => [
-                "required",
-                "is_not_unique[statuses.id]",
-            ],
-            "errors" => [
-                "required" => "You must supply a status for the equipment.",
-                "is_not_unique" => "The inserted status is not valid.",
             ]
         ];
 
@@ -138,24 +100,6 @@ class EquipmentForm extends Form{
                 'fieldParams' => [
                     'maxlength' => 14,
                     'placeholder' => 'XXXXXXXXXXXXXX'
-                ]
-            ];
-
-            $this->validationRules['parent_id'] = [
-                "rules" => [
-                    "permit_empty",
-                    "required_with[slot_id]",
-                    sprintf("exact_length[%s]", AtlasIdRules::$exactLength),
-                    'id_has_valid_project',
-                    "id_has_valid_system",
-                    "id_has_valid_institute[institutes.mne]",
-                    "is_not_unique[equipments.id]",
-                    sprintf("id_is_valid_parent[{id},%s,{slot_id}]", $this->equipmentType->label)
-                ],
-                "errors" => [
-                    "required_with" => "Parent ID is required together with a slot.",
-                    "is_not_unique" => "Parent ID doesn't exist.",
-                    "exact_length" => "The id must have {param} characters.",
                 ]
             ];
 
@@ -181,21 +125,6 @@ class EquipmentForm extends Form{
                     'options' => $slotOptions
                 ]
             ];
-
-            $this->validationRules['slot_id'] = [
-                "rules" => [
-                    "permit_empty",
-                    "required_with[parent_id]",
-                    sprintf("slot_allows_type[%s]", $this->equipmentType->id),
-                ],
-                "errors" => [
-                    "required_with" => "You must supply a slot together with the parent ID.",
-                    "slot_allows_type" => sprintf(
-                        "Slot doesn't allow type %s to be fit.",
-                        $this->equipmentType->label
-                    )
-                ]
-            ];
         }
 
         $this->fields['serial'] = [
@@ -209,18 +138,6 @@ class EquipmentForm extends Form{
             ]
         ];
 
-        $this->validationRules['serial'] = [
-            "rules" => [
-                "permit_empty",
-                sprintf("max_length[%d]", EquipmentRules::$serialMaxSize),
-                sprintf("is_type_unique[serial,%d]", $this->equipmentType->id)
-            ],
-            "errors" => [
-                "max_length" => "Serial max size is {param} characters.",
-                "is_type_unique" => "Serial Number {value} already exists."
-            ]
-        ];
-
         $this->fields['comments'] = [
             'id' => 'comments',
             'required' => false,
@@ -230,43 +147,6 @@ class EquipmentForm extends Form{
                 'rows' => 3
             ]
         ];
-
-        $this->validationRules['comments'] = [
-            "rules" => [
-                sprintf("max_length[%s]", EquipmentRules::$maxCommentsSize)
-            ],
-            "errors" => [
-                "max_length" => "Comments max size is {param} characthers.",
-            ]
-        ];
-    }
-
-    public function getEntity(): Equipment
-    {
-        helper(['array', 'cast']);
-        if (!$this->isValid){
-            throw new \Exception('To get the equipment you must validate the form first');
-        }
-        $fieldValues = $this->getFieldValues();
-        foreach ($fieldValues as $key=>&$value){
-            $value = null_empty($value);
-        }
-        $equipment = new Equipment($fieldValues);
-        $equipment->type_id = $this->equipmentType->id;
-        $typeParams = [];
-        foreach ($this->equipmentType->params as $param){
-            $typeParams[$param] = $fieldValues[$param];
-        }
-        if ($equipment->parent_id == ''){
-            $equipment->parent_id = null;
-        }
-        $equipment->type_params = $typeParams;
-        return $equipment;
-    }
-
-    protected function getId(string $fieldName, string $value, BaseModel $model){
-        $entity = $model->where(sprintf("%s = '%s'", $fieldName, $value))->first();
-        return $entity->id;
     }
 
     protected function commentsEnd(){
@@ -278,14 +158,8 @@ class EquipmentForm extends Form{
     public function asEdit(){
 
         if ($this->fieldExists('id')){
-            $this->removeRule('id', 'is_unique');
-            $this->addRule('id', 'is_not_unique[equipments.id]', 'This id doesn\'t exist.');
             $this->setReadOnly('id');
         }
-
-        $oldRule = $this->removeRule('serial', 'is_type_unique');
-        $newRule = str_replace('is_type_unique', 'is_type_not_unique', $oldRule);
-        $this->addRule('serial', $newRule, 'The serial {value} doesn\'t exist');
         $this->setReadOnly('serial');
     }
 
@@ -306,25 +180,5 @@ class EquipmentForm extends Form{
             }
             throw $e;
         } 
-    }
-
-    /**
-     * Sets form's field values
-     * Overwrites default method to preprocess the id value.
-     * When the id is size 14, it supposes that the value is an ATLAS ID
-     * and gets only the sequential number (Last 7 characters).
-     *
-     * @param array $data
-     */
-    public function setFieldValues(array $data)
-    {
-        if (!array_key_exists('id', $data)){
-            return parent::setFieldValues($data);
-        }
-        if (strlen($data['id']) != 14){
-            return parent::setFieldValues($data);
-        }
-        $data['id'] = substr($data['id'], 7, 7);
-        return parent::setFieldValues($data);
     }
 }

@@ -16,14 +16,14 @@
     <div class="col">
       <div class="text-center">
         <h3>Equipments</h3>
-        <p><a href="<? echo base_url(('equipments')); ?>" class="text-decoration-underline">Index</a></p>
+        <p><a href="<? echo url_to('equipment_index'); ?>" class="text-decoration-underline">Index</a></p>
       </div>
     </div>
     <div class="col">
       <div class="text-center">
         <h3>Files</a></h3>
-        <p><a href="<? echo base_url(('files')); ?>" class="text-decoration-underline">Index</a></p>
-        <p><a href="#" class="text-decoration-underline">Upload</a></p>
+        <p><a href="<? echo url_to('file_index'); ?>" class="text-decoration-underline">Index</a></p>
+        <p><a href="<? echo url_to('file_upload'); ?>" class="text-decoration-underline">Upload</a></p>
       </div>
     </div>
   </div>

@@ -1,5 +1,5 @@
 function fetchEquipmentSideTable(){
-    fixedToastr('Loading data', 'Last Edited Equipments')
+    toastr.info('Loading data', 'Last Edited Equipments')
     const tableParams = {
         autoWidth: true,
         searching: true,
@@ -28,7 +28,6 @@ function fetchEquipmentSideTable(){
             tableParams.data = response.data
             $('#equipment-side-table').DataTable(tableParams);
             toastr.clear()
-            toastr.success('Loaded', 'Last Edited Equipments')
         },
         error: function(response, textStatus, errorThrown){
             $('#equipment-side-table').DataTable(tableParams);
@@ -42,4 +41,14 @@ function fetchEquipmentSideTable(){
     })
 }
 
-$(document).ready(fetchEquipmentSideTable)
+function disableEnterOnId(){
+    $('#id').on('keydown', function(e){
+        if (e.key === 'Enter') { // Check if the key pressed is Enter (key code 13)
+            e.preventDefault(); // Prevent the default form submission
+    }})
+}
+
+$(document).ready(function(){
+    fetchEquipmentSideTable()
+    disableEnterOnId()
+})

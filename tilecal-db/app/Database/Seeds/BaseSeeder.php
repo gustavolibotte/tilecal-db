@@ -19,8 +19,7 @@ class BaseSeeder extends Seeder
     public function __construct(Database $config, ?BaseConnection $db = null)
     {
         parent::__construct($config, $db);
-        $this->db = db_connect();
-        \Config\Services::authenticator()->setMigration();
+        \Config\Services::authenticator()->setSystem();
     }
 
     protected function readFile($filepath, bool $dataDir=true)

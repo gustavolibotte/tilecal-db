@@ -1,5 +1,5 @@
 function fetchFileTableFull(){
-    fixedToastr('Loading data');
+    toastr.info('Loading data');
     const tableParams = {
         autoWidth: true,
         searching: true,
@@ -16,7 +16,6 @@ function fetchFileTableFull(){
             tableParams.data = response.data
             $('#file-table-index').DataTable(tableParams);
             toastr.clear()
-            toastr.success('Loaded')
         },
         error: function(response, textStatus, errorThrown){
             $('#file-table-index').DataTable(tableParams);

@@ -51,21 +51,21 @@ abstract class BaseModel extends Model
         return $results;
     }
 
-    public function getFormDropdownOptions(array $columns, string $separator = ' - '){
-        helper('string');
+    public function getFormDropdownOptions(array $columns, string $separator = ' - ', string $value='id'){
+        helper(['string', 'app_form']);
         $entities = $this->asArray()->findAll();
-        $options[FORM_SELECT_NULL_OPTION] = 'Select an option';
+        $options = get_blank_dropdown();
         foreach ($entities as $entity){
             $first = true;
-            $options[$entity['id']] = '';
+            $options[$entity[$value]] = '';
             foreach ($columns as $colName){
                 if (!empty($entity[$colName])){
                     if ($first){
-                        $options[$entity['id']] = $entity[$colName];
+                        $options[$entity[$value]] = $entity[$colName];
                         $first = false;
                     } else{
-                        $options[$entity['id']] .= $separator;
-                        $options[$entity['id']] .= $entity[$colName];
+                        $options[$entity[$value]] .= $separator;
+                        $options[$entity[$value]] .= $entity[$colName];
                     }
                 }
             }
@@ -77,13 +77,21 @@ abstract class BaseModel extends Model
     {
         $nullValue = is_null($valueField);
         if(!$nullValue){
-            $this->select(sprintf(
-                '`%s`, `%s`',
-                $keyField,
-                $valueField
-            ));
+            if ($keyField == $valueField){
+                $this->select(sprintf(
+                    '`%s`',
+                    $keyField
+                ));
+            } else{
+                $this->select(sprintf(
+                    '`%s`, `%s`',
+                    $keyField,
+                    $valueField
+                ));
+            }
         }
         $results = (is_null($ids))? $this->findAll(): $this->find($ids);
+        $array = [];
         if ($nullValue) {
             foreach ($results as $result){
                 $array[$result->$keyField] = $result;

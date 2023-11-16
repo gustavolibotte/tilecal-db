@@ -10,7 +10,6 @@ use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use App\Entities\User;
 use CodeIgniter\Database\BaseConnection;
-use CodeIgniter\Model;
 
 /**
  * Class BaseController
@@ -78,20 +77,76 @@ abstract class BaseController extends Controller
         return json_encode($response);
     }
 
-    protected function checkAjaxRequest(): ?string
-    {
-        if (!$this->request->isAJAX()){
-            log_message('warning', 'API received a non AJAX request');
-            return 'Requests must be AJAX.';
-        }
-        return null;
-    }
-
     protected function checkDeletion(): ?string
     {
         if (!$this->user->isAuthorized('delete')){
             return 'You are not allowed to access deleted items';
         }
         return null;
+    }
+
+    public function unauthorized(){
+        $errorMsg = 'You are not authorized to do this action. If you think this is an error please contact an admin.';
+        $this->response->setStatusCode(401, $errorMsg);
+        $viewData = [
+            'errorText' => '401 Unauthorized',
+            'errorMessage' => $errorMsg,
+            'pageTitle' => 'Unauthorized',
+            'pageHeader' => ''
+        ];
+        return default_view('errors/http_error', $viewData);
+    }
+
+    public function forbidden(){
+        $errorMsg = 'Your current role does not allow you to access this page. If you think this is an error please contact an admin.';
+        $this->response->setStatusCode(403, $errorMsg);
+        $viewData = [
+            'errorText' => '403 Forbidden',
+            'errorMessage' => $errorMsg,
+            'pageTitle' => 'Forbidden',
+            'pageHeader' => ''
+        ];
+        return default_view('errors/http_error', $viewData);
+    }
+
+    public function notFound(?string $extraMsg=null){
+        $errorMsg = 'This page was not found, please check if the link is valid. If you think this is an error please contact an admin.';
+        if (!is_null($extraMsg)){
+            $errorMsg += sprintf(' %s', $extraMsg);
+        }
+        $this->response->setStatusCode(404, $errorMsg);
+        $viewData = [
+            'errorText' => '404 Not Found',
+            'errorMessage' => $errorMsg,
+            'pageTitle' => 'Not Found',
+            'pageHeader' => ''
+        ];
+        return default_view('errors/http_error', $viewData);
+    }
+
+    public function deletedEntry()
+    {
+        $errorMsg = 'This entry was deleted and isn\'t accessible anymore. If you would like for it to be restored please contact an admin.';
+        $this->response->setStatusCode(403, $errorMsg);
+        $viewData = [
+            'errorText' => '403 Deleted',
+            'errorMessage' => $errorMsg,
+            'pageTitle' => 'Deleted entry',
+            'pageHeader' => ''
+        ];
+        return default_view('errors/http_error', $viewData);
+    }
+
+    public function serviceUnavailable()
+    {
+        $errorMsg = 'This service is currently unavailable. If you think this is an error, please contact an Admin.';
+        $this->response->setStatusCode(503, $errorMsg);
+        $viewData = [
+            'errorText' => '503 Service Unavailable',
+            'errorMessage' => $errorMsg,
+            'pageTitle' => 'Service Unavailable',
+            'pageHeader' => ''
+        ];
+        return default_view('errors/http_error', $viewData);
     }
 }

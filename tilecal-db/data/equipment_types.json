@@ -4,8 +4,8 @@
         "label": "PMT",
         "system": "LO",
         "project": "20",
-        "id_regex": "/0[A-Z]{2}[0-9]{4}/",
-        "params": ["beta", "nominal_hv", "qe", "model"],
+        "id_regex": "/0[A-Z0-9]{2}[0-9]{4}/",
+        "params": ["beta", "nominal_hv", "qe", "model", "phase1_position"],
         "in_detector": true,
         "description": null,
         "active": 1,
@@ -101,7 +101,7 @@
         "label": "Mini Drawer",
         "system": "LL",
         "project": "20",
-        "id_regex": "/20[0-9]{5}/",
+        "id_regex": "/2[0-4](00[1-9]|0[1-9][0-9]|1[0-9][0-9]|2[0-6][0-9]|27[0-2])[0-1][0-5]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -170,7 +170,7 @@
         "label": "Micro Drawer 4",
         "system": "LL",
         "project": "20",
-        "id_regex": "/21[0-9]{5}/",
+        "id_regex": "/2[2-4](00[1-9]|0[1-9][0-9]|1[0-9][0-9]|2[0-6][0-9]|27[0-2])[0-1][0-5]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -191,7 +191,7 @@
         "label": "Micro Drawer 5",
         "system": "LL",
         "project": "20",
-        "id_regex": "/21[0-9]{5}/",
+        "id_regex": "/2[2-4](00[1-9]|0[1-9][0-9]|1[0-9][0-9]|2[0-6][0-9]|27[0-2])[0-1][0-5]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -212,7 +212,7 @@
         "label": "Micro Drawer 6",
         "system": "LL",
         "project": "20",
-        "id_regex": "/21[0-9]{5}/",
+        "id_regex": "/2[2-4](00[1-9]|0[1-9][0-9]|1[0-9][0-9]|2[0-6][0-9]|27[0-2])[0-1][0-5]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -233,7 +233,7 @@
         "label": "Micro Drawer 7",
         "system": "LL",
         "project": "20",
-        "id_regex": "/21[0-9]{5}/",
+        "id_regex": "/2[2-4](00[1-9]|0[1-9][0-9]|1[0-9][0-9]|2[0-6][0-9]|27[0-2])[0-1][0-5]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -242,10 +242,39 @@
     },
     {
         "name": "phase_2_lb_super_drawer",
-        "label": "Phase 2 LB Super Drawer",
+        "label": "P2 LB Super Drawer",
         "system": "LB",
         "project": "20",
-        "id_regex": "/22[0-9]{5}/",
+        "id_regex": "/20(00[1-9]|0[1-9][0-9]|1[0-9][0-9]|2[0-6][0-9]|27[0-2])[0-1]0/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": [
+            {
+                "name": "lbsd_mini_drawer_slot_01",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "lbsd_mini_drawer_slot_02",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "lbsd_mini_drawer_slot_03",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "lbsd_mini_drawer_slot_04",
+                "allowed_type_ids": ["mini_drawer"]
+            }
+        ]
+    },
+    {
+        "name": "phase_2_lb_super_drawer_bsi",
+        "label": "P2 LB Super Drawer BSI",
+        "system": "LB",
+        "project": "20",
+        "id_regex": "/21(00[1-9]|0[1-9][0-9]|1[0-9][0-9]|2[0-6][0-9]|27[0-2])[0-1]0/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -271,10 +300,43 @@
     },
     {
         "name": "phase_2_eb_super_drawer",
-        "label": "Phase 2 EB Super Drawer",
+        "label": "P2 EB Super Drawer",
         "system": "LE",
         "project": "20",
-        "id_regex": "/23[0-9]{5}/",
+        "id_regex": "/22(00[1-9]|0[1-9][0-9]|1[0-9][0-9]|2[0-6][0-9]|27[0-2])[0-1]0/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": [
+            {
+                "name": "ebsd_mini_drawer_slot_01",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "ebsd_mini_drawer_slot_02",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "ebsd_mini_drawer_slot_03",
+                "allowed_type_ids": ["mini_drawer"]
+            },
+            {
+                "name": "ebsd_micro_drawer_4_slot_01",
+                "allowed_type_ids": ["micro_drawer_4"]
+            },
+            {
+                "name": "ebsd_micro_drawer_5_slot_01",
+                "allowed_type_ids": ["micro_drawer_5"]
+            }
+        ]
+    },
+    {
+        "name": "phase_2_eb_super_drawer_bsi",
+        "label": "P2 EB Super Drawer BSI",
+        "system": "LE",
+        "project": "20",
+        "id_regex": "/23(00[1-9]|0[1-9][0-9]|1[0-9][0-9]|2[0-6][0-9]|27[0-2])[0-1]0/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -304,10 +366,10 @@
     },
     {
         "name": "short_phase_2_eb_super_drawer",
-        "label": "Short Phase 2 EB Super Drawer",
+        "label": "P2 Short EB Super Drawer",
         "system": "LE",
         "project": "20",
-        "id_regex": "/23[0-9]{5}/",
+        "id_regex": "/24(00[1-9]|0[1-9][0-9]|1[0-9][0-9]|2[0-6][0-9]|27[0-2])[0-1]0/",
         "params": [],
         "in_detector": true,
         "description": null,

@@ -7,7 +7,6 @@ class FileSeeder extends BaseSeeder
     public function run()
     {
         helper('path');
-        service('authenticator')->setMigration();
         $jsonData = $this->readFile('files.json');
         $fileModel = new \App\Models\FileModel(copyFile: true);
         foreach ($jsonData as $fileData){

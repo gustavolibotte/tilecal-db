@@ -12,14 +12,20 @@
             Equipments
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="<? echo base_url('equipments'); ?>">Index</a></li>
-            <? if ($user->isAuthorized('delete')):?>
-              <li><a class="dropdown-item" href="<? echo base_url('equipments?onlyDeleted=true'); ?>">Deleted</a></li>
+            <? if ($equipmentIndexActive):?>
+              <li><a class="dropdown-item" href="<? echo url_to('equipment_index'); ?>">Index</a></li>
             <? endif; ?>
-            <li><hr class="dropdown-divider"></li>
-            <? foreach ($equipmentTypes as $equipType): ?>
-              <li><a class="dropdown-item" href="<? echo base_url(sprintf('equipments?type_name=%s', $equipType->name)); ?>"><?echo $equipType->label;?></a></li>
-            <? endforeach;?>
+            <? if ($user->isAuthorized('delete') && $equipmentDeleteActive):?>
+              <li><a class="dropdown-item" href="<? echo url_to('equipment_index_deleted'); ?>">Deleted</a></li>
+            <? endif; ?>
+            <? if ($equipmentIndexActive):?>
+              <li><hr class="dropdown-divider"></li>
+            <? endif; ?>
+            <? if ($equipmentIndexActive):?>
+              <? foreach ($equipmentTypes as $equipType): ?>
+                <li><a class="dropdown-item" href="<? echo url_to('equipment_index_type', $equipType->name);?>"><?echo $equipType->label;?></a></li>
+              <? endforeach;?>
+            <? endif; ?>
           </ul>
         </li>
         <? if(false): ?>
@@ -51,11 +57,15 @@
               Register
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="<? echo base_url('equipments/batch-register')?>">Batch Register</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <? foreach ($equipmentTypes as $equipType): ?>
-                <li><a class="dropdown-item" href="<? echo base_url(sprintf('equipments/%s/register', $equipType->name)); ?>"><?echo $equipType->label;?></a></li>
-              <? endforeach;?>
+              <? if($equipmentBatchRegisterActive):?>
+                <li><a class="dropdown-item" href="<? echo url_to('equipment_batch_register'); ?>">Batch Register</a></li>
+              <? endif; ?>
+              <? if ($equipmentRegisterActive): ?>
+                <li><hr class="dropdown-divider"></li>
+                <? foreach ($equipmentTypes as $equipType): ?>
+                  <li><a class="dropdown-item" href="<? echo url_to('equipment_register', $equipType->name); ?>"><?echo $equipType->label;?></a></li>
+                <? endforeach;?>
+              <? endif; ?>
             </ul>
           </li>
         <?endif; ?>
@@ -64,18 +74,20 @@
             Files
           </a>
           <ul class="dropdown-menu" style="color: #ffffff;">
-            <li><a class="dropdown-item" href="<? echo base_url('files'); ?>">Index</a></li>
-            <? if ($user->isAuthorized('upload')):?>
-              <li><a class="dropdown-item" href="<? echo base_url('files/upload'); ?>">Upload</a></li>
+            <? if ($fileIndexActive): ?>
+              <li><a class="dropdown-item" href="<? echo url_to('file_index'); ?>">Index</a></li>
             <? endif; ?>
-            <? if ($user->isAuthorized('delete')):?>
-              <li><a class="dropdown-item" href="<? echo base_url('files?onlyDeleted=true'); ?>">Deleted</a></li>
+            <? if ($user->isAuthorized('upload') && $fileUploadActive):?>
+              <li><a class="dropdown-item" href="<? echo url_to('file_upload'); ?>">Upload</a></li>
+            <? endif; ?>
+            <? if ($user->isAuthorized('delete') && $fileDeleteActive):?>
+              <li><a class="dropdown-item" href="<? echo url_to('file_index_deleted'); ?>">Deleted</a></li>
             <? endif; ?>
           </ul>
         </li>
-        <a class="nav-link active" href="<? echo base_url('help') ?>" style="color: #ffffff;">
-          Help
-        </a>
+        <? if ($helpActive): ?>
+          <a class="nav-link active" href="<? echo base_url('help') ?>" style="color: #ffffff;">Help</a>
+        <? endif; ?>
         <li class="nav-link active" style="color: #ffffff;">
           <? echo $user->username?>
         </li>

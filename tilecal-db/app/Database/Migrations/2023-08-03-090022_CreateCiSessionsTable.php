@@ -1,10 +1,9 @@
 <?php
 
 namespace App\Database\Migrations;
+use App\Library\BaseMigration;
 
-use CodeIgniter\Database\Migration;
-
-class CreateCiSessionsTable extends Migration
+class CreateCiSessionsTable extends BaseMigration
 {
     protected $DBGroup = 'default';
 

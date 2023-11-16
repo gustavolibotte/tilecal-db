@@ -23,9 +23,7 @@ class Filters extends BaseConfig
         'secureheaders' => SecureHeaders::class,
         'auth'          => \App\Filters\Authentication::class,
         'lasturl'       => \App\Filters\LastURL::class,
-        'request_time'  => \App\Filters\RequestTime::class,
-        'db_transaction' => \App\Filters\DbTransaction::class,
-        'dump_messages' => \App\Filters\DumpMessages::class
+        'request_time'  => \App\Filters\RequestTime::class
     ];
 
     /**
@@ -39,14 +37,10 @@ class Filters extends BaseConfig
             'csrf',
             'request_time',
             'lasturl' => ['except' => 'callback'],
-            // 'db_transaction'
             // 'invalidchars',
         ],
         'after' => [
-            // 'db_transaction',
             'toolbar'
-            // 'dump_messages'
-            // 'db_transaction',
             // 'honeypot',
             // 'secureheaders',
         ],

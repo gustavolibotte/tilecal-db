@@ -27,3 +27,13 @@ def greater_than(col: str, value: float, df: pd.DataFrame):
 
 def make_snake_case(string: str) -> str:
     return string.lower().replace(' ', '_')
+
+def is_empty(var, bool_cast=False) -> bool:
+    if pd.isna(var):
+        return True
+    elif isinstance(var, str) or isinstance(var, list):
+        return not bool(var)
+    elif bool_cast:
+        return not bool(var)
+    else:
+        return False

@@ -3,7 +3,6 @@
 namespace Config;
 
 use CodeIgniter\Config\BaseConfig;
-use CodeIgniter\Validation\StrictRules\CreditCardRules;
 use CodeIgniter\Validation\StrictRules\FileRules;
 use CodeIgniter\Validation\StrictRules\FormatRules;
 use CodeIgniter\Validation\StrictRules\Rules;
@@ -27,7 +26,8 @@ class Validation extends BaseConfig
         \App\Validation\AtlasIdRules::class,
         \App\Validation\EquipmentRules::class,
         \App\Validation\StringRules::class,
-        \App\Validation\TypeSlotRules::class
+        \App\Validation\TypeSlotRules::class,
+        \App\Validation\AppFileRules::class
     ];
 
     /**
