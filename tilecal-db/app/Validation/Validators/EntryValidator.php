@@ -113,6 +113,7 @@ abstract class EntryValidator
 
     public function addRequest($request): Self
     {
+        $values2Set = [];
         foreach ($this->validationRules as $fieldName=>$fieldParams){
             $requestValue = $request->getVar($fieldName);
             if ($this->fieldValueIsEmpty($requestValue)){
