@@ -12,7 +12,7 @@ abstract class EntryValidator
 {
     public array $validationRules = [];
 
-    private array $fieldValues;
+    private array $fieldValues = [];
 
     private $validator;
 
@@ -24,14 +24,12 @@ abstract class EntryValidator
     {
         $this->validator = \Config\Services::validation(getShared: false);
         $this->initialize();
+        // $this->fieldValues = array_fill_keys(array_keys($this->validationRules), null);
     }
 
     public function asEdit(){}
 
-    protected function initialize()
-    {
-        $this->fieldValues = array_fill_keys(array_keys($this->validationRules), null);
-    }
+    protected function initialize(){}
 
     protected function getData(){return $this->getFieldValues();}
 
@@ -115,6 +113,7 @@ abstract class EntryValidator
 
     public function addRequest($request): Self
     {
+        $values2Set = [];
         foreach ($this->validationRules as $fieldName=>$fieldParams){
             $requestValue = $request->getVar($fieldName);
             if ($this->fieldValueIsEmpty($requestValue)){

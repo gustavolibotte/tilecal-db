@@ -163,7 +163,7 @@ class Equipments extends APIController
 
         helper(['form', 'url', 'app_form']);
 
-        $equipmentModel = model('equipmentModel');
+        $equipmentModel = model('EquipmentModel');
         $messenger = service('messenger');
         if ($this->request->is('post')){
             $validator = EquipmentValidator::getFromTypeName($typeName);
