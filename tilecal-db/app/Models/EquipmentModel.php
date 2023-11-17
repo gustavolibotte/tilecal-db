@@ -88,6 +88,7 @@ class EquipmentModel extends LogModel
         $queryBuilder->select('equipments.created_at');
         $queryBuilder->select('equipments.deleted_at');
         $queryBuilder->select('detector_locations.name as detector_location_name');
+        $queryBuilder->select('detector_locations.id as detector_location_id');
 
         $queryBuilder = $queryBuilder
             ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
