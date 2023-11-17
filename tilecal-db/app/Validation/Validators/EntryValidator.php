@@ -12,7 +12,7 @@ abstract class EntryValidator
 {
     public array $validationRules = [];
 
-    private array $fieldValues;
+    private array $fieldValues = [];
 
     private $validator;
 
