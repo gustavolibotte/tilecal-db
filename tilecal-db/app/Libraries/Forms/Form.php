@@ -47,7 +47,7 @@ abstract class Form{
     }
 
     protected function fieldValueIsEmpty(mixed $value){
-        return empty($value) || ($value == FORM_SELECT_NULL_OPTION);
+        return $value == FORM_SELECT_NULL_OPTION;
     }
 
     public function getFieldValues(): array

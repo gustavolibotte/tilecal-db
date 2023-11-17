@@ -90,7 +90,7 @@ class CSVFileReader implements Iterator{
                 return null;
             }
             foreach ($row as $iCol=>&$value){
-                if (empty($value)){
+                if ($value === ''){
                     $value = null;
                 }
                 $headerName = $this->header[$iCol];

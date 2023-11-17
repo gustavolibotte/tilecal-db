@@ -171,7 +171,7 @@ class EquipmentValidator extends EntryValidator
         $fieldValues = $this->getFieldValues();
         $typeParams = [];
         foreach ($this->equipmentType->params as $param){
-            $typeParams[$param] = remove_value($param, $fieldValues, false);
+            $typeParams[$param] = cast_to_numeric(remove_value($param, $fieldValues, false));
         }
         $equipment = new Equipment($fieldValues);
         $equipment->type_id = $this->equipmentType->id;
