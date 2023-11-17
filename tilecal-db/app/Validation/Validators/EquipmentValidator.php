@@ -4,9 +4,7 @@ namespace App\Validation\Validators;
 use App\Entities\EquipmentType;
 use App\Validation\AtlasIdRules;
 use CodeIgniter\Database\Exceptions\DataException;
-use App\Validation\EquipmentRules;
 use App\Entities\Equipment;
-use ValueError;
 use Error;
 
 class EquipmentValidator extends EntryValidator
@@ -42,6 +40,8 @@ class EquipmentValidator extends EntryValidator
 
     public function initialize()
     {
+        parent::initialize();
+
         $this->validationRules['id'] = [
             "rules" => [
                 "required",
@@ -59,12 +59,10 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['owner_id'] = [
             "rules" => [
-                "required_without[owner_mne]",
-                "if_exist",
-                "is_not_unique[institutes.id]",
+                "permit_empty",
+                "is_not_unique[institutes.id]"
             ],
             "errors" => [
-                "required_without" => "You must supply an owner for the equipment.",
                 "is_not_unique" => "The inserted owner is not valid. Value given {value}",
             ]
         ];
@@ -72,11 +70,11 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['owner_mne'] = [
             "rules" => [
                 "required_without[owner_id]",
-                "if_exist",
+                "permit_empty",
                 "is_not_unique[institutes.mne]"
             ],
             "errors" => [
-                "required_without" => $this->validationRules["owner_id"]["errors"]["required_without"],
+                "required_without" => "You must supply an owner for the equipment.",
                 "is_not_unique" => $this->validationRules["owner_id"]["errors"]["is_not_unique"]
             ]
         ];
@@ -84,8 +82,7 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['detector_location_id'] = [
             "rules" => [
                 "permit_empty",
-                "if_exist",
-                "is_not_unique[detector_locations.id]",
+                "is_not_unique[detector_locations.id]"
             ],
             "errors" => [
                 "is_not_unique" => "The inserted detector location is not valid."
@@ -95,8 +92,7 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['detector_location_name'] = [
             "rules" => [
                 "permit_empty",
-                "if_exist",
-                "is_not_unique[detector_locations.name]",
+                "is_not_unique[detector_locations.name]"
             ],
             "errors" => [
                 "is_not_unique" => "The inserted detector location is not valid."
@@ -105,12 +101,10 @@ class EquipmentValidator extends EntryValidator
 
         $this->validationRules['location_id'] = [
             "rules" => [
-                "required_without[location_name]",
-                "if_exist",
-                "is_not_unique[locations.id]",
+                "permit_empty",
+                "is_not_unique[locations.id]"
             ],
             "errors" => [
-                "required_without" => "You must supply a location for the equipment.",
                 "is_not_unique" => "The inserted location is not valid.",
             ]
         ];
@@ -118,35 +112,33 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['location_name'] = [
             "rules" => [
                 "required_without[location_id]",
-                "if_exist",
-                "is_not_unique[locations.name]",
+                "permit_empty",
+                "is_not_unique[locations.name]"
             ],
             "errors" => [
-                "required_without" =>  $this->validationRules["location_id"]["errors"]["required_without"],
+                "required_without" => "You must supply a location for the equipment.",
                 "is_not_unique" =>  $this->validationRules["location_id"]["errors"]["is_not_unique"]
             ]
         ];
 
         $this->validationRules['status_id'] = [
             "rules" => [
-                "required_without[status_name]",
-                "if_exist",
-                "is_not_unique[statuses.id]",
+                "permit_empty",
+                "is_not_unique[statuses.id]"
             ],
             "errors" => [
-                "required_without" => "You must supply a status for the equipment.",
-                "is_not_unique" => "The inserted status is not valid.",
+                "is_not_unique" => "The inserted status is not valid."
             ]
         ];
 
         $this->validationRules['status_name'] = [
             "rules" => [
                 "required_without[status_id]",
-                "if_exist",
-                "is_not_unique[statuses.name]",
+                "permit_empty",
+                "is_not_unique[statuses.name]"
             ],
             "errors" => [
-                "required_without" =>  $this->validationRules["status_id"]["errors"]["required_without"],
+                "required_without" => "You must supply a status for the equipment.",
                 "is_not_unique" =>  $this->validationRules["status_id"]["errors"]["is_not_unique"]
             ]
         ];

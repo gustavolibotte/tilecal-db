@@ -24,14 +24,12 @@ abstract class EntryValidator
     {
         $this->validator = \Config\Services::validation(getShared: false);
         $this->initialize();
+        // $this->fieldValues = array_fill_keys(array_keys($this->validationRules), null);
     }
 
     public function asEdit(){}
 
-    protected function initialize()
-    {
-        $this->fieldValues = array_fill_keys(array_keys($this->validationRules), null);
-    }
+    protected function initialize(){}
 
     protected function getData(){return $this->getFieldValues();}
 
