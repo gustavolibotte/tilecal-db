@@ -92,7 +92,7 @@ abstract class EntryValidator
 
     protected function fieldValueIsEmpty(mixed $value)
     {
-        return empty($value) || ($value === FORM_SELECT_NULL_OPTION);
+        return $value === '' || ($value === FORM_SELECT_NULL_OPTION) || $value === [];
     }
 
     public function getFieldValues(): array
@@ -198,6 +198,7 @@ abstract class EntryValidator
                         ]
                     );
                 }
+                break;
             }
         }
         if ($foundError || ($db->transStatus() === false)){
