@@ -110,7 +110,6 @@ abstract class EntryValidator
             }
             $values2Set[$fieldName] = $requestValue;
         }
-        d($values2Set);
         $this->setFieldValues($values2Set);
         return $this;
     }

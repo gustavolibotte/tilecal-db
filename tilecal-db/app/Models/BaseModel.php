@@ -145,7 +145,6 @@ abstract class BaseModel extends Model
         if ($action === 'update'){
             $this->update($validatedRow->id, $validatedRow);
         } else{
-            d($validatedRow);
             $this->insert($validatedRow);
         }
         return true;
