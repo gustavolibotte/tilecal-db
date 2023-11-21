@@ -20,22 +20,43 @@ class PmtValidator extends EquipmentValidator
     public function initialize()
     {
         parent::initialize();
+        helper('rule_manager');
 
-        $this->addRule('id', 'string_ends_with[{serial}]',
-            "The final 6 characters of a PMT barcode must be its serial code.");
+        // Id is automatically generated
+        $this->validationRules['id'] = [
+            "rules" => [],
+            "errors" => []
+        ];
 
-        $this->addRule(
-            'serial',
-            sprintf('regex_match[%s]', self::$validSerialRegex),
-            'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.'
-        );
-        $this->addRule(
-            'serial',
-            'required',
-            'PMT registration requires a serial code',
-            'start'
-        );
+        $this->validationRules['serial'] = [
+            "rules" => [
+                "required",
+                sprintf("max_length[%d]", self::$serialMaxSize),
+                sprintf('regex_match[%s]', self::$validSerialRegex),
+                sprintf("is_type_unique[serial,%d]", $this->equipmentType->id)
+            ],
+            "errors" => [
+                'required' => "You must supply a PMT serial for the equipment.",
+                "max_length" => "Serial max size is {param} characters.",
+                'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
+                "is_type_unique" => "Serial Number {value} already exists."
+            ]
+        ];
 
+        $this->updateRules['serial'] = [
+            "rules" => [
+                "permit_empty",
+                sprintf("max_length[%d]", self::$serialMaxSize),
+                sprintf('regex_match[%s]', self::$validSerialRegex),
+                sprintf("is_type_not_unique[serial,%d]", $this->equipmentType->id)
+            ],
+            "errors" => [
+                "max_length" => "Serial max size is {param} characters.",
+                'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
+                "is_type_not_unique" => "Serial Number {value} doesn\'t exist."
+            ]
+        ];
+        
         $this->validationRules['beta'] = [
             "rules" => [
                 "permit_empty",
@@ -47,6 +68,8 @@ class PmtValidator extends EquipmentValidator
                 "greater_than" => "The Beta param must be greater than zero."
             ]
         ];
+
+        $this->updateRules['beta'] = $this->validationRules['beta'];
 
         $this->validationRules['nominal_hv'] = [
             "rules" => [
@@ -60,6 +83,8 @@ class PmtValidator extends EquipmentValidator
             ]
         ];
 
+        $this->updateRules['nominal_hv'] = $this->validationRules['nominal_hv'];
+
         $this->validationRules['qe'] = [
             "rules" => [
                 "permit_empty",
@@ -72,6 +97,8 @@ class PmtValidator extends EquipmentValidator
             ]
         ];
 
+        $this->updateRules['qe'] = $this->validationRules['qe'];
+
         $this->validationRules['model'] = [
             "rules" => [
                 "required",
@@ -83,18 +110,27 @@ class PmtValidator extends EquipmentValidator
             ]
         ];
 
+        $this->updateRules['model'] = remove_rule(
+            $this->validationRules['model'], 'required'
+        );
+        $this->updateRules['model'] = add_rule(
+            $this->updateRules['model'], 'permit_empty', 'start'
+        );
+
         $this->validationRules['phase1_position'] = [
             "rules" => [
-                "if_exist",
                 "permit_empty",
                 sprintf("greater_than_equal_to[%d]", self::$smallestPmtPosition),
                 sprintf("less_than_equal_to[%d]", self::$biggestPmtPosition),
             ],
             "errors" => [
-                "greater_than_equal_to" => "Min value for position is {param}.",
-                "less_than_equal_to" => "Max value for position is {param}",
+                "greater_than_equal_to" => "Min value for position is {param}, got {value}.",
+                "less_than_equal_to" => "Max value for position is {param}, got {value}",
             ]
         ];
+
+        $this->updateRules['phase1_position'] = $this->validationRules['phase1_position'];
+
     }
 
     public function setFieldValues($data): Self

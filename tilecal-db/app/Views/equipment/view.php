@@ -5,12 +5,12 @@
   <li class="list-group-item"><b>ATLAS ID</b>: <? echo $entity->atlas_id?> </li>
   <li class="list-group-item"><b>Type</b>: <? echo $entity->type_label?> </li>
   <? if ($entity->location_description): ?>
-    <li class="list-group-item"><b>Location</b>: <? echo $entity->location . ' - ' . $entity->location_description?> </li>
+    <li class="list-group-item"><b>Location</b>: <? echo $entity->location_name . ' - ' . $entity->location_description?> </li>
   <? else: ?>
-    <li class="list-group-item"><b>Location</b>: <? echo $entity->location?> </li>
+    <li class="list-group-item"><b>Location</b>: <? echo $entity->location_name?> </li>
   <? endif; ?>
   <li class="list-group-item"><b>Detector Location</b>: <? echo $entity->detector_location_name?> </li>
-  <li class="list-group-item"><b>Status</b>: <? echo $entity->status?> </li>
+  <li class="list-group-item"><b>Status</b>: <? echo $entity->status_name?> </li>
   <li class="list-group-item"><b>Owner</b>: <? echo $entity->owner_name?> </li>
   <li class="list-group-item"><b>Serial</b>: <? echo $entity->serial?> </li>
   <?php if($entity->type_params): ?>

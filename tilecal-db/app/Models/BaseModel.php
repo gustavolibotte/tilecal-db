@@ -2,7 +2,12 @@
 
 namespace App\Models;
 
+use CodeIgniter\Entity\Entity;
 use CodeIgniter\Model;
+use App\Validation\Validators\EntryValidator;
+use App\Library\Readers\CSVFileReader;
+use App\Library\Loggers\BlankLogger;
+use Psr\Log\LoggerInterface;
 
 abstract class BaseModel extends Model
 {
@@ -27,7 +32,7 @@ abstract class BaseModel extends Model
     protected $validationRules      = [];
     protected $validationMessages   = [];
     protected $skipValidation       = true;
-    protected $cleanValidationRules = true;
+    protected $cleanValidationRules = false;
 
     // Callbacks
     protected $allowCallbacks = true;
@@ -104,4 +109,69 @@ abstract class BaseModel extends Model
         return $array;
     }
 
+    private function fileAction(
+        string $filepath,
+        EntryValidator $validator,
+        ?LoggerInterface $logger=null,
+        string $action): bool|array|string
+    {
+        helper(['filesystem', 'app_array']);
+        $fieldRename = $validator->fieldRename;
+        // $fieldRenameFlipped = array_flip($fieldRename);
+        $logger = is_null($logger)? new BlankLogger(): $logger;
+        $inputFile = new CSVFileReader($filepath, headerRename:$fieldRename);
+        $loggerContext = ['iRow' => null, 'action' => ucfirst($action)];
+        foreach ($inputFile as $iRow=>$row){
+            $loggerContext['iRow'] = $iRow;
+            // Removes some fields that may conflict with the type defined in the validator
+            remove_value('type_name', $row, false);
+            remove_value('type_id', $row, false);
+            $validator->clearState();
+            if ($this->validateRow($row, $action, $validator)){
+                $validatedRow = $validator->getValidatedData();
+                $this->saveRow($validatedRow, $action);
+                $logger->info('{iRow} {action} with success', $loggerContext);
+            } else{
+                $errors =  $validator->getErrors();
+                $errors['iRow'] = $iRow;
+                return $errors;
+            }
+        }
+        return true;
+    }
+
+    protected function saveRow($validatedRow, string $action)
+    {
+        if ($action === 'update'){
+            $this->update($validatedRow->id, $validatedRow);
+        } else{
+            d($validatedRow);
+            $this->insert($validatedRow);
+        }
+        return true;
+    }
+
+    protected function validateRow($row, string $action, $validator)
+    {
+        $validator->setFieldValues($row);
+        return $validator->validate();
+    }
+
+    public function insertFromFile(
+        string $filepath,
+        EntryValidator $validator,
+        ?LoggerInterface $logger=null
+    )
+    {
+        return $this->fileAction($filepath, $validator, $logger, 'insert');
+    }
+
+    public function updateFromFile(
+        string $filepath,
+        EntryValidator $validator,
+        ?LoggerInterface $logger=null
+    )
+    {
+        return $this->fileAction($filepath, $validator, $logger, 'update');
+    }
 }
