@@ -52,13 +52,13 @@ abstract class EntryValidator
     {
         $this->validator->reset();
         if ($this->isEdit){
-            $setRules = ['id' => $this->updateRules['id']];
+            $rules2Set = ['id' => $this->updateRules['id']];
             foreach($this->getFieldValues() as $field=>$value){
-                if (array_key_exists($field, $this->validationRules) && $field !== 'id'){
-                    $setRules[$field] = $this->validationRules[$field];
+                if (array_key_exists($field, $this->updateRules) && $field !== 'id'){
+                    $rules2Set[$field] = $this->updateRules[$field];
                 }
             }
-            $this->validator->setRules($setRules);
+            $this->validator->setRules($rules2Set);
         } else{
             $this->validator->setRules($this->validationRules);
         }
@@ -110,6 +110,7 @@ abstract class EntryValidator
             }
             $values2Set[$fieldName] = $requestValue;
         }
+        d($values2Set);
         $this->setFieldValues($values2Set);
         return $this;
     }

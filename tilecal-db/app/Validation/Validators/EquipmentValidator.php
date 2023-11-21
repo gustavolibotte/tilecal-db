@@ -231,7 +231,7 @@ class EquipmentValidator extends EntryValidator
             }
         }
         if ($hasTypeParams){
-            $fieldValues = $typeParams;
+            $fieldValues['type_params'] = $typeParams;
         }
         return $fieldValues;
     }

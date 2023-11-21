@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Validation\Validators;
-use App\Validation\AtlasIdRules;
 
 class PmtValidator extends EquipmentValidator
 {
@@ -23,21 +22,10 @@ class PmtValidator extends EquipmentValidator
         parent::initialize();
         helper('rule_manager');
 
+        // Id is automatically generated
         $this->validationRules['id'] = [
-            "rules" => [
-                "required",
-                sprintf("exact_length[%s]", AtlasIdRules::$sequentialNumberLength),
-                sprintf("regex_match[%s]", $this->equipmentType->id_regex),
-                'string_ends_with[{serial}]',
-                "is_unique[equipments.id]"
-            ],
-            "errors" => [
-                "required" => "You must supply an id for the equipment.",
-                "exact_length" => "The ID sequential number must have {param} characters. Value given: {value}",
-                "regex_match" => "The ID doesn't follow this equipment ID rules. Value given: {value}",
-                'string_ends_with' => "The final 6 characters of a PMT barcode must be its serial code.",
-                "is_unique" => "ID {value} already exists."
-            ]
+            "rules" => [],
+            "errors" => []
         ];
 
         $this->validationRules['serial'] = [
@@ -48,15 +36,26 @@ class PmtValidator extends EquipmentValidator
                 sprintf("is_type_unique[serial,%d]", $this->equipmentType->id)
             ],
             "errors" => [
-                'required' => 'PMT registration requires a serial code',
+                'required' => "You must supply a PMT serial for the equipment.",
                 "max_length" => "Serial max size is {param} characters.",
                 'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
                 "is_type_unique" => "Serial Number {value} already exists."
             ]
         ];
 
-        $this->updateRules['serial'] = remove_rule($this->validationRules['serial'], 'required');
-        $this->updateRules['serial'] = add_rule($this->updateRules['serial'], 'permit_empty', 'start');
+        $this->updateRules['serial'] = [
+            "rules" => [
+                "permit_empty",
+                sprintf("max_length[%d]", self::$serialMaxSize),
+                sprintf('regex_match[%s]', self::$validSerialRegex),
+                sprintf("is_type_not_unique[serial,%d]", $this->equipmentType->id)
+            ],
+            "errors" => [
+                "max_length" => "Serial max size is {param} characters.",
+                'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
+                "is_type_not_unique" => "Serial Number {value} doesn\'t exist."
+            ]
+        ];
         
         $this->validationRules['beta'] = [
             "rules" => [
