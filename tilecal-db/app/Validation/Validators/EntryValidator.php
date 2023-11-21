@@ -7,16 +7,21 @@ use App\Library\Writers\CSVFileWriter;
 use App\Library\Readers\CSVFileReader;
 use Throwable;
 use Psr\Log\LoggerInterface;
+use CodeIgniter\Validation\Exceptions\ValidationException;
 
 abstract class EntryValidator
 {
     public array $validationRules = [];
+
+    public array $updateRules = [];
 
     private array $fieldValues = [];
 
     private $validator;
 
     private bool $isValid = false;
+
+    protected bool $isEdit = false;
 
     public array $fieldRename = [];
 
@@ -27,55 +32,36 @@ abstract class EntryValidator
         // $this->fieldValues = array_fill_keys(array_keys($this->validationRules), null);
     }
 
-    public function asEdit(){}
+    public function asEdit()
+    {   
+        $this->isEdit = true;
+        return $this;
+    }
+
+    public function unsetEdit()
+    {
+        $this->isEdit = false;
+        return $this;
+    }
 
     protected function initialize(){}
 
     protected function getData(){return $this->getFieldValues();}
 
-    public function addRule(string $field, string $rule, ?string $error = null, string $where='end'): Self
-    {   
-        if ($where == 'end'){
-            $this->validationRules[$field]['rules'][] = $rule;
-        } elseif ($where == 'start'){
-            $this->validationRules[$field]['rules'] = array_merge(
-                [$rule],
-                $this->validationRules[$field]['rules']
-            );
-        } else{
-            throw new ValueError("where param only supports 'end' and 'start' values");
-        }
-        if (!is_null($error)){
-            $ruleName = explode('[', $rule)[0];
-            $this->validationRules[$field]['errors'][$ruleName] = $error;
-        }
-        return $this;
-    }
-
-    public function removeRule(string $field, string $oldRule): ?string
-    {
-        helper('app_array');
-        $foundKey = null;
-        foreach($this->validationRules[$field]['rules'] as $key=>$rule){
-            if (str_starts_with($rule, $oldRule)){
-                $foundKey = $key;
-                break;
-            }
-        }
-        if (!is_null($foundKey)){
-            $removedRule = remove_value($foundKey, $this->validationRules[$field]['rules']);
-            if (array_key_exists($oldRule, $this->validationRules[$field]['errors'])){
-                unset($this->validationRules[$field]['errors'][$oldRule]);
-            }
-            return $removedRule;
-        }
-        return null;
-    }
-
     public function validate(): bool
     {
         $this->validator->reset();
-        $this->validator->setRules($this->validationRules);
+        if ($this->isEdit){
+            $rules2Set = ['id' => $this->updateRules['id']];
+            foreach($this->getFieldValues() as $field=>$value){
+                if (array_key_exists($field, $this->updateRules) && $field !== 'id'){
+                    $rules2Set[$field] = $this->updateRules[$field];
+                }
+            }
+            $this->validator->setRules($rules2Set);
+        } else{
+            $this->validator->setRules($this->validationRules);
+        }
         $this->isValid = $this->validator->run($this->getFieldValues());
         return $this->isValid;
     }
@@ -145,9 +131,9 @@ abstract class EntryValidator
         EntryValidator $validator,
         string $modelName,
         array $fieldRename=[],
-        ?LoggerInterface $logger=null): bool
+        ?LoggerInterface $logger=null,
+        string $op='insert'): bool
     {
-        helper(['filesystem', 'app_array']);
         helper(['filesystem', 'app_array']);
         $foundError = false;
         $fieldRenameFlipped = array_flip($fieldRename);
@@ -273,6 +259,45 @@ abstract class EntryValidator
             $db->transCommit();
             delete_files($logFilepath);
             return  ['status' => true, 'logFilepath' => null];
+        }
+    }
+
+    protected function substituteFK(
+        string $fkField,
+        string $aliasField,
+        string $aliasCol,
+        string $modelName,
+        array $data,
+        bool $nullableFK=false): array
+    {
+        helper('app_array');
+        $fkValue = dot_search_with_default($fkField, $data);
+        $emptyFK = empty($fkValue);
+        $aliasValue = dot_search_with_default($aliasField, $data);
+        $emptyAlias = empty($aliasValue);
+        if ($emptyFK && $emptyAlias){    // When both possibe FK identifiers are empty
+            return $data;
+        } elseif (!$emptyFK && $emptyAlias){    // When alias is empty and FK id is not
+            $aliasValue = model($modelName)
+                ->select($aliasCol)
+                ->find($fkValue)
+                ->$aliasCol;
+            $data[$aliasField] = $aliasValue;
+            return $data;
+        } elseif ($emptyFK && !$emptyAlias){    // When fk Id is empty and alias is not
+            $id = model($modelName)
+            ->select('id')
+            ->where($aliasCol, $aliasValue)
+            ->first()->id;
+            $data[$fkField] = $id;
+            return $data;
+        } else{    //When both of them are not empty, sets the alias with the same value as the id
+            $aliasValue = model($modelName)
+                ->select($aliasCol)
+                ->find($fkValue)
+                ->$aliasCol;
+            $data[$aliasField] = $aliasValue;
+            return $data;
         }
     }
 }
