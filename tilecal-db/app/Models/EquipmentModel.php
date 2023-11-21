@@ -6,7 +6,6 @@ use App\Entities\ParentChildRelation;
 use App\Entities\Equipment;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Model;
-use CodeIgniter\Validation\Exceptions\ValidationException;
 use TypeError;
 
 
@@ -17,20 +16,15 @@ class EquipmentModel extends LogModel
     protected $allowedFields    = [
         'id',
         'type_id',
-        'type_name',
         'owner_id',
-        'owner_mne',
         'location_id',
-        'location_name',
         'status_id',
-        'status_name',
         'parent_id',
         'slot_id',
         'serial',
         'comments',
         'type_params',
-        'detector_location_id',
-        'detector_location_name'
+        'detector_location_id'
     ];
 
     // Custom
@@ -42,14 +36,6 @@ class EquipmentModel extends LogModel
         $this->selectSideTable .= 'equipments.id, ';
         $this->selectSideTable .= 'equipment_types.label as type_label ';
         $this->afterDelete[] = 'deleteRelations';
-        $this->beforeInsert = array_merge(
-            ['substituteFKs'],
-            $this->beforeInsert
-        );
-        $this->beforeUpdate = array_merge(
-            ['substituteFKs'],
-            $this->beforeUpdate
-        );
     }
 
     public function minQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
@@ -72,10 +58,10 @@ class EquipmentModel extends LogModel
         $queryBuilder->select('equipment_types.label as type_label');
         $queryBuilder->select('equipment_types.name as type_name');
         $queryBuilder->select('equipments.location_id as location_id');
-        $queryBuilder->select('locations.name as location');
+        $queryBuilder->select('locations.name as location_name');
         $queryBuilder->select('locations.description as location_description');
         $queryBuilder->select('equipments.status_id as status_id');
-        $queryBuilder->select('statuses.name as status');
+        $queryBuilder->select('statuses.name as status_name');
         $queryBuilder->select('equipments.owner_id as owner_id');
         $queryBuilder->select('institutes.name as owner_name');
         $queryBuilder->select('institutes.mne as owner_mne');
@@ -263,7 +249,7 @@ class EquipmentModel extends LogModel
             throw new TypeError('Equipment Model insert supports only Equipment as $data');
         }
         if (is_null($id)){
-            throw new TypeError('$id must be passed');
+            throw new TypeError('Equipment id must be passed');
         }
         $data = $data->toRawArray();
         if(array_key_exists('parent_id', $data) || array_key_exists('slot_id', $data)){
@@ -407,80 +393,6 @@ class EquipmentModel extends LogModel
         return $this;
     }
 
-    protected function substituteFKs(array $data): array
-    {
-        $data = $this->substituteFK(
-            'type_id',
-            'type_name',
-            'name',
-            'EquipmentTypeModel',
-            $data
-        );
-        $data = $this->substituteFK(
-            'owner_id',
-            'owner_mne',
-            'mne',
-            'InstituteModel',
-            $data
-        );
-        $data = $this->substituteFK(
-            'location_id',
-            'location_name',
-            'name',
-            'LocationModel',
-            $data
-        );
-        $data = $this->substituteFK(
-            'status_id',
-            'status_name',
-            'name',
-            'StatusModel',
-            $data
-        );
-        $data = $this->substituteFK(
-            'detector_location_id',
-            'detector_location_name',
-            'name',
-            'DetectorLocationModel',
-            $data,
-            nullableFK: true
-        );
-        return $data;
-    }
-
-    protected function substituteFK(string $fkField,
-        string $aliasField,
-        string $aliasCol,
-        string $modelName,
-        array $data,
-        bool $nullableFK=false): array
-    {
-        $fkValue = remove_value($fkField, $data['data'], false);
-        $emptyFK = empty($fkValue);
-        $aliasValue = remove_value($aliasField, $data['data'], false);
-        $emptyAlias = empty($aliasValue);
-        if (!$emptyFK && !$emptyAlias){
-            $data['data'][$fkField] = $fkValue;
-            return $data;
-        } elseif (!$emptyFK && $emptyAlias){
-            $data['data'][$fkField] = $fkValue;
-            return $data;
-        } elseif ($emptyFK && !$emptyAlias){
-            $id = model($modelName)
-            ->select('id')
-            ->where($aliasCol, $aliasValue)
-            ->first()->id;
-            $data['data'][$fkField] = $id;
-            return $data;
-        } else{
-            if ($nullableFK){
-                return $data;
-            } else{
-                throw new ValidationException(sprintf('Could not get a FK ID for %s', $fkField));
-            }
-        }
-    }
-
     /**
      * Returns true if the equipment has a specific slot available for a specific type
      *
@@ -542,4 +454,15 @@ class EquipmentModel extends LogModel
         return empty($res);
     }
 
+    // protected function validateRow($row, string $action, $validator){
+    //     // if ($action === 'insert'){
+    //     //     return parent::validateRow($row, 'insert', $validator);
+    //     // }
+    //     // $data = $this->fullQuery()->find($row['id'])->toArrayWithTypeParams();
+    //     // foreach($row as $field=>$value){
+    //     //     $data[$field] = $value;
+    //     // }
+    //     $validator->setFieldValues($row);
+    //     return $validator->validate();
+    // }
 }

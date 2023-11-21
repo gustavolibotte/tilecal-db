@@ -2,16 +2,10 @@
 
 namespace App\Commands;
 
-use App\Library\Loggers\BaseLogger;
-use App\Validation\Validators\BatchRegisterValidator;
 use App\Validation\Validators\EntryValidator;
 use App\Validation\Validators\EquipmentValidator;
-use App\Library\Loggers\CLILogger;
-use CodeIgniter\CLI\BaseCommand;
-use CodeIgniter\CLI\CLI;
-use Psr\Log\LoggerInterface;
 
-class EquipmentInsert extends BaseCommand
+class EquipmentInsert extends CustomCommand
 {
     /**
      * The Command's Group
@@ -39,7 +33,7 @@ class EquipmentInsert extends BaseCommand
      *
      * @var string
      */
-    protected $usage = 'command:name [arguments] [options]';
+    protected $usage = 'command:name [arguments]';
 
     /**
      * The Command's Arguments
@@ -64,82 +58,42 @@ class EquipmentInsert extends BaseCommand
      * @param array $params
      */
 
-
-    protected LoggerInterface $commandLogger;
-
     public function run(array $params)
     {
-        $this->commandSetup();
-        $userInput = $this->parseParams($params);
+        helper('app_array');
+        $userInput = [
+            'filepath' => dot_search_with_default(0, $params),
+            'type_name' => dot_search_with_default(1, $params)
+        ];
+        $userInput = $this->parseParams($userInput, 'equipCLIParams');
         if ($userInput === EXIT_ERROR){
             return EXIT_ERROR;
         }
 
-        $this->commandLogger->info('Started insert');
+        $this->logger->info('Started insert');
         $equipValidator = EquipmentValidator::getFromTypeName($userInput['type_name']);
-        $res = EntryValidator::validateFile(
+        $res = model('EquipmentModel')->insertFromFile(
             $userInput['filepath'],
             $equipValidator,
-            'EquipmentModel',
-            $equipValidator->fieldRename,
-            $this->commandLogger
+            $this->logger
         );
-        if ($res){
-            $this->commandLogger->info('Inserted with success');
+
+        if ($res === true){
+            $this->logger->info('Inserted with success');
             return EXIT_SUCCESS;
         } else{
-            $this->commandLogger->critical('Fail');
-            return EXIT_ERROR;
-        }
-    }
-
-    protected function parseParams(array $params)
-    {
-        $ruleSet = [
-            'filepath' => [
-                'rules' => [
-                    'required',
-                    'local_file_exists',
-                    'string_ends_with[.csv]',
-                    'local_mime_in[text/csv]'
-                ],
-                'errors' => [
-                    'required' => 'Filepath is required',
-                    'string_ends_with' => 'The file must be a csv. (File name did not end in .csv)',
-                    'local_file_exists' => 'The given file doesn\'exist',
-                    'local_mime_in' => 'The file must be a csv. (File structure not identified as a csv)'
-                ]
-                ],
-            'type_name' => [
-                'rules' => [
-                    'required',
-                    'is_not_unique[equipment_types.name]'
-                ],
-                'errors' => [
-                    'required' => 'Equipment type name is required',
-                    'is_not_unique' => 'Equipment type name {value} is not valid.'
-                ]
-            ]
-        ];
-        $validator = \Config\Services::validation();
-        $validator->setRules($ruleSet);
-        $userInput = [
-            'filepath' => $params[0],
-            'type_name' => $params[1]
-        ];
-        if (!$validator->run($userInput)){
-            $this->commandLogger->error('Errors with input params:');
-            foreach($validator->getErrors() as $errorMsg){
-                $this->commandLogger->error($errorMsg);
+            $this->logger->error('Errors found:');
+            $loggerContext = ['row' => remove_value('iRow', $res)];
+            foreach ($res as $field=>$errMsg){
+                $loggerContext['msg'] = $errMsg;
+                $loggerContext['field'] = $field;
+                $this->logger->error(
+                    '{row} {field} {msg}',
+                    $loggerContext
+                );
             }
+            $this->logger->critical('Fail');
             return EXIT_ERROR;
         }
-        return $userInput;
-    }
-
-    protected function commandSetup()
-    {
-        \Config\Services::authenticator()->setSystem();
-        $this->commandLogger = new CLILogger();
     }
 }

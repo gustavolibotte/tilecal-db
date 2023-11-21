@@ -13,7 +13,7 @@ equipmentTableColumns = [
         "title": "Type"
     },
     {
-        "data": "location",
+        "data": "location_name",
         "title": "Location"
     },
     {
@@ -21,7 +21,7 @@ equipmentTableColumns = [
         "title": "Detector Location"
     },
     {
-        "data": "status",
+        "data": "status_name",
         "title": "Status"
     },
     {

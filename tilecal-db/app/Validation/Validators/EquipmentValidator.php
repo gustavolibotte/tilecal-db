@@ -42,6 +42,8 @@ class EquipmentValidator extends EntryValidator
     {
         parent::initialize();
 
+        helper('rule_manager');
+
         $this->validationRules['id'] = [
             "rules" => [
                 "required",
@@ -57,15 +59,28 @@ class EquipmentValidator extends EntryValidator
             ]
         ];
 
+        $this->updateRules['id'] = [
+            "rules" => [
+                "required",
+                "is_not_unique[equipments.id]"
+            ],
+            'errors' => [
+                'required' => 'You must supply an id for updating the equipment data.',
+                'is_not_unique' => 'ID {value} doesn\'t exist.'
+            ]
+        ];
+
         $this->validationRules['owner_id'] = [
             "rules" => [
                 "permit_empty",
                 "is_not_unique[institutes.id]"
             ],
             "errors" => [
-                "is_not_unique" => "The inserted owner is not valid. Value given {value}",
+                "is_not_unique" => "The given owner id ({value}) is not valid.",
             ]
         ];
+
+        $this->updateRules['owner_id'] = $this->validationRules['owner_id'];
 
         $this->validationRules['owner_mne'] = [
             "rules" => [
@@ -75,9 +90,13 @@ class EquipmentValidator extends EntryValidator
             ],
             "errors" => [
                 "required_without" => "You must supply an owner for the equipment.",
-                "is_not_unique" => $this->validationRules["owner_id"]["errors"]["is_not_unique"]
+                "is_not_unique" => "The inserted owner MNE ({value}) is not valid."
             ]
         ];
+
+        $this->updateRules['owner_mne'] = remove_rule(
+            $this->validationRules['owner_mne'], 'required_without'
+        );
 
         $this->validationRules['detector_location_id'] = [
             "rules" => [
@@ -85,9 +104,11 @@ class EquipmentValidator extends EntryValidator
                 "is_not_unique[detector_locations.id]"
             ],
             "errors" => [
-                "is_not_unique" => "The inserted detector location is not valid."
+                "is_not_unique" => "The given detector location id ({value}) is not valid."
             ]
         ];
+
+        $this->updateRules['detector_location_id'] = $this->validationRules['detector_location_id'];
 
         $this->validationRules['detector_location_name'] = [
             "rules" => [
@@ -95,9 +116,11 @@ class EquipmentValidator extends EntryValidator
                 "is_not_unique[detector_locations.name]"
             ],
             "errors" => [
-                "is_not_unique" => "The inserted detector location is not valid."
+                "is_not_unique" => "The given detector location name ({value}) is not valid."
             ]
         ];
+
+        $this->updateRules['detector_location_name'] = $this->validationRules['detector_location_name'];
 
         $this->validationRules['location_id'] = [
             "rules" => [
@@ -105,9 +128,11 @@ class EquipmentValidator extends EntryValidator
                 "is_not_unique[locations.id]"
             ],
             "errors" => [
-                "is_not_unique" => "The inserted location is not valid.",
+                "is_not_unique" => "The inserted location id ({value}) is not valid.",
             ]
         ];
+
+        $this->updateRules['location_id'] = $this->validationRules['location_id'];
 
         $this->validationRules['location_name'] = [
             "rules" => [
@@ -117,9 +142,13 @@ class EquipmentValidator extends EntryValidator
             ],
             "errors" => [
                 "required_without" => "You must supply a location for the equipment.",
-                "is_not_unique" =>  $this->validationRules["location_id"]["errors"]["is_not_unique"]
+                "is_not_unique" =>  "The inserted location name ({value}) is not valid.",
             ]
         ];
+
+        $this->updateRules['location_name'] = remove_rule(
+            $this->validationRules['location_name'], 'required_without'
+        );
 
         $this->validationRules['status_id'] = [
             "rules" => [
@@ -127,9 +156,11 @@ class EquipmentValidator extends EntryValidator
                 "is_not_unique[statuses.id]"
             ],
             "errors" => [
-                "is_not_unique" => "The inserted status is not valid."
+                "is_not_unique" => "The inserted status id ({value}) is not valid."
             ]
         ];
+
+        $this->updateRules['status_id'] = $this->validationRules['status_id'];
 
         $this->validationRules['status_name'] = [
             "rules" => [
@@ -139,9 +170,13 @@ class EquipmentValidator extends EntryValidator
             ],
             "errors" => [
                 "required_without" => "You must supply a status for the equipment.",
-                "is_not_unique" =>  $this->validationRules["status_id"]["errors"]["is_not_unique"]
+                "is_not_unique" =>  "The inserted status name ({value}) is not valid."
             ]
         ];
+
+        $this->updateRules['status_name'] = remove_rule(
+            $this->validationRules['status_name'], 'required_without'
+        );
 
         $this->validationRules['serial'] = [
             "rules" => [
@@ -155,29 +190,78 @@ class EquipmentValidator extends EntryValidator
             ]
         ];
 
+        $this->updateRules['serial'] = $this->validationRules['serial'];
+
         $this->validationRules['comments'] = [
             "rules" => [
+                "permit_empty",
                 sprintf("max_length[%s]", Self::$maxCommentsSize)
             ],
             "errors" => [
-                "max_length" => "Comments max size is {param} characthers.",
+                "max_length" => "Comments max size is {param} characters.",
             ]
         ];
+
+        $this->updateRules['comments'] = $this->validationRules['comments'];
     }
 
-    protected function getData(): Equipment
+    protected function getData()
+    {
+        $data = ($this->isEdit)? $this->getDataEdit(): $this->getDataInsert();
+        return new Equipment($data);
+    }
+
+    protected function getDataEdit()
     {
         helper(['array', 'cast']);
         $fieldValues = $this->getFieldValues();
+        $fieldValues['type_id'] = $this->equipmentType->id;
+        $fieldValues['type_name'] = $this->equipmentType->name;
+        $fieldValues = $this->substituteFKs(($fieldValues));
+
+        $typeParams = model('EquipmentModel')
+            ->select('type_params')
+            ->find($fieldValues['id'])
+            ->type_params;
+        $hasTypeParams = false;
+        foreach($this->equipmentType->params as $param){
+            if (array_key_exists($param, $fieldValues)){
+                $typeParams[$param] = cast_to_numeric(remove_value($param, $fieldValues));
+                $hasTypeParams = true;
+            }
+        }
+        if ($hasTypeParams){
+            $fieldValues = $typeParams;
+        }
+        return $fieldValues;
+    }
+
+    protected function getDataInsert()
+    {
+        helper(['array', 'cast']);
+        $fieldValues = $this->getFieldValues();
+        $fieldValues = $this->substituteFKs($fieldValues);
         $typeParams = [];
         foreach ($this->equipmentType->params as $param){
             $typeParams[$param] = cast_to_numeric(remove_value($param, $fieldValues, false));
         }
-        $equipment = new Equipment($fieldValues);
-        $equipment->type_id = $this->equipmentType->id;
-        $equipment->type_name = $this->equipmentType->name;
-        $equipment->type_params = $typeParams;
-        return $equipment;
+        $fieldValues['type_id'] = $this->equipmentType->id;
+        $fieldValues['type_name'] = $this->equipmentType->name;
+        $fieldValues['type_params'] = $typeParams;
+        return $fieldValues;
+    }
+
+    protected function hasTypeParamsField()
+    {
+        $fieldValues = $this->getFieldValues();
+        $hasTypeParamsField = false;
+        foreach($this->equipmentType->params as $param){
+            if (array_key_exists($param, $fieldValues)){
+                $hasTypeParamsField = true;
+                break;
+            }
+        }
+        return $hasTypeParamsField;
     }
 
     public static function getFromTypeName(string $typeName): Self
@@ -212,13 +296,43 @@ class EquipmentValidator extends EntryValidator
         return parent::setFieldValues($data);
     }
 
-    public function asEdit(): self
+    public function substituteFKs(array $fieldValues)
     {
-        $this->removeRule('id', 'is_unique');
-        $this->addRule('id', 'is_not_unique[equipments.id]', 'This id doesn\'t exist.');
-        $oldRule = $this->removeRule('serial', 'is_type_unique');
-        $newRule = str_replace('is_type_unique', 'is_type_not_unique', $oldRule);
-        $this->addRule('serial', $newRule, 'The serial {value} doesn\'t exist');
-        return $this;
+        $fieldValues = $this->substituteFK(
+            'type_id',
+            'type_name',
+            'name',
+            'EquipmentTypeModel',
+            $fieldValues
+        );
+        $fieldValues = $this->substituteFK(
+            'owner_id',
+            'owner_mne',
+            'mne',
+            'InstituteModel',
+            $fieldValues
+        );
+        $fieldValues = $this->substituteFK(
+            'location_id',
+            'location_name',
+            'name',
+            'LocationModel',
+            $fieldValues
+        );
+        $fieldValues = $this->substituteFK(
+            'status_id',
+            'status_name',
+            'name',
+            'StatusModel',
+            $fieldValues
+        );
+        $fieldValues = $this->substituteFK(
+            'detector_location_id',
+            'detector_location_name',
+            'name',
+            'DetectorLocationModel',
+            $fieldValues
+        );
+        return $fieldValues;
     }
 }
