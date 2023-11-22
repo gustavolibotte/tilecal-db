@@ -118,6 +118,7 @@ class Files extends APIController
                 $fileModel = model('FileModel');
                 $fileModel->insert($file);
                 $messenger->addMessage('File uploaded with success', 'success');
+                $messenger->dumpMessages();
                 return redirect('file_upload');
             } else {
                 foreach ($validator->getErrors() as $errorMsg){
