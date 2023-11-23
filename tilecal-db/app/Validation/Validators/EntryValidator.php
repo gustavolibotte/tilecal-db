@@ -78,7 +78,7 @@ abstract class EntryValidator
 
     protected function fieldValueIsEmpty(mixed $value)
     {
-        return $value === '' || ($value === FORM_SELECT_NULL_OPTION) || $value === [];
+        return $value === '' || ($value === FORM_SELECT_NULL_OPTION) || $value === [] || is_null($value);
     }
 
     public function getFieldValues(): array
@@ -101,9 +101,9 @@ abstract class EntryValidator
     {
         $values2Set = [];
         foreach ($this->validationRules as $fieldName=>$fieldParams){
-            $requestValue = $request->getVar($fieldName);
+            $requestValue = $request->getFile($fieldName);
             if ($this->fieldValueIsEmpty($requestValue)){
-                $requestValue = $request->getFile($fieldName);
+                $requestValue = $request->getVar($fieldName);
                 if ($this->fieldValueIsEmpty($requestValue)){
                     continue;
                 }

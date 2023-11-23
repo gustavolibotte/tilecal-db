@@ -31,13 +31,13 @@ class PmtValidator extends EquipmentValidator
         $this->validationRules['serial'] = [
             "rules" => [
                 "required",
-                sprintf("max_length[%d]", self::$serialMaxSize),
+                sprintf("exact_length[%d]", self::$serialMaxSize),
                 sprintf('regex_match[%s]', self::$validSerialRegex),
                 sprintf("is_type_unique[serial,%d]", $this->equipmentType->id)
             ],
             "errors" => [
                 'required' => "You must supply a PMT serial for the equipment.",
-                "max_length" => "Serial max size is {param} characters.",
+                "exact_length" => "Serial size must be {param} characters.",
                 'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
                 "is_type_unique" => "Serial Number {value} already exists."
             ]
@@ -46,12 +46,12 @@ class PmtValidator extends EquipmentValidator
         $this->updateRules['serial'] = [
             "rules" => [
                 "permit_empty",
-                sprintf("max_length[%d]", self::$serialMaxSize),
+                sprintf("exact_length[%d]", self::$serialMaxSize),
                 sprintf('regex_match[%s]', self::$validSerialRegex),
                 sprintf("is_type_not_unique[serial,%d]", $this->equipmentType->id)
             ],
             "errors" => [
-                "max_length" => "Serial max size is {param} characters.",
+                "exact_length" => "Serial size must be {param} characters.",
                 'regex_match' => 'The serial code must have the first 2 characters as upper case letters and the last 4 as digits.',
                 "is_type_not_unique" => "Serial Number {value} doesn\'t exist."
             ]
@@ -101,21 +101,15 @@ class PmtValidator extends EquipmentValidator
 
         $this->validationRules['model'] = [
             "rules" => [
-                "required",
+                'permit_empty',
                 sprintf("in_list[%s]", implode(', ', self::$validPmtModelValues)),
             ],
             "errors" => [
-                "required" => "You must supply a PMT model for the equipment.",
                 "in_list" => "The PMT model value is not valid. Choose one of {param}",
             ]
         ];
 
-        $this->updateRules['model'] = remove_rule(
-            $this->validationRules['model'], 'required'
-        );
-        $this->updateRules['model'] = add_rule(
-            $this->updateRules['model'], 'permit_empty', 'start'
-        );
+        $this->updateRules['model'] = $this->validationRules['model'];
 
         $this->validationRules['phase1_position'] = [
             "rules" => [
