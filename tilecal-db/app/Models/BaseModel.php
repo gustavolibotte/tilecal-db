@@ -126,8 +126,8 @@ abstract class BaseModel extends Model
             // Removes some fields that may conflict with the type defined in the validator
             remove_value('type_name', $row, false);
             remove_value('type_id', $row, false);
-            $validator->clearState();
-            if ($this->validateRow($row, $action, $validator)){
+            $validator->clearState()->setFieldValues($row);
+            if ($validator->validate()){
                 $validatedRow = $validator->getValidatedData();
                 $this->saveRow($validatedRow, $action);
                 $logger->info('{iRow} {action} with success', $loggerContext);
@@ -148,12 +148,6 @@ abstract class BaseModel extends Model
             $this->insert($validatedRow);
         }
         return true;
-    }
-
-    protected function validateRow($row, string $action, $validator)
-    {
-        $validator->setFieldValues($row);
-        return $validator->validate();
     }
 
     public function insertFromFile(

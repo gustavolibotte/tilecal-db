@@ -453,16 +453,4 @@ class EquipmentModel extends LogModel
             $res = $builder->get()->getResult();
         return empty($res);
     }
-
-    // protected function validateRow($row, string $action, $validator){
-    //     // if ($action === 'insert'){
-    //     //     return parent::validateRow($row, 'insert', $validator);
-    //     // }
-    //     // $data = $this->fullQuery()->find($row['id'])->toArrayWithTypeParams();
-    //     // foreach($row as $field=>$value){
-    //     //     $data[$field] = $value;
-    //     // }
-    //     $validator->setFieldValues($row);
-    //     return $validator->validate();
-    // }
 }
