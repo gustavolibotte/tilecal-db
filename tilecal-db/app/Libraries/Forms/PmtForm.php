@@ -47,7 +47,7 @@ class PmtForm extends EquipmentForm{
 
         $this->fields['model'] = [
             'id' => 'model',
-            'required' => true,
+            'required' => false,
             'fieldType' => 'dropdown',
             'fieldParams' => [
                 'options' => array_merge(

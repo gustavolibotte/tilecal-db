@@ -101,21 +101,15 @@ class PmtValidator extends EquipmentValidator
 
         $this->validationRules['model'] = [
             "rules" => [
-                "required",
+                'permit_empty',
                 sprintf("in_list[%s]", implode(', ', self::$validPmtModelValues)),
             ],
             "errors" => [
-                "required" => "You must supply a PMT model for the equipment.",
                 "in_list" => "The PMT model value is not valid. Choose one of {param}",
             ]
         ];
 
-        $this->updateRules['model'] = remove_rule(
-            $this->validationRules['model'], 'required'
-        );
-        $this->updateRules['model'] = add_rule(
-            $this->updateRules['model'], 'permit_empty', 'start'
-        );
+        $this->updateRules['model'] = $this->validationRules['model'];
 
         $this->validationRules['phase1_position'] = [
             "rules" => [
