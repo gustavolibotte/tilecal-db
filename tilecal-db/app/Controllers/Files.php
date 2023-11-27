@@ -93,11 +93,15 @@ class Files extends APIController
         if (is_null($file)){
             return $this->notFound();
         }
-        $response = $this->response
-            ->download($file->path, null, true)
-            ->setFileName($file->name)
-            ->setContentType($file->mime);
-        return $response;
+        return $this->getFileDownloadResponse($file);
+    }
+
+    public function getFileDownloadResponse($file)
+    {
+        return $this->response
+        ->download($file->path, null, true)
+        ->setFileName($file->name)
+        ->setContentType($file->mime);
     }
 
     public function upload()
@@ -240,5 +244,19 @@ class Files extends APIController
             'data' => $history
         ];
         return $this->respond($res, 200);
+    }
+
+    public function downloadHist()
+    {
+        $feature = model('FeatureModel')->findName('file_download');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
+        $fileId = $this->request->getVar('id');
+        d($fileId);
+        $fileHist = model('FileHistModel')->find($fileId);
+        d($fileHist);
+        return $this->getFileDownloadResponse($fileHist);
     }
 }

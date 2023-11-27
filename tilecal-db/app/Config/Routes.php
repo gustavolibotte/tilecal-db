@@ -53,6 +53,10 @@ $routes->get('api/files/getHist', 'Files::getHist', [
     'filter' => 'auth:view',
     'as' => 'file_get_hist'
 ]);
+$routes->get('api/files/histDownload', 'Files::downloadHist', [
+    'filter' => 'auth:view',
+    'as' => 'file_hist_download'
+]);
 
 // Equipment page routes
 $routes->get('equipments', 'Equipments::index', [
