@@ -58,12 +58,6 @@ function fetchHistTable(fileId){
                     return getHistMessage(row)
                 },
                 "title": "Description"
-            },
-            {
-                "render": function(data, type, row, meta){
-                    return getFileHistDownloadButton(row.id)
-                },
-                "title": "Download"
             }
         ]
     }
