@@ -89,8 +89,9 @@ class EquipmentForm extends Form{
             ]
         ];
 
+        $feature = model('FeatureModel')->findName('parent_relation');
         $typeSlotModel = model('TypeSlotModel');
-        if($typeSlotModel->hasSlots($this->equipmentType->name)){
+        if($feature->isActive() && $typeSlotModel->hasSlots($this->equipmentType->name)){
             $this->fields['parent_id'] = [
                 'id' => 'parent_id',
                 'label' => 'Parent ID',
