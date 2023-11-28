@@ -2,12 +2,10 @@
 
 namespace App\Validation\Validators;
 use App\Library\Loggers\BlankLogger;
-use ValueError;
 use App\Library\Writers\CSVFileWriter;
 use App\Library\Readers\CSVFileReader;
 use Throwable;
 use Psr\Log\LoggerInterface;
-use CodeIgniter\Validation\Exceptions\ValidationException;
 
 abstract class EntryValidator
 {
@@ -17,6 +15,7 @@ abstract class EntryValidator
 
     private array $fieldValues = [];
 
+    public array $fileFields = [];
     private $validator;
 
     private bool $isValid = false;
@@ -29,7 +28,9 @@ abstract class EntryValidator
     {
         $this->validator = \Config\Services::validation(getShared: false);
         $this->initialize();
-        // $this->fieldValues = array_fill_keys(array_keys($this->validationRules), null);
+        if (empty($this->updateRules)){
+            $this->updateRules = $this->validationRules;
+        }
     }
 
     public function asEdit()
@@ -90,7 +91,7 @@ abstract class EntryValidator
     {
         $this->isValid = false;
         foreach ($data as $key=>$value){
-            if (array_key_exists($key, $this->validationRules)){
+            if (array_key_exists($key, $this->getActiveRules())){
                 $this->fieldValues[$key] = ($this->fieldValueIsEmpty($value))? null: $value;
             }
         }
@@ -100,18 +101,27 @@ abstract class EntryValidator
     public function addRequest($request): Self
     {
         $values2Set = [];
-        foreach ($this->validationRules as $fieldName=>$fieldParams){
-            $requestValue = $request->getFile($fieldName);
-            if ($this->fieldValueIsEmpty($requestValue)){
-                $requestValue = $request->getVar($fieldName);
-                if ($this->fieldValueIsEmpty($requestValue)){
-                    continue;
-                }
+        foreach ($this->getActiveRules() as $fieldName=>$fieldParams){
+            $requestValue = $this->getValueFromRequest($request, $fieldName);
+            if ($this->fieldValueIsEmpty(($requestValue))){
+                continue;
             }
             $values2Set[$fieldName] = $requestValue;
         }
         $this->setFieldValues($values2Set);
         return $this;
+    }
+
+    protected function getValueFromRequest($request, $fieldName){
+        if (in_array($fieldName, $this->fileFields)){
+            $uploadedFile = $request->getFile($fieldName);
+            if (!is_uploaded_file($uploadedFile->getRealPath())){
+                return null;
+            }
+            return $uploadedFile;
+        } else{
+            return $request->getVar($fieldName);
+        }
     }
 
     public function withRequest($request): Self
@@ -124,142 +134,6 @@ abstract class EntryValidator
     {
         $this->fieldValues = [];
         return $this;
-    }
-
-    public static function validateFile(
-        string $filepath,
-        EntryValidator $validator,
-        string $modelName,
-        array $fieldRename=[],
-        ?LoggerInterface $logger=null,
-        string $op='insert'): bool
-    {
-        helper(['filesystem', 'app_array']);
-        $foundError = false;
-        $fieldRenameFlipped = array_flip($fieldRename);
-        $dataModel = model($modelName);
-        if (is_null($logger)){
-            $logger = new BlankLogger();
-        }
-        $db = db_connect();
-        if (empty($fieldRename)){
-            $fieldRename = $validator->fieldRename;
-        }
-        $inputFile = new CSVFileReader($filepath, headerRename:$fieldRename);
-        $db->transException(true)->transBegin();
-        foreach ($inputFile as $iRow=>$row){
-            // Removes some fields that may conflict with the type defined in the validator
-            remove_value('type_name', $row, false);
-            remove_value('type_id', $row, false);
-            $validator->clearState()->setFieldValues($row);
-            if ($validator->validate()){
-                try{
-                    $rowData = $validator->getValidatedData();
-                    $dataModel->insert($rowData);
-                    $logger->info('{row} Inserted with success', ['row' => $iRow]);
-                } catch (Throwable $e){
-                    $foundError = true;
-                    $message = sprintf(
-                        '%s. %s: %d %s%s',
-                        $e->getMessage(),
-                        $e->getFile(),
-                        $e->getLine(),
-                        PHP_EOL,
-                        $e->getTraceAsString()
-                    );
-                    $logger->critical($message);
-                    break;
-                }
-            } else{
-                $foundError = true;
-                foreach($validator->getErrors() as $field=>$errorMsg){
-                    // Maps the fields back to the front end name
-                    $fieldName = dot_search_with_default($field, $fieldRenameFlipped, $field);
-                    $logger->error(
-                        'Row {iRow} - {fieldName} - {message}',
-                        [
-                            'iRow' => $iRow,
-                            'fieldName' => $fieldName,
-                            'message' => $errorMsg
-                        ]
-                    );
-                }
-                break;
-            }
-        }
-        if ($foundError || ($db->transStatus() === false)){
-            $db->transRollback();
-            return false;
-        } else{
-            $db->transCommit();
-            return true;
-        }
-
-    }
-
-    public function validateFileData(string $filepath, string $modelName, array $fieldRename=[]): ?array
-    {
-        helper(['filesystem', 'app_array']);
-        $foundError = false;
-        $fieldRenameFlipped = array_flip($fieldRename);
-        $dataModel = model($modelName);
-        $db = db_connect();
-        if (empty($fieldRename)){
-            $fieldRename = $this->fieldRename;
-        }
-        $inputFile = new CSVFileReader($filepath, headerRename:$fieldRename);
-        $logFilepath = tempnam(config('Paths')->validationLogsDirectory, '');
-        $fileWriter = (new CSVFileWriter($logFilepath))->open();
-        $fileWriter->addLine([
-            'row', 'field', 'error'
-        ]); // Writing the header in the output file
-        $db->transException(true)->transBegin();
-        foreach ($inputFile as $iRow=>$row){
-            // Removes some fields that may conflict with the type defined in the validator
-            remove_value('type_name', $row, false);
-            remove_value('type_id', $row, false);
-            $this->clearState()->setFieldValues($row);
-            if ($this->validate()){
-                try{
-                    $rowData = $this->getValidatedData();
-                    $dataModel->insert($rowData);
-                } catch (Throwable $e){
-                    $foundError = true;
-                    $message = sprintf(
-                        '%s. %s: %d',
-                        $e->getMessage(),
-                        $e->getFile(),
-                        $e->getLine()
-                    );
-                    $fileWriter->addLine([
-                        $iRow,
-                        'InternalError',
-                        $message
-                    ]);
-                    break;
-                }
-            } else{
-                $foundError = true;
-                foreach($this->getErrors() as $field=>$errorMsg){
-                    // Maps the fields back to the front end name
-                    $fieldName = dot_search_with_default($field, $fieldRenameFlipped, $field);
-                    $fileWriter->addLine([
-                        $iRow,
-                        $fieldName,
-                        $errorMsg
-                    ]);
-                }
-            }
-        }
-        $fileWriter->close();
-        if ($foundError || ($db->transStatus() === false)){
-            $db->transRollback();
-            return ['status' => false, 'logFilepath' => $logFilepath];
-        } else{
-            $db->transCommit();
-            delete_files($logFilepath);
-            return  ['status' => true, 'logFilepath' => null];
-        }
     }
 
     protected function substituteFK(
@@ -299,5 +173,10 @@ abstract class EntryValidator
             $data[$aliasField] = $aliasValue;
             return $data;
         }
+    }
+
+    public function getActiveRules()
+    {
+        return ($this->isEdit)? $this->updateRules: $this->validationRules;
     }
 }

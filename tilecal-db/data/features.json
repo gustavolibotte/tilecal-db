@@ -74,5 +74,9 @@
     {
         "name": "help",
         "status": "deactivated"
+    },
+    {
+        "name": "parent_relation",
+        "status": "deactivated"
     }
 ]
