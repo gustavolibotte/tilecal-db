@@ -5,6 +5,10 @@ namespace App\Validation\Validators;
 class BatchRegisterValidator extends EntryValidator
 {
     public static int $maxFileSize = 50;
+
+    public array $fileFields = [
+        'file'
+    ];
     public function initialize()
     {
         $this->validationRules['type_name'] = [

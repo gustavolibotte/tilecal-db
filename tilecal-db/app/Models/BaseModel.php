@@ -117,10 +117,10 @@ abstract class BaseModel extends Model
     {
         helper(['filesystem', 'app_array']);
         $fieldRename = $validator->fieldRename;
-        // $fieldRenameFlipped = array_flip($fieldRename);
         $logger = is_null($logger)? new BlankLogger(): $logger;
         $inputFile = new CSVFileReader($filepath, headerRename:$fieldRename);
         $loggerContext = ['iRow' => null, 'action' => ucfirst($action)];
+        $this->db->transBegin();
         foreach ($inputFile as $iRow=>$row){
             $loggerContext['iRow'] = $iRow;
             // Removes some fields that may conflict with the type defined in the validator
@@ -134,9 +134,11 @@ abstract class BaseModel extends Model
             } else{
                 $errors =  $validator->getErrors();
                 $errors['iRow'] = $iRow;
+                $this->db->transRollback();
                 return $errors;
             }
         }
+        $this->db->transCommit();
         return true;
     }
 
