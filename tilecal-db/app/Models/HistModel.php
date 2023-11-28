@@ -2,16 +2,13 @@
 
 namespace App\Models;
 
-use App\Entities\LogEntities\EquipFileRelationLog;
-use App\Entities\LogEntities\ParentChildRelationLog;
-use App\Entities\LogEntities\EquipmentLog;
-use App\Entities\LogEntities\FileLog;
 use CodeIgniter\Entity\Entity;
+use App\Entities\OperationLog;
 
 class HistModel extends BaseModel
 {
     protected $useAutoIncrement = true;
-    protected $returnType       = \App\Entities\OperationLog::class;
+    protected $returnType       = OperationLog::class;
     protected $protectFields = false;
     protected $modelAllowedFields;
 
@@ -104,6 +101,7 @@ class HistModel extends BaseModel
 
     public function getFileHist(int $id){
         $fileLogs = $this->db->table('files_hist fh')
+            ->select("fh.id")
             ->select("'file' as hist_type")
             ->select('name')
             ->select('description')

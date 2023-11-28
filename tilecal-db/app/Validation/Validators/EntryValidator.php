@@ -2,12 +2,10 @@
 
 namespace App\Validation\Validators;
 use App\Library\Loggers\BlankLogger;
-use ValueError;
 use App\Library\Writers\CSVFileWriter;
 use App\Library\Readers\CSVFileReader;
 use Throwable;
 use Psr\Log\LoggerInterface;
-use CodeIgniter\Validation\Exceptions\ValidationException;
 
 abstract class EntryValidator
 {
@@ -17,6 +15,7 @@ abstract class EntryValidator
 
     private array $fieldValues = [];
 
+    public array $fileFields = [];
     private $validator;
 
     private bool $isValid = false;
@@ -29,7 +28,9 @@ abstract class EntryValidator
     {
         $this->validator = \Config\Services::validation(getShared: false);
         $this->initialize();
-        // $this->fieldValues = array_fill_keys(array_keys($this->validationRules), null);
+        if (empty($this->updateRules)){
+            $this->updateRules = $this->validationRules;
+        }
     }
 
     public function asEdit()
@@ -90,7 +91,7 @@ abstract class EntryValidator
     {
         $this->isValid = false;
         foreach ($data as $key=>$value){
-            if (array_key_exists($key, $this->validationRules)){
+            if (array_key_exists($key, $this->getActiveRules())){
                 $this->fieldValues[$key] = ($this->fieldValueIsEmpty($value))? null: $value;
             }
         }
@@ -100,18 +101,27 @@ abstract class EntryValidator
     public function addRequest($request): Self
     {
         $values2Set = [];
-        foreach ($this->validationRules as $fieldName=>$fieldParams){
-            $requestValue = $request->getFile($fieldName);
-            if ($this->fieldValueIsEmpty($requestValue)){
-                $requestValue = $request->getVar($fieldName);
-                if ($this->fieldValueIsEmpty($requestValue)){
-                    continue;
-                }
+        foreach ($this->getActiveRules() as $fieldName=>$fieldParams){
+            $requestValue = $this->getValueFromRequest($request, $fieldName);
+            if ($this->fieldValueIsEmpty(($requestValue))){
+                continue;
             }
             $values2Set[$fieldName] = $requestValue;
         }
         $this->setFieldValues($values2Set);
         return $this;
+    }
+
+    protected function getValueFromRequest($request, $fieldName){
+        if (in_array($fieldName, $this->fileFields)){
+            $uploadedFile = $request->getFile($fieldName);
+            if (!is_uploaded_file($uploadedFile->getRealPath())){
+                return null;
+            }
+            return $uploadedFile;
+        } else{
+            return $request->getVar($fieldName);
+        }
     }
 
     public function withRequest($request): Self
@@ -299,5 +309,10 @@ abstract class EntryValidator
             $data[$aliasField] = $aliasValue;
             return $data;
         }
+    }
+
+    public function getActiveRules()
+    {
+        return ($this->isEdit)? $this->updateRules: $this->validationRules;
     }
 }
