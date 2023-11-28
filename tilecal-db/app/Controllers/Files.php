@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Library\Forms\FileForm;
 use App\Validation\Validators\FileValidator;
+use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\ResponseInterface;
 use ValueError;
 
@@ -56,26 +57,47 @@ class Files extends APIController
         }
         $viewData['pageTitle'] = $viewData['pageHeader'];
 
-        $viewData['editable'] = false;
+        $viewData['editable'] =  $this->user->isAuthorized('edit') && (!$file->isDeleted());
         if ($viewData['editable']){
             $viewData['editForm'] = new FileForm();
-            $viewData['editForm']->asEdit();
-            $viewData['editForm']->setFieldValues($file->toArray());
-            $viewData['editUrl'] = base_url(sprintf('equipments/%s/edit/%s', $file->type_name, $file->id));
+            $viewData['editUrl'] = url_to('file_update' , $file->id);
         }
         $viewData['deletable'] = $this->user->isAuthorized('delete') && (!$file->isDeleted());
         if ($viewData['deletable']){
-            // $viewData['deleteUrl'] = base_url(sprintf('files/delete/%d', $file->id));
             $viewData['deleteUrl'] = url_to('file_delete', $file->id);
         }
 
         $viewData['restorable'] = $this->user->isAuthorized('delete') && $file->isDeleted();
         if ($viewData['restorable']){
-            // $viewData['restoreUrl'] = base_url(sprintf('files/restore/%s', $file->id));
             $viewData['restoreUrl'] = url_to('file_restore', $file->id);
         }
 
         return default_view('files/view', $viewData);
+    }
+
+    public function update($fileId)
+    {
+        $feature = model('FeatureModel')->findName('file_edit');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+        $messenger = service('messenger');
+
+        $validator = (new FileValidator())
+            ->asEdit()
+            ->setFieldValues(['id' => $fileId])
+            ->addRequest($this->request);
+        if ($validator->validate()){
+            $file = $validator->getValidatedData();
+            model('FileModel')->update($fileId, $file);
+            $messenger->addMessage('Updated file data with success', 'success');
+        } else{
+            foreach ($validator->getErrors() as $errorMsg){
+                $messenger->addMessage($errorMsg, 'danger');
+            }
+        }
+        $messenger->dumpMessages();
+        return $this->view($fileId);
     }
 
     public function download($fileId)
@@ -98,15 +120,16 @@ class Files extends APIController
 
     public function getFileDownloadResponse($file)
     {
+        $extension = '.' . $file->fileObj->guessExtension();
+        $filename = (str_ends_with($file->name, $extension))? $file->name: $file->name . $extension;
         return $this->response
         ->download($file->path, null, true)
-        ->setFileName($file->name)
+        ->setFileName($filename)
         ->setContentType($file->mime);
     }
 
     public function upload()
     {
-
         $feature = model('FeatureModel')->findName('file_upload');
         if (!$feature->isActive()){
             return $this->serviceUnavailable();
@@ -119,8 +142,7 @@ class Files extends APIController
             $validator = (new FileValidator())->addRequest($this->request);
             if ($validator->validate()){
                 $file = $validator->getValidatedData();
-                $fileModel = model('FileModel');
-                $fileModel->insert($file);
+                model('FileModel')->insert($file);
                 $messenger->addMessage('File uploaded with success', 'success');
                 $messenger->dumpMessages();
                 return redirect('file_upload');
@@ -254,9 +276,7 @@ class Files extends APIController
         }
 
         $fileId = $this->request->getVar('id');
-        d($fileId);
         $fileHist = model('FileHistModel')->find($fileId);
-        d($fileHist);
         return $this->getFileDownloadResponse($fileHist);
     }
 }

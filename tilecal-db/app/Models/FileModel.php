@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use CodeIgniter\Files\Exceptions\FileNotFoundException;
 use CodeIgniter\Database\ConnectionInterface;
+use CodeIgniter\Files\File;
 use CodeIgniter\Validation\ValidationInterface;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Model;
@@ -14,7 +14,7 @@ class FileModel extends LogModel
     protected $useAutoIncrement = true;
     protected $returnType       = \App\Entities\File::class;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'description', 'path'];
+    protected $allowedFields    = ['name', 'description', 'fileObj', 'path', 'copy'];
     protected bool $copyFile;
 
     public function __construct(?ConnectionInterface $db = null, ?ValidationInterface $validation = null, bool $copyFile=false)
@@ -26,8 +26,8 @@ class FileModel extends LogModel
     public function initialize(){
         parent::initialize();
         helper(['app_array']);
-        $this->beforeInsert[] = 'moveFile';
-        $this->beforeUpdate[] = 'moveFile';
+        $this->beforeInsert[] = 'treatFileObj';
+        $this->beforeUpdate[] = 'treatFileObj';
     }
 
     public function minQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
@@ -97,43 +97,41 @@ class FileModel extends LogModel
         return $data;
     }
 
-    protected function moveFile(array $data): array
+    protected function treatFileObj(array $data): array
     {
         helper(['app_array', 'path', 'filesystem']);
-        $appPaths = config('Paths');
-        $filepath = dot_search_with_default('path', $data['data'], null);
-        if (is_null($filepath) || str_starts_with($filepath, $appPaths->uploadedFilesDirectory)){
+        $fileObj = remove_value('fileObj', $data['data'], false);
+        $copy = remove_value('copy', $data['data'], false);
+        
+        if (!($fileObj instanceof File)){
             return $data;
         }
-        if (!get_file_info($filepath)){
-            throw new FileNotFoundException(
-                sprintf(
-                    "The path %s doesn't exist.",
-                    $filepath
-                )
-            );
+        // $data = $this->checkExtension($data, $fileObj);
+        $appPaths = config('Paths');
+        $newName = $fileObj->getRandomName();
+        $newPath = joinPaths([
+            $appPaths->uploadedFilesDirectory,
+            $newName
+        ]);
+        if ($copy){
+            copy($fileObj->getRealPath(), $newPath);
+        } else{
+            $fileObj->move($appPaths->uploadedFilesDirectory, $newName);
         }
-        $time = \Config\Services::time();
-        $now = $time->getRequestTimestamp()->format('Y_m_d_H_i_s_u');
-        $authenticator = \Config\Services::authenticator();
-        $username = $authenticator->getUser()->username;
-        $file = new \CodeIgniter\Files\File($filepath);
-        $extension = sprintf('.%s', $file->guessExtension());
+        $data['data']['path'] = $newPath;
+        return $data;
+    }
+
+    protected function checkExtension(array $data, File $fileObj): array
+    {
+        if (!array_key_exists('name', $data['data'])){
+            return $data;
+        }
+        $extension = '.' . $fileObj->guessExtension();
         if (!str_ends_with($data['data']['name'], $extension)){
             $data['data']['name'] .= $extension;
         }
-        $newFilename = sprintf(
-            '%s_%s_%s',
-            $now,
-            $username,
-            $data['data']['name']
-        );
-        $data['data']['path'] = joinPaths([$appPaths->uploadedFilesDirectory, $newFilename]);
-        if ($this->copyFile){
-            copy($filepath, $data['data']['path']);
-        } else{
-            $file->move($appPaths->uploadedFilesDirectory, $newFilename);
-        }
         return $data;
     }
+
 }

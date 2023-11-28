@@ -204,7 +204,7 @@ class Equipments extends APIController
             return $this->serviceUnavailable();
         }
         $equipmentModel = model('EquipmentModel');
-        $equipment = model('EquipmentModel')->fullQuery()->find($equipmentId);
+        $equipment =$equipmentModel->fullQuery()->find($equipmentId);
         $validator = EquipmentValidator::getFromTypeName($equipment->type_name)
             ->addRequest($this->request)
             ->asEdit();

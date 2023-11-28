@@ -14,4 +14,9 @@ class File extends BaseEntity
     {
         return mime_content_type($this->path);
     }
+
+    protected function getFileObj(): \CodeIgniter\Files\File
+    {
+        return new \CodeIgniter\Files\File($this->path);
+    }
 }
