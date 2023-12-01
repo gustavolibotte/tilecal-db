@@ -52,6 +52,8 @@ class EquipmentInsert extends CustomCommand
      */
     protected $options = [];
 
+    protected array|string $rules = 'equipCLIParams';
+
     /**
      * Actually execute a command.
      *
@@ -60,12 +62,7 @@ class EquipmentInsert extends CustomCommand
 
     public function run(array $params)
     {
-        helper('app_array');
-        $userInput = [
-            'filepath' => dot_search_with_default(0, $params),
-            'type_name' => dot_search_with_default(1, $params)
-        ];
-        $userInput = $this->parseParams($userInput, 'equipCLIParams');
+        $userInput = $this->parseParams($params);
         if ($userInput === EXIT_ERROR){
             return EXIT_ERROR;
         }
