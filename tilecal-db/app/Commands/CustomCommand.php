@@ -51,6 +51,8 @@ class CustomCommand extends BaseCommand
      */
     protected $options = [];
 
+    protected array|string $rules = [];
+
     public function __construct(LoggerInterface $logger, Commands $commands)
     {
         parent::__construct($logger, $commands);
@@ -68,15 +70,32 @@ class CustomCommand extends BaseCommand
         $this->logger->info('This is the base class for all custom commands. It does nothing.');
     }
 
-    protected function parseParams(array $userInput, string $ruleSet)
+    protected function parseParams($params)
     {
+        $userInput = $this->getUserInput($params);
         $validator = \Config\Services::validation();
-        if (!$validator->run($userInput, $ruleSet)){
+        if (is_array($this->rules)){
+            $validator->setRules($this->rules);
+            $valid = $validator->run($userInput);
+        } else{
+            $valid = $validator->run($userInput, $this->rules);
+        }
+        if (!$valid){
             $this->logger->error('Errors with input params:');
             foreach($validator->getErrors() as $errorMsg){
                 $this->logger->error($errorMsg);
             }
             return EXIT_ERROR;
+        }
+        return $userInput;
+    }
+
+    protected function getUserInput($params)
+    {
+        helper('app_array');
+        $userInput = [];
+        foreach ($this->arguments as $i=>$paramName){
+            $userInput[$paramName] = dot_search_with_default($i, $params);
         }
         return $userInput;
     }
