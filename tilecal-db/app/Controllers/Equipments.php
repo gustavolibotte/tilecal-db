@@ -110,7 +110,7 @@ class Equipments extends APIController
             return $this->serviceUnavailable();
         }
 
-        helper(['form', 'url', 'app_form', 'path']);
+        helper(['form', 'url', 'app_form', 'path', 'app_array']);
         $messenger = \Config\Services::messenger();
         if ($this->request->is('post')){
             $validator = (new BatchRegisterValidator())->addRequest($this->request);
@@ -119,24 +119,23 @@ class Equipments extends APIController
                 $equipValidator = EquipmentValidator::getFromTypeName($formData['type_name']);
                 // Needs to rename the fields because the front end fields
                 // have user friendly names
-                $fileValidationResult = $equipValidator->validateFileData(
+                $res = model('EquipmentModel')->insertFromFile(
                     $formData['file']->getTempName(),
-                    'EquipmentModel'
+                    $equipValidator
                 );
-                if ($fileValidationResult['status']) {
+                if ($res === true){
                     $messenger->addRegisterSuccess();
                     $validator->clearState();
                     $equipValidator->clearState();
                 } else{
-                    $filepath = $fileValidationResult['logFilepath'];
-                    $filename = splitPath($filepath)['tail'];
-                    $messenger->addMessage(sprintf(
-                        'Found errors in the file data. ' .
-                        '<a href="%s">Download validation log.</a>',
-                        url_to('download_validation_log', $filename)
-                        ),
-                        'danger'
-                    );
+                    $iRow = remove_value('iRow', $res);
+                    foreach ($res as $errorMsg){
+                        $msg = sprintf(
+                            'Row %d: %s',
+                            $iRow, $errorMsg
+                        );
+                        $messenger->addMessage($msg, 'danger');
+                    }
                 }
             } else{
                 foreach ($validator->getErrors() as $errorMsg){
