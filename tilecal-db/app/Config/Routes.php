@@ -132,10 +132,6 @@ $routes->get('files/download/(:num)', 'Files::download/$1', [
     'filter' => 'auth:download',
     'as' => 'file_download'
 ]);
-$routes->get('validation/(:alphanum)', 'Files::downloadValidationLog/$1', [
-    'filter' => 'auth:register',
-    'as' => 'download_validation_log'
-]);
 
 // Errors
 $routes->get('unauthorized', 'Equipments::unauthorized');

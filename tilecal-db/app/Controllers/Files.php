@@ -243,16 +243,6 @@ class Files extends APIController
         return $this->respond($res, 200);
     }
 
-    public function downloadValidationLog($filename)
-    {
-        $filepath = sprintf('%s/%s', config('Paths')->validationLogsDirectory, $filename);
-        $response = $this->response
-            ->download($filepath, null, true)
-            ->setFileName('validation_log.csv')
-            ->setContentType('text/csv');
-        return $response;
-    }
-
     public function __getHist__(): ResponseInterface
     {
         $id = $this->request->getVar('id');
