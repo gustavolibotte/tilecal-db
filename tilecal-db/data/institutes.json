@@ -1081,5 +1081,11 @@
     "name": "ITIM, Cluj Napoca",
     "mne": "CLJ",
     "country": "ROMANIA"
+  },
+  {
+    "name": "University of Chicago",
+    "mne": "CHI",
+    "place": "CHICAGO",
+    "country": "UNITED STATES"
   }
 ]
