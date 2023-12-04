@@ -107,13 +107,6 @@ class EquipmentModel extends LogModel
         return $queryBuilder;
     }
 
-    public function getEquipment($id=null)
-    {
-        $query = $this->fullQuery();
-        $result = empty($id)? $query->findAll():  $query->find($id);
-        return $result;
-    }
-
     /**
      * Returns an array with all the related equipments to a specific file given its id
      *
@@ -413,20 +406,24 @@ class EquipmentModel extends LogModel
     }
 
     /**
-     * Returns true if equipment has a specified slot Id
+     * Returns true if an equipment has slots
+     * if $slotId is given, evaluates for a specific slotId
      *
      * @param string $id  Id of the equipment to check for slot
-     * @param string $slotId Id of the slot to check
+     * @param ?string $slotId Id of the slot to check
      * 
      * @return bool true if equipment has the specified slot
      */
-    public function equipHasSlot(string $id, string $slotId): bool
+    public function equipHasSlot(string $id, ?string $slotId=null): bool
     {
-        $equipHasSlot = $this->select('1')
+        $query = $this->select('1')
             ->join('equipment_types et', 'equipments.type_id = et.id', 'left')
             ->join('type_slots ts', 'ts.parent_type_id=et.id', 'left')
-            ->where('ts.id', $slotId)
-            ->find($id);
+            ->where('equipments.id', $id);
+        if (!is_null($slotId)){
+            $query = $query->where('ts.id', $slotId);
+        }
+        $equipHasSlot = $query->first();
         return !empty($equipHasSlot);
     }
 

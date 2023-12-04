@@ -24,7 +24,18 @@
 
 <?= $this->section('relatedContent') ?>
   <hr>
-  <h4> Related Equipments </h4>
+  <div class="row">
+    <div class="col">
+      <h4> Related Equipment </h4>
+    </div>
+    <? if($canBeAssembled): ?>
+      <div class="col-5 text-end">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assemble-modal">
+          Add assembled equipment
+        </button>
+      </div>
+    <? endif; ?>
+  </div>
   <p> The table includes the parent and children equipment to the shown equipment.</p>
   <table class="table table-bordered" id="related-equipments-table" style="width:100%"></table>
   <hr>
@@ -32,6 +43,30 @@
   <p> All files that are related to this equipment.</p>
   <table class="table table-bordered" id="related-files-table" style="width:100%"></table>
 <?= $this->endSection() ?>
+
+<? $this->section('extraModals')?>
+  <? if ($canBeAssembled): ?>
+  <div class="modal fade" id="assemble-modal" tabindex="-1" aria-labelledby="assemble-modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="assemble-modal-label">Assemble Equipment</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <? echo form_open_multipart($assembleUrl, 'id="assemble-form"'); ?>
+          <div class="modal-body">
+            <p> COOL FORM </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success">Assemble</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <? endif; ?>
+<? $this->endSection()?>
 
 <?= $this->section('javascript')?>
   <script type="text/javascript" src="/assets/js/string_utils.js"></script>

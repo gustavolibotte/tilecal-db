@@ -60,7 +60,7 @@ class EquipmentRules{
     {   
         helper('string');
         $equipmentModel = new EquipmentModel();
-        $equipment = $equipmentModel->getEquipment($value);
+        $equipment = $equipmentModel->fullQuery()->find($value);
         $approved = $equipment->type_name == $params;
         if (!$approved){
             $error = sprintf(

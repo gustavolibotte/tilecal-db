@@ -124,6 +124,8 @@
       </div>
     </div>
   <? endif;?>
+
+  <? $this->renderSection('extraModals'); ?>
 <?= $this->endSection() ?>
 
 <?= $this->section('javascript') ?>

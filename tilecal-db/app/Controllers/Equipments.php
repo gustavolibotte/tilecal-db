@@ -55,7 +55,9 @@ class Equipments extends APIController
 
         helper(['app_form', 'form']);
         $equipmentModel = model('EquipmentModel');
-        $equipment = $equipmentModel->withDeleted()->getEquipment($equipmentId);
+        $equipment = $equipmentModel->fullQuery()
+            ->withDeleted()
+            ->find($equipmentId);
 
         if (is_null($equipment)){
             return redirect('notfound');
@@ -65,8 +67,11 @@ class Equipments extends APIController
 
         $viewData['infoHeader'] = 'Equipment Info';
         $viewData['entity'] = $equipment;
-        // $viewData["histories"] = model('HistModel')->getEquipmentHist($equipmentId);
-        $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->id);
+        $viewData['pageHeader'] = sprintf(
+            '%s: %s',
+            $equipment->type_label,
+            $equipment->id
+        );
 
         if ($equipment->isDeleted()){
             $viewData['pageHeader'] = 'Deleted ' . $viewData['pageHeader'];
@@ -100,6 +105,11 @@ class Equipments extends APIController
             $viewData['restoreUrl'] = url_to('equipment_restore', $equipment->id);
         }
 
+        $viewData['canBeAssembled'] = $this->user->isAuthorized('edit') && $equipmentModel->equipHasSlot($equipment->id);
+        if ($viewData['canBeAssembled']){
+            $viewData['assembleUrl'] = 'shrebbles';
+            $viewData['assembleForm'] = null;
+        }
         return default_view('equipment/view', $viewData);
     }
 
