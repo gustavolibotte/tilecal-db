@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Library\Forms\AssembleForm;
 use App\Library\Forms\EquipmentBatchRegisterForm;
 use App\Library\Forms\EquipmentForm;
 use App\Validation\Validators\BatchRegisterValidator;
@@ -108,7 +109,7 @@ class Equipments extends APIController
         $viewData['canBeAssembled'] = $this->user->isAuthorized('edit') && $equipmentModel->equipHasSlot($equipment->id);
         if ($viewData['canBeAssembled']){
             $viewData['assembleUrl'] = 'shrebbles';
-            $viewData['assembleForm'] = null;
+            $viewData['assembleForm'] = new AssembleForm($equipment);
         }
         return default_view('equipment/view', $viewData);
     }

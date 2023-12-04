@@ -55,6 +55,7 @@ class EquipmentModel extends LogModel
             $queryBuilder = $this;
         }
         $queryBuilder->select('equipments.id as id');
+        $queryBuilder->select('equipment_types.id as type_id');
         $queryBuilder->select('equipment_types.label as type_label');
         $queryBuilder->select('equipment_types.name as type_name');
         $queryBuilder->select('equipments.location_id as location_id');

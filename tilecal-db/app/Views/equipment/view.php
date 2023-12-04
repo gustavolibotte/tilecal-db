@@ -55,7 +55,7 @@
         </div>
         <? echo form_open_multipart($assembleUrl, 'id="assemble-form"'); ?>
           <div class="modal-body">
-            <p> COOL FORM </p>
+            <? echo $assembleForm->toHTML();?>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
