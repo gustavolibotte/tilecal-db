@@ -3,6 +3,7 @@
 namespace App\Library\Forms;
 
 use App\Entities\EquipmentType;
+use App\Validation\AtlasIdRules;
 use \App\Validation\EquipmentRules;
 use \CodeIgniter\HTTP\IncomingRequest;
 use Error;
@@ -99,8 +100,8 @@ class EquipmentForm extends Form{
                 'helpText' => "Parent Equipment's barcode value following ATLAS identification rules.",
                 'fieldType' => 'input',
                 'fieldParams' => [
-                    'maxlength' => 14,
-                    'placeholder' => 'XXXXXXXXXXXXXX'
+                    'maxlength' => AtlasIdRules::$exactLength,
+                    'placeholder' => str_repeat('X', AtlasIdRules::$exactLength)
                 ]
             ];
 

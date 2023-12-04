@@ -360,7 +360,7 @@ class EquipmentModel extends LogModel
             ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
             ->where('equipments_to_equipments.equipment_a_id', $parentId)
             ->where('equipments_to_equipments.type', 'parent');
-        if ((!empty($typeId)) && ($typeId instanceof string)){
+        if ((!empty($typeId)) && (is_string($typeId))){
             $this->where('equipment_types.id', $typeId);
         } elseif ((!empty($typeId)) && (is_array($typeId))){
             $this->whereIn('equipment_types.id', $typeId);
