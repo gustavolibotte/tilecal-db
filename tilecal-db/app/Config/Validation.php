@@ -27,7 +27,8 @@ class Validation extends BaseConfig
         \App\Validation\EquipmentRules::class,
         \App\Validation\StringRules::class,
         \App\Validation\TypeSlotRules::class,
-        \App\Validation\AppFileRules::class
+        \App\Validation\AppFileRules::class,
+        \App\Validation\DatabaseRules::class
     ];
 
     /**
