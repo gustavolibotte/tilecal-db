@@ -36,7 +36,6 @@ function getFileHistMessage(data){
         'name',
         'description'
     ])
-    msg += getFileHistDownloadButton(data.id)
     msg += "</ul>"
     return msg
 }
