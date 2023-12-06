@@ -6,6 +6,7 @@ use App\Library\Forms\AssembleForm;
 use App\Library\Forms\EquipmentBatchRegisterForm;
 use App\Library\Forms\EquipmentForm;
 use App\Validation\Validators\BatchRegisterValidator;
+use App\Validation\Validators\EquipmentAssembleValidator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
 use ValueError;
@@ -108,7 +109,7 @@ class Equipments extends APIController
 
         $viewData['canBeAssembled'] = $this->user->isAuthorized('edit') && $equipmentModel->equipHasSlot($equipment->id);
         if ($viewData['canBeAssembled']){
-            $viewData['assembleUrl'] = 'shrebbles';
+            $viewData['assembleUrl'] = url_to('equipment_assemble', $equipmentId);
             $viewData['assembleForm'] = new AssembleForm($equipment);
         }
         return default_view('equipment/view', $viewData);
@@ -263,6 +264,37 @@ class Equipments extends APIController
         $equipmentModel = model('EquipmentModel');
         $equipmentModel->restore($equipmentId);
         service('messenger')->addRestoreSuccess();
+        return redirect()->route('equipment_view', [$equipmentId]);
+    }
+
+    public function assemble(string $equipmentId)
+    {
+        $feature = model('FeatureModel')->findName('parent_relation');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+        $validator = (new EquipmentAssembleValidator())->addRequest($this->request);
+        $messenger = \Config\Services::messenger();
+        if ($validator->validate()){
+            $validatedData = $validator->getValidatedData();
+            model('EquipmentModel')->updateParent(
+                $validatedData['child_id'],
+                $validatedData['parent_id'],
+                $validatedData['slot_id']
+            );
+            $messenger->addMessage(
+                sprintf('Assembled equipment %s to %s',
+                    $validatedData['child_id'],
+                    $validatedData['parent_id']
+                ),
+                'success'
+            );
+        } else{
+            foreach ($validator->getErrors() as $errorMsg){
+                $messenger->addMessage($errorMsg, 'danger');
+            }
+        }
+        $messenger->dumpMessages();
         return redirect()->route('equipment_view', [$equipmentId]);
     }
 

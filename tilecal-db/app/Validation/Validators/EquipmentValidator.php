@@ -212,13 +212,12 @@ class EquipmentValidator extends EntryValidator
                     "permit_empty",
                     "required_with[slot_id]",
                     sprintf("max_length[%s]", AtlasIdRules::$exactLength),
-                    "is_not_unique[equipments.id]",
-                    sprintf("id_is_valid_parent[{id},%s,{slot_id}]", $this->equipmentType->label)
+                    "is_not_unique[equipments.id]"
                 ],
                 "errors" => [
                     "required_with" => "Parent ID is required with a slot.",
                     "exact_length" => "The Parent ID must have {param} characters.",
-                    "is_not_unique" => "The given parent ID ({value}) doesn't exist."
+                    "is_not_unique" => "The given parent ID ({value}) doesn't exist.",
                 ]
             ];
 
@@ -226,14 +225,10 @@ class EquipmentValidator extends EntryValidator
                 "rules" => [
                     "permit_empty",
                     "required_with[parent_id]",
-                    sprintf("slot_allows_type[%s]", $this->equipmentType->id),
+                    "slot_is_available[{parent_id},{id}]",
                 ],
                 "errors" => [
-                    "required_with" => "You must supply a slot together with the parent ID.",
-                    "slot_allows_type" => sprintf(
-                        "Slot doesn't allow type %s to be fit.",
-                        $this->equipmentType->label
-                    )
+                    "required_with" => "You must supply a slot together with the parent ID."
                 ]
             ];
         }

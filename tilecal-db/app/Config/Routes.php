@@ -97,6 +97,10 @@ $routes->post('equipments/restore/(:alphanum)',  'Equipments::restore/$1', [
     'filter' => 'auth:delete',
     "as" => 'equipment_restore'
 ]);
+$routes->post('equipments/assemble/(:alphanum)', 'Equipments::assemble/$1',[
+    'filter' => 'auth:delete',
+    "as" => 'equipment_assemble'
+]);
 
 
 // File routes

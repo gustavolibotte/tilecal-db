@@ -71,38 +71,4 @@ class EquipmentRules{
         }
         return $approved;
     }
-    
-    /**
-     * Checks if the parent equipment has not reached the max number of childs
-     *
-     * @param $value  Value given by CodeIgniter validator, considered as an equipment id for the parent id
-     * @param string $params "<child_id>,<chile_type_label>,<slot_id>"
-     * <child_id> The id for the child equipment to be fit into the parent
-     * <child_type_label> Label for the child equipment type
-     * <slot_id> Id for the slot in which the child equipment will be fit into
-     * @param array $data Ignored, here for compatibility with codeigniter validation api
-     * @param ?string &$error Error string, formated automatically by the function
-     * 
-     * @return bool True if the data was approved on this rule
-     */ 
-    public function id_is_valid_parent($value, string $params, array $data, ?string &$error): bool
-    {
-        $params = explode(',', $params);
-        $childId = $params[0];
-        $childTypeLabel = $params[1];
-        $slotId = $params[2];
-        $parentId = $value;
-
-        $equipmentModel = model('EquipmentModel');
-        if (!$equipmentModel->hasAvailableSlot($parentId, $slotId, $childId)){
-            $error = sprintf(
-                "Equipment %s doesn't have the available slot for equipment %s of type %s",
-                $parentId,
-                $childId,
-                $childTypeLabel
-            );
-            return false;
-        }
-        return true;
-    }
 }

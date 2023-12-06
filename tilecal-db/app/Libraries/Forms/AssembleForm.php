@@ -7,10 +7,10 @@ use App\Entities\Equipment;
 
 class AssembleForm extends Form{
 
-    public Equipment $parentEquipment;
+    public Equipment $mainEquipment;
 
-    function __construct(Equipment $parentEquipment, ?IncomingRequest $request=null){
-        $this->parentEquipment = $parentEquipment;
+    function __construct(Equipment $mainEquipment, ?IncomingRequest $request=null){
+        $this->mainEquipment = $mainEquipment;
         parent::__construct($request);
     }
 
@@ -19,7 +19,7 @@ class AssembleForm extends Form{
 
         $this->fields['parent_id'] = [
             'id' => 'parent_id',
-            'label' => 'Equipment Type',
+            'label' => 'Main Equipment ID',
             'required' => true,
             'fieldType' => 'hidden',
             'fieldParams' => []
@@ -28,7 +28,7 @@ class AssembleForm extends Form{
         $this->fields['child_id'] = [
             'id' => 'child_id',
             'required' => true,
-            'helpText' => 'Id of the equipment to be assembled',
+            'helpText' => 'Equipment ID to be assembled',
             'fieldType' => 'input',
             'fieldParams' => [
                 'maxlength' => str_repeat('X', AtlasIdRules::$exactLength),
@@ -36,12 +36,10 @@ class AssembleForm extends Form{
             ]
         ];
 
-        // The select query avoid conflict with multiple id columns from joined tables
         $slotOptions = model('TypeSlotModel')
-            ->where('type_slots.parent_type_id', $this->parentEquipment->type_id)
+            ->where('type_slots.parent_type_id', $this->mainEquipment->type_id)
             ->orderBy('name')
             ->getFormDropdownOptions(['name']);
-        d($slotOptions);
         helper('string');
         array_walk($slotOptions, function (&$value, $key){
             if ($key != FORM_SELECT_NULL_OPTION){
@@ -59,11 +57,6 @@ class AssembleForm extends Form{
             ]
         ];
 
-        $this->setFieldValues(['parent_id' => $this->parentEquipment->id]);
+        $this->setFieldValues(['parent_id' => $this->mainEquipment->id]);
     }
-
-        protected function getData()
-        {
-            return $this->getFieldValues();
-        }
 }
