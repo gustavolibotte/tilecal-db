@@ -86,13 +86,6 @@ class Equipments extends APIController
             $viewData['editForm'] = EquipmentForm::getTypeForm($equipment->type_name);
             $viewData['editForm']->asEdit();
             $viewData['editForm']->setFieldValues($equipment->toArrayWithTypeParams());
-            $parentRelation = $equipmentModel->getParentRelation($equipment->id);
-            if (!empty($parentRelation)){
-                $viewData['editForm']->setFieldValues([
-                    'parent_id' => $parentRelation->parent_equip_id,
-                    'slot_id' => $parentRelation->slot_id
-                ]);
-            }
             $viewData['editUrl'] = url_to('equipment_edit', $equipment->id);
 
         }

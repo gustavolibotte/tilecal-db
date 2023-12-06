@@ -204,35 +204,6 @@ class EquipmentValidator extends EntryValidator
         ];
 
         $this->updateRules['comments'] = $this->validationRules['comments'];
-
-        $parentFeature = model('FeatureModel')->findName('parent_relation');
-        if ($parentFeature->isActive()){
-            $this->validationRules['parent_id'] = [
-                "rules" => [
-                    "permit_empty",
-                    "required_with[slot_id]",
-                    sprintf("max_length[%s]", AtlasIdRules::$exactLength),
-                    "is_not_unique[equipments.id]"
-                ],
-                "errors" => [
-                    "required_with" => "Parent ID is required with a slot.",
-                    "exact_length" => "The Parent ID must have {param} characters.",
-                    "is_not_unique" => "The given parent ID ({value}) doesn't exist.",
-                ]
-            ];
-
-            $this->validationRules['slot_id'] = [
-                "rules" => [
-                    "permit_empty",
-                    "required_with[parent_id]",
-                    "slot_is_available[{parent_id},{id}]",
-                ],
-                "errors" => [
-                    "required_with" => "You must supply a slot together with the parent ID."
-                ]
-            ];
-        }
-
     }
 
     protected function getData()
@@ -320,7 +291,6 @@ class EquipmentValidator extends EntryValidator
             return parent::setFieldValues($data);
         }
         $data['id'] = $this->processId($data['id']);
-        $data['parent_id'] = $this->processId($data['parent_id']);
 
         return parent::setFieldValues($data);
     }

@@ -127,11 +127,29 @@ function fetchHistTable(equipmentId){
     })
 }
 
-function fetchData(){
+function disableEnterOnId(){
+    $('#id').on('keydown', function(e){
+        if (e.key === 'Enter') { // Check if the key pressed is Enter (key code 13)
+            e.preventDefault(); // Prevent the default form submission
+    }})
+
+    $('#child_id').on('keydown', function(e){
+        if (e.key === 'Enter') { // Check if the key pressed is Enter (key code 13)
+            e.preventDefault(); // Prevent the default form submission
+    }})
+
+    $('#parent_id').on('keydown', function(e){
+        if (e.key === 'Enter') { // Check if the key pressed is Enter (key code 13)
+            e.preventDefault(); // Prevent the default form submission
+    }})
+}
+
+function main(){
     const equipmentId = getEquipmentIdFromViewRoute(window.location.href)
     fetchRelatedEquipTable(equipmentId)
     fetchRelatedFilesTable(equipmentId)
     fetchHistTable(equipmentId)
+    disableEnterOnId()
 }
 
-$(document).ready(fetchData)
+$(document).ready(main)

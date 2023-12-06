@@ -26,7 +26,8 @@ class EquipmentAssembleValidator extends EntryValidator
             "rules" => [
                 "required",
                 sprintf("exact_length[%s]", AtlasIdRules::$sequentialNumberLength),
-                "is_not_unique[equipments.id]"
+                "is_not_unique[equipments.id]",
+                "equip_is_not_assembled_into"
             ],
             "errors" => [
                 "required" => "You must supply an id for the external equipment.",

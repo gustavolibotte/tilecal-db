@@ -71,4 +71,31 @@ class EquipmentRules{
         }
         return $approved;
     }
+
+    /**
+     * Checks if the equipment id is of a given type
+     *
+     * @param $value  Value given by CodeIgniter validator, considered as an equipment id
+     * @param string $params Ignored
+     * @param array $data Ignored
+     * @param ?string &$error Error string. Formated automatically by the function.
+     * 
+     * @return bool True if the data was approved on this rule
+     */ 
+    public function equip_is_not_assembled_into($value, ?string $params, array $data, ?string &$error): bool
+    {
+        $childId = $value;
+        $relation = model('ParentChildModel')
+            ->where('child_equip_id', $childId)
+            ->first();
+        if (isset($relation)){
+            $error = sprintf(
+                'The equipment %s is already assembled into equipment %s.',
+                $relation->child_equip_id,
+                $relation->parent_equip_id
+            );
+            return false;
+        }
+        return true;
+    }
 }
