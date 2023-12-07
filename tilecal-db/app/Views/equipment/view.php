@@ -31,7 +31,7 @@
     <? if($canBeAssembled): ?>
       <div class="col-5 text-end">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assemble-modal">
-          Add assembled equipment
+          Assemble Equipment
         </button>
       </div>
     <? endif; ?>
