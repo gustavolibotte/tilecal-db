@@ -435,7 +435,7 @@ class EquipmentModel extends LogModel
     public function equipHasSlot(string $id, ?string $slotId=null): bool
     {
         $query = $this->select('1')
-            ->join('type_slots ts', 'equipments.type_id=ts.parent_type_id', 'left')
+            ->join('type_slots ts', 'equipments.type_id=ts.parent_type_id', 'right')
             ->where('equipments.id', $id);
         if (!is_null($slotId)){
             $query = $query->where('ts.id', $slotId);
