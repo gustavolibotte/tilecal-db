@@ -12,6 +12,12 @@ function fetchRelatedEquipTable(equipmentId){
         },
     ]
     tableColumns = tableColumns.concat(equipmentTableColumns)
+    tableColumns = tableColumns.concat([{
+        "render": function(data, type, row, meta){
+            return `<a type="button" class="btn btn-danger" id="delete_relation" equip_id="${row.id}" relation_type="${row.relation_type}"><i class="bi bi-trash" aria-hidden="true"></i></a>`
+        },
+        "title": "Remove Relation"
+    }])
     const tableParams = {
         searching: true,
         paging: true,
@@ -144,12 +150,97 @@ function disableEnterOnId(){
     }})
 }
 
+function disassembleEquipment(swal,  equipmentId, rowEquipId, relationType){
+    if (relationType == 'child'){
+        var data = {
+            "parent_id": equipmentId,
+            "child_id": rowEquipId
+        }
+    } else if (relationType == 'parent'){
+        var data = {
+            "parent_id": rowEquipId,
+            "child_id": equipmentId
+        }
+    }
+    $.ajax({
+        url: getEquipDisassembleRoute(),
+        type: "POST",
+        dataType: "json",
+        data: data,
+        success: function (data) {
+            $('#related-equipments-table').DataTable().clear().destroy();
+            $('#history-table-full').DataTable().clear().destroy();
+            fetchRelatedEquipTable(equipmentId);
+            fetchHistTable(equipmentId)
+            swal.fire({
+                title: 'Success',
+                text: 'Equipment has been disassembled',
+                icon: 'success'
+            });
+        },
+        error: function(data){
+            swal.fire({
+                title: "Error",
+                text: data.error,
+                icon:'error'
+            })
+        }
+    })
+}
+
+function cancelDisassemble(swal){
+    swal.fire({
+        title: 'Cancelled',
+        text: 'No changes were made.',
+        icon: 'error'
+    })
+}
+
+function enableDisassemble(equipmentId){
+    $(document).on("click", "#delete_relation", function (e) {
+        e.preventDefault()
+
+        const rowEquipId = $(this).attr("equip_id")
+
+        const swal = Swal.mixin({
+            customClass: {
+                confirmButton: 'btn btn-danger',
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false
+        })
+
+        swal.fire({
+            title: `Disassemble equipment ${rowEquipId}`,
+            text: "This action will disassemble the equipment",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Disassemble',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                disassembleEquipment(
+                    swal,
+                    equipmentId,
+                    rowEquipId,
+                    $(this).attr("relation_type")
+                )
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                cancelDisassemble(swal)
+            }
+        })
+    });
+}
+
+
 function main(){
     const equipmentId = getEquipmentIdFromViewRoute(window.location.href)
     fetchRelatedEquipTable(equipmentId)
     fetchRelatedFilesTable(equipmentId)
     fetchHistTable(equipmentId)
     disableEnterOnId()
+    enableDisassemble(equipmentId)
 }
 
 $(document).ready(main)

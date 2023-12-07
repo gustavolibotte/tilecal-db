@@ -59,6 +59,10 @@ $routes->get('api/files/histDownload', 'Files::downloadHist', [
     'filter' => 'auth:view',
     'as' => 'file_hist_download'
 ]);
+$routes->post('api/equipments/disassemble', 'Equipments::disassemble', [
+    'filter' => 'auth:delete',
+    'as' => 'equipment_disassemble'
+]);
 
 // Equipment page routes
 $routes->get('equipments', 'Equipments::index', [
@@ -66,7 +70,7 @@ $routes->get('equipments', 'Equipments::index', [
     'as' => 'equipment_index'
 ]);
 $routes->get('equipments?onlyDeleted=true', 'Equipments::index', [
-    'filter' => 'auth:edit',
+    'filter' => 'auth:delete',
     'as' => 'equipment_index_deleted'
 ]);
 $routes->get('equipments?typeName=(:segment)', 'Equipments::index', [
@@ -98,7 +102,7 @@ $routes->post('equipments/restore/(:alphanum)',  'Equipments::restore/$1', [
     "as" => 'equipment_restore'
 ]);
 $routes->post('equipments/assemble/(:alphanum)', 'Equipments::assemble/$1',[
-    'filter' => 'auth:delete',
+    'filter' => 'auth:edit',
     "as" => 'equipment_assemble'
 ]);
 

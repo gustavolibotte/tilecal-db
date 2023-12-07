@@ -60,10 +60,7 @@ class TypeSlotRules
         }
 
         if (!model('TypeSlotModel')->slotAllowsEquip($slotId, $childId)){
-            $error = sprintf(
-                'Slot is available but does not allow insertion of equipment %s',
-                $childId
-            );
+            $error = 'Slot is available but does not allow insertion of equipment.';
             return false;
         }
 

@@ -20,6 +20,10 @@ function getFileIdFromViewRoute(routeStr){
     return splitted.tail
 }
 
+function getEquipDisassembleRoute(){
+    return `/api/equipments/disassemble`
+}
+
 function splitRoute(routeStr){
     const splitted = routeStr.split('/')
     const tail = splitted.pop()

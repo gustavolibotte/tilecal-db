@@ -82,7 +82,7 @@ class EquipmentRules{
      * 
      * @return bool True if the data was approved on this rule
      */ 
-    public function equip_is_not_assembled_into($value, ?string $params, array $data, ?string &$error): bool
+    public function equip_is_not_assembled_into($value, ?string &$error = null): bool
     {
         $childId = $value;
         $relation = model('ParentChildModel')

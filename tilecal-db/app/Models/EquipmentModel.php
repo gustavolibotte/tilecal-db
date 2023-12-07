@@ -341,6 +341,49 @@ class EquipmentModel extends LogModel
         return true;
     }
 
+    /**
+     * Removes parent relation between child and parent.
+     * Assumes that conditions were validated before
+     *
+     * @param string $parentId Parent equipment id
+     * 
+     * @return bool Always true
+     */ 
+    public function deleteChildren(string $parentId): bool
+    {
+        $this->db->transException(true)->transBegin();
+        $parentChildModel = model('ParentChildModel');
+        $relations = $parentChildModel->where('parent_equip_id', $parentId)->findAll();
+        foreach($relations as $relation){
+            $parentChildModel->delete($relation->id, purge: true);
+        }
+        $this->db->transCommit();
+        return true;
+    }
+
+    /**
+     * Disassembles a pair of child and parent
+     *
+     * @param string $parentId Parent equipment id
+     * @param string $childId Child equipment id
+     * 
+     * @return bool Always true
+     */ 
+    public function disassemble(string $parentId, string $childId): bool
+    {
+        $this->db->transException(true)->transBegin();
+        $parentChildModel = model('ParentChildModel');
+        $relations = $parentChildModel
+            ->where('parent_equip_id', $parentId)
+            ->where('child_equip_id', $childId)
+            ->findAll();
+        foreach($relations as $relation){
+            $parentChildModel->delete($relation->id, purge: true);
+        }
+        $this->db->transCommit();
+        return true;
+    }
+
     protected function mergeTypeParams(array $data): array
     {
         if(!array_key_exists('type_params', $data)){
