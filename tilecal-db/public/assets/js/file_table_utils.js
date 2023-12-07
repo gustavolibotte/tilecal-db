@@ -6,10 +6,6 @@ function getFileDownloadButton(fileId){
     return `<a type="button" class="btn btn-secondary" href="${getFileDownloadRoute(fileId)}"><i class="bi bi-download"></i></a>`
 }
 
-function getFileHistDownloadButton(fileId){
-    return `<a type="button" class="btn btn-secondary" href="${getFileHistDownloadRoute(fileId)}"><i class="bi bi-download"></i></a>`
-}
-
 fileTableOrder = [[3, 'desc']]
 
 fileTableColumns = [

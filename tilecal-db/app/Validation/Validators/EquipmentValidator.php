@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Validation\Validators;
+use App\Entities\AtlasId;
 use App\Entities\EquipmentType;
 use App\Validation\AtlasIdRules;
 use CodeIgniter\Database\Exceptions\DataException;
@@ -289,11 +290,18 @@ class EquipmentValidator extends EntryValidator
         if (!array_key_exists('id', $data)){
             return parent::setFieldValues($data);
         }
-        if (strlen($data['id']) != 14){
-            return parent::setFieldValues($data);
-        }
-        $data['id'] = substr($data['id'], 7, 7);
+        $data['id'] = $this->processId($data['id']);
+
         return parent::setFieldValues($data);
+    }
+
+    public function processId(string $id): string
+    {
+        if (strlen($id) != 14){
+            return $id;
+        }
+        $id = new AtlasId(['id' => $id]);
+        return $id->getSequential;
     }
 
     public function substituteFKs(array $fieldValues)

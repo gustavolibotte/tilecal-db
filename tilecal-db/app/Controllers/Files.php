@@ -237,7 +237,7 @@ class Files extends APIController
             );
         }
 
-        $res = ['status' => 'sucesss'];
+        $res = ['status' => 200];
         $data = $fileModel->findAll();
         $res['data'] = empty($data)? []: $data;
         return $this->respond($res, 200);
@@ -252,7 +252,7 @@ class Files extends APIController
         $history = model('HistModel')
             ->getFileHist($id);
         $res = [
-            'status' => 'success',
+            'status' => 200,
             'data' => $history
         ];
         return $this->respond($res, 200);

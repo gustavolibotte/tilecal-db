@@ -3,6 +3,7 @@
 namespace App\Library\Forms;
 
 use App\Entities\EquipmentType;
+use App\Validation\AtlasIdRules;
 use \App\Validation\EquipmentRules;
 use \CodeIgniter\HTTP\IncomingRequest;
 use Error;
@@ -88,45 +89,6 @@ class EquipmentForm extends Form{
                     ->getFormDropdownOptions(['name', 'description'])
             ]
         ];
-
-        $feature = model('FeatureModel')->findName('parent_relation');
-        $typeSlotModel = model('TypeSlotModel');
-        if($feature->isActive() && $typeSlotModel->hasSlots($this->equipmentType->name)){
-            $this->fields['parent_id'] = [
-                'id' => 'parent_id',
-                'label' => 'Parent ID',
-                'required' => false,
-                'helpText' => "Parent Equipment's barcode value following ATLAS identification rules.",
-                'fieldType' => 'input',
-                'fieldParams' => [
-                    'maxlength' => 14,
-                    'placeholder' => 'XXXXXXXXXXXXXX'
-                ]
-            ];
-
-            // The select query avoid conflict with multiple id columns from joined tables
-            $slotOptions = model('TypeSlotModel')
-                ->whereAllowedTypeId($this->equipmentType->id)
-                ->select('type_slots.id as id, type_slots.name as name')
-                ->orderBy('name')
-                ->getFormDropdownOptions(['name']);
-            helper('string');
-            array_walk($slotOptions, function (&$value, $key){
-                if ($key != FORM_SELECT_NULL_OPTION){
-                    $value = snake2Capitalized($value);
-                }
-            });
-            $this->fields['slot_id'] = [
-                'id' => 'slot_id',
-                'label' => 'Slot',
-                'required' => false,
-                'fieldType' => 'dropdown',
-                'helpText' => "Slot to fit the equipment",
-                'fieldParams' => [
-                    'options' => $slotOptions
-                ]
-            ];
-        }
 
         $this->fields['serial'] = [
             'id' => 'serial',

@@ -34,7 +34,7 @@ class Filters extends BaseConfig
         'before' => [
             // 'auth',
             // 'honeypot',
-            'csrf',
+            'csrf' => ['except' => 'api/*'],
             'request_time',
             'lasturl' => ['except' => 'callback'],
             // 'invalidchars',

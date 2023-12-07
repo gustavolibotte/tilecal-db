@@ -2,12 +2,15 @@
 
 namespace App\Controllers;
 
+use App\Library\Forms\AssembleForm;
 use App\Library\Forms\EquipmentBatchRegisterForm;
 use App\Library\Forms\EquipmentForm;
 use App\Validation\Validators\BatchRegisterValidator;
+use App\Validation\Validators\EquipmentAssembleValidator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
 use ValueError;
+use Throwable;
 
 class Equipments extends APIController
 {
@@ -55,7 +58,9 @@ class Equipments extends APIController
 
         helper(['app_form', 'form']);
         $equipmentModel = model('EquipmentModel');
-        $equipment = $equipmentModel->withDeleted()->getEquipment($equipmentId);
+        $equipment = $equipmentModel->fullQuery()
+            ->withDeleted()
+            ->find($equipmentId);
 
         if (is_null($equipment)){
             return redirect('notfound');
@@ -65,8 +70,11 @@ class Equipments extends APIController
 
         $viewData['infoHeader'] = 'Equipment Info';
         $viewData['entity'] = $equipment;
-        // $viewData["histories"] = model('HistModel')->getEquipmentHist($equipmentId);
-        $viewData['pageHeader'] = sprintf('Equipment: %s', $equipment->id);
+        $viewData['pageHeader'] = sprintf(
+            '%s: %s',
+            $equipment->type_label,
+            $equipment->id
+        );
 
         if ($equipment->isDeleted()){
             $viewData['pageHeader'] = 'Deleted ' . $viewData['pageHeader'];
@@ -79,13 +87,6 @@ class Equipments extends APIController
             $viewData['editForm'] = EquipmentForm::getTypeForm($equipment->type_name);
             $viewData['editForm']->asEdit();
             $viewData['editForm']->setFieldValues($equipment->toArrayWithTypeParams());
-            $parentRelation = $equipmentModel->getParentRelation($equipment->id);
-            if (!empty($parentRelation)){
-                $viewData['editForm']->setFieldValues([
-                    'parent_id' => $parentRelation->parent_equip_id,
-                    'slot_id' => $parentRelation->slot_id
-                ]);
-            }
             $viewData['editUrl'] = url_to('equipment_edit', $equipment->id);
 
         }
@@ -100,6 +101,11 @@ class Equipments extends APIController
             $viewData['restoreUrl'] = url_to('equipment_restore', $equipment->id);
         }
 
+        $viewData['canBeAssembled'] = $this->user->isAuthorized('edit') && $equipmentModel->equipHasSlot($equipment->id);
+        if ($viewData['canBeAssembled']){
+            $viewData['assembleUrl'] = url_to('equipment_assemble', $equipmentId);
+            $viewData['assembleForm'] = new AssembleForm($equipment);
+        }
         return default_view('equipment/view', $viewData);
     }
 
@@ -255,6 +261,37 @@ class Equipments extends APIController
         return redirect()->route('equipment_view', [$equipmentId]);
     }
 
+    public function assemble(string $equipmentId)
+    {
+        $feature = model('FeatureModel')->findName('parent_relation');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+        $validator = (new EquipmentAssembleValidator())->addRequest($this->request);
+        $messenger = \Config\Services::messenger();
+        if ($validator->validate()){
+            $validatedData = $validator->getValidatedData();
+            model('EquipmentModel')->updateParent(
+                $validatedData['child_id'],
+                $validatedData['parent_id'],
+                $validatedData['slot_id']
+            );
+            $messenger->addMessage(
+                sprintf('Assembled equipment %s to %s',
+                    $validatedData['child_id'],
+                    $validatedData['parent_id']
+                ),
+                'success'
+            );
+        } else{
+            foreach ($validator->getErrors() as $errorMsg){
+                $messenger->addMessage($errorMsg, 'danger');
+            }
+        }
+        $messenger->dumpMessages();
+        return redirect()->route('equipment_view', [$equipmentId]);
+    }
+
     public function __get__(): ResponseInterface
     {
         $feature = model('FeatureModel')->findName('api_equipment_get');
@@ -297,7 +334,7 @@ class Equipments extends APIController
             $data = $equipmentModel->getRelatedEquipments($relatedEquipmentId);
         }
         $res = [
-            'status' => 'success'
+            'status' => 200
         ];
         $res['data'] = empty($data)? []: $data;
         return $this->respond($res, 200);
@@ -312,9 +349,73 @@ class Equipments extends APIController
         $history = model('HistModel')
             ->getEquipmentHist($id);
         $res = [
-            'status' => 'success',
+            'status' => 200,
             'data' => $history
         ];
         return $this->respond($res, 200);
+    }
+
+    /**
+     * Disassembles an equipment in 3 diferent ways:
+     * The params bellow are actually extracted from the request.
+     *
+     * @param string $id Equipment Id to operate on
+     * @param string $operation Has 3 possibilities
+     * 'children': removes all the children from equipment $id
+     * 'parent': removes equipment $id from its parent
+     * 'all': applies both conditions
+     * 
+     * @return ResponseInterface
+     */ 
+    public function disassemble(): ResponseInterface
+    {
+        $preCheck = $this->preRequestChecks();
+        if (!is_null($preCheck)){
+            return $preCheck;
+        }
+        try{
+            return $this->__disassemble__();
+        } catch (Throwable $e){
+            return $this->fail($e->getMessage(), 500);
+        }
+    }
+
+    protected function __disassemble__(): ResponseInterface
+    {
+        $requestInput = [
+            'parent_id' => $this->request->getVar('parent_id'),
+            'child_id' => $this->request->getVar('child_id')
+        ];
+        $validator = \Config\Services::validation();
+        $rules = [
+            'child_id' => [
+                'rules' => [
+                    'required',
+                    'is_not_unique[equipments.id]'
+                ],
+                'errors' => [
+                    'required' => 'Mising child_id parameter.',
+                    'is_not_unique' => 'No equipment with ID {value}.'
+                ]
+            ],
+            'parent_id' => [
+                'rules' => [
+                    'required',
+                    'is_not_unique[equipments.id]'
+                ],
+                'errors' => [
+                    'required' => 'Mising parent_id parameter.',
+                    'is_not_unique' => 'No equipment with ID {value}.'
+                ]
+            ],
+        ];
+        if (!$validator->setRules($rules)->run($requestInput)){
+            return $this->failValidationErrors($validator->getErrors());
+        }
+        model('EquipmentModel')->disassemble(
+            $requestInput['parent_id'],
+            $requestInput['child_id']
+        );
+        return $this->respond(['status' => 200], 200);
     }
 }

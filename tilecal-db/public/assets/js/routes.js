@@ -10,10 +10,6 @@ function getFileDownloadRoute(id){
     return `/files/download/${id}`
 }
 
-function getFileHistDownloadRoute(id){
-    return `/api/files/histDownload?id=${id}`
-}
-
 function getEquipmentIdFromViewRoute(routeStr){
     splitted = splitRoute(routeStr)
     return splitted.tail
@@ -22,6 +18,10 @@ function getEquipmentIdFromViewRoute(routeStr){
 function getFileIdFromViewRoute(routeStr){
     splitted = splitRoute(routeStr)
     return splitted.tail
+}
+
+function getEquipDisassembleRoute(){
+    return `/api/equipments/disassemble`
 }
 
 function splitRoute(routeStr){
