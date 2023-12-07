@@ -55,6 +55,7 @@ class EquipmentModel extends LogModel
             $queryBuilder = $this;
         }
         $queryBuilder->select('equipments.id as id');
+        $queryBuilder->select('equipment_types.id as type_id');
         $queryBuilder->select('equipment_types.label as type_label');
         $queryBuilder->select('equipment_types.name as type_name');
         $queryBuilder->select('equipments.location_id as location_id');
@@ -105,13 +106,6 @@ class EquipmentModel extends LogModel
             ->join('equipments_to_files', 'equipments.id = equipments_to_files.equipment_id', 'left');
         
         return $queryBuilder;
-    }
-
-    public function getEquipment($id=null)
-    {
-        $query = $this->fullQuery();
-        $result = empty($id)? $query->findAll():  $query->find($id);
-        return $result;
     }
 
     /**
@@ -196,7 +190,7 @@ class EquipmentModel extends LogModel
      */
     public function insert($data = null, bool $returnID = true)
     {
-        $this->db->transBegin();
+        $this->db->transException(true)->transBegin();
         if (!($data instanceof Equipment)){
             throw new TypeError('Equipment Model insert supports only Equipment as $data');
         }
@@ -214,26 +208,6 @@ class EquipmentModel extends LogModel
     }
 
     /**
-     * Adds parent relation between child and parent.
-     * Assumes that conditions were validated before
-     *
-     * @param string $childId Child equipment id
-     * @param string $parentId Parent equipment id
-     * 
-     * @return bool Always true
-     */ 
-    public function addParent(string $childId, string $parentId, int $slotId): bool
-    {
-        $parentChildModel = model('ParentChildModel');
-        $parentChildModel->insert([
-            'parent_equip_id' => $parentId,
-            'child_equip_id' => $childId,
-            'slot_id' => $slotId
-        ]);
-        return true;
-    }
-
-    /**
      * Updates equipment data.
      * The equipment entity can also have a parent_id field that it will be updated correctly
      *
@@ -245,6 +219,7 @@ class EquipmentModel extends LogModel
      */
     public function update($id = null, $data = null): bool
     {
+        $this->db->transException(true)->transBegin();
         if (!($data instanceof Equipment)){
             throw new TypeError('Equipment Model insert supports only Equipment as $data');
         }
@@ -261,12 +236,13 @@ class EquipmentModel extends LogModel
             $this->deleteParent($id);
             $this->addParent($id, $parentId, $slotId);
         }
+        $this->db->transCommit();
         return $res;
     }
 
     public function delete($id = null, bool $purge = false)
     {
-        $this->db->transBegin();
+        $this->db->transException(true)->transBegin();
         parent::delete($id, false);
         $this->db->transCommit();
     }
@@ -278,7 +254,7 @@ class EquipmentModel extends LogModel
         return $data;
     }
 
-    public function deleteFileRelations(string|array $id): bool
+    protected function deleteFileRelations(string|array $id): bool
     {
         $equipments2FilesModel = model('Equipment2FileModel');
         $whereClause = (is_array($id))? 'whereIn': 'where';
@@ -292,7 +268,7 @@ class EquipmentModel extends LogModel
         return true;
     }
 
-    public function deleteEquipmentRelations(string|array $id): bool
+    protected function deleteEquipmentRelations(string|array $id): bool
     {
         $whereClause = (is_array($id))? 'orWhereIn': 'orWhere';
         $parentChildModel = model('ParentChildModel');
@@ -307,6 +283,45 @@ class EquipmentModel extends LogModel
     }
 
     /**
+     * Adds parent relation between child and parent.
+     * Assumes that conditions were validated before
+     *
+     * @param string $childId Child equipment id
+     * @param string $parentId Parent equipment id
+     * @param string $slotId Slot equipment id
+     *  
+     * @return bool Always true
+     */ 
+    public function addParent(string $childId, string $parentId, int $slotId): bool
+    {
+        $parentChildModel = model('ParentChildModel');
+        $parentChildModel->insert([
+            'parent_equip_id' => $parentId,
+            'child_equip_id' => $childId,
+            'slot_id' => $slotId
+        ]);
+        return true;
+    }
+
+    /**
+     * Updates childId parent by removing the old one and adding the new one
+     *
+     * @param string $childId Child equipment id
+     * @param string $parentId Parent equipment id
+     * @param string $slotId Slot equipment id
+     * 
+     * @return bool Always true
+     */ 
+    public function updateParent(string $childId, string $parentId, int $slotId): bool
+    {
+        $this->db->transException(true)->transBegin();
+        $this->deleteParent($childId);
+        $this->addParent($childId, $parentId, $slotId);
+        $this->db->transCommit();
+        return true;
+    }
+
+    /**
      * Removes parent relation between child and parent.
      * Assumes that conditions were validated before
      *
@@ -316,11 +331,56 @@ class EquipmentModel extends LogModel
      */ 
     public function deleteParent(string $childId): bool
     {   
+        $this->db->transException(true)->transBegin();
         $parentChildModel = model('ParentChildModel');
         $relations = $parentChildModel->where('child_equip_id', $childId)->findAll();
         foreach($relations as $relation){
             $parentChildModel->delete($relation->id, purge: true);
         }
+        $this->db->transCommit();
+        return true;
+    }
+
+    /**
+     * Removes parent relation between child and parent.
+     * Assumes that conditions were validated before
+     *
+     * @param string $parentId Parent equipment id
+     * 
+     * @return bool Always true
+     */ 
+    public function deleteChildren(string $parentId): bool
+    {
+        $this->db->transException(true)->transBegin();
+        $parentChildModel = model('ParentChildModel');
+        $relations = $parentChildModel->where('parent_equip_id', $parentId)->findAll();
+        foreach($relations as $relation){
+            $parentChildModel->delete($relation->id, purge: true);
+        }
+        $this->db->transCommit();
+        return true;
+    }
+
+    /**
+     * Disassembles a pair of child and parent
+     *
+     * @param string $parentId Parent equipment id
+     * @param string $childId Child equipment id
+     * 
+     * @return bool Always true
+     */ 
+    public function disassemble(string $parentId, string $childId): bool
+    {
+        $this->db->transException(true)->transBegin();
+        $parentChildModel = model('ParentChildModel');
+        $relations = $parentChildModel
+            ->where('parent_equip_id', $parentId)
+            ->where('child_equip_id', $childId)
+            ->findAll();
+        foreach($relations as $relation){
+            $parentChildModel->delete($relation->id, purge: true);
+        }
+        $this->db->transCommit();
         return true;
     }
 
@@ -340,36 +400,6 @@ class EquipmentModel extends LogModel
     {
         $data['data']['type_params'] = json_encode(remove_value('type_params', $data));
         return $data;
-    }
-
-    /**
-     * Updates the builder to select child equipments
-     * Joins the desired tables to select only equipments child to a given $parentId
-     *
-     * @param string $parentId  Equipment Id for the parent id to search for childs
-     * @param mixed $typeId
-     * If string selects childs where equipment_types.id = $typeId
-     * If array selectes chuilds where equipment_types.id in $typeId
-     * @param ?array $idIgnore Ignores the equipment ids inside this array
-     * 
-     * @return Self This model instance
-     */
-    public function queryChildren(string $parentId, mixed $typeId=null, ?array $idIgnore=null): Self
-    {
-        $this->join('equipments_to_equipments', 'equipments.id = equipments_to_equipments.equipment_b_id', 'left')
-            ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
-            ->where('equipments_to_equipments.equipment_a_id', $parentId)
-            ->where('equipments_to_equipments.type', 'parent');
-        if ((!empty($typeId)) && ($typeId instanceof string)){
-            $this->where('equipment_types.id', $typeId);
-        } elseif ((!empty($typeId)) && (is_array($typeId))){
-            $this->whereIn('equipment_types.id', $typeId);
-        }
-        if (!empty($idIgnore)){
-            $this->whereNotIn('equipments.id', $idIgnore);
-        }
-        $this->withDeletedJoin(['equipments_to_equipments']);
-        return $this;
     }
 
     /**
@@ -394,39 +424,23 @@ class EquipmentModel extends LogModel
     }
 
     /**
-     * Returns true if the equipment has a specific slot available for a specific type
-     *
-     * @param string $id  Id of the equipment to check for avaiable slot
-     * @param string $slotId Id of the slot to check
-     * @param ?string $childId Child Id to disconsider
-     * 
-     * @return bool True if the equipment slot is available for a given equipment type
-     */
-    public function hasAvailableSlot(string $id, string $slotId, ?string $childId=null): bool
-    {
-        $equipHasSlot = $this->equipHasSlot($id, $slotId);
-        if (!$equipHasSlot){
-            return false;
-        }
-        $slotEmpty = $this->equipSlotIsEmpty($id, $slotId);
-        return $slotEmpty;
-    }
-
-    /**
-     * Returns true if equipment has a specified slot Id
+     * Returns true if an equipment has slots
+     * if $slotId is given, evaluates for a specific slotId
      *
      * @param string $id  Id of the equipment to check for slot
-     * @param string $slotId Id of the slot to check
+     * @param ?string $slotId Id of the slot to check
      * 
      * @return bool true if equipment has the specified slot
      */
-    public function equipHasSlot(string $id, string $slotId): bool
+    public function equipHasSlot(string $id, ?string $slotId=null): bool
     {
-        $equipHasSlot = $this->select('1')
-            ->join('equipment_types et', 'equipments.type_id = et.id', 'left')
-            ->join('type_slots ts', 'ts.parent_type_id=et.id', 'left')
-            ->where('ts.id', $slotId)
-            ->find($id);
+        $query = $this->select('1')
+            ->join('type_slots ts', 'equipments.type_id=ts.parent_type_id', 'left')
+            ->where('equipments.id', $id);
+        if (!is_null($slotId)){
+            $query = $query->where('ts.id', $slotId);
+        }
+        $equipHasSlot = $query->first();
         return !empty($equipHasSlot);
     }
 
@@ -440,7 +454,7 @@ class EquipmentModel extends LogModel
      * 
      * @return bool true if equipment has the specified slot
      */
-    protected function equipSlotIsEmpty(string $id, string $slotId, ?string $childId=null): bool
+    public function equipSlotIsEmpty(string $id, string $slotId, ?string $childId=null): bool
     {
         $builder = $this->builder('parent_child_equips pce')
             ->select('1')

@@ -77,6 +77,6 @@
     },
     {
         "name": "parent_relation",
-        "status": "deactivated"
+        "status": "active"
     }
 ]
