@@ -1,5 +1,6 @@
 [
     {
+        "id": 1,
         "name": "pmt",
         "label": "PMT",
         "system": "LO",
@@ -12,6 +13,7 @@
         "slots": []
     },
     {
+        "id": 2,
         "name": "pmt_block",
         "label": "PMT Block",
         "system": "LO",
@@ -37,6 +39,7 @@
         ]
     },
     {
+        "id": 3,
         "name": "hv_divider",
         "label": "Active HV Divider",
         "system": "LL",
@@ -49,6 +52,7 @@
         "slots": []
     },
     {
+        "id": 4,
         "name": "3_in_1_board",
         "label": "3 in 1 Board",
         "system": "LL",
@@ -61,6 +65,7 @@
         "slots": []
     },
     {
+        "id": 5,
         "name": "fenics",
         "label": "FENICS",
         "system": "LL",
@@ -73,6 +78,7 @@
         "slots": []
     },
     {
+        "id": 6,
         "name": "mainboard",
         "label": "Mainboard",
         "system": "LL",
@@ -85,6 +91,7 @@
         "slots": []
     },
     {
+        "id": 7,
         "name": "daughterboard",
         "label": "Daughterboard",
         "system": "LL",
@@ -97,6 +104,7 @@
         "slots": []
     },
     {
+        "id": 8,
         "name": "mini_drawer",
         "label": "Mini Drawer",
         "system": "LL",
@@ -166,6 +174,7 @@
         ]
     },
     {
+        "id": 9,
         "name": "micro_drawer_4",
         "label": "Micro Drawer 4",
         "system": "LL",
@@ -187,6 +196,7 @@
         ]
     },
     {
+        "id": 10,
         "name": "micro_drawer_5",
         "label": "Micro Drawer 5",
         "system": "LL",
@@ -208,6 +218,7 @@
         ]
     },
     {
+        "id": 11,
         "name": "micro_drawer_6",
         "label": "Micro Drawer 6",
         "system": "LL",
@@ -229,6 +240,7 @@
         ]
     },
     {
+        "id": 12,
         "name": "micro_drawer_7",
         "label": "Micro Drawer 7",
         "system": "LL",
@@ -241,6 +253,7 @@
         "slots": []
     },
     {
+        "id": 13,
         "name": "phase_2_lb_super_drawer",
         "label": "P2 LB Super Drawer",
         "system": "LB",
@@ -270,6 +283,7 @@
         ]
     },
     {
+        "id": 14,
         "name": "phase_2_lb_super_drawer_bsi",
         "label": "P2 LB Super Drawer BSI",
         "system": "LB",
@@ -299,6 +313,7 @@
         ]
     },
     {
+        "id": 15,
         "name": "phase_2_eb_super_drawer",
         "label": "P2 EB Super Drawer",
         "system": "LE",
@@ -332,6 +347,7 @@
         ]
     },
     {
+        "id": 16,
         "name": "phase_2_eb_super_drawer_bsi",
         "label": "P2 EB Super Drawer BSI",
         "system": "LE",
@@ -365,6 +381,7 @@
         ]
     },
     {
+        "id": 17,
         "name": "short_phase_2_eb_super_drawer",
         "label": "P2 Short EB Super Drawer",
         "system": "LE",
@@ -398,11 +415,12 @@
         ]
     },
     {
+        "id": 18,
         "name": "lb_lv_cable",
         "label": "LB LV Cable",
-        "system": "LL",
+        "system": "LB",
         "project": "20",
-        "id_regex": "/26[0-9]{5}/",
+        "id_regex": "/26[0-9]{3}[0-1][1-2]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -410,11 +428,12 @@
         "slots": []
     },
     {
+        "id": 19,
         "name": "eb_lv_cable",
         "label": "EB LV Cable",
-        "system": "LL",
+        "system": "LE",
         "project": "20",
-        "id_regex": "/27[0-9]{5}/",
+        "id_regex": "/27[0-9]{3}[0-1][1-2]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -422,11 +441,12 @@
         "slots": []
     },
     {
-        "name": "cooling_hoses",
-        "label": "Cooling Hoses",
-        "system": "LL",
+        "id": 20,
+        "name": "lb_fo_breakout_cables",
+        "label": "LB FO Breakout Cables",
+        "system": "LB",
         "project": "20",
-        "id_regex": "/28[0-9]{5}/",
+        "id_regex": "/29[0-9]{3}[0-1][1-2]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -434,11 +454,12 @@
         "slots": []
     },
     {
-        "name": "fo_breakout_cables",
-        "label": "FO Breakout Cables",
-        "system": "LL",
+        "id": 21,
+        "name": "eb_fo_breakout_cables",
+        "label": "EB FO Breakout Cables",
+        "system": "EB",
         "project": "20",
-        "id_regex": "/29[0-9]{5}/",
+        "id_regex": "/29[0-9]{3}[0-1][1-2]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -446,6 +467,7 @@
         "slots": []
     },
     {
+        "id": 22,
         "name": "cpm",
         "label": "CPM",
         "system": "LL",
@@ -458,6 +480,7 @@
         "slots": []
     },
     {
+        "id": 23,
         "name": "tilecom",
         "label": "TileCoM",
         "system": "LL",
@@ -470,6 +493,7 @@
         "slots": []
     },
     {
+        "id": 24,
         "name": "tdaqi",
         "label": "TDAQi",
         "system": "LL",
@@ -482,6 +506,7 @@
         "slots": []
     },
     {
+        "id": 25,
         "name": "gbe_switch",
         "label": "GbE Switch",
         "system": "LL",
@@ -494,6 +519,7 @@
         "slots": []
     },
     {
+        "id": 26,
         "name": "ipmc",
         "label": "IPMC",
         "system": "LL",
@@ -506,6 +532,7 @@
         "slots": []
     },
     {
+        "id": 27,
         "name": "atca_carrier_board",
         "label": "ATCA Carrier Board",
         "system": "LL",
@@ -551,6 +578,7 @@
         ]
     },
     {
+        "id": 28,
         "name": "atca_link_board",
         "label": "ATCA Interface Link Board",
         "system": "LL",
@@ -563,6 +591,7 @@
         "slots": []
     },
     {
+        "id": 29,
         "name": "hv_cable",
         "label": "HV Cable",
         "system": "LL",
@@ -575,6 +604,7 @@
         "slots": []
     },
     {
+        "id": 30,
         "name": "hv_supply_board",
         "label": "HV Supply Board",
         "system": "LL",
@@ -587,6 +617,7 @@
         "slots": []
     },
     {
+        "id": 31,
         "name": "hv_bus_board",
         "label": "HV Bus Board",
         "system": "LL",
@@ -599,6 +630,7 @@
         "slots": []
     },
     {
+        "id": 32,
         "name": "lv_box",
         "label": "LV Box",
         "system": "LL",
@@ -611,6 +643,7 @@
         "slots": []
     },
     {
+        "id": 33,
         "name": "lv_fuse_box",
         "label": "LV Fuse Box",
         "system": "LL",
@@ -623,6 +656,7 @@
         "slots": []
     },
     {
+        "id": 34,
         "name": "lv_bricks",
         "label": "LV Bricks",
         "system": "LL",
@@ -635,6 +669,7 @@
         "slots": []
     },
     {
+        "id": 35,
         "name": "auxiliary_boards",
         "label": "Auxiliary Boards",
         "system": "LL",
@@ -647,6 +682,7 @@
         "slots": []
     },
     {
+        "id": 36,
         "name": "ilana",
         "label": "ILANA",
         "system": "LL",
@@ -664,6 +700,7 @@
         ]
     },
     {
+        "id": 37,
         "name": "elmb_mb",
         "label": "ELMB Motherboard",
         "system": "LL",
@@ -671,6 +708,32 @@
         "id_regex": "/43[0-9]{5}/",
         "params": [],
         "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "id": 38,
+        "name": "eb_cooling_hoses",
+        "label": "EB Cooling Hoses",
+        "system": "LE",
+        "project": "20",
+        "id_regex": "/28[0-9]{3}[0-1][1-2]/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "id": 39,
+        "name": "lb_cooling_hoses",
+        "label": "LB Cooling Hoses",
+        "system": "LB",
+        "project": "20",
+        "id_regex": "/28[0-9]{3}[0-1][1-2]/",
+        "params": [],
+        "in_detector": true,
         "description": null,
         "active": 1,
         "slots": []
