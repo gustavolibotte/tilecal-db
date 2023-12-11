@@ -1,19 +1,23 @@
 [
     {
-        "id": 1,
         "name": "pmt",
         "label": "PMT",
         "system": "LO",
         "project": "20",
         "id_regex": "/0[A-Z0-9]{2}[0-9]{4}/",
-        "params": ["beta", "nominal_hv", "qe", "model", "phase1_position"],
+        "params": [
+            "beta",
+            "nominal_hv",
+            "qe",
+            "model",
+            "phase1_position"
+        ],
         "in_detector": true,
         "description": null,
         "active": 1,
         "slots": []
     },
     {
-        "id": 2,
         "name": "pmt_block",
         "label": "PMT Block",
         "system": "LO",
@@ -26,20 +30,26 @@
         "slots": [
             {
                 "name": "pmt_block_electronics_slot",
-                "allowed_type_ids": ["3_in_1_board", "fenics"]
+                "allowed_type_ids": [
+                    "3_in_1_board",
+                    "fenics"
+                ]
             },
             {
                 "name": "pmt_block_pmt_slot",
-                "allowed_type_ids": ["pmt"]
+                "allowed_type_ids": [
+                    "pmt"
+                ]
             },
             {
                 "name": "pmt_block_hv_divider_slot",
-                "allowed_type_ids": ["hv_divider"]
+                "allowed_type_ids": [
+                    "hv_divider"
+                ]
             }
         ]
     },
     {
-        "id": 3,
         "name": "hv_divider",
         "label": "Active HV Divider",
         "system": "LL",
@@ -52,7 +62,6 @@
         "slots": []
     },
     {
-        "id": 4,
         "name": "3_in_1_board",
         "label": "3 in 1 Board",
         "system": "LL",
@@ -65,7 +74,6 @@
         "slots": []
     },
     {
-        "id": 5,
         "name": "fenics",
         "label": "FENICS",
         "system": "LL",
@@ -78,7 +86,6 @@
         "slots": []
     },
     {
-        "id": 6,
         "name": "mainboard",
         "label": "Mainboard",
         "system": "LL",
@@ -91,7 +98,6 @@
         "slots": []
     },
     {
-        "id": 7,
         "name": "daughterboard",
         "label": "Daughterboard",
         "system": "LL",
@@ -104,7 +110,6 @@
         "slots": []
     },
     {
-        "id": 8,
         "name": "mini_drawer",
         "label": "Mini Drawer",
         "system": "LL",
@@ -117,64 +122,91 @@
         "slots": [
             {
                 "name": "mini_drawer_mainboard_slot",
-                "allowed_type_ids": ["mainboard"]
+                "allowed_type_ids": [
+                    "mainboard"
+                ]
             },
             {
                 "name": "mini_drawer_daughterboard_slot",
-                "allowed_type_ids": ["daughterboard"]
+                "allowed_type_ids": [
+                    "daughterboard"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_01",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_02",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_03",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_04",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_05",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_06",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_07",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_08",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_09",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_10",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_11",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_12",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             }
         ]
     },
     {
-        "id": 9,
         "name": "micro_drawer_4",
         "label": "Micro Drawer 4",
         "system": "LL",
@@ -187,16 +219,19 @@
         "slots": [
             {
                 "name": "micro_drawer_4_pmt_block_slot_01",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "micro_drawer_4_pmt_block_slot_02",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             }
         ]
     },
     {
-        "id": 10,
         "name": "micro_drawer_5",
         "label": "Micro Drawer 5",
         "system": "LL",
@@ -209,16 +244,19 @@
         "slots": [
             {
                 "name": "micro_drawer_5_pmt_block_slot_01",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "micro_drawer_5_pmt_block_slot_02",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             }
         ]
     },
     {
-        "id": 11,
         "name": "micro_drawer_6",
         "label": "Micro Drawer 6",
         "system": "LL",
@@ -231,16 +269,19 @@
         "slots": [
             {
                 "name": "micro_drawer_6_pmt_block_slot_01",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "micro_drawer_6_pmt_block_slot_02",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             }
         ]
     },
     {
-        "id": 12,
         "name": "micro_drawer_7",
         "label": "Micro Drawer 7",
         "system": "LL",
@@ -253,7 +294,6 @@
         "slots": []
     },
     {
-        "id": 13,
         "name": "phase_2_lb_super_drawer",
         "label": "P2 LB Super Drawer",
         "system": "LB",
@@ -266,24 +306,31 @@
         "slots": [
             {
                 "name": "lbsd_mini_drawer_slot_01",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "lbsd_mini_drawer_slot_02",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "lbsd_mini_drawer_slot_03",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "lbsd_mini_drawer_slot_04",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             }
         ]
     },
     {
-        "id": 14,
         "name": "phase_2_lb_super_drawer_bsi",
         "label": "P2 LB Super Drawer BSI",
         "system": "LB",
@@ -296,24 +343,31 @@
         "slots": [
             {
                 "name": "lbsd_mini_drawer_slot_01",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "lbsd_mini_drawer_slot_02",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "lbsd_mini_drawer_slot_03",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "lbsd_mini_drawer_slot_04",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             }
         ]
     },
     {
-        "id": 15,
         "name": "phase_2_eb_super_drawer",
         "label": "P2 EB Super Drawer",
         "system": "LE",
@@ -326,28 +380,37 @@
         "slots": [
             {
                 "name": "ebsd_mini_drawer_slot_01",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_mini_drawer_slot_02",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_mini_drawer_slot_03",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_micro_drawer_4_slot_01",
-                "allowed_type_ids": ["micro_drawer_4"]
+                "allowed_type_ids": [
+                    "micro_drawer_4"
+                ]
             },
             {
                 "name": "ebsd_micro_drawer_5_slot_01",
-                "allowed_type_ids": ["micro_drawer_5"]
+                "allowed_type_ids": [
+                    "micro_drawer_5"
+                ]
             }
         ]
     },
     {
-        "id": 16,
         "name": "phase_2_eb_super_drawer_bsi",
         "label": "P2 EB Super Drawer BSI",
         "system": "LE",
@@ -360,28 +423,37 @@
         "slots": [
             {
                 "name": "ebsd_mini_drawer_slot_01",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_mini_drawer_slot_02",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_mini_drawer_slot_03",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_micro_drawer_4_slot_01",
-                "allowed_type_ids": ["micro_drawer_4"]
+                "allowed_type_ids": [
+                    "micro_drawer_4"
+                ]
             },
             {
                 "name": "ebsd_micro_drawer_5_slot_01",
-                "allowed_type_ids": ["micro_drawer_5"]
+                "allowed_type_ids": [
+                    "micro_drawer_5"
+                ]
             }
         ]
     },
     {
-        "id": 17,
         "name": "short_phase_2_eb_super_drawer",
         "label": "P2 Short EB Super Drawer",
         "system": "LE",
@@ -394,28 +466,37 @@
         "slots": [
             {
                 "name": "ebsd_mini_drawer_slot_01",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_mini_drawer_slot_02",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_mini_drawer_slot_03",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_micro_drawer_6_slot_01",
-                "allowed_type_ids": ["micro_drawer_7"]
+                "allowed_type_ids": [
+                    "micro_drawer_7"
+                ]
             },
             {
                 "name": "ebsd_micro_drawer_7_slot_01",
-                "allowed_type_ids": ["micro_drawer_7"]
+                "allowed_type_ids": [
+                    "micro_drawer_7"
+                ]
             }
         ]
     },
     {
-        "id": 18,
         "name": "lb_lv_cable",
         "label": "LB LV Cable",
         "system": "LB",
@@ -428,7 +509,6 @@
         "slots": []
     },
     {
-        "id": 19,
         "name": "eb_lv_cable",
         "label": "EB LV Cable",
         "system": "LE",
@@ -441,7 +521,6 @@
         "slots": []
     },
     {
-        "id": 20,
         "name": "lb_fo_breakout_cables",
         "label": "LB FO Breakout Cables",
         "system": "LB",
@@ -454,7 +533,6 @@
         "slots": []
     },
     {
-        "id": 21,
         "name": "eb_fo_breakout_cables",
         "label": "EB FO Breakout Cables",
         "system": "EB",
@@ -467,7 +545,6 @@
         "slots": []
     },
     {
-        "id": 22,
         "name": "cpm",
         "label": "CPM",
         "system": "LL",
@@ -480,7 +557,6 @@
         "slots": []
     },
     {
-        "id": 23,
         "name": "tilecom",
         "label": "TileCoM",
         "system": "LL",
@@ -493,7 +569,6 @@
         "slots": []
     },
     {
-        "id": 24,
         "name": "tdaqi",
         "label": "TDAQi",
         "system": "LL",
@@ -506,7 +581,6 @@
         "slots": []
     },
     {
-        "id": 25,
         "name": "gbe_switch",
         "label": "GbE Switch",
         "system": "LL",
@@ -519,7 +593,6 @@
         "slots": []
     },
     {
-        "id": 26,
         "name": "ipmc",
         "label": "IPMC",
         "system": "LL",
@@ -532,7 +605,6 @@
         "slots": []
     },
     {
-        "id": 27,
         "name": "atca_carrier_board",
         "label": "ATCA Carrier Board",
         "system": "LL",
@@ -545,40 +617,55 @@
         "slots": [
             {
                 "name": "carrier_board_cpm_slot_1",
-                "allowed_type_ids": ["cpm"]
+                "allowed_type_ids": [
+                    "cpm"
+                ]
             },
             {
                 "name": "carrier_board_cpm_slot_2",
-                "allowed_type_ids": ["cpm"]
+                "allowed_type_ids": [
+                    "cpm"
+                ]
             },
             {
                 "name": "carrier_board_cpm_slot_3",
-                "allowed_type_ids": ["cpm"]
+                "allowed_type_ids": [
+                    "cpm"
+                ]
             },
             {
                 "name": "carrier_board_cpm_slot_4",
-                "allowed_type_ids": ["cpm"]
+                "allowed_type_ids": [
+                    "cpm"
+                ]
             },
             {
                 "name": "carrier_board_tilecom_slot",
-                "allowed_type_ids": ["tilecom"]
+                "allowed_type_ids": [
+                    "tilecom"
+                ]
             },
             {
                 "name": "carrier_board_switch_slot",
-                "allowed_type_ids": ["gbe_switch"]
+                "allowed_type_ids": [
+                    "gbe_switch"
+                ]
             },
             {
                 "name": "carrier_board_ipmc_slot",
-                "allowed_type_ids": ["ipmc"]
+                "allowed_type_ids": [
+                    "ipmc"
+                ]
             },
             {
                 "name": "carrier_board_tdaqi_slot",
-                "allowed_type_ids": ["tdaqi"]
+                "allowed_type_ids": [
+                    "tdaqi"
+                ]
             }
         ]
     },
     {
-        "id": 28,
         "name": "atca_link_board",
         "label": "ATCA Interface Link Board",
         "system": "LL",
@@ -591,7 +678,6 @@
         "slots": []
     },
     {
-        "id": 29,
         "name": "hv_cable",
         "label": "HV Cable",
         "system": "LL",
@@ -604,7 +690,6 @@
         "slots": []
     },
     {
-        "id": 30,
         "name": "hv_supply_board",
         "label": "HV Supply Board",
         "system": "LL",
@@ -617,7 +702,6 @@
         "slots": []
     },
     {
-        "id": 31,
         "name": "hv_bus_board",
         "label": "HV Bus Board",
         "system": "LL",
@@ -630,7 +714,6 @@
         "slots": []
     },
     {
-        "id": 32,
         "name": "lv_box",
         "label": "LV Box",
         "system": "LL",
@@ -643,7 +726,6 @@
         "slots": []
     },
     {
-        "id": 33,
         "name": "lv_fuse_box",
         "label": "LV Fuse Box",
         "system": "LL",
@@ -656,7 +738,6 @@
         "slots": []
     },
     {
-        "id": 34,
         "name": "lv_bricks",
         "label": "LV Bricks",
         "system": "LL",
@@ -669,7 +750,6 @@
         "slots": []
     },
     {
-        "id": 35,
         "name": "auxiliary_boards",
         "label": "Auxiliary Boards",
         "system": "LL",
@@ -682,7 +762,6 @@
         "slots": []
     },
     {
-        "id": 36,
         "name": "ilana",
         "label": "ILANA",
         "system": "LL",
@@ -695,12 +774,13 @@
         "slots": [
             {
                 "name": "ilana_tilecom_slot",
-                "allowed_type_ids": ["tilecom"]
+                "allowed_type_ids": [
+                    "tilecom"
+                ]
             }
         ]
     },
     {
-        "id": 37,
         "name": "elmb_mb",
         "label": "ELMB Motherboard",
         "system": "LL",
@@ -713,7 +793,6 @@
         "slots": []
     },
     {
-        "id": 38,
         "name": "eb_cooling_hoses",
         "label": "EB Cooling Hoses",
         "system": "LE",
@@ -726,7 +805,6 @@
         "slots": []
     },
     {
-        "id": 39,
         "name": "lb_cooling_hoses",
         "label": "LB Cooling Hoses",
         "system": "LB",
