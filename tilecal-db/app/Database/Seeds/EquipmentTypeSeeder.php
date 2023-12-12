@@ -3,7 +3,6 @@
 namespace App\Database\Seeds;
 
 use App\Entities\TypeSlot;
-use App\Models\TypeSlotModel;
 
 class EquipmentTypeSeeder extends BaseSeeder
 {
@@ -15,17 +14,6 @@ class EquipmentTypeSeeder extends BaseSeeder
             $equipmentType = new \App\Entities\EquipmentType($row);
             $id = $equipmentTypeModel->insert($equipmentType);
             $row['id'] = $id;
-        }
-
-        $typeSlotModel = new TypeSlotModel();
-        foreach ($jsonData as $row){
-            if (empty($row['slots'])){
-                continue;
-            }
-            $slots = $this->getFormatedSlotArray($row);
-            foreach ($slots as $slot){
-                $typeSlotModel->insert($slot);
-            }
         }
     }
 

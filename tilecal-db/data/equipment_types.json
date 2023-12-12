@@ -18,6 +18,42 @@
         "slots": []
     },
     {
+        "name": "3_in_1_board",
+        "label": "3 in 1 Board",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/20[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "hv_divider",
+        "label": "Active HV Divider",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/00[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "fenics",
+        "label": "FENICS",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/02[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
         "name": "pmt_block",
         "label": "PMT Block",
         "system": "LO",
@@ -48,42 +84,6 @@
                 ]
             }
         ]
-    },
-    {
-        "name": "hv_divider",
-        "label": "Active HV Divider",
-        "system": "LL",
-        "project": "20",
-        "id_regex": "/00[0-9]{5}/",
-        "params": [],
-        "in_detector": true,
-        "description": null,
-        "active": 1,
-        "slots": []
-    },
-    {
-        "name": "3_in_1_board",
-        "label": "3 in 1 Board",
-        "system": "LL",
-        "project": "20",
-        "id_regex": "/20[0-9]{5}/",
-        "params": [],
-        "in_detector": true,
-        "description": null,
-        "active": 1,
-        "slots": []
-    },
-    {
-        "name": "fenics",
-        "label": "FENICS",
-        "system": "LL",
-        "project": "20",
-        "id_regex": "/02[0-9]{5}/",
-        "params": [],
-        "in_detector": true,
-        "description": null,
-        "active": 1,
-        "slots": []
     },
     {
         "name": "mainboard",

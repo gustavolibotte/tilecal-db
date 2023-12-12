@@ -31,7 +31,7 @@ class TypeSlotModel extends LogModel
 
     public function insert($data = null, bool $returnID = true)
     {
-        $this->db->transBegin();
+        $this->db->transException(true)->transBegin();
         helper('app_array');
         if (!($data instanceof TypeSlot)){
             throw new TypeError('Can only insert TypeSlot instances.');
