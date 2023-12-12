@@ -4,8 +4,7 @@ if [[ $CI_ENVIRONMENT == "production" ]]; then
     exit 1
 fi
 source setup_directories.sh && \
-php spark migrate:rollback && \
-php spark migrate && \
+php spark db:truncate && \
 php spark db:seed Cleaner && \
 php spark db:seed FeatureSeeder && \
 php spark db:seed DetectorLocationSeeder && \
