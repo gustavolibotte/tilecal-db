@@ -24,7 +24,7 @@ class EquipmentTypeModel extends LogModel
 
     public function initialize(){
         parent::initialize();
-        $this->beforeUpdate[] = 'updateSlots';
+        // $this->beforeUpdate[] = 'updateSlots';
     }
 
     public function insert($data = null, bool $returnID = true)
