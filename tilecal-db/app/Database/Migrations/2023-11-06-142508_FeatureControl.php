@@ -7,7 +7,6 @@ class FeatureControl extends BaseMigration
 {
     public function up()
     {
-        echo "Creating features table.\n";
         $fields = [
             'id' => [
                 'type' => 'INT',
