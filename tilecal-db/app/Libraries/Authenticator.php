@@ -100,7 +100,7 @@ class Authenticator{
         if (getenv('SSO_REDIRECT_URL') != ''){
             $oidc->setRedirectURL(getenv('SSO_REDIRECT_URL'));
         }
-        $oidc->addScope('openid');
+        $oidc->addScope(['openid']);
         $oidc->setTimeout(5);
         $oidc->setAllowImplicitFlow(true);
         $oidc->authenticate();

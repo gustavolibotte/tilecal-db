@@ -5,7 +5,7 @@ EXPOSE 8080
 LABEL maintainer="Lucas Nunes"
 LABEL email="lucas.nunes@cern.ch"
 
-ENV CI_VERSION "4.3.6"
+ENV CI_VERSION "4.4.3"
 ENV COMPOSER_ALLOW_SUPERUSER 1
 LABEL ci_version=${CI_VERSION}
 
@@ -40,8 +40,8 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 ADD tilecal-db/ .
 RUN composer require codeigniter4/framework:${CI_VERSION} \
-&& composer require jumbojett/openid-connect-php \
-&& composer require firebase/php-jwt \
+&& composer require jumbojett/openid-connect-php:1.0.0 \
+&& composer require firebase/php-jwt:6.10.0 \
 && composer require fakerphp/faker
 
 # The folder is created during run time, we allow the server to write on it
