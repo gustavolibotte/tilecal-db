@@ -7,8 +7,6 @@ use App\Models\EquipmentTypeModel;
 use App\Models\StatusModel;
 use App\Models\LocationModel;
 use App\Models\InstituteModel;
-use App\Library\Forms\PmtForm;
-use App\Models\AllowedTypeSlotModel;
 use App\Models\TypeSlotModel;
 use App\Validation\Validators\PmtValidator;
 use CodeIgniter\Entity\Entity;

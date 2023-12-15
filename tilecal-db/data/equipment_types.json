@@ -5,44 +5,13 @@
         "system": "LO",
         "project": "20",
         "id_regex": "/0[A-Z0-9]{2}[0-9]{4}/",
-        "params": ["beta", "nominal_hv", "qe", "model", "phase1_position"],
-        "in_detector": true,
-        "description": null,
-        "active": 1,
-        "slots": []
-    },
-    {
-        "name": "pmt_block",
-        "label": "PMT Block",
-        "system": "LO",
-        "project": "20",
-        "id_regex": "/25[0-9]{5}/",
-        "params": [],
-        "in_detector": true,
-        "description": null,
-        "active": 1,
-        "slots": [
-            {
-                "name": "pmt_block_electronics_slot",
-                "allowed_type_ids": ["3_in_1_board", "fenics"]
-            },
-            {
-                "name": "pmt_block_pmt_slot",
-                "allowed_type_ids": ["pmt"]
-            },
-            {
-                "name": "pmt_block_hv_divider_slot",
-                "allowed_type_ids": ["hv_divider"]
-            }
-        ]
-    },
-    {
-        "name": "hv_divider",
-        "label": "Active HV Divider",
-        "system": "LL",
-        "project": "20",
-        "id_regex": "/00[0-9]{5}/",
-        "params": [],
+        "params": [
+            "beta",
+            "nominal_hv",
+            "qe",
+            "model",
+            "phase1_position"
+        ],
         "in_detector": true,
         "description": null,
         "active": 1,
@@ -61,6 +30,18 @@
         "slots": []
     },
     {
+        "name": "hv_divider",
+        "label": "Active HV Divider",
+        "system": "LL",
+        "project": "20",
+        "id_regex": "/00[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
         "name": "fenics",
         "label": "FENICS",
         "system": "LL",
@@ -71,6 +52,38 @@
         "description": null,
         "active": 1,
         "slots": []
+    },
+    {
+        "name": "pmt_block",
+        "label": "PMT Block",
+        "system": "LO",
+        "project": "20",
+        "id_regex": "/25[0-9]{5}/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": [
+            {
+                "name": "pmt_block_electronics_slot",
+                "allowed_type_ids": [
+                    "3_in_1_board",
+                    "fenics"
+                ]
+            },
+            {
+                "name": "pmt_block_pmt_slot",
+                "allowed_type_ids": [
+                    "pmt"
+                ]
+            },
+            {
+                "name": "pmt_block_hv_divider_slot",
+                "allowed_type_ids": [
+                    "hv_divider"
+                ]
+            }
+        ]
     },
     {
         "name": "mainboard",
@@ -109,59 +122,87 @@
         "slots": [
             {
                 "name": "mini_drawer_mainboard_slot",
-                "allowed_type_ids": ["mainboard"]
+                "allowed_type_ids": [
+                    "mainboard"
+                ]
             },
             {
                 "name": "mini_drawer_daughterboard_slot",
-                "allowed_type_ids": ["daughterboard"]
+                "allowed_type_ids": [
+                    "daughterboard"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_01",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_02",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_03",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_04",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_05",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_06",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_07",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_08",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_09",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_10",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_11",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "mini_drawer_pmt_block_slot_12",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             }
         ]
     },
@@ -178,11 +219,15 @@
         "slots": [
             {
                 "name": "micro_drawer_4_pmt_block_slot_01",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "micro_drawer_4_pmt_block_slot_02",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             }
         ]
     },
@@ -199,11 +244,15 @@
         "slots": [
             {
                 "name": "micro_drawer_5_pmt_block_slot_01",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "micro_drawer_5_pmt_block_slot_02",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             }
         ]
     },
@@ -220,11 +269,15 @@
         "slots": [
             {
                 "name": "micro_drawer_6_pmt_block_slot_01",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             },
             {
                 "name": "micro_drawer_6_pmt_block_slot_02",
-                "allowed_type_ids": ["pmt_block"]
+                "allowed_type_ids": [
+                    "pmt_block"
+                ]
             }
         ]
     },
@@ -253,19 +306,27 @@
         "slots": [
             {
                 "name": "lbsd_mini_drawer_slot_01",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "lbsd_mini_drawer_slot_02",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "lbsd_mini_drawer_slot_03",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "lbsd_mini_drawer_slot_04",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             }
         ]
     },
@@ -282,19 +343,27 @@
         "slots": [
             {
                 "name": "lbsd_mini_drawer_slot_01",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "lbsd_mini_drawer_slot_02",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "lbsd_mini_drawer_slot_03",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "lbsd_mini_drawer_slot_04",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             }
         ]
     },
@@ -311,23 +380,33 @@
         "slots": [
             {
                 "name": "ebsd_mini_drawer_slot_01",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_mini_drawer_slot_02",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_mini_drawer_slot_03",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_micro_drawer_4_slot_01",
-                "allowed_type_ids": ["micro_drawer_4"]
+                "allowed_type_ids": [
+                    "micro_drawer_4"
+                ]
             },
             {
                 "name": "ebsd_micro_drawer_5_slot_01",
-                "allowed_type_ids": ["micro_drawer_5"]
+                "allowed_type_ids": [
+                    "micro_drawer_5"
+                ]
             }
         ]
     },
@@ -344,23 +423,33 @@
         "slots": [
             {
                 "name": "ebsd_mini_drawer_slot_01",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_mini_drawer_slot_02",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_mini_drawer_slot_03",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_micro_drawer_4_slot_01",
-                "allowed_type_ids": ["micro_drawer_4"]
+                "allowed_type_ids": [
+                    "micro_drawer_4"
+                ]
             },
             {
                 "name": "ebsd_micro_drawer_5_slot_01",
-                "allowed_type_ids": ["micro_drawer_5"]
+                "allowed_type_ids": [
+                    "micro_drawer_5"
+                ]
             }
         ]
     },
@@ -377,32 +466,42 @@
         "slots": [
             {
                 "name": "ebsd_mini_drawer_slot_01",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_mini_drawer_slot_02",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_mini_drawer_slot_03",
-                "allowed_type_ids": ["mini_drawer"]
+                "allowed_type_ids": [
+                    "mini_drawer"
+                ]
             },
             {
                 "name": "ebsd_micro_drawer_6_slot_01",
-                "allowed_type_ids": ["micro_drawer_7"]
+                "allowed_type_ids": [
+                    "micro_drawer_7"
+                ]
             },
             {
                 "name": "ebsd_micro_drawer_7_slot_01",
-                "allowed_type_ids": ["micro_drawer_7"]
+                "allowed_type_ids": [
+                    "micro_drawer_7"
+                ]
             }
         ]
     },
     {
         "name": "lb_lv_cable",
         "label": "LB LV Cable",
-        "system": "LL",
+        "system": "LB",
         "project": "20",
-        "id_regex": "/26[0-9]{5}/",
+        "id_regex": "/26[0-9]{3}[0-1][1-2]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -412,9 +511,9 @@
     {
         "name": "eb_lv_cable",
         "label": "EB LV Cable",
-        "system": "LL",
+        "system": "LE",
         "project": "20",
-        "id_regex": "/27[0-9]{5}/",
+        "id_regex": "/27[0-9]{3}[0-1][1-2]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -422,11 +521,11 @@
         "slots": []
     },
     {
-        "name": "cooling_hoses",
-        "label": "Cooling Hoses",
-        "system": "LL",
+        "name": "lb_fo_breakout_cables",
+        "label": "LB FO Breakout Cables",
+        "system": "LB",
         "project": "20",
-        "id_regex": "/28[0-9]{5}/",
+        "id_regex": "/29[0-9]{3}[0-1][1-2]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -434,11 +533,11 @@
         "slots": []
     },
     {
-        "name": "fo_breakout_cables",
-        "label": "FO Breakout Cables",
-        "system": "LL",
+        "name": "eb_fo_breakout_cables",
+        "label": "EB FO Breakout Cables",
+        "system": "EB",
         "project": "20",
-        "id_regex": "/29[0-9]{5}/",
+        "id_regex": "/29[0-9]{3}[0-1][1-2]/",
         "params": [],
         "in_detector": true,
         "description": null,
@@ -518,35 +617,51 @@
         "slots": [
             {
                 "name": "carrier_board_cpm_slot_1",
-                "allowed_type_ids": ["cpm"]
+                "allowed_type_ids": [
+                    "cpm"
+                ]
             },
             {
                 "name": "carrier_board_cpm_slot_2",
-                "allowed_type_ids": ["cpm"]
+                "allowed_type_ids": [
+                    "cpm"
+                ]
             },
             {
                 "name": "carrier_board_cpm_slot_3",
-                "allowed_type_ids": ["cpm"]
+                "allowed_type_ids": [
+                    "cpm"
+                ]
             },
             {
                 "name": "carrier_board_cpm_slot_4",
-                "allowed_type_ids": ["cpm"]
+                "allowed_type_ids": [
+                    "cpm"
+                ]
             },
             {
                 "name": "carrier_board_tilecom_slot",
-                "allowed_type_ids": ["tilecom"]
+                "allowed_type_ids": [
+                    "tilecom"
+                ]
             },
             {
                 "name": "carrier_board_switch_slot",
-                "allowed_type_ids": ["gbe_switch"]
+                "allowed_type_ids": [
+                    "gbe_switch"
+                ]
             },
             {
                 "name": "carrier_board_ipmc_slot",
-                "allowed_type_ids": ["ipmc"]
+                "allowed_type_ids": [
+                    "ipmc"
+                ]
             },
             {
                 "name": "carrier_board_tdaqi_slot",
-                "allowed_type_ids": ["tdaqi"]
+                "allowed_type_ids": [
+                    "tdaqi"
+                ]
             }
         ]
     },
@@ -659,7 +774,9 @@
         "slots": [
             {
                 "name": "ilana_tilecom_slot",
-                "allowed_type_ids": ["tilecom"]
+                "allowed_type_ids": [
+                    "tilecom"
+                ]
             }
         ]
     },
@@ -671,6 +788,30 @@
         "id_regex": "/43[0-9]{5}/",
         "params": [],
         "in_detector": false,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "eb_cooling_hoses",
+        "label": "EB Cooling Hoses",
+        "system": "LE",
+        "project": "20",
+        "id_regex": "/28[0-9]{3}[0-1][1-2]/",
+        "params": [],
+        "in_detector": true,
+        "description": null,
+        "active": 1,
+        "slots": []
+    },
+    {
+        "name": "lb_cooling_hoses",
+        "label": "LB Cooling Hoses",
+        "system": "LB",
+        "project": "20",
+        "id_regex": "/28[0-9]{3}[0-1][1-2]/",
+        "params": [],
+        "in_detector": true,
         "description": null,
         "active": 1,
         "slots": []

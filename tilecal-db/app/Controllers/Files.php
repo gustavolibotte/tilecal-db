@@ -265,8 +265,9 @@ class Files extends APIController
             return $this->serviceUnavailable();
         }
 
-        $fileId = $this->request->getVar('id');
-        $fileHist = model('FileHistModel')->find($fileId);
+        $fileHIstId = $this->request->getVar('id');
+        $fileHistArray = model('HistModel')->getOlderFile($fileHIstId);
+        $fileHist = new \App\Entities\File($fileHistArray);
         return $this->getFileDownloadResponse($fileHist);
     }
 }

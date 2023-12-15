@@ -9,6 +9,7 @@ class EquipmentType extends BaseEntity
     protected $casts   = [
         'id' => 'integer',
         'in_detector' => 'bool',
-        'params' => 'json-array'
+        'params' => 'json-array',
+        'slots' => '?json'
     ];
 }

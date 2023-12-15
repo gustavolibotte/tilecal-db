@@ -189,8 +189,7 @@ class Equipments extends APIController
         } else{
             $form = EquipmentForm::getTypeForm($typeName);
         }
-        $equipmentTypeModel = model('EquipmentTypeModel');
-        $type = $equipmentTypeModel->where(sprintf("name = '%s'", $typeName))->first();
+        $type = model('EquipmentTypeModel')->where(sprintf("name = '%s'", $typeName))->first();
         $registerData['model'] = $type;
         $title = sprintf('Register %s', $type->label);
         $registerData['pageTitle'] = $title;
