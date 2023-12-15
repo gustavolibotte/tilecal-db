@@ -20,9 +20,9 @@ abstract class LogModel extends BaseModel{
         helper('app_array');
         parent::initialize();
         $this->opTimestamp = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
-        // $this->beforeInsert[] = 'addInsertTimestamps';
+        $this->beforeInsert[] = 'addInsertTimestamps';
         $this->beforeInsert[] = 'addUser';
-        // $this->beforeUpdate[] = 'addUpdateTimestamps';
+        $this->beforeUpdate[] = 'addUpdateTimestamps';
         $this->beforeUpdate[] = 'addUser';
         $this->beforeDelete[] = 'customDelete';
     }

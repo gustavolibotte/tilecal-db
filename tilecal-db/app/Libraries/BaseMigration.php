@@ -61,6 +61,9 @@ abstract class BaseMigration extends Migration{
             'record_id' => $recordId,
         ];
         remove_values(['updated_at', 'deleted_at'], $tableFields);
+        foreach($tableFields as &$fieldInfo){
+            remove_value('unique', $fieldInfo, false);
+        }
         $fields = array_merge($baseFields, $tableFields);
         return $fields;
     }

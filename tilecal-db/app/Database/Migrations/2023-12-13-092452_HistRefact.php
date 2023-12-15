@@ -49,7 +49,7 @@ class HistRefact extends BaseMigration
 
     public function down()
     {
-        $this->dropDetectorLocationsTriggers();
+        $this->dropLocationsTriggers();
         $this->dropStatusesTriggers();
         $this->dropFilesTriggers();
         $this->dropEquipmentsTriggers();
@@ -59,6 +59,7 @@ class HistRefact extends BaseMigration
         $this->dropAllowedTypeSotsTriggers();
         $this->dropDetectorLocationsTriggers();
         $this->dropEquipmentsToFilesTriggers();
+        $this->dropParentChildEquipsTrigger();
         $this->dropFunctions();
     }
 
@@ -338,8 +339,8 @@ class HistRefact extends BaseMigration
             AFTER INSERT ON files
             FOR EACH ROW
             BEGIN
-                INSERT INTO files_hist(`user`, `action`, record_id, path, description, created_at)
-                VALUES (NEW.user, 'insert', NEW.id, NEW.path, NEW.description, NEW.created_at);
+                INSERT INTO files_hist(`user`, `action`, record_id, path, name, description, created_at)
+                VALUES (NEW.user, 'insert', NEW.id, NEW.path, NEW.name, NEW.description, NEW.created_at);
             END;
         ");
 
@@ -350,8 +351,8 @@ class HistRefact extends BaseMigration
             BEGIN
                 DECLARE action_var VARCHAR(7);
                 SET action_var = get_action_from_update(NEW.deleted_at, OLD.deleted_at, NEW.updated_at, OLD.updated_at);
-                INSERT INTO files_hist(`user`, `action`, record_id, path, description, created_at)
-                VALUES (NEW.user, action_var, NEW.id, NEW.path, NEW.description, NEW.updated_at);
+                INSERT INTO files_hist(`user`, `action`, record_id, path, name, description, created_at)
+                VALUES (NEW.user, 'insert', NEW.id, NEW.path, NEW.name, NEW.description, NEW.updated_at);
             END;
         ");
     }

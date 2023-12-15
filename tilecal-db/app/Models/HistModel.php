@@ -12,39 +12,9 @@ class HistModel extends BaseModel
     protected $protectFields = false;
     protected $modelAllowedFields;
 
-    // Callbacks
-    protected $beforeInsert   = ['addUser', 'addCreatedAt'];
-
     public function initialize()
     {
         helper(['authentication', 'app_array']);
-    }
-
-    protected function addUser($data){
-        $data['user'] = service('authenticator')->getUser()->username;
-        return $data;
-    }
-
-    protected function addCreatedAt($data){
-        $data['created_at'] = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
-        return $data;
-    }
-
-    public function insert($data = null, bool $returnID = true)
-    {
-        if ($data instanceof Entity){
-            $data = $data->toRawArray();
-        }
-        remove_values(['created_at', 'updated_at', 'deleted_at'], $data, false);
-        $data['record_id'] = remove_value('id', $data);
-        $table = remove_value('table', $data);
-        $data = $this->addUser($data);
-        $data = $this->addCreatedAt($data);
-        $builder = $this->db->table(sprintf('%s_hist', $table));
-        $builder->insert($data);
-        if ($returnID){
-            return $data['record_id'];
-        }
     }
 
     public function getEquipmentHist($id){
@@ -123,5 +93,13 @@ class HistModel extends BaseModel
             ->get()->getResultArray();
         $hist = array_merge($fileLogs, $fileRelationLogs);
         return $hist;
+    }
+
+    public function getOlderFile(int $histId)
+    {
+        return $this->db
+            ->table('files_hist fh')
+            ->where('id', $histId)
+            ->get()->getResultArray()[0];
     }
 }
