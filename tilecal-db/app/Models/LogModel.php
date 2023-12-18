@@ -21,12 +21,10 @@ abstract class LogModel extends BaseModel{
         parent::initialize();
         $this->opTimestamp = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
         $this->beforeInsert[] = 'addInsertTimestamps';
-        $this->afterInsert[] = 'logInsert';
+        $this->beforeInsert[] = 'addUser';
         $this->beforeUpdate[] = 'addUpdateTimestamps';
-        $this->afterUpdate[] = 'logUpdate';
-        $this->beforeDelete[] = 'addDeleteTimestamps';
-        $this->beforeDelete[] = 'logDelete';
-        $this->beforeRestore[] = 'logRestore';
+        $this->beforeUpdate[] = 'addUser';
+        $this->beforeDelete[] = 'customDelete';
     }
 
     protected function addInsertTimestamps(array $data): array
@@ -70,14 +68,16 @@ abstract class LogModel extends BaseModel{
         return $entityData;
     }
 
-    protected function addDeleteTimestamps(array $data): array
+    protected function customDelete(array $data): array
     {   
         if ($data['purge']){
             return $data;
         }
+        $username = service('authenticator')->getUser()->username;
         $builder = $this->builder();
         $builder->set('deleted_at', $this->opTimestamp)
                 ->set('updated_at', $this->opTimestamp)
+                ->set('user', $username)
                 ->where('id', $data['id'])
                 ->update();
         return $data;
@@ -107,9 +107,11 @@ abstract class LogModel extends BaseModel{
         if (is_null($entry)){
             throw new DatabaseException('The entry is not deleted to be restored');
         }
+        $username = service('authenticator')->getUser()->username;
         $builder = $this->builder();
         $builder->set('deleted_at', null)
                 ->set('updated_at', $this->opTimestamp)
+                ->set('user', $username)
                 ->where('id', $id)
                 ->update();
         $data = ['id' => $id];
@@ -125,6 +127,12 @@ abstract class LogModel extends BaseModel{
         $logData = $this->queryLogData($data['id']);
         $logData['action'] = 'restore';
         model('HistModel')->insert($logData);
+        return $data;
+    }
+
+    protected function addUser(array $data): array
+    {
+        $data['data']['user'] = service('authenticator')->getUser()->username;
         return $data;
     }
 }

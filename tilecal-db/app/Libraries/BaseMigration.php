@@ -43,7 +43,6 @@ abstract class BaseMigration extends Migration{
 
     protected function getHistFields(array $tableFields): array
     {
-        echo "Create Hist\n";
         helper('app_array');
         $recordId = remove_value('id', $tableFields);
         remove_value('auto_increment', $recordId, false);
@@ -62,6 +61,9 @@ abstract class BaseMigration extends Migration{
             'record_id' => $recordId,
         ];
         remove_values(['updated_at', 'deleted_at'], $tableFields);
+        foreach($tableFields as &$fieldInfo){
+            remove_value('unique', $fieldInfo, false);
+        }
         $fields = array_merge($baseFields, $tableFields);
         return $fields;
     }

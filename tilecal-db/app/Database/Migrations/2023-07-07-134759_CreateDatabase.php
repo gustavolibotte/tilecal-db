@@ -7,7 +7,6 @@ class CreateDatabase extends BaseMigration
 {
 
     public function createEquipmentTypes(){
-        echo "Creating Equipment Types\n";
         $fields = [
             'id' => $this->defaultIdField,
             'name' => [
@@ -62,11 +61,9 @@ class CreateDatabase extends BaseMigration
         $this->forge->addPrimaryKey('id');
         $this->forge->createTable('equipment_types_hist', true);
 
-        echo "Created Equipment Types\n";
     }
 
     public function createInstitutes(){
-        echo "Creating Institutes\n";
         $fields = [
             'id' => $this->defaultIdField,
             'name' => [
@@ -108,11 +105,9 @@ class CreateDatabase extends BaseMigration
         $this->forge->addPrimaryKey('id');
         $this->forge->createTable('institutes_hist', true);
 
-        echo "Created Institutes\n";
     }
 
     public function createLocations(){
-        echo "Creating Locations\n";
 
         $fields = [
             'id' => $this->defaultIdField,
@@ -143,11 +138,9 @@ class CreateDatabase extends BaseMigration
         $this->forge->addForeignKey('institute_id', 'institutes', 'id');
         $this->forge->createTable('locations_hist', true);
 
-        echo "Created Locations\n";
     }
 
     public function createStatuses(){
-        echo "Creating Statuses\n";
 
         $fields = [
             'id' => $this->defaultIdField,
@@ -170,11 +163,9 @@ class CreateDatabase extends BaseMigration
         $this->forge->addPrimaryKey('id');
         $this->forge->createTable('statuses_hist', true);
 
-        echo "Created Statuses\n";
     }
 
     public function createFiles(){
-        echo "Creating Files\n";
         $fields = [
             'id' => $this->defaultIdField,
             'name' => [
@@ -201,12 +192,10 @@ class CreateDatabase extends BaseMigration
         $this->forge->addPrimaryKey('id');
         $this->forge->createTable('files_hist', true);
 
-        echo "Created Files\n";
     }
 
     public function createEquipments(){
 
-        echo "Creating Equipments\n";
         $fields = [
             'id' => $this->equipmentIdFieldConfig,
             'type_id' => [
@@ -260,12 +249,10 @@ class CreateDatabase extends BaseMigration
         $this->forge->addForeignKey('status_id', 'statuses', 'id');
         $this->forge->createTable('equipments_hist', true);
 
-        echo "Created Equipments\n";
 
     }
 
     public function createEquipments2Files(){
-        echo "Creating Equipments to Files\n";
 
         $fields = [
             'id' => $this->defaultIdField,
@@ -290,13 +277,11 @@ class CreateDatabase extends BaseMigration
         $this->forge->addForeignKey('file_id', 'files', 'id');
         $this->forge->createTable('equipments_to_files_hist', true);
 
-        echo "Created Equipments to Files\n";
 
     }
 
     public function ParentChildEquips()
     {
-        echo "Creating Parent Child Equips\n";
         $fields = [
             'id' => $this->defaultIdField,
             'parent_equip_id' => [
@@ -331,12 +316,10 @@ class CreateDatabase extends BaseMigration
         $this->forge->addForeignKey('slot_id', 'type_slots', 'id');
         $this->forge->createTable('parent_child_equips_hist', true);
 
-        echo "Created Parent Child Equips\n";
     }
 
     public function createTypeSlots()
     {
-        echo "Creating Type Slots\n";
         $fields = [
             'id' => $this->defaultIdField,
             'name' => [
@@ -363,12 +346,10 @@ class CreateDatabase extends BaseMigration
         $this->forge->addUniqueKey(['name', 'parent_type_id']);
         $this->forge->createTable('type_slots_hist', true);
 
-        echo "Created Type Slots\n";
     }
 
     public function createAllowedTypeSlots()
     {
-        echo "Creating Allowed Types\n";
         $fields = [
             'id' => $this->defaultIdField,
             'slot_id' => [
@@ -396,7 +377,6 @@ class CreateDatabase extends BaseMigration
         $this->forge->addForeignKey('allowed_type_id', 'equipment_types', 'id');
         $this->forge->createTable('allowed_type_slots_hist', true);
 
-        echo "Created Allowed Types\n";
     }
 
     public function up()

@@ -20,7 +20,7 @@ function unset_array_keys(array &$source, array $removeKeys)
  */ 
 function remove_value($key, array &$array, bool $error=true): mixed
 {
-    if ((!$error) && (!array_key_exists($key, $array))){
+    if ((!array_key_exists($key, $array)) && (!$error)){
         return null;
     }
     $value = $array[$key];

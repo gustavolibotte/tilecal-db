@@ -20,7 +20,8 @@ RUN apt-get -y update \
 && apt-get install -y zip \
 && apt-get install -y bash \
 && apt-get install -y vim \
-&& apt-get install -y nano
+&& apt-get install -y nano \
+&& apt install dos2unix
 
 # Apache config
 COPY configs/php.ini /usr/local/etc/php/
@@ -39,10 +40,11 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 # Set the working directory to your CodeIgniter app folder
 WORKDIR /var/www/html
 ADD tilecal-db/ .
-RUN composer require codeigniter4/framework:${CI_VERSION} \
-&& composer require jumbojett/openid-connect-php \
-&& composer require firebase/php-jwt \
-&& composer require fakerphp/faker
+RUN composer require codeigniter4/framework:${CI_VERSION} && \
+composer require jumbojett/openid-connect-php:1.0.0 && \
+composer require firebase/php-jwt:6.10.0 && \
+composer require fakerphp/faker && \
+composer require phpseclib/phpseclib:3.0.34
 
 # The folder is created during run time, we allow the server to write on it
 RUN chmod -R 777 .

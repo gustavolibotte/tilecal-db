@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use CodeIgniter\Entity\Entity;
 use CodeIgniter\Model;
 use App\Validation\Validators\EntryValidator;
 use App\Library\Readers\CSVFileReader;
@@ -120,7 +119,7 @@ abstract class BaseModel extends Model
         $logger = is_null($logger)? new BlankLogger(): $logger;
         $inputFile = new CSVFileReader($filepath, headerRename:$fieldRename);
         $loggerContext = ['iRow' => null, 'action' => ucfirst($action)];
-        $this->db->transBegin();
+        $this->db->transException(true)->transBegin();
         foreach ($inputFile as $iRow=>$row){
             $loggerContext['iRow'] = $iRow;
             // Removes some fields that may conflict with the type defined in the validator
