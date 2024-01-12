@@ -23,6 +23,10 @@ class User extends BaseEntity
         return in_array('admin', $this->roles);
     }
 
+    public function isDeleter(){
+        return in_array('deleter', $this->roles);
+    }
+
     public function isEditor(){
         return in_array('editor', $this->roles);
     }
@@ -36,27 +40,27 @@ class User extends BaseEntity
     }
 
     protected function canDelete(){
-        return ($this->isEditor() or $this->isAdmin());
+        return $this->isDeleter();
     }
 
     protected function canRegister(){
-        return ($this->isEditor() or $this->isAdmin());
+        return $this->isEditor();
     }
 
     protected function canEdit(){
-        return ($this->isEditor() or $this->isAdmin());
+        return $this->isEditor();
     }
 
     protected function canAlter(){
-        return ($this->isAdmin() or $this->isEditor());
+        return $this->isEditor();
     }
 
     protected function canUpload(){
-        return ($this->isAdmin() or $this->isEditor());
+        return $this->isEditor();
     }
 
     protected function canDownload(){
-        return ($this->isAdmin() or $this->isEditor());
+        return $this->isViewer();
     }
 
     protected function canView(){

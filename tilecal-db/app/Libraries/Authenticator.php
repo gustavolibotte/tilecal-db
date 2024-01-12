@@ -71,7 +71,7 @@ class Authenticator{
                 'origEmail' => 'anakin.skywalker@cern.ch',
                 'language' => 'EN',
                 'sessionState' => 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX',
-                'roles' => ['admin', 'sith_lord', 'the_chosen_one'],
+                'roles' => ['admin', 'deleter', 'editor', 'viewer', 'sith_lord', 'the_chosen_one'],
                 'authTime' => time(),
                 'nonce' => 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
             ];
