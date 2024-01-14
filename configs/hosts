@@ -5,4 +5,4 @@ ff00::0	ip6-mcastprefix
 ff02::1	ip6-allnodes
 ff02::2	ip6-allrouters
 172.19.0.4	1e5b79a4332e
-127.0.0.1 tilep2db-app.local
+127.0.0.1 tilep2dbapp.local
