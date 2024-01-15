@@ -58,7 +58,7 @@
         "label": "PMT Block",
         "system": "LO",
         "project": "20",
-        "id_regex": "/25[0-9]{5}/",
+        "id_regex": "/[A-Z0-9]{7}/",
         "params": [],
         "in_detector": true,
         "description": null,
