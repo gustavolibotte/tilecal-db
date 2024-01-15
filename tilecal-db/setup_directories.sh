@@ -20,3 +20,5 @@ if [ ! -d "$APP_WRITABLE_DIR" ]; then
     # Custom paths
     mkdir -p "${APP_WRITABLE_DIR}/validation_logs"
 fi
+
+chmod -R 777 $APP_EOS_DIR
