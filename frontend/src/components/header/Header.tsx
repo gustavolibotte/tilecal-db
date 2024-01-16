@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { Navbar,
   NavbarBrand,
   NavbarToggler,
@@ -26,7 +27,6 @@ export default class Header extends Component{
 
   render(){
     return(
-      <div>
       <Navbar color="dark" expand="lg">
         <NavbarBrand href="/" className="text-white">Tilecal Electronics Database</NavbarBrand>
         <NavbarToggler onClick={this.toggleNavBar} />
@@ -37,7 +37,7 @@ export default class Header extends Component{
                 Equipment
               </DropdownToggle>
               <DropdownMenu end>
-                <DropdownItem>Index</DropdownItem>
+                <Link to={`equipment`}><DropdownItem>Index</DropdownItem></Link>
                 <DropdownItem>Deleted</DropdownItem>
                 <DropdownItem divider />
                 <DropdownItem>Specific Equipment</DropdownItem>
@@ -64,7 +64,6 @@ export default class Header extends Component{
           <NavbarText className="text-white">tilep2db</NavbarText>
         </Collapse>
       </Navbar>
-      </div>
     )
   }
 }
