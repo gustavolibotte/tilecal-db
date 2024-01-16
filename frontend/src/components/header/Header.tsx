@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Component } from 'react';
 import { Navbar,
   NavbarBrand,
   NavbarToggler,
@@ -11,17 +11,26 @@ import { Navbar,
   NavbarText} from 'reactstrap'
 import './header.css'
 
-export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
+type HeaderState = {
+  isOpen: boolean
+};
 
-  const toggle = () => setIsOpen(!isOpen);
-  return (
-    <div>
+export default class Header extends Component{
+  state: HeaderState = {
+    isOpen: false
+  };
 
+  toggleNavBar(){
+    this.setState({isOpen: !this.state.isOpen});
+  }
+
+  render(){
+    return(
+      <div>
       <Navbar color="dark" expand="lg">
         <NavbarBrand href="/" className="text-white">Tilecal Electronics Database</NavbarBrand>
-        <NavbarToggler onClick={toggle} />
-        <Collapse isOpen={isOpen} navbar>
+        <NavbarToggler onClick={this.toggleNavBar} />
+        <Collapse isOpen={this.state.isOpen} navbar>
           <Nav className="ms-auto" navbar>
             <UncontrolledDropdown nav inNavbar>
               <DropdownToggle nav caret className="text-white">
@@ -36,6 +45,14 @@ export default function Header() {
             </UncontrolledDropdown>
             <UncontrolledDropdown nav inNavbar>
               <DropdownToggle nav caret className="text-white">
+                Register
+              </DropdownToggle>
+              <DropdownMenu end>
+                <DropdownItem>Batch Register</DropdownItem>
+              </DropdownMenu>
+            </UncontrolledDropdown>
+            <UncontrolledDropdown nav inNavbar>
+              <DropdownToggle nav caret className="text-white">
                 Files
               </DropdownToggle>
               <DropdownMenu end>
@@ -44,11 +61,10 @@ export default function Header() {
               </DropdownMenu>
             </UncontrolledDropdown>
           </Nav>
-          <NavbarText className="text-white">Username</NavbarText>
+          <NavbarText className="text-white">tilep2db</NavbarText>
         </Collapse>
       </Navbar>
-
-
-    </div>
-  )
+      </div>
+    )
+  }
 }
