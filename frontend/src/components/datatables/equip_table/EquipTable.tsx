@@ -1,9 +1,10 @@
-import { Component, ReactNode } from 'react'
+import { Component, ReactNode, createRef } from 'react'
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import './equip_table.css';
 import axios from 'axios';
-import { Button } from 'reactstrap';
+import { Button as PrimeButton } from 'primereact/button';
+import { Button as StrapButton} from 'reactstrap';
 import toastr from 'toastr';
 import { FilterMatchMode } from 'primereact/api';
 
@@ -13,29 +14,37 @@ type EquipTableProps = {
 
 type EquipTableState = {
   data: Array<any>,
-  filters: DataTableFilterMeta,
-  globalFilterValue: string
+  filters: DataTableFilterMeta
 };
 
 class EquipTable extends Component<EquipTableProps, EquipTableState> {
 
+  dt: any;
+  
   constructor(props: any){
     super(props);
     this.state = {
       data: [],
-      filters: {
-        id: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        type_label: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        location_name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        detector_location_name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        status_name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        owner_name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        comments: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        created_at: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
-        updated_at: {value: null, matchMode: FilterMatchMode.STARTS_WITH}
-      },
-      globalFilterValue: ''
+      filters: this.getClarFilters(),
     }
+    this.exportCSV = this.exportCSV.bind(this);
+    this.clearFilter = this.clearFilter.bind(this);
+    this.dt = createRef();
+  }
+
+  getClarFilters(): DataTableFilterMeta{
+    const filters: DataTableFilterMeta = {
+      id: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+      type_label: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+      location_name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+      detector_location_name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+      status_name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+      owner_name: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+      comments: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+      created_at: {value: null, matchMode: FilterMatchMode.STARTS_WITH},
+      updated_at: {value: null, matchMode: FilterMatchMode.STARTS_WITH}
+    };
+    return filters;
   }
 
   async fetchData(){
@@ -54,16 +63,25 @@ class EquipTable extends Component<EquipTableProps, EquipTableState> {
   render(): ReactNode {
 
     const getButton = (rowData: any) => {
-      return <Button color='primary'>{rowData.id}</Button>;
+      return <PrimeButton label={rowData.id}/>;
     }
+
+    const header: ReactNode = (
+      <div className="flex justify-content-between">
+        <PrimeButton type="button" icon="pi pi-filter-slash" label="Clear Filters" outlined onClick={this.clearFilter} />
+        <PrimeButton type="button" icon="pi pi-file" label="CSV Export" onClick={() => this.exportCSV(false)} data-pr-tooltip="CSV" />
+      </div>
+    )
 
     return (
       <>
       <DataTable
+        ref={this.dt}
         value={this.state.data}
+        header={header}
         tableStyle={{ minWidth: '50rem' }}
         filters={this.state.filters}
-        filterDisplay="row"
+        filterDisplay="menu"
         showGridlines
         stripedRows
         paginator
@@ -88,6 +106,14 @@ class EquipTable extends Component<EquipTableProps, EquipTableState> {
 
   componentDidMount(): void {
     this.fetchData();
+  }
+
+  exportCSV(selectionOnly: boolean): void {
+    this.dt.current.exportCSV({ selectionOnly });
+  }
+
+  clearFilter(): void{
+    this.setState({ filters: this.getClarFilters() });
   }
   
 }
