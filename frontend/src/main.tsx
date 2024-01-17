@@ -6,17 +6,22 @@ import './main.css'
 import Home from './components/home/Home.tsx';
 import NotFound from './components/not_found/NotFound.tsx';
 import PageLayout from './components/page_layout/page_layout.tsx';
+import EquipIndex from './components/equip_index/EquipIndex.tsx';
+import FileIndex from './components/file_index/FileIndex.tsx';
 
 const children = [
   {
     path: "/",
     element: <Home />,
-    errorElement: <NotFound />,
   },
   {
     path: "equipment",
-    element: <Home/>,
-  }
+    element: <EquipIndex/>,
+  },
+  {
+    path: "files",
+    element: <FileIndex/>,
+  },
 ]
 const router = createBrowserRouter([
   {

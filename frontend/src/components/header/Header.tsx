@@ -56,7 +56,7 @@ export default class Header extends Component{
                 Files
               </DropdownToggle>
               <DropdownMenu end>
-                <DropdownItem>Index</DropdownItem>
+              <Link to={`files`}><DropdownItem>Index</DropdownItem></Link>
                 <DropdownItem>Deleted</DropdownItem>
               </DropdownMenu>
             </UncontrolledDropdown>
