@@ -6,7 +6,6 @@ import axios from 'axios';
 import { Button } from 'reactstrap';
 import toastr from 'toastr';
 import { FilterMatchMode } from 'primereact/api';
-import { InputText } from 'primereact/inputtext';
 
 type EquipTableProps = {
   readonly headerText: string
@@ -37,7 +36,6 @@ class EquipTable extends Component<EquipTableProps, EquipTableState> {
       },
       globalFilterValue: ''
     }
-    // this.onGlobalFilterChange = this.onGlobalFilterChange.bind(this);
   }
 
   async fetchData(){
@@ -53,33 +51,11 @@ class EquipTable extends Component<EquipTableProps, EquipTableState> {
       });
   }
 
-  // onGlobalFilterChange(e: React.ChangeEvent<HTMLInputElement>){
-  //   const value = e.target.value;
-  //   let _filters = {...this.state.filters};
-
-  //   // @ts-ignore
-  //   _filters.global.value = value;
-
-  //   this.setState({'filters': _filters, 'globalFilterValue': value});
-  // };
-
   render(): ReactNode {
 
     const getButton = (rowData: any) => {
       return <Button color='primary'>{rowData.id}</Button>;
     }
-
-    // const header: ReactNode = (
-    //   <div className="flex justify-content-end">
-    //     <span className="p-input-icon-left">
-    //       <i className="pi pi-search" />
-    //       <InputText
-    //         value={this.state.globalFilterValue}
-    //         onChange={this.onGlobalFilterChange}
-    //         placeholder="Global Keyword Search"/>
-    //     </span>
-    //   </div>
-    // )
 
     return (
       <>
