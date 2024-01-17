@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import { Col, Container, Row } from 'reactstrap'
 import './home.css'
+import { Link } from 'react-router-dom';
 
 export default class Home extends Component {
   render(){
@@ -19,11 +20,13 @@ export default class Home extends Component {
           <Col className="mt-4">
             <div className="text-center">
               <h3>Equipments</h3>
+              <Link to={ `equipment`}>Index</Link>
             </div>
           </Col>
           <Col className="mt-4">
             <div className="text-center">
               <h3>Files</h3>
+              <Link to={ `files`}>Index</Link>
             </div>
           </Col>
         </Row>

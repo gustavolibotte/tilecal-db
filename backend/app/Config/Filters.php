@@ -8,6 +8,10 @@ use CodeIgniter\Filters\DebugToolbar;
 use CodeIgniter\Filters\Honeypot;
 use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\SecureHeaders;
+use App\Filters\Authentication;
+use App\Filters\LastURL;
+use App\Filters\RequestTime;
+use App\Filters\Corsa;
 
 class Filters extends BaseConfig
 {
@@ -21,9 +25,10 @@ class Filters extends BaseConfig
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
-        'auth'          => \App\Filters\Authentication::class,
-        'lasturl'       => \App\Filters\LastURL::class,
-        'request_time'  => \App\Filters\RequestTime::class
+        'auth'          => Authentication::class,
+        'lasturl'       => LastURL::class,
+        'request_time'  => RequestTime::class,
+        'cors'          => Corsa::class
     ];
 
     /**
@@ -35,6 +40,7 @@ class Filters extends BaseConfig
             // 'auth',
             // 'honeypot',
             'csrf' => ['except' => 'api/*'],
+            'cors',
             'request_time',
             'lasturl' => ['except' => 'callback'],
             // 'invalidchars',

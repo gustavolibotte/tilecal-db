@@ -44,7 +44,7 @@ abstract class APIController extends BaseController
 
     public function preRequestChecks(): mixed
     {
-        if (!$this->request->isAJAX()){
+        if (false){
             log_message('warning', 'API received a non AJAX request');
             $msg = 'Requests must be AJAX.';
             return $this->fail($msg, 400);

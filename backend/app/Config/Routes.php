@@ -39,6 +39,10 @@ $routes->get('callback', 'Callback::callback', [
 ]);
 
 // API routes
+$routes->get('api/equipment', 'Equipments::get', [
+    'filter' => 'auth:view',
+    'as' => 'api_equipment_get'
+]);
 $routes->get('api/equipments/get', 'Equipments::get', [
     'filter' => 'auth:view',
     'as' => 'equipment_get'
