@@ -6,7 +6,6 @@ import { Button } from 'primereact/button';
 import { FilterMatchMode } from 'primereact/api';
 import { DataTableSortMeta } from 'primereact/datatable';
 import { ColumnBodyOptions } from 'primereact/column';
-import toastr from 'toastr';
 import axios from 'axios';
 import './base_table.css';
 
@@ -59,15 +58,9 @@ export class BaseTable extends Component<TableProps, TableState> {
   }
 
   async fetchData(){
-    toastr.info('Fetching data');
     await axios.get(this.props.fetchUrl)
       .then((response)=>{
         this.setState({ data: response.data.data});
-        toastr.remove();
-        toastr.success('Loaded Data')
-      }, (error) =>{
-        toastr.remove();
-        toastr.error('Error', error.response.data.messages.error);
       });
   }
 

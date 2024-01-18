@@ -6,7 +6,6 @@ import NotFound from './components/not_found/NotFound.tsx';
 import PageLayout from './components/page_layout/PageLayout.tsx';
 import EquipIndex from './components/equip_index/EquipIndex.tsx';
 import FileIndex from './components/file_index/FileIndex.tsx';
-import toastr from 'toastr';
 
 import './main.css'
 import 'primeicons/primeicons.css';
@@ -35,9 +34,6 @@ const router = createBrowserRouter([
     children: children,
   },
 ]);
-
-toastr.options.closeButton = true;
-toastr.options.progressBar = true;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
