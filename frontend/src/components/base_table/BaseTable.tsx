@@ -144,7 +144,9 @@ export class BaseTable extends Component<TableProps, TableState> {
     import('jspdf').then((jsPDF) => {
       import('jspdf-autotable').then(() => {
           const doc = new jsPDF.default('landscape');
-
+          // I don;t now why but ts can't find the function autoTable but it exists
+          // The flag exists only to force it to compile otherwise it wuld raise errors
+          // @ts-ignore
           doc.autoTable(exportColumns, this.state.data);
           doc.save(`${this.props.fileName}.pdf`);
       });
