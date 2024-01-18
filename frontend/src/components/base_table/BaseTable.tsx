@@ -6,6 +6,7 @@ import { Button } from 'primereact/button';
 import { FilterMatchMode } from 'primereact/api';
 import { DataTableSortMeta } from 'primereact/datatable';
 import { ColumnBodyOptions } from 'primereact/column';
+import { toast } from 'react-toastify';
 import axios from 'axios';
 import './base_table.css';
 
@@ -61,6 +62,9 @@ export class BaseTable extends Component<TableProps, TableState> {
     await axios.get(this.props.fetchUrl)
       .then((response)=>{
         this.setState({ data: response.data.data});
+        toast.success('Loaded data');
+      }, (error) =>{
+        toast.error(error.data.message.error);
       });
   }
 

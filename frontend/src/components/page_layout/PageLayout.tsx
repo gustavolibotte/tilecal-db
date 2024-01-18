@@ -1,6 +1,8 @@
 import { Component } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from '../header/Header';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './page_layout.css'
 
 
@@ -8,8 +10,9 @@ export default class PageLayout extends Component{
   render(){
   return(
     <div>
-    <Header/>
-    <Outlet/>
+      <ToastContainer/>
+      <Header/>
+      <Outlet/>
     </div>
   )
   }
