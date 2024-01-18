@@ -1,11 +1,17 @@
 import { Component } from 'react';
 import { ColumnMeta, BaseTable } from '../base_table/BaseTable';
+import { Button } from 'primereact/button';
 import './equip_index.css';
 
 export default class EquipIndex extends Component {
 
   render(){
-    const visibleColumns: ColumnMeta[] = [
+    const getButton = (rowData: any) => {
+      return <Button label={rowData.id}/>;
+    }
+
+    const columns: ColumnMeta[] = [
+      {field: 'id', header: 'ID', body: getButton},
       {field: 'type_label', header: 'Type'},
       {field: 'location_name', header: 'Location'},
       {field: 'detector_location_name', header: 'Detector Location'},
@@ -19,9 +25,10 @@ export default class EquipIndex extends Component {
       <>
         <h1>Equipment Index</h1>
         <BaseTable
-        visibleColumns={visibleColumns}
+        columns={columns}
         dataKey='id'
         dataKeyHeader='ID'
+        fileName='equip_index'
         fetchUrl='http://localhost:8080/api/equipment'/>
       </>
     );

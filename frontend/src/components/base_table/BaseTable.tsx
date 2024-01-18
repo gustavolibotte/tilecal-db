@@ -4,15 +4,18 @@ import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { FilterMatchMode } from 'primereact/api';
+import { DataTableSortMeta } from 'primereact/datatable';
+import { ColumnBodyOptions } from 'primereact/column';
 import toastr from 'toastr';
 import axios from 'axios';
 import './base_table.css';
 
 interface TableProps {
-    visibleColumns: ColumnMeta[],
+    columns: ColumnMeta[],
     fetchUrl: string,
     dataKey: string,
-    dataKeyHeader: string
+    dataKeyHeader: string,
+    fileName: string
 };
 
 interface TableState {
@@ -24,6 +27,7 @@ interface TableState {
 export interface ColumnMeta {
   field: string;
   header: string;
+  body?: ReactNode | ((data: any, options: ColumnBodyOptions) => React.ReactNode)
 };
 
 export class BaseTable extends Component<TableProps, TableState> {
@@ -35,17 +39,18 @@ export class BaseTable extends Component<TableProps, TableState> {
     this.state = {
       data: [],
       filters: this.getClearFilters(),
-      visibleColumns: this.props.visibleColumns
+      visibleColumns: this.props.columns.slice() // Assigned by value
     }
     this.exportCSV = this.exportCSV.bind(this);
     this.clearFilter = this.clearFilter.bind(this);
     this.onColumnToggle = this.onColumnToggle.bind(this);
+    this.exportPdf = this.exportPdf.bind(this);
     this.dt = createRef();
   }
 
   getClearFilters(): DataTableFilterMeta{
     let filters: DataTableFilterMeta = {}
-    this.props.visibleColumns.forEach(
+    this.props.columns.forEach(
         columnDescription => {
             filters[columnDescription.field] = {value: null, matchMode: FilterMatchMode.STARTS_WITH}
         }
@@ -69,17 +74,25 @@ export class BaseTable extends Component<TableProps, TableState> {
   getHeader(): ReactNode{
     return (<div className="flex align-items-center justify-content gap-2">
         <span>Select Columns:</span>
-        <MultiSelect value={this.state.visibleColumns} options={this.props.visibleColumns} optionLabel="header" onChange={this.onColumnToggle} className="w-full sm:w-20rem" display="chip" />
+        <MultiSelect value={this.state.visibleColumns} options={this.props.columns} optionLabel="header" onChange={this.onColumnToggle} className="w-full sm:w-20rem" display="chip" />
         <Button type="button" icon="pi pi-filter-slash" label="Clear Filters" outlined onClick={this.clearFilter} />
-        <Button type="button" icon="pi pi-file" label="CSV Export" onClick={() => this.exportCSV(false)} data-pr-tooltip="CSV" />
+        <Button type="button" icon="pi pi-file-pdf" label="PDF" onClick={this.exportPdf} data-pr-tooltip="PDF" />
+        <Button type="button" icon="pi pi-file" label="CSV" onClick={() => this.exportCSV(false)} data-pr-tooltip="CSV" />
     </div>);
   }
 
   render(): ReactNode {
 
-    const getButton = (rowData: any) => {
-      return <Button label={rowData[this.props.dataKey]}/>;
-    }
+    const multiSortMeta: DataTableSortMeta[] = [
+      {
+        field: 'updated_at',
+        order: -1
+      },
+      {
+        field: this.props.dataKey,
+        order: 1
+      },
+    ]
 
     return (
       <>
@@ -96,11 +109,17 @@ export class BaseTable extends Component<TableProps, TableState> {
         rows={10}
         rowsPerPageOptions={[5, 10, 25, 50]}
         sortMode="multiple"
-        removableSort
-        dataKey={this.props.dataKey}>
-          <Column field={this.props.dataKey} header={this.props.dataKeyHeader} body={getButton} sortable filter filterPlaceholder="Search"/>
-          {this.state.visibleColumns.map((col) => (
-              <Column key={col.field} field={col.field} header={col.header} filter filterPlaceholder="Search"/>
+        multiSortMeta={multiSortMeta}
+        removableSort>
+          {this.state.visibleColumns.map((col: ColumnMeta) => (
+              <Column
+                key={col.field}
+                field={col.field}
+                header={col.header}
+                body={col.hasOwnProperty('body')? col.body: false}
+                sortable
+                filter
+                filterPlaceholder="Search"/>
           ))}
       </DataTable>
       </>
@@ -112,7 +131,24 @@ export class BaseTable extends Component<TableProps, TableState> {
   }
 
   exportCSV(selectionOnly: boolean): void {
-    this.dt.current.exportCSV({ selectionOnly });
+    this.dt.current.exportCSV({
+      selectionOnly: selectionOnly,
+      filename: this.props.fileName
+    });
+  }
+
+  exportPdf(): void{
+    const exportColumns = this.state.visibleColumns.map(
+      (col: ColumnMeta) => ({ title: col.header, dataKey: col.field })
+    );
+    import('jspdf').then((jsPDF) => {
+      import('jspdf-autotable').then(() => {
+          const doc = new jsPDF.default('landscape');
+
+          doc.autoTable(exportColumns, this.state.data);
+          doc.save(`${this.props.fileName}.pdf`);
+      });
+  });
   }
 
   clearFilter(): void{
@@ -121,7 +157,7 @@ export class BaseTable extends Component<TableProps, TableState> {
 
   onColumnToggle(event: MultiSelectChangeEvent): void{
     let selectedColumns = event.value;
-    let orderedSelectedColumns = this.props.visibleColumns.filter((col) => selectedColumns.some((sCol: any) => sCol.field === col.field));
+    let orderedSelectedColumns = this.props.columns.filter((col: any) => selectedColumns.some((sCol: any) => sCol.field === col.field));
     this.setState({ visibleColumns: orderedSelectedColumns });
   }
 }
