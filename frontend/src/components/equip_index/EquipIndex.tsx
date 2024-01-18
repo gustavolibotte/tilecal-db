@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { ColumnMeta, BaseTable } from '../datatables/base_table/BaseTable';
+import { ColumnMeta, BaseTable } from '../base_table/BaseTable';
 import './equip_index.css';
 
 export default class EquipIndex extends Component {
