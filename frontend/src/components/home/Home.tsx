@@ -1,38 +1,34 @@
 import { Component } from 'react'
-import { Col, Container, Row } from 'reactstrap'
-import './home.css'
 import { Link } from 'react-router-dom';
+import './home.css'
 
 export default class Home extends Component {
   render(){
     return (
       <>
-      <Container fluid>
-        <Row className="mt-4">
-          <Col className="mt-4">
-            <div className="jumbotron text-center">
-              <h1>Welcome to the Tilecal Electronics Database</h1>
-              <p>Here we can see the current status of each Tilecal component. Use the navbar on top to naviagte through the pages or choose one of the options bellow.</p>
-            </div>
-          </Col>
-        </Row>
-        <Row className="mt-4">
-          <Col className="mt-4">
-            <div className="text-center">
-              <h3>Equipments</h3>
-              <Link to={ `equipment`}>Index</Link>
-            </div>
-          </Col>
-          <Col className="mt-4">
-            <div className="text-center">
-              <h3>Files</h3>
-              <Link to={ `files`}>Index</Link>
-            </div>
-          </Col>
-        </Row>
-      </Container>
+      <div className="surface-0 text-center mt-4">
+        <div className="mt-4">
+          <div className="font-bold text-3xl">Welcome to the Tilecal Electronics Database </div>
+          <div className="mt-4">Here you can see the current status of each Tilecal component. Use the navbar on top to naviagte through the pages or choose one of the options bellow.</div>
+        </div>
+        <div className="grid mt-4">
+          <div className="col-12 md:col-6 mt-4 px-5">
+              <span className="p-3 shadow-2 mb-3 inline-block" style={{ borderRadius: '10px' }}>
+                  <i className="bi bi-pci-card text-4xl text-blue-500"></i>
+              </span>
+              <div className="text-900 text-xl mb-3 font-medium">Equipment</div>
+              <div className="text-700 line-height-3"><Link to='equipment'>Index</Link></div>
+          </div>
+          <div className="col-12 md:col-6 mt-4 px-5">
+              <span className="p-3 shadow-2 mb-3 inline-block" style={{ borderRadius: '10px' }}>
+                  <i className="pi pi-file text-4xl text-blue-500"></i>
+              </span>
+              <div className="text-900 text-xl mb-3 font-medium">Files</div>
+              <span className="text-700 line-height-3"><Link to='files'>Index</Link></span>
+          </div>
+        </div>
+      </div>
       </>
     );
   }
-  
 }

@@ -3,14 +3,11 @@ import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import './equip_table.css';
 import axios from 'axios';
-import { Button as PrimeButton } from 'primereact/button';
-import { Button as StrapButton} from 'reactstrap';
+import { Button } from 'primereact/button';
 import toastr from 'toastr';
 import { FilterMatchMode } from 'primereact/api';
 
-type EquipTableProps = {
-  readonly headerText: string
-};
+type EquipTableProps = {};
 
 type EquipTableState = {
   data: Array<any>,
@@ -63,13 +60,13 @@ class EquipTable extends Component<EquipTableProps, EquipTableState> {
   render(): ReactNode {
 
     const getButton = (rowData: any) => {
-      return <PrimeButton label={rowData.id}/>;
+      return <Button label={rowData.id}/>;
     }
 
-    const header: ReactNode = (
-      <div className="flex justify-content-between">
-        <PrimeButton type="button" icon="pi pi-filter-slash" label="Clear Filters" outlined onClick={this.clearFilter} />
-        <PrimeButton type="button" icon="pi pi-file" label="CSV Export" onClick={() => this.exportCSV(false)} data-pr-tooltip="CSV" />
+    const header: ReactNode = (     
+      <div className="flex align-items-center justify-content gap-2">
+        <Button type="button" icon="pi pi-filter-slash" label="Clear Filters" outlined onClick={this.clearFilter} />
+        <Button type="button" icon="pi pi-file" label="CSV Export" onClick={() => this.exportCSV(false)} data-pr-tooltip="CSV" />
       </div>
     )
 

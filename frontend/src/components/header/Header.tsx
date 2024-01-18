@@ -1,69 +1,56 @@
-import { Component } from 'react';
-import { Link } from 'react-router-dom';
-import { Navbar,
-  NavbarBrand,
-  NavbarToggler,
-  Collapse,
-  Nav,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  NavbarText} from 'reactstrap'
+import { Menubar } from 'primereact/menubar';
+import { MenuItem } from 'primereact/menuitem';
+import { useNavigate } from 'react-router-dom';
+import { Button } from 'primereact/button';
 import './header.css'
 
-type HeaderState = {
-  isOpen: boolean
-};
+export default function Header(){
 
-export default class Header extends Component{
-  state: HeaderState = {
-    isOpen: false
-  };
+  const navigate = useNavigate();
 
-  toggleNavBar(){
-    this.setState({isOpen: !this.state.isOpen});
+  const navigateHome = () => {
+    navigate('/');
   }
 
-  render(){
-    return(
-      <Navbar color="dark" expand="lg">
-        <NavbarBrand href="/" className="text-white">Tilecal Electronics Database</NavbarBrand>
-        <NavbarToggler onClick={this.toggleNavBar} />
-        <Collapse isOpen={this.state.isOpen} navbar>
-          <Nav className="ms-auto" navbar>
-            <UncontrolledDropdown nav inNavbar>
-              <DropdownToggle nav caret className="text-white">
-                Equipment
-              </DropdownToggle>
-              <DropdownMenu end>
-                <Link to={`equipment`}><DropdownItem>Index</DropdownItem></Link>
-                <DropdownItem>Deleted</DropdownItem>
-                <DropdownItem divider />
-                <DropdownItem>Specific Equipment</DropdownItem>
-              </DropdownMenu>
-            </UncontrolledDropdown>
-            <UncontrolledDropdown nav inNavbar>
-              <DropdownToggle nav caret className="text-white">
-                Register
-              </DropdownToggle>
-              <DropdownMenu end>
-                <DropdownItem>Batch Register</DropdownItem>
-              </DropdownMenu>
-            </UncontrolledDropdown>
-            <UncontrolledDropdown nav inNavbar>
-              <DropdownToggle nav caret className="text-white">
-                Files
-              </DropdownToggle>
-              <DropdownMenu end>
-              <Link to={`files`}><DropdownItem>Index</DropdownItem></Link>
-                <DropdownItem>Deleted</DropdownItem>
-              </DropdownMenu>
-            </UncontrolledDropdown>
-          </Nav>
-          <NavbarText className="text-white">tilep2db</NavbarText>
-        </Collapse>
-      </Navbar>
-    )
-  }
+  const items: MenuItem[] = [
+    {
+      label: 'Equipment',
+      items: [
+        {
+          label: 'Index',
+          url: 'equipment'
+        },
+        {
+          label: 'Deleted'
+        }
+      ]
+    },
+    {
+      label: 'Register'
+    },
+    {
+      label: 'Files',
+      items: [
+        {
+          label: 'Index',
+          url: 'files'
+        },
+        {
+          label: 'Deleted'
+        }
+      ]
+    }
+  ]
+
+  const start = <Button
+    className="p-menuitem-text text-xl font-normal"
+    label="Tilecal Electronics Database" onClick={navigateHome} link/>;
+  const end = <span className="p-menuitem-text text-s">tilep2db</span>;
+  
+  return(
+  <div className="card w-auto ">
+      <Menubar model={items} start={start} end={end}
+      className='shadow-2'/>
+  </div>
+  )
 }
