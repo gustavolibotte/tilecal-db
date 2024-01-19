@@ -1,8 +1,8 @@
 import { Menubar } from 'primereact/menubar';
-import { MenuItem } from 'primereact/menuitem';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 import { Button } from 'primereact/button';
 import './header.css'
+import MenuLink from '../menu_link/MenuLink';
 
 export default function Header(){
 
@@ -12,17 +12,12 @@ export default function Header(){
     navigate('/');
   }
 
-  const items: MenuItem[] = [
+  const items =  [
     {
       label: 'Equipment',
-      items: [
-        {
-          label: 'Index',
-          url: 'equipment'
-        },
-        {
-          label: 'Deleted'
-        }
+      items: [ 
+        { template: <MenuLink route='equipment' label='Index'/> },
+        { label: 'Deleted' }
       ]
     },
     {
@@ -31,13 +26,8 @@ export default function Header(){
     {
       label: 'Files',
       items: [
-        {
-          label: 'Index',
-          url: 'files'
-        },
-        {
-          label: 'Deleted'
-        }
+        { template: <MenuLink route='files' label='Index'/> },
+        { label: 'Deleted' }
       ]
     }
   ]
