@@ -291,6 +291,15 @@ class Equipments extends APIController
         return redirect()->route('equipment_view', [$equipmentId]);
     }
 
+    public function get(): ResponseInterface
+    {
+        try{
+            return $this->__get__();
+        } catch (Throwable $e){
+            return $this->fail($e->getMessage(), 500);
+        }
+    }
+
     public function __get__(): ResponseInterface
     {
         $feature = model('FeatureModel')->findName('api_equipment_get');
@@ -332,11 +341,16 @@ class Equipments extends APIController
         } else {
             $data = $equipmentModel->getRelatedEquipments($relatedEquipmentId);
         }
-        $res = [
-            'status' => 200
-        ];
-        $res['data'] = empty($data)? []: $data;
-        return $this->respond($res, 200);
+        return $this->buildAPIResponse(200, empty($data)? []: $data);
+    }
+
+    public function getHist(): ResponseInterface
+    {
+        try{
+            return $this->__getHist__();
+        } catch (Throwable $e){
+            return $this->fail($e->getMessage(), 500);
+        }
     }
 
     public function __getHist__(): ResponseInterface
@@ -347,11 +361,7 @@ class Equipments extends APIController
         }
         $history = model('HistModel')
             ->getEquipmentHist($id);
-        $res = [
-            'status' => 200,
-            'data' => $history
-        ];
-        return $this->respond($res, 200);
+        return $this->buildAPIResponse(200, $history);
     }
 
     /**
@@ -368,10 +378,6 @@ class Equipments extends APIController
      */ 
     public function disassemble(): ResponseInterface
     {
-        $preCheck = $this->preRequestChecks();
-        if (!is_null($preCheck)){
-            return $preCheck;
-        }
         try{
             return $this->__disassemble__();
         } catch (Throwable $e){

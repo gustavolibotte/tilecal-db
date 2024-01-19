@@ -13,43 +13,16 @@ abstract class APIController extends BaseController
 {
     use ResponseTrait;
 
-    abstract protected function __get__(): ResponseInterface;
-    abstract protected function __getHist__(): ResponseInterface;
-
-    public function get(): ResponseInterface
+    protected function buildAPIResponse(int $status, ?array $data=[]): ResponseInterface
     {
-        $preCheck = $this->preRequestChecks();
-        if (!is_null($preCheck)){
-            return $preCheck;
+        if (is_null($data)){
+            $data = [];
         }
-        try{
-            return $this->__get__();
-        } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
-        }
-    }
-
-    public function getHist(): ResponseInterface
-    {
-        $preCheck = $this->preRequestChecks();
-        if (!is_null($preCheck)){
-            return $preCheck;
-        }
-        try{
-            return $this->__getHist__();
-        } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
-        }
-    }
-
-    public function preRequestChecks(): mixed
-    {
-        if (false){
-            log_message('warning', 'API received a non AJAX request');
-            $msg = 'Requests must be AJAX.';
-            return $this->fail($msg, 400);
-        }
-        return null;
+        $res = [
+            'status' => $status,
+            'data' => $data
+        ];
+        return $this->respond($res, $status);
     }
 
     protected function parseOrdering(string $varName, string $tableName, BaseBuilder|Model $queryBuilder): BaseBuilder|Model

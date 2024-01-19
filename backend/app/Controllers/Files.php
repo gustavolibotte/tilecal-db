@@ -7,6 +7,7 @@ use App\Validation\Validators\FileValidator;
 use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\ResponseInterface;
 use ValueError;
+use Throwable;
 
 class Files extends APIController
 {
@@ -203,6 +204,15 @@ class Files extends APIController
         return redirect()->route('file_view', [$fileId]);
     }
 
+    public function get(): ResponseInterface
+    {
+        try{
+            return $this->__get__();
+        } catch (Throwable $e){
+            return $this->fail($e->getMessage(), 500);
+        }
+    }
+
     public function __get__(): ResponseInterface
     {
 
@@ -236,11 +246,18 @@ class Files extends APIController
                 $fileModel->joinEquipments()
             );
         }
-
-        $res = ['status' => 200];
         $data = $fileModel->findAll();
-        $res['data'] = empty($data)? []: $data;
-        return $this->respond($res, 200);
+        
+        return $this->buildAPIResponse(200, empty($data)? []: $data);
+    }
+
+    public function getHist(): ResponseInterface
+    {
+        try{
+            return $this->__getHist__();
+        } catch (Throwable $e){
+            return $this->fail($e->getMessage(), 500);
+        }
     }
 
     public function __getHist__(): ResponseInterface
@@ -251,11 +268,7 @@ class Files extends APIController
         }
         $history = model('HistModel')
             ->getFileHist($id);
-        $res = [
-            'status' => 200,
-            'data' => $history
-        ];
-        return $this->respond($res, 200);
+        return $this->buildAPIResponse(200, $history);
     }
 
     public function downloadHist()
