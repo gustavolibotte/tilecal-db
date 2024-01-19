@@ -4,13 +4,10 @@ import { Button } from 'primereact/button';
 import './spec_equip_index.css';
 import { capitalize } from '../../utils/string';
 
-interface EquipIndexProps {
-  showSpecificFields: boolean;
-}
-
 export default function SpecEquipIndex(){
 
   let { typeName } = useParams();
+  typeName = typeName? typeName: '';
 
   const getButton = (rowData: any) => {
     return <Button label={rowData.id}/>;
