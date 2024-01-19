@@ -1,0 +1,42 @@
+import { useParams } from 'react-router-dom';
+import { ColumnMeta, BaseTable } from '../base_table/BaseTable';
+import { Button } from 'primereact/button';
+import './spec_equip_index.css';
+import { capitalize } from '../../utils/string';
+
+interface EquipIndexProps {
+  showSpecificFields: boolean;
+}
+
+export default function SpecEquipIndex(){
+
+  let { typeName } = useParams();
+
+  const getButton = (rowData: any) => {
+    return <Button label={rowData.id}/>;
+  }
+
+  const columns: ColumnMeta[] = [
+    {field: 'id', header: 'ID', body: getButton},
+    {field: 'type_label', header: 'Type'},
+    {field: 'location_name', header: 'Location'},
+    {field: 'detector_location_name', header: 'Detector Location'},
+    {field: 'status_name', header: 'Status'},
+    {field: 'owner_name', header: 'Owner'},
+    {field: 'comments', header: 'Comments'},
+    {field: 'created_at', header: 'Created at'},
+    {field: 'updated_at', header: 'Updated at'}
+  ]
+  return (
+    <>
+      <h1>{`${capitalize(typeName)} Index`}</h1>
+      <BaseTable
+      expandField='type_params'
+      columns={columns}
+      dataKey='id'
+      dataKeyHeader='ID'
+      fileName='equip_index'
+      fetchUrl={`http://localhost:8080/api/equipment?typeName=${typeName}`}/>
+    </>
+  );
+}

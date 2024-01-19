@@ -8,20 +8,22 @@ import { DataTableSortMeta } from 'primereact/datatable';
 import { ColumnBodyOptions } from 'primereact/column';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { snakeToSpaced } from '../../utils/string';
 import './base_table.css';
 
 interface TableProps {
-    columns: ColumnMeta[],
-    fetchUrl: string,
-    dataKey: string,
-    dataKeyHeader: string,
-    fileName: string
+    columns: ColumnMeta[];
+    fetchUrl: string;
+    dataKey: string;
+    dataKeyHeader: string;
+    fileName: string;
+    expandField: string
 };
 
 interface TableState {
   data: Array<any>;
   filters: DataTableFilterMeta;
-  visibleColumns: ColumnMeta[]
+  visibleColumns: ColumnMeta[];
 };
 
 export interface ColumnMeta {
@@ -33,13 +35,15 @@ export interface ColumnMeta {
 export class BaseTable extends Component<TableProps, TableState> {
 
   dt: any;
+  allColumns: ColumnMeta[];
   
   constructor(props: TableProps){
     super(props);
+    this.allColumns = [...this.props.columns];
     this.state = {
       data: [],
       filters: this.getClearFilters(),
-      visibleColumns: this.props.columns.slice() // Assigned by value
+      visibleColumns: this.allColumns // Assigned by value
     }
     this.exportCSV = this.exportCSV.bind(this);
     this.clearFilter = this.clearFilter.bind(this);
@@ -48,11 +52,25 @@ export class BaseTable extends Component<TableProps, TableState> {
     this.dt = createRef();
   }
 
+  refreshAllColumns(){
+    if ((!this.props.expandField) || (this.state.data.length < 1)){
+      return this.props.columns;
+    }
+    let allColumns: ColumnMeta[] = [...this.props.columns];
+    const expandFieldKeys = Object.keys(this.state.data[0][this.props.expandField])
+    console.log(this.state.data[0]);
+    const expandField: ColumnMeta[] = expandFieldKeys.map((fieldName: string) =>{
+      return {field: `${this.props.expandField}.${fieldName}`, header: snakeToSpaced(fieldName)};
+    })
+    this.allColumns = allColumns.concat(expandField);
+    console.log(this.allColumns);
+  }
+
   getClearFilters(): DataTableFilterMeta{
-    let filters: DataTableFilterMeta = {}
-    this.props.columns.forEach(
-        columnDescription => {
-            filters[columnDescription.field] = {value: null, matchMode: FilterMatchMode.STARTS_WITH}
+    let filters: DataTableFilterMeta = {};
+    this.allColumns.forEach(
+        colMeta => {
+            filters[colMeta.field] = {value: null, matchMode: FilterMatchMode.STARTS_WITH}
         }
     );
     return filters;
@@ -71,7 +89,7 @@ export class BaseTable extends Component<TableProps, TableState> {
   getHeader(): ReactNode{
     return (<div className="flex align-items-center justify-content gap-2">
         <span>Select Columns:</span>
-        <MultiSelect value={this.state.visibleColumns} options={this.props.columns} optionLabel="header" onChange={this.onColumnToggle} className="w-full sm:w-20rem" display="chip" />
+        <MultiSelect value={this.state.visibleColumns} options={this.allColumns} optionLabel="header" onChange={this.onColumnToggle} className="w-full sm:w-20rem" display="chip" />
         <Button type="button" icon="pi pi-filter-slash" label="Clear Filters" outlined onClick={this.clearFilter} />
         <Button type="button" icon="pi pi-file-pdf" label="PDF" onClick={this.exportPdf} data-pr-tooltip="PDF" />
         <Button type="button" icon="pi pi-file" label="CSV" onClick={() => this.exportCSV(false)} data-pr-tooltip="CSV" />
@@ -90,6 +108,7 @@ export class BaseTable extends Component<TableProps, TableState> {
         order: 1
       },
     ]
+    this.refreshAllColumns();
 
     return (
       <>
@@ -141,8 +160,8 @@ export class BaseTable extends Component<TableProps, TableState> {
     import('jspdf').then((jsPDF) => {
       import('jspdf-autotable').then(() => {
           const doc = new jsPDF.default('landscape');
-          // I don;t now why but ts can't find the function autoTable but it exists
-          // The flag exists only to force it to compile otherwise it wuld raise errors
+          // I don't now why but ts can't find the function autoTable but it exists
+          // The flag exists only to force it to compile otherwise it would raise errors
           // @ts-ignore
           doc.autoTable(exportColumns, this.state.data);
           doc.save(`${this.props.fileName}.pdf`);
@@ -156,7 +175,7 @@ export class BaseTable extends Component<TableProps, TableState> {
 
   onColumnToggle(event: MultiSelectChangeEvent): void{
     let selectedColumns = event.value;
-    let orderedSelectedColumns = this.props.columns.filter((col: any) => selectedColumns.some((sCol: any) => sCol.field === col.field));
+    let orderedSelectedColumns = this.allColumns.filter((col: any) => selectedColumns.some((sCol: any) => sCol.field === col.field));
     this.setState({ visibleColumns: orderedSelectedColumns });
   }
 }

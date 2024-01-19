@@ -6,6 +6,7 @@ import NotFound from './components/not_found/NotFound.tsx';
 import PageLayout from './components/page_layout/PageLayout.tsx';
 import EquipIndex from './components/equip_index/EquipIndex.tsx';
 import FileIndex from './components/file_index/FileIndex.tsx';
+import SpecEquipIndex from './components/spec_equip_index/SpecEquipIndex.tsx';
 
 import './main.css'
 import 'primeicons/primeicons.css';
@@ -20,6 +21,10 @@ const children = [
   {
     path: "equipment",
     element: <EquipIndex/>,
+  },
+  {
+    path: "equipment/type/:typeName",
+    element: <SpecEquipIndex/>,
   },
   {
     path: "files",

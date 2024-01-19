@@ -149,6 +149,12 @@ $routes->get('files/download/(:num)', 'Files::download/$1', [
     'as' => 'file_download'
 ]);
 
+// EquipmentTypes
+$routes->get('api/equipment-type', 'EquipmentType::get',[
+    'filter' => 'auth:view',
+    'as' => 'api_equip_type_get'
+]);
+
 // Errors
 $routes->get('unauthorized', 'Equipments::unauthorized');
 $routes->get('notfound', 'Equipments::notFound');

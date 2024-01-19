@@ -341,6 +341,14 @@ class Equipments extends APIController
         } else {
             $data = $equipmentModel->getRelatedEquipments($relatedEquipmentId);
         }
+        helper('app_array');
+        foreach($data as &$sample){
+            // $type_params = json_decode(remove_value('type_params', $sample), true);
+            // foreach ($type_params as $key=>$value){
+            //     $sample[$key] = $value;
+            // }
+            $sample['type_params'] = json_decode($sample['type_params']);
+        }
         return $this->buildAPIResponse(200, empty($data)? []: $data);
     }
 

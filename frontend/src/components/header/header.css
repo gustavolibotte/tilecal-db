@@ -1,0 +1,4 @@
+.p-submenu-list{
+    max-height: 280px;
+    overflow-y: auto;
+}

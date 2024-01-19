@@ -1,46 +1,101 @@
 import { Menubar } from 'primereact/menubar';
-import { useNavigate} from 'react-router-dom';
+import { Navigate} from 'react-router-dom';
 import { Button } from 'primereact/button';
+import { Component} from 'react';
 import './header.css'
 import MenuLink from '../menu_link/MenuLink';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
-export default function Header(){
+interface HeaderProps {
+  equipTypeUrl: string;
+};
 
-  const navigate = useNavigate();
+interface EquipType {
+  name: string;
+  label: string;
+}
 
-  const navigateHome = () => {
-    navigate('/');
+interface HeaderState {
+  toHome: boolean;
+  equipTypes: EquipType[] 
+}
+
+
+export default class Header extends Component<HeaderProps, HeaderState>{
+
+  constructor(props: any){
+    super(props);
+    this.state = {
+      toHome: false,
+      equipTypes: []
+    }
+    this.navigateHome = this.navigateHome.bind(this);
   }
 
-  const items =  [
-    {
-      label: 'Equipment',
-      items: [ 
-        { template: <MenuLink route='equipment' label='Index'/> },
-        { label: 'Deleted' }
-      ]
-    },
-    {
-      label: 'Register'
-    },
-    {
-      label: 'Files',
-      items: [
-        { template: <MenuLink route='files' label='Index'/> },
-        { label: 'Deleted' }
-      ]
-    }
-  ]
+  navigateHome(): void{
+    this.setState({toHome: true})
+  }
 
-  const start = <Button
-    className="p-menuitem-text text-xl font-normal"
-    label="Tilecal Electronics Database" onClick={navigateHome} link/>;
-  const end = <span className="p-menuitem-text text-s">tilep2db</span>;
-  
-  return(
-  <div className="card w-auto ">
-      <Menubar model={items} start={start} end={end}
-      className='shadow-2'/>
-  </div>
-  )
+  componentDidMount(): void{
+    this.fetchData();
+  }
+
+  componentDidUpdate(): void{
+    if (this.state.toHome){
+      this.setState({toHome: false});
+    }
+  }
+
+  async fetchData(){
+    await axios.get(this.props.equipTypeUrl)
+      .then((response)=>{
+        this.setState({ equipTypes: response.data.data});
+      }, (error) =>{
+        toast.error(error.data.message.error);
+      });
+  }
+
+  render(){
+
+    if (this.state.toHome){
+      return <Navigate to='/'/>;
+    }
+    
+    let equipItems: any = this.state.equipTypes.map(
+      (eT: EquipType) => {
+        return {template: <MenuLink route={`equipment/type/${eT.name}`} label={eT.label}/>};
+      }
+    );
+    equipItems.unshift({ separator: true});
+    equipItems.unshift({ template: <MenuLink route='deleted-equipment' label='Deleted'/> });
+    equipItems.unshift({ template: <MenuLink route='equipment' label='Index'/> });
+    const items =  [
+      {
+        label: 'Equipment',
+        items: equipItems
+      },
+      {
+        label: 'Register'
+      },
+      {
+        label: 'Files',
+        items: [
+          { template: <MenuLink route='files' label='Index'/> },
+          { label: <MenuLink route='deleted-files' label='Deleted'/> }
+        ]
+      }
+    ]
+    const start = <Button
+      className="p-menuitem-text text-xl font-normal"
+      label="Tilecal Electronics Database" onClick={this.navigateHome} link/>;
+    const end = <span className="p-menuitem-text text-s">tilep2db</span>;
+    
+    return(
+    <div className="card w-auto ">
+        <Menubar model={items} start={start} end={end}
+        className='shadow-2'/>
+    </div>
+    )
+  }
 }

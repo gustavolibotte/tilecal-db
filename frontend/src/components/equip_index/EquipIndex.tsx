@@ -21,10 +21,12 @@ export default class EquipIndex extends Component {
       {field: 'created_at', header: 'Created at'},
       {field: 'updated_at', header: 'Updated at'}
     ]
+
     return (
       <>
         <h1>Equipment Index</h1>
         <BaseTable
+        expandField=''
         columns={columns}
         dataKey='id'
         dataKeyHeader='ID'

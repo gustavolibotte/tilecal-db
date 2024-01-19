@@ -22,6 +22,7 @@ export default class FileIndex extends Component {
         <h1>File Index</h1>
         <BaseTable
         columns={columns}
+        expandField=''
         dataKey='name'
         dataKeyHeader='Name'
         fileName='file_index'
