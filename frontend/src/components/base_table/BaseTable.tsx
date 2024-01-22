@@ -12,12 +12,12 @@ import { snakeToSpaced } from '../../utils/string';
 import './base_table.css';
 
 interface TableProps {
-    columns: ColumnMeta[];
-    fetchUrl: string;
-    dataKey: string;
-    dataKeyHeader: string;
-    fileName: string;
-    expandField: string
+  columns: ColumnMeta[];
+  fetchUrl: string;
+  dataKey: string;
+  dataKeyHeader: string;
+  fileName: string;
+  expandField: string
 };
 
 interface TableState {
