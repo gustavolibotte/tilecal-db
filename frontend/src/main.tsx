@@ -7,11 +7,11 @@ import PageLayout from './components/page_layout/PageLayout.tsx';
 import EquipIndex from './routes/equip_index/EquipIndex.tsx';
 import FileIndex from './routes/file_index/FileIndex.tsx';
 import SpecEquipIndex from './routes/spec_equip_index/SpecEquipIndex.tsx';
+import EquipRegister from './routes/equip_register/EquipRegister.tsx';
 
 import './main.css'
 import 'primeicons/primeicons.css';
 import "primereact/resources/themes/bootstrap4-light-blue/theme.css";
-
 
 const children: RouteObject[] = [
   {
@@ -25,6 +25,10 @@ const children: RouteObject[] = [
   {
     path: "equipment/type/:typeName",
     element: <SpecEquipIndex/>,
+  },
+  {
+    path: 'equipment/register/:typeName',
+    element: <EquipRegister/>,
   },
   {
     path: "files",

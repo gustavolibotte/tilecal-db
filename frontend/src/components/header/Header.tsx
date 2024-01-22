@@ -6,7 +6,7 @@ import './header.css'
 import MenuLink from '../menu_link/MenuLink';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { getSpecEquipRoute } from '../../utils/routes';
+import { getEquipRegisterRoute, getSpecEquipRoute } from '../../utils/routes';
 
 interface HeaderProps {
   equipTypeUrl: string;
@@ -69,6 +69,12 @@ export default class Header extends Component<HeaderProps, HeaderState>{
         return {template: <MenuLink route={getSpecEquipRoute(et.label)} label={et.label}/>};
       }
     );
+    let registerItems: any = this.state.equipTypes.map(
+      (et: EquipType) => {
+        // return {label: et.label, url: getSpecEquipRoute(et.label)};
+        return {template: <MenuLink route={getEquipRegisterRoute(et.label)} label={et.label}/>};
+      }
+    );
     equipItems.unshift({ separator: true});
     equipItems.unshift({ template: <MenuLink route='deleted-equipment' label='Deleted'/> });
     equipItems.unshift({ template: <MenuLink route='equipment' label='Index'/> });
@@ -78,7 +84,8 @@ export default class Header extends Component<HeaderProps, HeaderState>{
         items: equipItems
       },
       {
-        label: 'Register'
+        label: 'Register',
+        items: registerItems
       },
       {
         label: 'Files',
