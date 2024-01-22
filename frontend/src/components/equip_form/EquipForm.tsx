@@ -4,6 +4,7 @@ import { Button } from 'primereact/button';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import FormText from '../form_text/FormText';
+import FormDropdown from '../form_dropdown/FormDropdown';
 
 interface EquipFormSchema {
   id: string;
@@ -16,6 +17,26 @@ interface EquipFormSchema {
 }
 
 export default function EquipForm() {
+
+    const ownerOptions = [
+      {name: 'CERN', value:'1'},
+      {name: 'UFRJ', value:'2'}
+    ];
+    const locationOptions = [
+      {name: 'Building 175', value: 'B175'},
+      {name: 'CERN', value: 'CER'}
+    ]
+
+    const statusOptions = [
+      {name: 'Good', value: '1'},
+      {name: 'Bad', value: '2'}
+    ]
+
+    const detectorLocations = [
+      { name: 'EBA01', value: 'EBA01'},
+      { name: 'EBA02', value: 'EBA02'},
+    ]
+
     let initialValues: EquipFormSchema = {
       id: '',
       owner: '',
@@ -64,46 +85,50 @@ export default function EquipForm() {
                 }}
                 errorText={getFormErrorMessage}
                 isValid={isFormFieldInvalid}/>
-              <FormText
+              <FormDropdown
                 id='owner'
                 name='Owner'
+                options={ownerOptions}
                 required
                 value={formik.values.owner}
                 help='Institute that owns the equipment'
                 onChange={(e) => {
-                  formik.setFieldValue('owner', e.target.value);
+                  formik.setFieldValue('owner', e.value);
                 }}
                 errorText={getFormErrorMessage}
                 isValid={isFormFieldInvalid}/>
-              <FormText
+              <FormDropdown
                 id='location'
                 name='Location'
+                options={locationOptions}
                 required
                 value={formik.values.location}
                 help='Current equipment location'
                 onChange={(e) => {
-                  formik.setFieldValue('location', e.target.value);
+                  formik.setFieldValue('location', e.value);
                 }}
                 errorText={getFormErrorMessage}
                 isValid={isFormFieldInvalid}/>
-              <FormText
+              <FormDropdown
                 id='status'
                 name='Status'
+                options={statusOptions}
                 required
                 value={formik.values.status}
                 help='Current equipment status'
                 onChange={(e) => {
-                  formik.setFieldValue('status', e.target.value);
+                  formik.setFieldValue('status', e.value);
                 }}
                 errorText={getFormErrorMessage}
                 isValid={isFormFieldInvalid}/>
-              <FormText
+              <FormDropdown
                 id='detector_location'
                 name='Detector Location'
+                options={detectorLocations}
                 value={formik.values.detector_location}
                 help='Where in the detector the equipment should be.'
                 onChange={(e) => {
-                  formik.setFieldValue('serial', e.target.value);
+                  formik.setFieldValue('serial', e.value);
                 }}
                 errorText={getFormErrorMessage}
                 isValid={isFormFieldInvalid}/>
