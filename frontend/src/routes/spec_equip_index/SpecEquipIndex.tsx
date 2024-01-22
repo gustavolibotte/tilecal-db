@@ -1,8 +1,7 @@
 import { useParams } from 'react-router-dom';
-import { ColumnMeta, BaseTable } from '../base_table/BaseTable';
+import { ColumnMeta, BaseTable } from '../../components/base_table/BaseTable';
 import { Button } from 'primereact/button';
 import './spec_equip_index.css';
-import { capitalize } from '../../utils/string';
 
 export default function SpecEquipIndex(){
 
@@ -26,7 +25,7 @@ export default function SpecEquipIndex(){
   ]
   return (
     <>
-      <h1>{`${capitalize(typeName)} Index`}</h1>
+      <h1>{`${typeName} Index`}</h1>
       <BaseTable
       expandField='type_params'
       columns={columns}

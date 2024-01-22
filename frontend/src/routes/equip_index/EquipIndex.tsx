@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { ColumnMeta, BaseTable } from '../base_table/BaseTable';
+import { ColumnMeta, BaseTable } from '../../components/base_table/BaseTable';
 import { Button } from 'primereact/button';
 import './equip_index.css';
 

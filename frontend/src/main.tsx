@@ -1,19 +1,19 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Home from './components/home/Home.tsx';
+import { createBrowserRouter, RouteObject, RouterProvider } from 'react-router-dom';
+import Home from './routes/home/Home.tsx';
 import NotFound from './components/not_found/NotFound.tsx';
 import PageLayout from './components/page_layout/PageLayout.tsx';
-import EquipIndex from './components/equip_index/EquipIndex.tsx';
-import FileIndex from './components/file_index/FileIndex.tsx';
-import SpecEquipIndex from './components/spec_equip_index/SpecEquipIndex.tsx';
+import EquipIndex from './routes/equip_index/EquipIndex.tsx';
+import FileIndex from './routes/file_index/FileIndex.tsx';
+import SpecEquipIndex from './routes/spec_equip_index/SpecEquipIndex.tsx';
 
 import './main.css'
 import 'primeicons/primeicons.css';
 import "primereact/resources/themes/bootstrap4-light-blue/theme.css";
 
 
-const children = [
+const children: RouteObject[] = [
   {
     path: "/",
     element: <Home />,

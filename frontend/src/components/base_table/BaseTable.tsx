@@ -49,6 +49,7 @@ export class BaseTable extends Component<TableProps, TableState> {
     this.clearFilter = this.clearFilter.bind(this);
     this.onColumnToggle = this.onColumnToggle.bind(this);
     this.exportPdf = this.exportPdf.bind(this);
+    this.refresh = this.refresh.bind(this);
     this.dt = createRef();
   }
 
@@ -87,12 +88,14 @@ export class BaseTable extends Component<TableProps, TableState> {
   }
 
   getHeader(): ReactNode{
-    return (<div className="flex align-items-center justify-content gap-2">
-        <span>Select Columns:</span>
-        <MultiSelect value={this.state.visibleColumns} options={this.allColumns} optionLabel="header" onChange={this.onColumnToggle} className="w-full sm:w-20rem" display="chip" />
-        <Button type="button" icon="pi pi-filter-slash" label="Clear Filters" outlined onClick={this.clearFilter} />
-        <Button type="button" icon="pi pi-file-pdf" label="PDF" onClick={this.exportPdf} data-pr-tooltip="PDF" />
-        <Button type="button" icon="pi pi-file" label="CSV" onClick={() => this.exportCSV(false)} data-pr-tooltip="CSV" />
+    return (
+    <div className="flex flex-wrap align-items-center justify-content gap-2">
+      <span>Select Columns:</span>
+      <MultiSelect value={this.state.visibleColumns} options={this.allColumns} optionLabel="header" onChange={this.onColumnToggle} className="w-full sm:w-20rem" display="chip" />
+      <Button type="button" icon="pi pi-filter-slash" label="Clear Filters" outlined onClick={this.clearFilter} />
+      <Button type="button" icon="pi pi-file-pdf" label="PDF" onClick={this.exportPdf} data-pr-tooltip="PDF" />
+      <Button type="button" icon="pi pi-file" label="CSV" onClick={() => this.exportCSV(false)} data-pr-tooltip="CSV" />
+      <Button type="button" icon="pi pi-refresh" onClick={this.refresh} data-pr-tooltip="Refresh" />
     </div>);
   }
 
@@ -177,5 +180,10 @@ export class BaseTable extends Component<TableProps, TableState> {
     let selectedColumns = event.value;
     let orderedSelectedColumns = this.allColumns.filter((col: any) => selectedColumns.some((sCol: any) => sCol.field === col.field));
     this.setState({ visibleColumns: orderedSelectedColumns });
+  }
+
+  refresh(): void{
+    this.fetchData();
+    this.clearFilter();
   }
 }
