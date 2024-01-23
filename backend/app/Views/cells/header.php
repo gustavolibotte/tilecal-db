@@ -23,7 +23,7 @@
             <? endif; ?>
             <? if ($equipmentIndexActive):?>
               <? foreach ($equipmentTypes as $equipType): ?>
-                <li><a class="dropdown-item" href="<? echo url_to('equipment_index_type', $equipType->name);?>"><?echo $equipType->label;?></a></li>
+                <li><a class="dropdown-item" href="<? echo url_to('equipment_index_type', $equipType->name);?>"><?echo $equipType->name;?></a></li>
               <? endforeach;?>
             <? endif; ?>
           </ul>
@@ -63,7 +63,7 @@
               <? if ($equipmentRegisterActive): ?>
                 <li><hr class="dropdown-divider"></li>
                 <? foreach ($equipmentTypes as $equipType): ?>
-                  <li><a class="dropdown-item" href="<? echo url_to('equipment_register', $equipType->name); ?>"><?echo $equipType->label;?></a></li>
+                  <li><a class="dropdown-item" href="<? echo url_to('equipment_register', $equipType->name); ?>"><?echo $equipType->name;?></a></li>
                 <? endforeach;?>
               <? endif; ?>
             </ul>

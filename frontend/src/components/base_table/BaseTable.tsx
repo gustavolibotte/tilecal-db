@@ -59,12 +59,10 @@ export class BaseTable extends Component<TableProps, TableState> {
     }
     let allColumns: ColumnMeta[] = [...this.props.columns];
     const expandFieldKeys = Object.keys(this.state.data[0][this.props.expandField])
-    console.log(this.state.data[0]);
     const expandField: ColumnMeta[] = expandFieldKeys.map((fieldName: string) =>{
       return {field: `${this.props.expandField}.${fieldName}`, header: snakeToSpaced(fieldName)};
     })
     this.allColumns = allColumns.concat(expandField);
-    console.log(this.allColumns);
   }
 
   getClearFilters(): DataTableFilterMeta{

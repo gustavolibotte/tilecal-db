@@ -269,7 +269,7 @@ class EquipmentValidator extends EntryValidator
     {
         helper('string');
 
-        $className = sprintf('\App\Validation\Validators\%sValidator', snake2CamelCase($typeName));
+        $className = sprintf('\App\Validation\Validators\%sValidator', snake2CamelCase(makeSnakeCase($typeName)));
         try {
             return new $className($typeName);
         } catch (Error $e){

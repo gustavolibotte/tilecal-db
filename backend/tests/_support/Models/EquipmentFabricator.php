@@ -75,9 +75,9 @@ class EquipmentFabricator extends EquipmentModel
     public function fake(Generator &$faker): array
     {
         $pmtBlock = $this->fakePMTBlock($faker);
-        $divider = $this->fakeEquipment($faker, 'hv_divider', $pmtBlock->id, 'pmt_block_hv_divider_slot');
+        $divider = $this->fakeEquipment($faker, 'Active HV Divider', $pmtBlock->id, 'pmt_block_hv_divider_slot');
         $divider->model = 'active';
-        $fenics = $this->fakeEquipment($faker, 'fenics', $pmtBlock->id, 'pmt_block_electronics_slot');
+        $fenics = $this->fakeEquipment($faker, 'FENICS', $pmtBlock->id, 'pmt_block_electronics_slot');
         $pmt = $this->fakePMT($faker, $pmtBlock->id, 'pmt_block_pmt_slot');
         $equipments = [
             $pmtBlock,
@@ -92,7 +92,7 @@ class EquipmentFabricator extends EquipmentModel
 
     protected function fakePmt(Generator &$faker, string $parentId=null, string $slotName=null): Entity
     {
-        $type = $this->types['pmt'];
+        $type = $this->types['PMT'];
         $location = $faker->randomElement($this->locations);
         $status = $faker->randomElement($this->statuses);
         $institute = $this->institutes['CER'];
@@ -122,7 +122,7 @@ class EquipmentFabricator extends EquipmentModel
 
     protected function fakePmtBlock(Generator &$faker, string $parentId=null): Entity
     {
-        $type = $this->types['pmt_block'];
+        $type = $this->types['PMT Block'];
         $location = $faker->randomElement($this->locations);
         $status = $faker->randomElement($this->statuses);
         $institute = $faker->randomElement($this->institutes);

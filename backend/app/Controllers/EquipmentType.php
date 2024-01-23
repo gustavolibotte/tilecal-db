@@ -20,7 +20,6 @@ class EquipmentType extends APIController
     {
         $equipmentTypes = model('EquipmentTypeModel')
             ->select('name')
-            ->select('label')
             ->where('active', 1)
             ->findAll();
         return $this->buildAPIResponse(200, empty($equipmentTypes)? []: $equipmentTypes);

@@ -25,7 +25,7 @@ class HistModel extends BaseModel
             ->join('institutes i', 'eh.owner_id=i.id', 'left')
             ->select("'equip' as hist_type")
             ->select('eh.record_id as id')
-            ->select('et.label as type')
+            ->select('et.name as type')
             ->select('s.name as status')
             ->select('l.name as location')
             ->select('i.name as owner')

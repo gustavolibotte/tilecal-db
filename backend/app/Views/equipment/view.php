@@ -3,7 +3,7 @@
 <?= $this->section('entryProperties') ?>
   <li class="list-group-item"><b>ID</b>: <? echo $entity->id?> </li>
   <li class="list-group-item"><b>ATLAS ID</b>: <? echo $entity->atlas_id?> </li>
-  <li class="list-group-item"><b>Type</b>: <? echo $entity->type_label?> </li>
+  <li class="list-group-item"><b>Type</b>: <? echo $entity->type_name?> </li>
   <? if ($entity->location_description): ?>
     <li class="list-group-item"><b>Location</b>: <? echo $entity->location_name . ' - ' . $entity->location_description?> </li>
   <? else: ?>

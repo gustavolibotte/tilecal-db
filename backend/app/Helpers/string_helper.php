@@ -1,11 +1,13 @@
 <?php
 
-function snake2Capitalized($str){
+function snake2Capitalized(string $str)
+{
     $str = ucwords(str_replace('_', ' ', $str));
     return $str;
 }
 
-function snake2CamelCase($str){
+function snake2CamelCase(string $str)
+{
     $exploded = explode('_', $str);
     $newStr = ucfirst($exploded[0]);
     for ($i=1; $i < count($exploded); $i++){
@@ -14,7 +16,8 @@ function snake2CamelCase($str){
     return $newStr;
 }
 
-function snake2LowerCamelCase($str){
+function snake2LowerCamelCase(string $str)
+{
     $exploded = explode('_', $str);
     $newStr = $exploded[0];
     for ($i=1; $i < count($exploded); $i++){
@@ -23,11 +26,20 @@ function snake2LowerCamelCase($str){
     return $newStr;
 }
 
-function makeLowerCamelCase($array){
+function makeLowerCamelCase($array)
+{
     $str = $array[0];
     for ($i=1; $i < count($array); $i++){
         $str .= ucfirst($array[$i]);
     }
+    return $str;
+}
+
+function makeSnakeCase(string $str): string
+{
+    $str = strtolower($str);
+    $str = explode(' ', $str);
+    $str = implode('_', $str);
     return $str;
 }
 

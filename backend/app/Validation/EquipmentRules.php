@@ -66,7 +66,7 @@ class EquipmentRules{
             $error = sprintf(
                 "The parent id must be from a %s. The given id is from a %s",
                 snake2Capitalized($params),
-                $equipment->type_label
+                $equipment->type_name
             );
         }
         return $approved;

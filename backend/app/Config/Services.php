@@ -34,7 +34,7 @@ class Services extends BaseService
      * }
      */
 
-    public static function authenticator($getShared=true)
+    public static function authenticator($getShared=true): Authenticator
     {   
         // echo "Getting authenticator service\n";
         if($getShared){

@@ -68,12 +68,11 @@ export default function EquipForm({typeName}: EquipFormProps) {
       const responseData = error.response.data;
       // console.log(error);
       // console.log(responseData);
-      // console.log(`Is invalid: ${responseData.error == INVALID_DATA_MSG}`);
       if (responseData.error == INVALID_DATA_MSG){
         Object.keys(responseData.messages).forEach((key: string) => {
-          // console.log(`Setting error`);
-          // console.log(key);
-          // console.log(responseData.messages[key]);
+          console.log(`Setting error`);
+          console.log(key);
+          console.log(responseData.messages[key]);
           formik.setFieldError(key as keyof EquipFormSchema, responseData.messages[key]);
         });
       }

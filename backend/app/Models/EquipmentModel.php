@@ -34,7 +34,7 @@ class EquipmentModel extends LogModel
         parent::initialize();
         helper(['app_array']);
         $this->selectSideTable .= 'equipments.id, ';
-        $this->selectSideTable .= 'equipment_types.label as type_label ';
+        $this->selectSideTable .= 'equipment_types.name as type_name ';
         $this->afterDelete[] = 'deleteRelations';
     }
 
@@ -44,7 +44,7 @@ class EquipmentModel extends LogModel
             $queryBuilder = $this;
         }
         $queryBuilder->select('equipments.id as id');
-        $queryBuilder->select('equipment_types.label as type_label');
+        $queryBuilder->select('equipment_types.name as type_name');
         $queryBuilder->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left');
         return $queryBuilder;
     }
@@ -56,7 +56,6 @@ class EquipmentModel extends LogModel
         }
         $queryBuilder->select('equipments.id as id');
         $queryBuilder->select('equipment_types.id as type_id');
-        $queryBuilder->select('equipment_types.label as type_label');
         $queryBuilder->select('equipment_types.name as type_name');
         $queryBuilder->select('equipments.location_id as location_id');
         $queryBuilder->select('locations.name as location_name');

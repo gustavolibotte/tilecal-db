@@ -26,7 +26,7 @@ class LayoutCell extends BaseCell
         }
         if ($viewData['equipmentIndexActive'] || $viewData['equipmentDeleteActive']){
             $viewData['equipmentTypes'] = model('EquipmentTypeModel')
-                ->select('name, label')
+                ->select('name')
                 ->where('active', 1)
                 ->findAll();
         } else{

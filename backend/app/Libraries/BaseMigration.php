@@ -2,6 +2,7 @@
 
 namespace App\Library;
 
+use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\Migration;
 use CodeIgniter\Database\Forge;
 
@@ -37,11 +38,14 @@ abstract class BaseMigration extends Migration{
         'null' => false
     ];
 
+    protected BaseConnection $dbconnect;
+
     public function __construct(?Forge $forge = null)
     {
         parent::__construct($forge);
         $authenticator = \Config\Services::authenticator();
         $authenticator->setSystem();
+        $this->dbconnect = db_connect();
     }
 
     protected function addTimestamps(array $tableFields): array

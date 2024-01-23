@@ -6,11 +6,8 @@ use App\Library\BaseMigration;
 
 class CaseSensitiveCollation extends BaseMigration
 {
-    protected $dbconnect;
-
     public function up()
     {
-        $this->dbconnect = db_connect();
         $this->dbconnect->transException(true)->transBegin();
         $this->dbconnect->query("SET FOREIGN_KEY_CHECKS=0;");
 

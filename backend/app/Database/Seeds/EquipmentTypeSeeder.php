@@ -12,6 +12,7 @@ class EquipmentTypeSeeder extends BaseSeeder
         $equipmentTypeModel = model('EquipmentTypeModel');
         foreach ($jsonData as $row){
             $equipmentType = new \App\Entities\EquipmentType($row);
-            $equipmentTypeModel->insert($equipmentType);        }
+            $equipmentTypeModel->insert($equipmentType);
+        }
     }
 }

@@ -66,13 +66,13 @@ export default class Header extends Component<HeaderProps, HeaderState>{
     let equipItems: any = this.state.equipTypes.map(
       (et: EquipType) => {
         // return {label: et.label, url: getSpecEquipRoute(et.label)};
-        return {template: <MenuLink route={getSpecEquipRoute(et.label)} label={et.label}/>};
+        return {template: <MenuLink route={getSpecEquipRoute(et.name)} label={et.name}/>};
       }
     );
     let registerItems: any = this.state.equipTypes.map(
       (et: EquipType) => {
         // return {label: et.label, url: getSpecEquipRoute(et.label)};
-        return {template: <MenuLink route={getEquipRegisterRoute(et.label)} label={et.label}/>};
+        return {template: <MenuLink route={getEquipRegisterRoute(et.name)} label={et.name}/>};
       }
     );
     equipItems.unshift({ separator: true});

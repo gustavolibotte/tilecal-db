@@ -28,18 +28,18 @@ class Equipments extends APIController
         } elseif (!empty($typeName)){
             $indexData['typeName'] = $typeName;
             $equipmentType = model('EquipmentTypeModel')
-                ->select('label')
+                ->select('name')
                 ->select('active')
                 ->where('name', $typeName)
                 ->first();
             if (is_null($equipmentType)){
                 return $this->notFound(
-                    sprintf("Equipment type with name %s dowsn't exist", $typeName)
+                    sprintf("Equipment type with name %s doesn't exist", $typeName)
                 );
             } elseif (!$equipmentType->active){
                 return $this->serviceUnavailable();
             }
-            $pageTitle = sprintf('%s Index', $equipmentType->label);
+            $pageTitle = sprintf('%s Index', $equipmentType->name);
         } else{
             $pageTitle = 'Equipment Index';
         }
@@ -72,7 +72,7 @@ class Equipments extends APIController
         $viewData['entity'] = $equipment;
         $viewData['pageHeader'] = sprintf(
             '%s: %s',
-            $equipment->type_label,
+            $equipment->type_name,
             $equipment->id
         );
 
@@ -191,7 +191,7 @@ class Equipments extends APIController
         }
         $type = model('EquipmentTypeModel')->where(sprintf("name = '%s'", $typeName))->first();
         $registerData['model'] = $type;
-        $title = sprintf('Register %s', $type->label);
+        $title = sprintf('Register %s', $type->name);
         $registerData['pageTitle'] = $title;
         $registerData['pageHeader'] = $title;
         $registerData['forms'] = ['Equipment Info'=> $form];

@@ -15,7 +15,6 @@ class EquipmentTypeModel extends LogModel
         'project',
         'system',
         'id_regex',
-        'label',
         'params',
         'active',
         'description',
@@ -24,7 +23,6 @@ class EquipmentTypeModel extends LogModel
 
     public function initialize(){
         parent::initialize();
-        // $this->beforeUpdate[] = 'updateSlots';
     }
 
     public function insert($data = null, bool $returnID = true)
