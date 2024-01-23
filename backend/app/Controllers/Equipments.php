@@ -385,6 +385,8 @@ class Equipments extends APIController
             ]
         ];
         // echo '<pre>'; print_r($data); echo '</pre>';
+        // echo '\n';
+        // echo $this->validateData($data, $rules);
 
         if (!$this->validateData($data, $rules)){
             $errors = $this->validator->getErrors();
