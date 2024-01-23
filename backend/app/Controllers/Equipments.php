@@ -352,6 +352,59 @@ class Equipments extends APIController
         return $this->buildAPIResponse(200, empty($data)? []: $data);
     }
 
+    public function post(): ResponseInterface
+    {
+        try{
+            return $this->__post__();
+        } catch (Throwable $e){
+            return $this->fail($e->getMessage(), 500);
+        }
+    }
+
+    public function __post__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('equipment_register');
+        if (!$feature->isActive()){
+            return $this->fail('Service Unavailable', 503);
+        }
+
+        if (!$this->request->is('post')){
+            return $this->fail('Equipments::post just accepts post requests', 400);
+        }
+        $data = ['typeName' => $this->request->getVar('typeName')];
+        $rules = [
+            'typeName' => [
+                'rules' => [
+                    'required',
+                    'is_not_unique[equipment_types.name]'
+                ],
+                'errors' => [
+                    'required' => 'Equipment type name is required.',
+                    'is_not_unique' => 'The equipment type "{value}" doesn\'t exist.'
+                ]
+            ]
+        ];
+        // echo '<pre>'; print_r($data); echo '</pre>';
+
+        if (!$this->validateData($data, $rules)){
+            $errors = $this->validator->getErrors();
+            return $this->fail([], 400, $errors['typeName']);
+        }
+        $typeName = $data['typeName'];
+
+        $validator = EquipmentValidator::getFromTypeName($typeName);
+        $validator->addRequest($this->request);
+        if ($validator->validate()){
+            $equipment = $validator->getValidatedData();
+            $equipmentModel = model('EquipmentModel');
+            $equipmentModel->insert($equipment);
+            return $this->buildAPIResponse(200, [], 'Registered with success.');
+        }else{
+            $errors = $validator->getErrors();
+            return $this->fail($errors, 400, 'Invalid data.');
+        }
+    }
+
     public function getHist(): ResponseInterface
     {
         try{

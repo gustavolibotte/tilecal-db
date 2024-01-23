@@ -13,7 +13,7 @@ abstract class APIController extends BaseController
 {
     use ResponseTrait;
 
-    protected function buildAPIResponse(int $status, ?array $data=[]): ResponseInterface
+    protected function buildAPIResponse(int $status, ?array $data=[], string $message=''): ResponseInterface
     {
         if (is_null($data)){
             $data = [];
@@ -22,7 +22,7 @@ abstract class APIController extends BaseController
             'status' => $status,
             'data' => $data
         ];
-        return $this->respond($res, $status);
+        return $this->respond($res, $status, $message);
     }
 
     protected function parseOrdering(string $varName, string $tableName, BaseBuilder|Model $queryBuilder): BaseBuilder|Model

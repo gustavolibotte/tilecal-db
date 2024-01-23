@@ -39,10 +39,24 @@ $routes->get('callback', 'Callback::callback', [
 ]);
 
 // API routes
+// This first route was made to comply with the CORS protocol used
+//  by the browsers.
+// https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe
+$routes->options('api(:any)', 'CORS::index',[
+    'filter' => 'auth:view',
+    'as' => 'api_cors_option'
+]);
 $routes->get('api/equipment', 'Equipments::get', [
     'filter' => 'auth:view',
     'as' => 'api_equipment_get'
 ]);
+$routes->post('api/equipment', 'Equipments::post', [
+    'filter' => 'auth:registere',
+    'as' => 'api_equipment_post'
+]);
+
+
+
 $routes->get('api/file', 'Files::get', [
     'filter' => 'auth:view',
     'as' => 'api_file_get'

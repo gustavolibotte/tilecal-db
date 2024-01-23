@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
+import axios from 'axios';
+import { EQUIPMENT_ENDPOINT } from '../../utils/routes';
 
 interface EquipFormSchema {
   id: string;
@@ -19,7 +21,7 @@ interface EquipFormSchema {
 export default function EquipForm() {
 
   const ownerOptions = [
-    {name: 'CERN', value:'1'},
+    {name: 'CERN', value:'CER'},
     {name: 'UFRJ', value:'2'}
   ];
   const locationOptions = [
@@ -28,7 +30,7 @@ export default function EquipForm() {
   ]
 
   const statusOptions = [
-    {name: 'Good', value: '1'},
+    {name: 'Installed', value: 'Installed'},
     {name: 'Bad', value: '2'}
   ]
 
@@ -51,18 +53,35 @@ export default function EquipForm() {
       toast.success(formik.values.id);
   };
 
+  const submitData = async (data: EquipFormSchema) =>{
+    // const config = {
+    //   headers: {
+    //     "Access-Control-Allow-Origin": "*",
+    //     "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS"
+    //   }
+    // };
+    await axios.post(
+      EQUIPMENT_ENDPOINT,
+      data
+    ).then((response) => {
+      toast.success('Data submitted with success');
+      formik.resetForm();
+    }, (error) => {
+      console.log(error);
+      toast.error(error.response.data.error);
+    }
+    )
+  }
+
   const formik = useFormik({
       initialValues: initialValues,
       validationSchema: Yup.object({
-        id: Yup.string().required('Equipment ID is required.'),
+        // id: Yup.string().required('Equipment ID is required.'),
         owner: Yup.string().required('An owner institute is required.'),
         location: Yup.string().required('An equipment location is required.'),
         status: Yup.string().required('Equipment status is required.')
       }),
-      onSubmit: (data) => {
-          data && show();
-          formik.resetForm();
-      }
+      onSubmit: submitData
   });
 
   const isFormFieldInvalid = (name: keyof EquipFormSchema) => !!(formik.touched[name] && formik.errors[name]);
@@ -128,7 +147,7 @@ export default function EquipForm() {
               value={formik.values.detector_location}
               help='Where in the detector the equipment should be.'
               onChange={(e) => {
-                formik.setFieldValue('serial', e.value);
+                formik.setFieldValue('detector_location', e.value);
               }}
               errorText={getFormErrorMessage}
               isValid={isFormFieldInvalid}/>
