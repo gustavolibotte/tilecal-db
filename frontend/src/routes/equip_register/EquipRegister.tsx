@@ -8,7 +8,7 @@ export default function EquipRegister() {
   return (
     <div>
       <h1>{`${typeName} Register`}</h1>
-      <EquipForm/>
+      <EquipForm typeName={typeName}/>
     </div>
   )
 }

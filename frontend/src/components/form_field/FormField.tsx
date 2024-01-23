@@ -6,8 +6,7 @@ interface FormFieldProps {
   name: string;
   help: string;
   required?: boolean;
-  isValid: boolean;
-  errorText?: string;
+  errorText: string | null;
 }
 
 export default class FormField extends Component<FormFieldProps> {
@@ -25,7 +24,7 @@ export default class FormField extends Component<FormFieldProps> {
         <small id={`${this.props.id}-help`}>
           {this.props.help}
         </small>
-        {this.props.isValid && <small id={`${this.props.id}-error`} className="p-error">{this.props.errorText}</small>}
+        {this.props.errorText && <small id={`${this.props.id}-error`} className="p-error">{this.props.errorText}</small>}
       </div>
     )
   };

@@ -371,9 +371,9 @@ class Equipments extends APIController
         if (!$this->request->is('post')){
             return $this->fail('Equipments::post just accepts post requests', 400);
         }
-        $data = ['typeName' => $this->request->getVar('typeName')];
+        $data = ['type_name' => $this->request->getVar('type_name')];
         $rules = [
-            'typeName' => [
+            'type_name' => [
                 'rules' => [
                     'required',
                     'is_not_unique[equipment_types.name]'
@@ -388,11 +388,10 @@ class Equipments extends APIController
 
         if (!$this->validateData($data, $rules)){
             $errors = $this->validator->getErrors();
-            return $this->fail([], 400, $errors['typeName']);
+            return $this->fail([], 400, $errors['type_name']);
         }
-        $typeName = $data['typeName'];
 
-        $validator = EquipmentValidator::getFromTypeName($typeName);
+        $validator = EquipmentValidator::getFromTypeName($data['type_name']);
         $validator->addRequest($this->request);
         if ($validator->validate()){
             $equipment = $validator->getValidatedData();

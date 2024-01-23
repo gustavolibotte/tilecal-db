@@ -7,29 +7,35 @@ import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
 import axios from 'axios';
 import { EQUIPMENT_ENDPOINT } from '../../utils/routes';
+import { INVALID_DATA_MSG } from '../../utils/constants';
 
 interface EquipFormSchema {
   id: string;
-  owner: string;
-  location: string;
-  status: string;
+  owner_mne: string;
+  location_name: string;
+  status_name: string;
   serial: string;
   comments: string;
   detector_location: string;
+  type_name?: string;
 }
 
-export default function EquipForm() {
+interface EquipFormProps {
+  typeName: string;
+}
 
-  const ownerOptions = [
+export default function EquipForm({typeName}: EquipFormProps) {
+
+  const ownerMneOptions = [
     {name: 'CERN', value:'CER'},
     {name: 'UFRJ', value:'2'}
   ];
-  const locationOptions = [
+  const locationNameOptions = [
     {name: 'Building 175', value: 'B175'},
     {name: 'CERN', value: 'CER'}
   ]
 
-  const statusOptions = [
+  const statusNameOptions = [
     {name: 'Installed', value: 'Installed'},
     {name: 'Bad', value: '2'}
   ]
@@ -41,25 +47,17 @@ export default function EquipForm() {
 
   let initialValues: EquipFormSchema = {
     id: '',
-    owner: '',
-    location: '',
-    status: '',
+    owner_mne: '',
+    location_name: '',
+    status_name: '',
     serial: '',
     comments: '',
     detector_location: ''
   };
 
-  const show = () => {
-      toast.success(formik.values.id);
-  };
-
   const submitData = async (data: EquipFormSchema) =>{
-    // const config = {
-    //   headers: {
-    //     "Access-Control-Allow-Origin": "*",
-    //     "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS"
-    //   }
-    // };
+    data['type_name'] = typeName;
+    console.log(data);
     await axios.post(
       EQUIPMENT_ENDPOINT,
       data
@@ -67,8 +65,19 @@ export default function EquipForm() {
       toast.success('Data submitted with success');
       formik.resetForm();
     }, (error) => {
-      console.log(error);
-      toast.error(error.response.data.error);
+      const responseData = error.response.data;
+      // console.log(error);
+      // console.log(responseData);
+      // console.log(`Is invalid: ${responseData.error == INVALID_DATA_MSG}`);
+      if (responseData.error == INVALID_DATA_MSG){
+        Object.keys(responseData.messages).forEach((key: string) => {
+          // console.log(`Setting error`);
+          // console.log(key);
+          // console.log(responseData.messages[key]);
+          formik.setFieldError(key as keyof EquipFormSchema, responseData.messages[key]);
+        });
+      }
+      toast.error(responseData.error);
     }
     )
   }
@@ -77,17 +86,15 @@ export default function EquipForm() {
       initialValues: initialValues,
       validationSchema: Yup.object({
         // id: Yup.string().required('Equipment ID is required.'),
-        owner: Yup.string().required('An owner institute is required.'),
-        location: Yup.string().required('An equipment location is required.'),
-        status: Yup.string().required('Equipment status is required.')
+        owner_mne: Yup.string().required('An owner institute is required.'),
+        location_name: Yup.string().required('An equipment location is required.'),
+        status_name: Yup.string().required('Equipment status is required.')
       }),
       onSubmit: submitData
   });
-
-  const isFormFieldInvalid = (name: keyof EquipFormSchema) => !!(formik.touched[name] && formik.errors[name]);
-
-  const getFormErrorMessage = (name: keyof EquipFormSchema) => {
-      return isFormFieldInvalid(name) ? formik.errors[name] : null;
+  
+  const getFormErrorMessage = (name: keyof EquipFormSchema): string | null => {
+      return !!(formik.touched[name] && formik.errors[name]) ? String(formik.errors[name]) : null;
   };
 
   return (
@@ -102,44 +109,40 @@ export default function EquipForm() {
               onChange={(e) => {
                 formik.setFieldValue('id', e.target.value);
               }}
-              errorText={getFormErrorMessage}
-              isValid={isFormFieldInvalid}/>
+              errorText={getFormErrorMessage('id')}/>
             <FormDropdown
-              id='owner'
+              id='owner_mne'
               name='Owner'
-              options={ownerOptions}
+              options={ownerMneOptions}
               required
-              value={formik.values.owner}
+              value={formik.values.owner_mne}
               help='Institute that owns the equipment'
               onChange={(e) => {
-                formik.setFieldValue('owner', e.value);
+                formik.setFieldValue('owner_mne', e.value);
               }}
-              errorText={getFormErrorMessage}
-              isValid={isFormFieldInvalid}/>
+              errorText={getFormErrorMessage('owner_mne')}/>
             <FormDropdown
-              id='location'
+              id='location_name'
               name='Location'
-              options={locationOptions}
+              options={locationNameOptions}
               required
-              value={formik.values.location}
+              value={formik.values.location_name}
               help='Current equipment location'
               onChange={(e) => {
-                formik.setFieldValue('location', e.value);
+                formik.setFieldValue('location_name', e.value);
               }}
-              errorText={getFormErrorMessage}
-              isValid={isFormFieldInvalid}/>
+              errorText={getFormErrorMessage('location_name')}/>
             <FormDropdown
-              id='status'
+              id='status_name'
               name='Status'
-              options={statusOptions}
+              options={statusNameOptions}
               required
-              value={formik.values.status}
+              value={formik.values.status_name}
               help='Current equipment status'
               onChange={(e) => {
-                formik.setFieldValue('status', e.value);
+                formik.setFieldValue('status_name', e.value);
               }}
-              errorText={getFormErrorMessage}
-              isValid={isFormFieldInvalid}/>
+              errorText={getFormErrorMessage('status_name')}/>
             <FormDropdown
               id='detector_location'
               name='Detector Location'
@@ -149,8 +152,7 @@ export default function EquipForm() {
               onChange={(e) => {
                 formik.setFieldValue('detector_location', e.value);
               }}
-              errorText={getFormErrorMessage}
-              isValid={isFormFieldInvalid}/>
+              errorText={getFormErrorMessage('detector_location')}/>
             <FormText
               id='serial'
               name='Serial'
@@ -159,18 +161,16 @@ export default function EquipForm() {
               onChange={(e) => {
                 formik.setFieldValue('serial', e.target.value);
               }}
-              errorText={getFormErrorMessage}
-              isValid={isFormFieldInvalid}/>
+              errorText={getFormErrorMessage('serial')}/>
             <FormText
               id='comments'
               name='Comments'
               value={formik.values.comments}
               help='Remarks about the equipment'
               onChange={(e) => {
-                formik.setFieldValue('remarks', e.target.value);
+                formik.setFieldValue('comments', e.target.value);
               }}
-              errorText={getFormErrorMessage}
-              isValid={isFormFieldInvalid}/>
+              errorText={getFormErrorMessage('comments')}/>
             <Button type="submit" label="Submit" />
           </form>
       </div>

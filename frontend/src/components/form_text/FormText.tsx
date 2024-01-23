@@ -9,22 +9,25 @@ interface FormTextProps {
   value: any;
   help: string;
   onChange: ChangeEventHandler<HTMLInputElement>;
-  errorText: CallableFunction;
-  isValid: CallableFunction;
+  errorText: string | null;
   required?: boolean;
 }
 
 export default class FormText extends Component<FormTextProps> {
   render() {
-    const isValid = this.props.isValid(this.props.id);
     return (
-    <FormField id={this.props.id} name={this.props.name} help={this.props.help} errorText={this.props.errorText(this.props.id)} required={this.props.required} isValid={isValid}>
+    <FormField
+      id={this.props.id}
+      name={this.props.name}
+      help={this.props.help}
+      errorText={this.props.errorText}
+      required={this.props.required}>
       <InputText
           id={this.props.id}
           name={this.props.id}
           value={this.props.value}
           onChange={this.props.onChange}
-          className={classNames({ 'p-invalid': isValid })}
+          className={classNames({ 'p-invalid': Boolean(this.props.errorText) })}
       />
     </FormField>
     )

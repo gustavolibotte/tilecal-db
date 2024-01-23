@@ -1,0 +1,1 @@
+export const INVALID_DATA_MSG = 'Invalid data.';
