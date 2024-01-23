@@ -2,9 +2,9 @@
 
 namespace App\Database\Migrations;
 
-use CodeIgniter\Database\Migration;
+use App\Library\BaseMigration;
 
-class CaseSensitiveCollation extends Migration
+class CaseSensitiveCollation extends BaseMigration
 {
     protected $dbconnect;
 
