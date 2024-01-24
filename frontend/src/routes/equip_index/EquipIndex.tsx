@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { ColumnMeta, BaseTable } from '../../components/base_table/BaseTable';
 import { Button } from 'primereact/button';
 import './equip_index.css';
-import { EQUIPMENT_ENDPOINT } from '../../utils/routes';
+import { EQUIPMENT_ENDPOINT } from '../../utils/DbClient';
 
 export default class EquipIndex extends Component {
 

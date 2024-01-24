@@ -5,16 +5,17 @@ import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
-import { EQUIPMENT_ENDPOINT } from '../../utils/routes';
 import { INVALID_DATA_MSG } from '../../utils/constants';
-import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import { useQuery, useMutation, Mutation } from '@tanstack/react-query';
+import axios, { AxiosError } from 'axios';
 import { 
   LOCATION_ENDPOINT,
   INSTITUTE_ENDPOINT,
   STATUS_ENDPOINT,
   DETECTOR_LOCATION_ENDPOINT,
-  makeQueryFunction
+  EQUIPMENT_ENDPOINT,
+  makeQueryFunction,
+  makeMutationFunction
 } from '../../utils/DbClient';
 
 interface EquipFormSchema {
@@ -64,36 +65,38 @@ export default function EquipForm({typeName}: EquipFormProps) {
     detector_location: ''
   };
 
-  const submitData = async (data: EquipFormSchema) =>{
-    data['type_name'] = typeName;
-    console.log(data);
-    await axios.post(
-      EQUIPMENT_ENDPOINT,
-      data
-    ).then((response) => {
-      toast.success('Data submitted with success');
+  const equipMutation = useMutation({
+    mutationFn: makeMutationFunction('post', EQUIPMENT_ENDPOINT),
+    onMutate: (varaiables) => {
+      toast.info('Registering equipment.');
+    },
+    onSuccess: (data, variables, context) => {
+      toast.dismiss();
+      toast.success('Equipment registered with success');
       formik.resetForm();
-    }, (error) => {
-      const responseData = error.response.data;
-      // console.log(error);
-      // console.log(responseData);
+    },
+    onError: (error: AxiosError, variables, context) => {
+      // The following fields are guaranteed with the app
+      toast.dismiss();
+      const responseData: any = error?.response?.data;
       if (responseData.error == INVALID_DATA_MSG){
         Object.keys(responseData.messages).forEach((key: string) => {
-          console.log(`Setting error`);
-          console.log(key);
-          console.log(responseData.messages[key]);
           formik.setFieldError(key as keyof EquipFormSchema, responseData.messages[key]);
         });
+      } else{
+        toast.error('An error has occured.')
       }
-      toast.error(responseData.error);
-    }
-    )
+    },
+  });
+
+  const submitData = async (data: EquipFormSchema) =>{
+    data['type_name'] = typeName;
+    equipMutation.mutate(data);
   }
 
   const formik = useFormik({
       initialValues: initialValues,
       validationSchema: Yup.object({
-        // id: Yup.string().required('Equipment ID is required.'),
         owner_mne: Yup.string().required('An owner institute is required.'),
         location_name: Yup.string().required('An equipment location is required.'),
         status_name: Yup.string().required('Equipment status is required.')
