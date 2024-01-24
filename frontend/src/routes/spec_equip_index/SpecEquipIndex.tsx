@@ -14,7 +14,7 @@ export default function SpecEquipIndex(){
 
   const columns: ColumnMeta[] = [
     {field: 'id', header: 'ID', body: getButton},
-    {field: 'type_label', header: 'Type'},
+    {field: 'type_name', header: 'Type'},
     {field: 'location_name', header: 'Location'},
     {field: 'detector_location_name', header: 'Detector Location'},
     {field: 'status_name', header: 'Status'},
