@@ -12,6 +12,7 @@ import axios from 'axios';
 import { 
   LOCATION_ENDPOINT,
   INSTITUTE_ENDPOINT,
+  STATUS_ENDPOINT,
   makeQueryFunction
 } from '../../utils/DbClient';
 
@@ -42,10 +43,10 @@ export default function EquipForm({typeName}: EquipFormProps) {
     queryFn: makeQueryFunction('get', INSTITUTE_ENDPOINT)
   });
 
-  const statusNameOptions = [
-    {name: 'Installed', value: 'Installed'},
-    {name: 'Bad', value: '2'}
-  ]
+  const statusQuery = useQuery({
+    queryKey: ['status', {}],
+    queryFn: makeQueryFunction('get', STATUS_ENDPOINT)
+  });
 
   const detectorLocations = [
     { name: 'EBA01', value: 'EBA01'},
@@ -103,11 +104,17 @@ export default function EquipForm({typeName}: EquipFormProps) {
       return !!(formik.touched[name] && formik.errors[name]) ? String(formik.errors[name]) : null;
   };
 
-  const isPending = locationQuery.isPending || instituteQuery.isPending;
+  const isPending = (
+    locationQuery.isPending
+    || instituteQuery.isPending
+    || statusQuery.isPending);
   if (isPending){
     return 'Loading';
   }
-  const isError = locationQuery.isError || instituteQuery.isError;
+  const isError = (
+    locationQuery.isError
+    || instituteQuery.isError
+    || statusQuery.isError);
   if (isError){
     return 'Error';
   }
@@ -126,6 +133,12 @@ export default function EquipForm({typeName}: EquipFormProps) {
     }
   });
 
+  const statusNameOptions = statusQuery.data.map((status: any) => {
+    return {
+      name: status.name,
+      value: status.name
+    }
+  });
   return (
       <div className="card flex justify-content-center">
           <form onSubmit={formik.handleSubmit} className="flex flex-column gap-2">

@@ -69,6 +69,12 @@ $routes->get('api/institute', 'Institute::get', [
     'as' => 'api_institute_get'
 ]);
 
+// Status API
+$routes->get('api/status', 'Status::get', [
+    'filter' => 'auth:view',
+    'as' => 'api_status_get'
+]);
+
 
 
 $routes->get('api/file', 'Files::get', [
