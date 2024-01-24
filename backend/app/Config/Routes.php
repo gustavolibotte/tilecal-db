@@ -63,6 +63,12 @@ $routes->get('api/location', 'Location::get', [
     'as' => 'api_location_get'
 ]);
 
+// Institute API
+$routes->get('api/institute', 'Institute::get', [
+    'filter' => 'auth:view',
+    'as' => 'api_institute_get'
+]);
+
 
 
 $routes->get('api/file', 'Files::get', [

@@ -8,8 +8,12 @@ import FormDropdown from '../form_dropdown/FormDropdown';
 import { EQUIPMENT_ENDPOINT } from '../../utils/routes';
 import { INVALID_DATA_MSG } from '../../utils/constants';
 import { useQuery } from '@tanstack/react-query';
-import { locationGet } from '../../db_client/Location';
 import axios from 'axios';
+import { 
+  LOCATION_ENDPOINT,
+  INSTITUTE_ENDPOINT,
+  makeQueryFunction
+} from '../../utils/DbClient';
 
 interface EquipFormSchema {
   id: string;
@@ -30,13 +34,13 @@ export default function EquipForm({typeName}: EquipFormProps) {
 
   const locationQuery = useQuery({
     queryKey: ['location', {}],
-    queryFn: locationGet
+    queryFn: makeQueryFunction('get', LOCATION_ENDPOINT)
   });
 
-  const ownerMneOptions = [
-    {name: 'CERN', value:'CER'},
-    {name: 'UFRJ', value:'2'}
-  ];
+  const instituteQuery = useQuery({
+    queryKey: ['institute', {}],
+    queryFn: makeQueryFunction('get', INSTITUTE_ENDPOINT)
+  });
 
   const statusNameOptions = [
     {name: 'Installed', value: 'Installed'},
@@ -99,15 +103,28 @@ export default function EquipForm({typeName}: EquipFormProps) {
       return !!(formik.touched[name] && formik.errors[name]) ? String(formik.errors[name]) : null;
   };
 
-  if (locationQuery.isPending){
+  const isPending = locationQuery.isPending || instituteQuery.isPending;
+  if (isPending){
     return 'Loading';
   }
+  const isError = locationQuery.isError || instituteQuery.isError;
+  if (isError){
+    return 'Error';
+  }
+
   const locationNameOptions = locationQuery.data.map((location: any) => {
     return {
       name: location.name,
       value: location.name
     };
   })
+
+  const ownerMneOptions = instituteQuery.data.map((institute: any) => {
+    return {
+      name: institute.name,
+      value: institute.value
+    }
+  });
 
   return (
       <div className="card flex justify-content-center">
