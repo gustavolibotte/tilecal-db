@@ -13,6 +13,7 @@ import {
   LOCATION_ENDPOINT,
   INSTITUTE_ENDPOINT,
   STATUS_ENDPOINT,
+  DETECTOR_LOCATION_ENDPOINT,
   makeQueryFunction
 } from '../../utils/DbClient';
 
@@ -48,10 +49,10 @@ export default function EquipForm({typeName}: EquipFormProps) {
     queryFn: makeQueryFunction('get', STATUS_ENDPOINT)
   });
 
-  const detectorLocations = [
-    { name: 'EBA01', value: 'EBA01'},
-    { name: 'EBA02', value: 'EBA02'},
-  ]
+  const detectorLocationQuery = useQuery({
+    queryKey: ['detector_location', {}],
+    queryFn: makeQueryFunction('get', DETECTOR_LOCATION_ENDPOINT)
+  });
 
   let initialValues: EquipFormSchema = {
     id: '',
@@ -107,14 +108,16 @@ export default function EquipForm({typeName}: EquipFormProps) {
   const isPending = (
     locationQuery.isPending
     || instituteQuery.isPending
-    || statusQuery.isPending);
+    || statusQuery.isPending
+    || detectorLocationQuery.isPending);
   if (isPending){
     return 'Loading';
   }
   const isError = (
     locationQuery.isError
     || instituteQuery.isError
-    || statusQuery.isError);
+    || statusQuery.isError
+    || detectorLocationQuery.isError);
   if (isError){
     return 'Error';
   }
@@ -129,16 +132,24 @@ export default function EquipForm({typeName}: EquipFormProps) {
   const ownerMneOptions = instituteQuery.data.map((institute: any) => {
     return {
       name: institute.name,
-      value: institute.value
-    }
+      value: institute.mne
+    };
   });
 
   const statusNameOptions = statusQuery.data.map((status: any) => {
     return {
       name: status.name,
       value: status.name
-    }
+    };
   });
+
+  const detectorLocations = detectorLocationQuery.data.map((detector_location: any) => {
+    return {
+      name: detector_location.name,
+      value: detector_location.name
+    };
+  });
+
   return (
       <div className="card flex justify-content-center">
           <form onSubmit={formik.handleSubmit} className="flex flex-column gap-2">

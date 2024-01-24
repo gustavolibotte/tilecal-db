@@ -2,6 +2,7 @@ import axios from 'axios';
 export const LOCATION_ENDPOINT = 'http://localhost:8080/api/location';
 export const INSTITUTE_ENDPOINT = 'http://localhost:8080/api/institute';
 export const STATUS_ENDPOINT = 'http://localhost:8080/api/status';
+export const DETECTOR_LOCATION_ENDPOINT = 'http://localhost:8080/api/detector-location';
 
 
 interface GetInputType {

@@ -75,6 +75,12 @@ $routes->get('api/status', 'Status::get', [
     'as' => 'api_status_get'
 ]);
 
+// Detector Location API
+$routes->get('api/detector-location', 'DetectorLocation::get', [
+    'filter' => 'auth:view',
+    'as' => 'api_detector_location_get'
+]);
+
 
 
 $routes->get('api/file', 'Files::get', [
