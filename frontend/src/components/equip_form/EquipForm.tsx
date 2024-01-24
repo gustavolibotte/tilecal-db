@@ -5,9 +5,11 @@ import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
-import axios from 'axios';
 import { EQUIPMENT_ENDPOINT } from '../../utils/routes';
 import { INVALID_DATA_MSG } from '../../utils/constants';
+import { useQuery } from '@tanstack/react-query';
+import { locationGet } from '../../db_client/Location';
+import axios from 'axios';
 
 interface EquipFormSchema {
   id: string;
@@ -26,14 +28,15 @@ interface EquipFormProps {
 
 export default function EquipForm({typeName}: EquipFormProps) {
 
+  const locationQuery = useQuery({
+    queryKey: ['location', {}],
+    queryFn: locationGet
+  });
+
   const ownerMneOptions = [
     {name: 'CERN', value:'CER'},
     {name: 'UFRJ', value:'2'}
   ];
-  const locationNameOptions = [
-    {name: 'Building 175', value: 'B175'},
-    {name: 'CERN', value: 'CER'}
-  ]
 
   const statusNameOptions = [
     {name: 'Installed', value: 'Installed'},
@@ -95,6 +98,16 @@ export default function EquipForm({typeName}: EquipFormProps) {
   const getFormErrorMessage = (name: keyof EquipFormSchema): string | null => {
       return !!(formik.touched[name] && formik.errors[name]) ? String(formik.errors[name]) : null;
   };
+
+  if (locationQuery.isPending){
+    return 'Loading';
+  }
+  const locationNameOptions = locationQuery.data.map((location: any) => {
+    return {
+      name: location.name,
+      value: location.name
+    };
+  })
 
   return (
       <div className="card flex justify-content-center">

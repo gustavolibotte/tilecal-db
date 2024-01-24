@@ -18,11 +18,11 @@ class EquipmentType extends APIController
 
     public function __get__(): ResponseInterface
     {
-        $equipmentTypes = model('EquipmentTypeModel')
+        $data = model('EquipmentTypeModel')
             ->select('name')
             ->where('active', 1)
             ->findAll();
-        return $this->buildAPIResponse(200, empty($equipmentTypes)? []: $equipmentTypes);
+        return $this->buildAPIResponse(200, empty($data)? []: $data);
     }
 
 }

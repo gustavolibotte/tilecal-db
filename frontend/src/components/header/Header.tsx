@@ -14,12 +14,17 @@ interface HeaderProps {
 
 interface EquipType {
   name: string;
-  label: string;
+}
+
+interface LocationType {
+  name: string;
+  description: string;
 }
 
 interface HeaderState {
   toHome: boolean;
-  equipTypes: EquipType[] 
+  equipTypes: EquipType[];
+  locations: LocationType[];
 }
 
 
@@ -29,7 +34,8 @@ export default class Header extends Component<HeaderProps, HeaderState>{
     super(props);
     this.state = {
       toHome: false,
-      equipTypes: []
+      equipTypes: [],
+      locations: []
     }
     this.navigateHome = this.navigateHome.bind(this);
   }

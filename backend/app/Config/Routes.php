@@ -46,13 +46,21 @@ $routes->options('api(:any)', 'CORS::index',[
     'filter' => 'auth:view',
     'as' => 'api_cors_option'
 ]);
+
+// Equipment API
 $routes->get('api/equipment', 'Equipments::get', [
     'filter' => 'auth:view',
     'as' => 'api_equipment_get'
 ]);
 $routes->post('api/equipment', 'Equipments::post', [
-    'filter' => 'auth:registere',
+    'filter' => 'auth:register',
     'as' => 'api_equipment_post'
+]);
+
+// Location API
+$routes->get('api/location', 'Location::get', [
+    'filter' => 'auth:view',
+    'as' => 'api_location_get'
 ]);
 
 
