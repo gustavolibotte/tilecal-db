@@ -67,7 +67,7 @@ export function BaseTable(props: TableProps){
           // I don't now why but ts can't find the function autoTable but it exists
           // The flag exists only to force it to compile otherwise it would raise errors
           // @ts-ignore
-          doc.autoTable(exportColumns, data);
+          doc.autoTable(exportColumns, response.data);
           doc.save(`${props.fileName}.pdf`);
       });
     });
@@ -87,7 +87,7 @@ export function BaseTable(props: TableProps){
 
   const invalidateQuery = (): void => {
     queryClient.invalidateQueries({
-      queryKey: ['equipment', {}]
+      queryKey: props.queryKey
     });   // Triggers query refetch
     clearFilter();
   }
@@ -123,11 +123,11 @@ export function BaseTable(props: TableProps){
   }
 
   const refreshAllColumns = (): ColumnMeta[] => {
-    if ((!props.expandField) || (data.length < 1)){
+    if ((!props.expandField) || (response.data.length < 1)){
       return [...props.columns];
     }
     let columns: ColumnMeta[] = [...props.columns];
-    const expandFieldKeys = Object.keys(data[0][props.expandField]);
+    const expandFieldKeys = Object.keys(response.data[0][props.expandField]);
     const expandField: ColumnMeta[] = expandFieldKeys.map((fieldName: string) =>{
       return {field: `${props.expandField}.${fieldName}`, header: snakeToSpaced(fieldName)};
     })
@@ -152,9 +152,9 @@ export function BaseTable(props: TableProps){
     },
   ]
 
-  const {isError, isPending, data, error} = useQuery({
+  const {isError, isPending, data: response, error} = useQuery({
     queryKey: props.queryKey,
-    queryFn: makeQueryFunction('get', props.endpoint)
+    queryFn: makeQueryFunction('get')
   });
 
   if (isError){
@@ -165,6 +165,6 @@ export function BaseTable(props: TableProps){
     return renderDataTable([]);
   } else{
     allColumns = refreshAllColumns();
-    return renderDataTable(data.data);
+    return renderDataTable(response.data);
   }
 }

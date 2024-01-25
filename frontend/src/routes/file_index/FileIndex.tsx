@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import { ColumnMeta, BaseTable } from '../../components/base_table/BaseTable';
 import { Button } from 'primereact/button';
+import { ENDPOINT } from '../../utils/DbClient';
 import './file_index.css'
 
 export default class FileIndex extends Component {
@@ -11,7 +12,7 @@ export default class FileIndex extends Component {
     }
 
     const columns: ColumnMeta[] = [
-      {field: 'name', header: 'name', body: getButton},
+      {field: 'name', header: 'Name', body: getButton},
       {field: 'description', header: 'Description'},
       {field: 'created_at', header: 'Created at'},
       {field: 'updated_at', header: 'Updated at'}
@@ -26,7 +27,8 @@ export default class FileIndex extends Component {
         dataKey='name'
         dataKeyHeader='Name'
         fileName='file_index'
-        fetchUrl='http://localhost:8080/api/file'/>
+        endpoint={ENDPOINT['file']}
+        queryKey={['file', {}]}/>
       </>
     );
   }

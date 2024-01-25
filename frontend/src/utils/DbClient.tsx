@@ -6,6 +6,7 @@ interface EndpointType {
     institute: string;
     status: string;
     detector_location: string;
+    file: string;
 }
 
 export const ENDPOINT: EndpointType = {
@@ -13,17 +14,23 @@ export const ENDPOINT: EndpointType = {
     location: 'http://localhost:8080/api/location',
     institute: 'http://localhost:8080/api/institute',
     status: 'http://localhost:8080/api/status',
-    detector_location: 'http://localhost:8080/api/detector-location'
+    detector_location: 'http://localhost:8080/api/detector-location',
+    file: 'http://localhost:8080/api/file',
 };
 
 interface GetInputType {
     queryKey: Array<any>;
 }
 
+const parseQueryKey = (queryKey: any[]) => {
+  const endpoint = ENDPOINT[queryKey[0] as keyof EndpointType];
+  const queryParams = queryKey[1];
+  return {endpoint: endpoint, queryParams: queryParams};
+}
+
 export function makeQueryFunction(method: string){
   async function queryFunction({queryKey}: GetInputType){
-    const endpoint = ENDPOINT[queryKey[0] as keyof EndpointType];
-    const queryParams = queryKey[1];
+    const {endpoint, queryParams} = parseQueryKey(queryKey);
     if (method == 'get'){
       const response = await axios({
         url: endpoint,
