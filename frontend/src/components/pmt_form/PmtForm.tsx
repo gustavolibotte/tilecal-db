@@ -10,8 +10,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import {
   ENDPOINT,
-  makeQueryFunction,
-  makeMutationFunction
+  makeMutationFunction,
 } from '../../utils/DbClient';
 import FormNumber from '../form_number/FormNumber';
 import { range } from '../../utils/array';
@@ -34,24 +33,20 @@ interface EquipFormSchema {
 
 export default function EquipForm() {
 
-  const locationQuery = useQuery({
-    queryKey: ['location', {}],
-    queryFn: makeQueryFunction('get')
+  const locationQuery: any = useQuery({
+    queryKey: ['location', 'get', {}]
   });
 
-  const instituteQuery = useQuery({
-    queryKey: ['institute', {}],
-    queryFn: makeQueryFunction('get')
+  const instituteQuery: any = useQuery({
+    queryKey: ['institute', 'get', {}]
   });
 
-  const statusQuery = useQuery({
-    queryKey: ['status', {}],
-    queryFn: makeQueryFunction('get')
+  const statusQuery: any = useQuery({
+    queryKey: ['status', 'get', {}]
   });
 
-  const detectorLocationQuery = useQuery({
-    queryKey: ['detector_location', {}],
-    queryFn: makeQueryFunction('get')
+  const detectorLocationQuery: any = useQuery({
+    queryKey: ['detector_location', 'get', {}]
   });
 
   let initialValues: EquipFormSchema = {
@@ -71,15 +66,15 @@ export default function EquipForm() {
 
   const equipMutation = useMutation({
     mutationFn: makeMutationFunction('post', ENDPOINT['equipment']),
-    onMutate: (varaiables) => {
+    onMutate: () => {
       toast.info('Registering equipment.');
     },
-    onSuccess: (data, variables, context) => {
+    onSuccess: () => {
       toast.dismiss();
       toast.success('Equipment registered with success');
       formik.resetForm();
     },
-    onError: (error: AxiosError, variables, context) => {
+    onError: (error: AxiosError) => {
       // The following "?" fields are guaranteed with the app
       toast.dismiss();
       const responseData: any = error?.response?.data;
@@ -100,11 +95,6 @@ export default function EquipForm() {
 
   const formik = useFormik({
       initialValues: initialValues,
-      // validationSchema: Yup.object({
-      //   owner_mne: Yup.string().required('An owner institute is required.'),
-      //   location_name: Yup.string().required('An equipment location is required.'),
-      //   status_name: Yup.string().required('Equipment status is required.')
-      // }),
       onSubmit: submitData
   });
   

@@ -34,7 +34,7 @@ export default function SpecEquipIndex(){
       dataKeyHeader='ID'
       fileName='equip_index'
       endpoint={ENDPOINT['equipment']}
-      queryKey={['equipment', {type_name: typeName}]}/>
+      queryKey={['equipment', 'get', {type_name: typeName}]}/>
     </>
   );
 }

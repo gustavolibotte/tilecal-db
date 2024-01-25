@@ -28,7 +28,7 @@ export default class FileIndex extends Component {
         dataKeyHeader='Name'
         fileName='file_index'
         endpoint={ENDPOINT['file']}
-        queryKey={['file', {}]}/>
+        queryKey={['file', 'get', {}]}/>
       </>
     );
   }

@@ -9,7 +9,6 @@ import { ColumnBodyOptions } from 'primereact/column';
 import { toast } from 'react-toastify';
 import { snakeToSpaced } from '../../utils/string';
 import './base_table.css';
-import { makeQueryFunction } from '../../utils/DbClient';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface TableProps {
@@ -152,9 +151,9 @@ export function BaseTable(props: TableProps){
     },
   ]
 
-  const {isError, isPending, data: response, error} = useQuery({
+  // Any exists only to deal with ts errors
+  const {isError, isPending, data: response, error}: any = useQuery({
     queryKey: props.queryKey,
-    queryFn: makeQueryFunction('get')
   });
 
   if (isError){

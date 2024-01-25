@@ -2,7 +2,6 @@
 import { useFormik } from 'formik';
 import { Button } from 'primereact/button';
 import { toast } from 'react-toastify';
-import * as Yup from 'yup';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
 import { INVALID_DATA_MSG } from '../../utils/constants';
@@ -10,7 +9,6 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import {
   ENDPOINT,
-  makeQueryFunction,
   makeMutationFunction
 } from '../../utils/DbClient';
 
@@ -31,25 +29,22 @@ interface EquipFormProps {
 
 export default function EquipForm({typeName}: EquipFormProps) {
 
-  const locationQuery = useQuery({
-    queryKey: ['location', {}],
-    queryFn: makeQueryFunction('get')
+  const locationQuery: any = useQuery({
+    queryKey: ['location', 'get', {}]
   });
 
-  const instituteQuery = useQuery({
-    queryKey: ['institute', {}],
-    queryFn: makeQueryFunction('get')
+  const instituteQuery: any = useQuery({
+    queryKey: ['institute', 'get', {}]
   });
 
-  const statusQuery = useQuery({
-    queryKey: ['status', {}],
-    queryFn: makeQueryFunction('get')
+  const statusQuery: any = useQuery({
+    queryKey: ['status', 'get', {}]
   });
 
-  const detectorLocationQuery = useQuery({
-    queryKey: ['detector_location', {}],
-    queryFn: makeQueryFunction('get')
+  const detectorLocationQuery: any = useQuery({
+    queryKey: ['detector_location', 'get', {}]
   });
+
 
   let initialValues: EquipFormSchema = {
     id: '',
@@ -63,15 +58,15 @@ export default function EquipForm({typeName}: EquipFormProps) {
 
   const equipMutation = useMutation({
     mutationFn: makeMutationFunction('post', ENDPOINT['equipment']),
-    onMutate: (varaiables) => {
+    onMutate: () => {
       toast.info('Registering equipment.');
     },
-    onSuccess: (data, variables, context) => {
+    onSuccess: () => {
       toast.dismiss();
       toast.success('Equipment registered with success');
       formik.resetForm();
     },
-    onError: (error: AxiosError, variables, context) => {
+    onError: (error: AxiosError) => {
       // The following "?" fields are guaranteed with the app
       toast.dismiss();
       const responseData: any = error?.response?.data;

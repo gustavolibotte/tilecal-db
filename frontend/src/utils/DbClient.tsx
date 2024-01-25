@@ -19,34 +19,39 @@ export const ENDPOINT: EndpointType = {
 };
 
 interface GetInputType {
-    queryKey: Array<any>;
+    queryKey: any;
+}
+
+export type AppResponseType = SuccessResponseType;
+
+interface SuccessResponseType {
+  data: Array<any>;
+  status: number;
 }
 
 const parseQueryKey = (queryKey: any[]) => {
   const endpoint = ENDPOINT[queryKey[0] as keyof EndpointType];
-  const queryParams = queryKey[1];
-  return {endpoint: endpoint, queryParams: queryParams};
+  const method = queryKey[1];
+  const queryParams = queryKey[2];
+  return {endpoint: endpoint, method: method, queryParams: queryParams};
 }
 
-export function makeQueryFunction(method: string){
-  async function queryFunction({queryKey}: GetInputType){
-    const {endpoint, queryParams} = parseQueryKey(queryKey);
-    if (method == 'get'){
-      const response = await axios({
-        url: endpoint,
-        method: method,
-        params: queryParams
-      }).then((res) => res.data);
-      return response;
-    }
+export async function defaultQueryFunction({queryKey}: GetInputType): Promise<AppResponseType>{
+  const {endpoint, method, queryParams} = parseQueryKey(queryKey);
+  if (method == 'get'){
     const response = await axios({
       url: endpoint,
       method: method,
-      data: queryParams
+      params: queryParams
     }).then((res) => res.data);
     return response;
   }
-  return queryFunction;
+  const response = await axios({
+    url: endpoint,
+    method: method,
+    data: queryParams
+  }).then((res) => res.data);
+  return response;
 }
 
 export function makeMutationFunction(method: string, endpoint: string){

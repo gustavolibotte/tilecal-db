@@ -33,7 +33,7 @@ export default class EquipIndex extends Component {
         dataKeyHeader='ID'
         fileName='equip_index'
         endpoint={ENDPOINT['equipment']}
-        queryKey={['equipment', {}]}/>
+        queryKey={['equipment', 'get', {}]}/>
       </>
     );
   }
