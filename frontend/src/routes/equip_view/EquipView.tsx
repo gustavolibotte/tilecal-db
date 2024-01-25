@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import FileTable from '../../components/file_table/FileTable';
 import EquipTable from '../../components/equip_table/EquipTable';
 import './equip_view.css';
+import NotFound from '../../components/not_found/NotFound';
 
 
 export default function EquipView() {
@@ -23,6 +24,9 @@ export default function EquipView() {
   } else if(isError){
     console.log(response);
     return <h1>An Error has occured</h1>;
+  }
+  if (response.data.length < 1){
+    return <NotFound/>;
   }
   const typeName = response.data[0].type_name;
 

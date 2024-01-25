@@ -315,7 +315,7 @@ class Equipments extends APIController
             $equipmentModel = $this->parseFilterCondition(
                 'relatedFileId',
                 'equipments_to_files.file_id',
-                $equipmentModel->joinFil
+                $equipmentModel->joinFiles()
             );
         }
 
