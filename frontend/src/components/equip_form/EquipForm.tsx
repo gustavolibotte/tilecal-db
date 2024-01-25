@@ -72,7 +72,7 @@ export default function EquipForm({typeName}: EquipFormProps) {
       formik.resetForm();
     },
     onError: (error: AxiosError, variables, context) => {
-      // The following fields are guaranteed with the app
+      // The following "?" fields are guaranteed with the app
       toast.dismiss();
       const responseData: any = error?.response?.data;
       if (responseData.error == INVALID_DATA_MSG){
@@ -92,11 +92,11 @@ export default function EquipForm({typeName}: EquipFormProps) {
 
   const formik = useFormik({
       initialValues: initialValues,
-      validationSchema: Yup.object({
-        owner_mne: Yup.string().required('An owner institute is required.'),
-        location_name: Yup.string().required('An equipment location is required.'),
-        status_name: Yup.string().required('Equipment status is required.')
-      }),
+      // validationSchema: Yup.object({
+      //   owner_mne: Yup.string().required('An owner institute is required.'),
+      //   location_name: Yup.string().required('An equipment location is required.'),
+      //   status_name: Yup.string().required('Equipment status is required.')
+      // }),
       onSubmit: submitData
   });
   
