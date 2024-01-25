@@ -4,6 +4,8 @@ import TabPage from '../../components/tab_page/TabPage';
 import { TabPanel } from 'primereact/tabview';
 import EquipInfo from '../../components/equip_info/EquipInfo';
 import { useQuery } from '@tanstack/react-query';
+import FileTable from '../../components/file_table/FileTable';
+import EquipTable from '../../components/equip_table/EquipTable';
 import './equip_view.css';
 
 
@@ -31,6 +33,12 @@ export default function EquipView() {
       <TabPanel header="Info">
         <p className="m-0">
           <EquipInfo equipData={response.data[0]}/>
+          <hr></hr>
+          <h2>Related Equipment</h2>
+          <EquipTable queryKey={['equipment', 'get', {relatedEquipmentId: equipId}]}/>
+          <hr></hr>
+          <h2>Related Files</h2>
+          <FileTable queryKey={['file', 'get', {relatedEquipmentId: equipId}]}/>
         </p>
       </TabPanel>
       <TabPanel header="History">
