@@ -6,14 +6,10 @@ import * as Yup from 'yup';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
 import { INVALID_DATA_MSG } from '../../utils/constants';
-import { useQuery, useMutation, Mutation } from '@tanstack/react-query';
-import axios, { AxiosError } from 'axios';
-import { 
-  LOCATION_ENDPOINT,
-  INSTITUTE_ENDPOINT,
-  STATUS_ENDPOINT,
-  DETECTOR_LOCATION_ENDPOINT,
-  EQUIPMENT_ENDPOINT,
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
+import {
+  ENDPOINT,
   makeQueryFunction,
   makeMutationFunction
 } from '../../utils/DbClient';
@@ -37,22 +33,22 @@ export default function EquipForm({typeName}: EquipFormProps) {
 
   const locationQuery = useQuery({
     queryKey: ['location', {}],
-    queryFn: makeQueryFunction('get', LOCATION_ENDPOINT)
+    queryFn: makeQueryFunction('get')
   });
 
   const instituteQuery = useQuery({
     queryKey: ['institute', {}],
-    queryFn: makeQueryFunction('get', INSTITUTE_ENDPOINT)
+    queryFn: makeQueryFunction('get')
   });
 
   const statusQuery = useQuery({
     queryKey: ['status', {}],
-    queryFn: makeQueryFunction('get', STATUS_ENDPOINT)
+    queryFn: makeQueryFunction('get')
   });
 
   const detectorLocationQuery = useQuery({
     queryKey: ['detector_location', {}],
-    queryFn: makeQueryFunction('get', DETECTOR_LOCATION_ENDPOINT)
+    queryFn: makeQueryFunction('get')
   });
 
   let initialValues: EquipFormSchema = {
@@ -66,7 +62,7 @@ export default function EquipForm({typeName}: EquipFormProps) {
   };
 
   const equipMutation = useMutation({
-    mutationFn: makeMutationFunction('post', EQUIPMENT_ENDPOINT),
+    mutationFn: makeMutationFunction('post', ENDPOINT['equipment']),
     onMutate: (varaiables) => {
       toast.info('Registering equipment.');
     },
@@ -125,28 +121,28 @@ export default function EquipForm({typeName}: EquipFormProps) {
     return 'Error';
   }
 
-  const locationNameOptions = locationQuery.data.map((location: any) => {
+  const locationNameOptions = locationQuery.data.data.map((location: any) => {
     return {
       name: location.name,
       value: location.name
     };
   })
 
-  const ownerMneOptions = instituteQuery.data.map((institute: any) => {
+  const ownerMneOptions = instituteQuery.data.data.map((institute: any) => {
     return {
       name: institute.name,
       value: institute.mne
     };
   });
 
-  const statusNameOptions = statusQuery.data.map((status: any) => {
+  const statusNameOptions = statusQuery.data.data.map((status: any) => {
     return {
       name: status.name,
       value: status.name
     };
   });
 
-  const detectorLocations = detectorLocationQuery.data.map((detector_location: any) => {
+  const detectorLocations = detectorLocationQuery.data.data.map((detector_location: any) => {
     return {
       name: detector_location.name,
       value: detector_location.name

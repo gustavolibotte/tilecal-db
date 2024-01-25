@@ -9,16 +9,17 @@ import { ColumnBodyOptions } from 'primereact/column';
 import { toast } from 'react-toastify';
 import { snakeToSpaced } from '../../utils/string';
 import './base_table.css';
-import { EQUIPMENT_ENDPOINT, makeQueryFunction } from '../../utils/DbClient';
+import { makeQueryFunction } from '../../utils/DbClient';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface TableProps {
   columns: ColumnMeta[];
-  fetchUrl: string;
+  endpoint: string;
   dataKey: string;
   dataKeyHeader: string;
   fileName: string;
-  expandField: string
+  expandField: string;
+  queryKey: Array<any>;
 };
 
 export interface ColumnMeta {
@@ -31,7 +32,7 @@ export function BaseTable(props: TableProps){
 
   const getClearFilters = (): DataTableFilterMeta => {
     let filters: DataTableFilterMeta = {};
-    props.columns.forEach(
+    allColumns.forEach(
         (colMeta: ColumnMeta)  => {
             filters[colMeta.field] = {value: null, matchMode: FilterMatchMode.STARTS_WITH}
         }
@@ -45,7 +46,7 @@ export function BaseTable(props: TableProps){
 
   const onColumnToggle = (event: MultiSelectChangeEvent): void => {
     let selectedColumns = event.value;
-    let orderedSelectedColumns = props.columns.filter((col: any) => selectedColumns.some((sCol: any) => sCol.field === col.field));
+    let orderedSelectedColumns = allColumns.filter((col: any) => selectedColumns.some((sCol: any) => sCol.field === col.field));
     setVisibleColumns(orderedSelectedColumns);
   }
 
@@ -76,7 +77,7 @@ export function BaseTable(props: TableProps){
     return (
       <div className="flex flex-wrap align-items-center justify-content gap-2">
         <span>Select Columns:</span>
-        <MultiSelect value={visibleColumns} options={props.columns} optionLabel="header" onChange={onColumnToggle} className="w-full sm:w-20rem" display="chip" />
+        <MultiSelect value={visibleColumns} options={allColumns} optionLabel="header" onChange={onColumnToggle} className="w-full sm:w-20rem" display="chip" />
         <Button type="button" icon="pi pi-filter-slash" label="Clear Filters" outlined onClick={clearFilter} />
         <Button type="button" icon="pi pi-file-pdf" label="PDF" onClick={exportPdf} data-pr-tooltip="PDF" />
         <Button type="button" icon="pi pi-file" label="CSV" onClick={() => exportCSV(false)} data-pr-tooltip="CSV" />
@@ -102,6 +103,7 @@ export function BaseTable(props: TableProps){
       showGridlines
       stripedRows
       paginator
+      reorderableColumns
       rows={10}
       rowsPerPageOptions={[5, 10, 25, 50]}
       sortMode="multiple"
@@ -118,10 +120,23 @@ export function BaseTable(props: TableProps){
               filterPlaceholder="Search"/>
         ))}
     </DataTable>);
-  } 
+  }
+
+  const refreshAllColumns = (): ColumnMeta[] => {
+    if ((!props.expandField) || (data.length < 1)){
+      return [...props.columns];
+    }
+    let columns: ColumnMeta[] = [...props.columns];
+    const expandFieldKeys = Object.keys(data[0][props.expandField]);
+    const expandField: ColumnMeta[] = expandFieldKeys.map((fieldName: string) =>{
+      return {field: `${props.expandField}.${fieldName}`, header: snakeToSpaced(fieldName)};
+    })
+    return columns.concat(expandField);
+  }
 
   const dt: any = useRef();
   const queryClient = useQueryClient();
+  let allColumns = [...props.columns];
 
   const [filters, setFilters] = useState<DataTableFilterMeta>(getClearFilters());
   const [visibleColumns, setVisibleColumns] = useState<ColumnMeta[]>(props.columns);
@@ -138,21 +153,18 @@ export function BaseTable(props: TableProps){
   ]
 
   const {isError, isPending, data, error} = useQuery({
-    queryKey: ['equipment', {}],
-    queryFn: makeQueryFunction('get', EQUIPMENT_ENDPOINT)
+    queryKey: props.queryKey,
+    queryFn: makeQueryFunction('get', props.endpoint)
   });
 
   if (isError){
-    toast.dismiss();
     toast.error('An error has occured');
     console.log(error);
     return renderDataTable([]);
   } else if (isPending){
-    toast.info('Loading data');
     return renderDataTable([]);
   } else{
-    toast.dismiss();
-    toast.success('Loaded data');
-    return renderDataTable(data);
+    allColumns = refreshAllColumns();
+    return renderDataTable(data.data);
   }
 }

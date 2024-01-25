@@ -309,7 +309,7 @@ class Equipments extends APIController
 
         $equipmentModel = model('EquipmentModel')->asArray();
         $equipmentModel = $this->parseFilterCondition('id', 'equipments.id', $equipmentModel);
-        $equipmentModel = $this->parseFilterCondition('typeName', 'equipment_types.name', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition('type_name', 'equipment_types.name', $equipmentModel);
 
         if (!empty($this->request->getVar('relatedFileId'))){
             $equipmentModel = $this->parseFilterCondition(

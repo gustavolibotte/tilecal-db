@@ -1,26 +1,45 @@
 import axios from 'axios';
-export const EQUIPMENT_ENDPOINT = 'http://localhost:8080/api/equipment';
-export const LOCATION_ENDPOINT = 'http://localhost:8080/api/location';
-export const INSTITUTE_ENDPOINT = 'http://localhost:8080/api/institute';
-export const STATUS_ENDPOINT = 'http://localhost:8080/api/status';
-export const DETECTOR_LOCATION_ENDPOINT = 'http://localhost:8080/api/detector-location';
 
+interface EndpointType {
+    equipment: string;
+    location: string;
+    institute: string;
+    status: string;
+    detector_location: string;
+}
+
+export const ENDPOINT: EndpointType = {
+    equipment: 'http://localhost:8080/api/equipment',
+    location: 'http://localhost:8080/api/location',
+    institute: 'http://localhost:8080/api/institute',
+    status: 'http://localhost:8080/api/status',
+    detector_location: 'http://localhost:8080/api/detector-location'
+};
 
 interface GetInputType {
     queryKey: Array<any>;
 }
 
-export function makeQueryFunction(method: string, endpoint: string){
-    async function queryFunction({queryKey}: GetInputType){
-        const queryParams = queryKey[1];
-        const response = await axios({
-            url: endpoint,
-            method: method,
-            data: queryParams
-        }).then((res) => res.data);
-        return response.data;
+export function makeQueryFunction(method: string){
+  async function queryFunction({queryKey}: GetInputType){
+    const endpoint = ENDPOINT[queryKey[0] as keyof EndpointType];
+    const queryParams = queryKey[1];
+    if (method == 'get'){
+      const response = await axios({
+        url: endpoint,
+        method: method,
+        params: queryParams
+      }).then((res) => res.data);
+      return response;
     }
-    return queryFunction;
+    const response = await axios({
+      url: endpoint,
+      method: method,
+      data: queryParams
+    }).then((res) => res.data);
+    return response;
+  }
+  return queryFunction;
 }
 
 export function makeMutationFunction(method: string, endpoint: string){
