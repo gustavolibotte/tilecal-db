@@ -8,6 +8,7 @@ import FileTable from '../../components/file_table/FileTable';
 import EquipTable from '../../components/equip_table/EquipTable';
 import './equip_view.css';
 import NotFound from '../../components/not_found/NotFound';
+import RelatedEquipTable from '../../components/related_equip_table/RelatedEquipTable';
 
 
 export default function EquipView() {
@@ -39,7 +40,7 @@ export default function EquipView() {
           <EquipInfo equipData={response.data[0]}/>
           <hr></hr>
           <h2>Related Equipment</h2>
-          <EquipTable queryKey={['equipment', 'get', {relatedEquipmentId: equipId}]}/>
+          <RelatedEquipTable equipmentId={equipId}/>
           <hr></hr>
           <h2>Related Files</h2>
           <FileTable queryKey={['file', 'get', {relatedEquipmentId: equipId}]}/>

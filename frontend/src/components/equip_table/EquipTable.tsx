@@ -25,7 +25,7 @@ export default function EquipTable(props: EquipTableProps) {
     {field: 'comments', header: 'Comments'},
     {field: 'created_at', header: 'Created at'},
     {field: 'updated_at', header: 'Updated at'}
-  ]
+  ];
   return (
     <>
     <BaseTable

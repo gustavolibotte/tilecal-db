@@ -164,6 +164,7 @@ export function BaseTable(props: TableProps){
     return renderDataTable([]);
   } else{
     allColumns = refreshAllColumns();
+    console.log(response.data);
     return renderDataTable(response.data);
   }
 }
