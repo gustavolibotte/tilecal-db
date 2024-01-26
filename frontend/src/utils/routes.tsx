@@ -9,3 +9,7 @@ export function getEquipRegisterRoute(typeName: string): string{
 export function getEquipviewRoute(id: string): string{
     return `/equipment/${id}`;
 }
+
+export function getFileViewRoute(id: string): string{
+    return `/file/${id}`;
+}
