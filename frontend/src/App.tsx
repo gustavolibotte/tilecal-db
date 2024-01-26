@@ -11,7 +11,7 @@ import EquipView from './routes/equip_view/EquipView.tsx';
 import { defaultQueryFunction } from './utils/DbClient.tsx';
 
 import 'primeicons/primeicons.css';
-import "primereact/resources/themes/bootstrap4-light-blue/theme.css";
+import "primereact/resources/themes/md-light-indigo/theme.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
