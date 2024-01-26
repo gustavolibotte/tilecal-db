@@ -52,8 +52,8 @@ class HistModel extends BaseModel
             ->get()->getResultArray();
         $fileRelationLogs = $this->db->table('equipments_to_files_hist efh')
             ->join('files f', 'efh.file_id=f.id', 'left')
-            ->select("'file_rel' as hist_type")
-            ->select('efh.file_id')
+            ->select("'file' as hist_type")
+            ->select('f.id as id')
             ->select('f.name as file_name')
             ->select('efh.equipment_id')
             ->select('efh.action')

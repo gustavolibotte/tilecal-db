@@ -1,6 +1,6 @@
-import { ColumnMeta, BaseTable } from '../../components/base_table/BaseTable';
+import { BaseTable } from '../../components/base_table/BaseTable';
 import { Button } from 'primereact/button';
-import { ENDPOINT } from '../../utils/DbClient';
+import { ColumnProps } from 'primereact/column';
 
 interface FileTableProps {
   queryKey: any[];
@@ -8,23 +8,38 @@ interface FileTableProps {
 
 export default function FileTable(props: FileTableProps) {
   const getButton = (rowData: any) => {
-    return <Button label={rowData.name}/>;
+    return <Button label={rowData.name} />;
   }
 
-  const columns: ColumnMeta[] = [
-    {field: 'name', header: 'Name', body: getButton},
-    {field: 'description', header: 'Description'},
-    {field: 'created_at', header: 'Created at'},
-    {field: 'updated_at', header: 'Updated at'}
+  const columns: ColumnProps[] = [
+    {
+      field: 'name', header: 'Name', body: getButton,
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    },
+    {
+      field: 'description', header: 'Description',
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    },
+    {
+      field: 'created_at', header: 'Created At',
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    },
+    {
+      field: 'updated_at', header: 'Updated At',
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    }
   ];
+
   return (
     <BaseTable
       columns={columns}
       expandField=''
       dataKey='name'
-      dataKeyHeader='Name'
       fileName='file_index'
-      endpoint={ENDPOINT['file']}
-      queryKey={props.queryKey}/>
+      queryKey={props.queryKey} />
   )
 }

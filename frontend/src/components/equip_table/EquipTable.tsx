@@ -1,8 +1,8 @@
 import { ColumnMeta, BaseTable } from '../../components/base_table/BaseTable';
 import { Button } from 'primereact/button';
-import { ENDPOINT } from '../../utils/DbClient';
 import { useNavigate } from 'react-router-dom';
 import { getEquipviewRoute } from '../../utils/routes';
+import { DataTableSortMeta } from 'primereact/datatable';
 
 interface EquipTableProps {
   queryKey: any[];
@@ -16,26 +16,73 @@ export default function EquipTable(props: EquipTableProps) {
   }
 
   const columns: ColumnMeta[] = [
-    {field: 'id', header: 'ID', body: getButton},
-    {field: 'type_name', header: 'Type'},
-    {field: 'status_name', header: 'Status'},
-    {field: 'location_name', header: 'Location'},
-    {field: 'owner_name', header: 'Owner'},
-    {field: 'detector_location_name', header: 'Detector Location'},
-    {field: 'comments', header: 'Comments'},
-    {field: 'created_at', header: 'Created at'},
-    {field: 'updated_at', header: 'Updated at'}
+    {
+      field: 'id', header: 'ID', body: getButton,
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    },
+    {
+      field: 'type_name', header: 'Type',
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    },
+    {
+      field: 'status_name', header: 'Status',
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    },
+    {
+      field: 'location_name', header: 'Location',
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    },
+    {
+      field: 'owner_name', header: 'Owner',
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    },
+    {
+      field: 'detector_location_name', header: 'Detector Location',
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    },
+    {
+      field: 'comments', header: 'Comments',
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    },
+    {
+      field: 'created_at', header: 'Created At',
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    },
+    {
+      field: 'updated_at', header: 'Updated At',
+      filter: true, sortable: true,
+      filterPlaceholder: 'Search'
+    }
   ];
+
+  const multiSortMeta: DataTableSortMeta[] = [
+    {
+      field: 'updated_at',
+      order: -1
+    },
+    {
+      field: 'id',
+      order: 1
+    },
+  ]
+
   return (
     <>
     <BaseTable
     expandField=''
     columns={columns}
     dataKey='id'
-    dataKeyHeader='ID'
     fileName='equip_index'
-    endpoint={ENDPOINT['equipment']}
-    queryKey={props.queryKey}/>
+    queryKey={props.queryKey}
+    multiSortMeta={multiSortMeta}/>
   </>
   )
 }

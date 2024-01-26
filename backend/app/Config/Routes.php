@@ -52,6 +52,10 @@ $routes->get('api/equipment', 'Equipments::get', [
     'filter' => 'auth:view',
     'as' => 'api_equipment_get'
 ]);
+$routes->get('api/equipment-hist', 'Equipments::getHist', [
+    'filter' => 'auth:view',
+    'as' => 'api_equipment_hist_get'
+]);
 $routes->post('api/equipment', 'Equipments::post', [
     'filter' => 'auth:register',
     'as' => 'api_equipment_post'

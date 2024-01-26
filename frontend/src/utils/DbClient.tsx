@@ -7,6 +7,7 @@ interface EndpointType {
     status: string;
     detector_location: string;
     file: string;
+    equipment_hist: string;
 }
 
 export const ENDPOINT: EndpointType = {
@@ -16,6 +17,7 @@ export const ENDPOINT: EndpointType = {
     status: 'http://localhost:8080/api/status',
     detector_location: 'http://localhost:8080/api/detector-location',
     file: 'http://localhost:8080/api/file',
+    equipment_hist: 'http://localhost:8080/api/equipment-hist'
 };
 
 interface GetInputType {
