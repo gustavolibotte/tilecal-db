@@ -229,7 +229,7 @@ class Equipments extends APIController
         return redirect()->route('equipment_view', [$equipmentId]);
     }
 
-    public function delete(string $equipmentId)
+    public function oldDelete(string $equipmentId)
     {
         $feature = model('FeatureModel')->findName('equipment_delete');
         if (!$feature->isActive()){
@@ -248,7 +248,7 @@ class Equipments extends APIController
         }
     }
 
-    public function restore(string $equipmentId)
+    public function oldRestore(string $equipmentId)
     {
         $feature = model('FeatureModel')->findName('equipment_restore');
         if (!$feature->isActive()){
@@ -466,6 +466,82 @@ class Equipments extends APIController
         }
         $errors = $validator->getErrors();
         return $this->fail($errors, 400, 'Invalid data.');
+    }
+
+    public function delete(): ResponseInterface
+    {
+        try{
+            return $this->__delete__();
+        } catch (Throwable $e){
+            return $this->fail($e->getMessage(), 500);
+        }
+    }
+
+    protected function __delete__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('equipment_delete');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
+        $data = ['id' => $this->request->getVar('id')];
+        $rules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'is_not_unique[equipments.id]'
+                ],
+                'errors' => [
+                    'required' => 'Equipment ID is required.',
+                    'is_not_unique' => 'Equipment with ID "{value}" doesn\'t exist.'
+                ]
+            ]
+        ];
+
+        if (!$this->validateData($data, $rules)){
+            $errors = $this->validator->getErrors();
+            return $this->fail([], 400, $errors['id']);
+        }
+        model('EquipmentModel')->delete($data['id']);
+        return $this->buildAPIResponse(200, [], 'Deleted equipment with success.');
+    }
+
+    public function restore(): ResponseInterface
+    {
+        try{
+            return $this->__delete__();
+        } catch (Throwable $e){
+            return $this->fail($e->getMessage(), 500);
+        }
+    }
+
+    public function __restore__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('equipment_restore');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
+        $data = ['id' => $this->request->getVar('id')];
+        $rules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'is_not_unique[equipments.id]'
+                ],
+                'errors' => [
+                    'required' => 'Equipment ID is required.',
+                    'is_not_unique' => 'Equipment with ID "{value}" doesn\'t exist.'
+                ]
+            ]
+        ];
+
+        if (!$this->validateData($data, $rules)){
+            $errors = $this->validator->getErrors();
+            return $this->fail([], 400, $errors['id']);
+        }
+        model('EquipmentModel')->restore($data['id']);
+        return $this->buildAPIResponse(200, [], 'Restored equipment with success.');
     }
 
     /**

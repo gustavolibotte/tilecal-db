@@ -64,6 +64,14 @@ $routes->put('api/equipment', 'Equipments::put', [
     'filter' => 'auth:edit',
     'as' => 'api_equipment_put'
 ]);
+$routes->delete('api/equipment', 'Equipments::delete', [
+    'filter' => 'auth:delete',
+    'as' => 'api_equipment_delete'
+]);
+$routes->patch('api/equipment', 'Equipments::restore', [
+    'filter' => 'auth:delete',
+    'as' => 'api_equipment_restore'
+]);
 
 // Location API
 $routes->get('api/location', 'Location::get', [
@@ -149,11 +157,11 @@ $routes->post('equipments/edit/(:alphanum)',  'Equipments::edit/$1', [
     'filter' => 'auth:edit',
     "as" => 'equipment_edit'
 ]);
-$routes->post('equipments/delete/(:alphanum)', 'Equipments::delete/$1', [
+$routes->post('equipments/delete/(:alphanum)', 'Equipments::oldDelete/$1', [
     'filter' => 'auth:delete',
     'as' => 'equipment_delete'
 ]);
-$routes->post('equipments/restore/(:alphanum)',  'Equipments::restore/$1', [
+$routes->post('equipments/restore/(:alphanum)',  'Equipments::oldRestore/$1', [
     'filter' => 'auth:delete',
     "as" => 'equipment_restore'
 ]);
