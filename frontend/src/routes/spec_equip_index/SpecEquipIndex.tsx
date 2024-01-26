@@ -7,9 +7,9 @@ export default function SpecEquipIndex(){
   let { typeName } = useParams();
   typeName = typeName? typeName: '';
   return (
-    <>
+    <div className="col-12">
       <h1>{typeName} Index</h1>
       <EquipTable queryKey={['equipment', 'get', {type_name: typeName}]}/>
-    </>
+    </div>
   );
 }

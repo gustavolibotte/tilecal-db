@@ -36,7 +36,8 @@ export default function EquipView() {
     <h1>{typeName}: {equipId}</h1>
     <TabPage activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
       <TabPanel header="Info">
-        <span className="m-0">
+        <div className="col-12 m-0">
+          <h2>Equipment Info</h2>
           <EquipInfo equipData={response.data[0]}/>
           <hr></hr>
           <h2>Related Equipment</h2>
@@ -44,13 +45,13 @@ export default function EquipView() {
           <hr></hr>
           <h2>Related Files</h2>
           <FileTable queryKey={['file', 'get', {relatedEquipmentId: equipId}]}/>
-        </span>
+        </div>
       </TabPanel>
       <TabPanel header="History">
-        <span className="m-0">
+        <div className="col-12 m-0">
           <h1>Equipment History</h1>
-          <EquipHistTable equipmentId={equipId}/>
-        </span>
+          <EquipHistTable equipmentId={equipId? equipId: ''}/>
+        </div>
       </TabPanel>
     </TabPage>
     </>

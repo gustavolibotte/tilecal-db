@@ -8,7 +8,7 @@ export default function EquipRegister() {
   typeName = typeName? typeName: '';
   const form = (typeName == 'PMT')? <PmtForm/>: <EquipForm typeName={typeName}/>;
   return (
-    <div>
+    <div className="col-12">
       <h1>{`${typeName} Register`}</h1>
       <p>"*" means the field is required</p>
       { form };

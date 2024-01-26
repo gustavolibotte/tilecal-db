@@ -24,8 +24,6 @@ export default function EquipInfo(props: EquipInfoProps) {
   }
 
   return (
-    <div className="col-12">
-      <h2>Equipment Info</h2>
       <List>
         {getItem('ID', props.equipData.id)}
         {getItem('Type', props.equipData.type_name)}
@@ -35,6 +33,5 @@ export default function EquipInfo(props: EquipInfoProps) {
         {getItem('Serial', props.equipData.serial)}
         {typeParamsItems}
       </List>
-    </div>
   );
 }
