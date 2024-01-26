@@ -60,6 +60,10 @@ $routes->post('api/equipment', 'Equipments::post', [
     'filter' => 'auth:register',
     'as' => 'api_equipment_post'
 ]);
+$routes->put('api/equipment', 'Equipments::put', [
+    'filter' => 'auth:edit',
+    'as' => 'api_equipment_put'
+]);
 
 // Location API
 $routes->get('api/location', 'Location::get', [

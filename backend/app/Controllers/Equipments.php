@@ -9,6 +9,7 @@ use App\Validation\Validators\BatchRegisterValidator;
 use App\Validation\Validators\EquipmentAssembleValidator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
+use Exception;
 use ValueError;
 use Throwable;
 
@@ -300,7 +301,7 @@ class Equipments extends APIController
         }
     }
 
-    public function __get__(): ResponseInterface
+    protected function __get__(): ResponseInterface
     {
         $feature = model('FeatureModel')->findName('api_equipment_get');
         if (!$feature->isActive()){
@@ -343,10 +344,6 @@ class Equipments extends APIController
         }
         helper('app_array');
         foreach($data as &$sample){
-            // $type_params = json_decode(remove_value('type_params', $sample), true);
-            // foreach ($type_params as $key=>$value){
-            //     $sample[$key] = $value;
-            // }
             $sample['type_params'] = json_decode($sample['type_params']);
         }
         return $this->buildAPIResponse(200, empty($data)? []: $data);
@@ -361,7 +358,7 @@ class Equipments extends APIController
         }
     }
 
-    public function __post__(): ResponseInterface
+    protected function __post__(): ResponseInterface
     {
         $feature = model('FeatureModel')->findName('equipment_register');
         if (!$feature->isActive()){
@@ -384,9 +381,6 @@ class Equipments extends APIController
                 ]
             ]
         ];
-        // echo '<pre>'; print_r($data); echo '</pre>';
-        // echo '\n';
-        // echo $this->validateData($data, $rules);
 
         if (!$this->validateData($data, $rules)){
             $errors = $this->validator->getErrors();
@@ -415,7 +409,7 @@ class Equipments extends APIController
         }
     }
 
-    public function __getHist__(): ResponseInterface
+    protected function __getHist__(): ResponseInterface
     {
         $id = $this->request->getVar('id');
         if (empty($id)){
@@ -424,6 +418,55 @@ class Equipments extends APIController
         $history = model('HistModel')
             ->getEquipmentHist($id);
         return $this->buildAPIResponse(200, $history);
+    }
+
+    public function put(): ResponseInterface
+    {
+        try{
+            return $this->__put__();
+        } catch (Throwable $e){
+            return $this->fail($e->getMessage(), 500);
+        }
+    }
+
+    protected function __put__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('equipment_edit');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+        $data = ['id' => $this->request->getVar('id')];
+        $rules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'is_not_unique[equipments.id]'
+                ],
+                'errors' => [
+                    'required' => 'Equipment ID is required.',
+                    'is_not_unique' => 'Equipment with ID "{value}" doesn\'t exist.'
+                ]
+            ]
+        ];
+        if (!$this->validateData($data, $rules)){
+            $errors = $this->validator->getErrors();
+            return $this->fail([], 400, $errors['id']);
+        }
+        $equipmentModel = model('EquipmentModel');
+        $equipment = $equipmentModel
+            ->asArray()
+            ->fullQuery()
+            ->find($data['id']);
+        $validator = EquipmentValidator::getFromTypeName($equipment['type_name'])
+            ->addRequest($this->request)
+            ->asEdit();
+        if ($validator->validate()){
+            $updatedEquipment = $validator->getValidatedData();
+            $equipmentModel->update($data['id'], $updatedEquipment);
+            return $this->buildAPIResponse(200, [], 'Altered equipment with success.');
+        }
+        $errors = $validator->getErrors();
+        return $this->fail($errors, 400, 'Invalid data.');
     }
 
     /**

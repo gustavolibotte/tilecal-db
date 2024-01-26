@@ -60,9 +60,7 @@ class EquipmentModel extends LogModel
         $queryBuilder->select('equipments.location_id as location_id');
         $queryBuilder->select('locations.name as location_name');
         $queryBuilder->select('locations.description as location_description');
-        $queryBuilder->select('equipments.status_id as status_id');
         $queryBuilder->select('statuses.name as status_name');
-        $queryBuilder->select('equipments.owner_id as owner_id');
         $queryBuilder->select('institutes.name as owner_name');
         $queryBuilder->select('institutes.mne as owner_mne');
         $queryBuilder->select('equipment_types.project as type_project');
