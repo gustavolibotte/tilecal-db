@@ -9,7 +9,6 @@ use App\Validation\Validators\BatchRegisterValidator;
 use App\Validation\Validators\EquipmentAssembleValidator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
-use Exception;
 use ValueError;
 use Throwable;
 

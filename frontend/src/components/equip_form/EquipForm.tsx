@@ -25,26 +25,10 @@ interface EquipFormSchema {
 
 interface EquipFormProps {
   typeName: string;
+  equipId?: string
 }
 
-export default function EquipForm({typeName}: EquipFormProps) {
-
-  const locationQuery: any = useQuery({
-    queryKey: ['location', 'get', {}]
-  });
-
-  const instituteQuery: any = useQuery({
-    queryKey: ['institute', 'get', {}]
-  });
-
-  const statusQuery: any = useQuery({
-    queryKey: ['status', 'get', {}]
-  });
-
-  const detectorLocationQuery: any = useQuery({
-    queryKey: ['detector_location', 'get', {}]
-  });
-
+export default function EquipForm({typeName, equipId}: EquipFormProps) {
 
   let initialValues: EquipFormSchema = {
     id: '',
@@ -57,7 +41,9 @@ export default function EquipForm({typeName}: EquipFormProps) {
   };
 
   const equipMutation = useMutation({
-    mutationFn: makeMutationFunction('post', ENDPOINT['equipment']),
+    mutationFn: makeMutationFunction(
+      equipId? 'put': 'post', 
+      ENDPOINT['equipment']),
     onMutate: () => {
       toast.info('Registering equipment.');
     },
@@ -75,29 +61,43 @@ export default function EquipForm({typeName}: EquipFormProps) {
           formik.setFieldError(key as keyof EquipFormSchema, responseData.messages[key]);
         });
       } else{
-        toast.error('An error has occured.')
+        toast.error('An error has occured.');
       }
     },
   });
 
   const submitData = async (data: EquipFormSchema) =>{
     data['type_name'] = typeName;
+    if (equipId){
+      data['id'] = equipId;
+    }
     equipMutation.mutate(data);
   }
 
   const formik = useFormik({
       initialValues: initialValues,
-      // validationSchema: Yup.object({
-      //   owner_mne: Yup.string().required('An owner institute is required.'),
-      //   location_name: Yup.string().required('An equipment location is required.'),
-      //   status_name: Yup.string().required('Equipment status is required.')
-      // }),
       onSubmit: submitData
   });
   
   const getFormErrorMessage = (name: keyof EquipFormSchema): string | null => {
       return !!(formik.touched[name] && formik.errors[name]) ? String(formik.errors[name]) : null;
   };
+
+  const locationQuery: any = useQuery({
+    queryKey: ['location', 'get', {}]
+  });
+
+  const instituteQuery: any = useQuery({
+    queryKey: ['institute', 'get', {}]
+  });
+
+  const statusQuery: any = useQuery({
+    queryKey: ['status', 'get', {}]
+  });
+
+  const detectorLocationQuery: any = useQuery({
+    queryKey: ['detector_location', 'get', {}]
+  });
 
   const isPending = (
     locationQuery.isPending
@@ -147,7 +147,7 @@ export default function EquipForm({typeName}: EquipFormProps) {
   return (
       <div className="card flex justify-content-center">
           <form onSubmit={formik.handleSubmit} className="flex flex-column gap-2">
-            <FormText
+            {!equipId && <FormText
               id='id'
               name='ID'
               required
@@ -156,7 +156,7 @@ export default function EquipForm({typeName}: EquipFormProps) {
               onChange={(e) => {
                 formik.setFieldValue('id', e.target.value);
               }}
-              errorText={getFormErrorMessage('id')}/>
+              errorText={getFormErrorMessage('id')}/>}
             <FormDropdown
               id='owner_mne'
               name='Owner'

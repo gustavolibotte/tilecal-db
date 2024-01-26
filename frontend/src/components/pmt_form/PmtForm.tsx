@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
 import { INVALID_DATA_MSG } from '../../utils/constants';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import {
   ENDPOINT,
@@ -31,7 +31,11 @@ interface EquipFormSchema {
   phase1_position: string;
 }
 
-export default function EquipForm() {
+interface PmtFormProps {
+  equipId?: string
+}
+
+export default function PmtForm({equipId}: PmtFormProps) {
 
   const locationQuery: any = useQuery({
     queryKey: ['location', 'get', {}]
@@ -49,6 +53,8 @@ export default function EquipForm() {
     queryKey: ['detector_location', 'get', {}]
   });
 
+  const queryClient = useQueryClient();
+
   let initialValues: EquipFormSchema = {
     id: '',
     owner_mne: '',
@@ -65,13 +71,26 @@ export default function EquipForm() {
   };
 
   const equipMutation = useMutation({
-    mutationFn: makeMutationFunction('post', ENDPOINT['equipment']),
+    mutationFn: makeMutationFunction(
+      equipId? 'put': 'post',
+      ENDPOINT['equipment']),
     onMutate: () => {
-      toast.info('Registering equipment.');
+      if (equipId){
+        toast.info('Editing equipment.');
+      } else{
+        toast.info('Registering equipment.');
+      }
     },
     onSuccess: () => {
       toast.dismiss();
-      toast.success('Equipment registered with success');
+      if (equipId){
+        toast.success('Equipment edited with success.');
+        queryClient.invalidateQueries({
+          queryKey: ['equipment', 'get', {id: equipId}]
+        });
+      } else{
+        toast.success('Equipment registered with success.');
+      }
       formik.resetForm();
     },
     onError: (error: AxiosError) => {
@@ -90,6 +109,9 @@ export default function EquipForm() {
 
   const submitData = async (data: EquipFormSchema) =>{
     data['type_name'] = 'PMT';
+    if (equipId){
+      data['id'] = equipId;
+    }
     equipMutation.mutate(data);
   }
 
