@@ -8,6 +8,7 @@ import FileIndex from './routes/file_index/FileIndex.tsx';
 import SpecEquipIndex from './routes/spec_equip_index/SpecEquipIndex.tsx';
 import EquipRegister from './routes/equip_register/EquipRegister.tsx';
 import EquipView from './routes/equip_view/EquipView.tsx';
+import FileView from './routes/file_view/FileView.tsx';
 import { defaultQueryFunction } from './utils/DbClient.tsx';
 
 import 'primeicons/primeicons.css';
@@ -42,6 +43,10 @@ export default function App(){
     {
       path: 'equipment/:equipId',
       element: <EquipView/>,
+    },
+    {
+      path: 'file/:fileId',
+      element: <FileView/>,
     },
     {
       path: "files",
