@@ -22,7 +22,7 @@ abstract class LogModel extends BaseModel{
         $this->opTimestamp = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
         $this->beforeInsert[] = 'addInsertTimestamps';
         $this->beforeInsert[] = 'addUser';
-        $this->beforeUpdate[] = 'addUpdateTimestamps';
+        // $this->beforeUpdate[] = 'addUpdateTimestamps';
         $this->beforeUpdate[] = 'addUser';
         $this->beforeDelete[] = 'customDelete';
     }
@@ -34,39 +34,11 @@ abstract class LogModel extends BaseModel{
         return $data;
     }
 
-    protected function logInsert(array $data)
-    {
-        $entityData = $data['data'];
-        $entityData['table'] = $this->table;
-        $entityData['id'] = $data['id'];
-        $entityData['action'] = 'insert';
-        model('HistModel')->insert($entityData);
-        return $data;
-    }
-
-    protected function addUpdateTimestamps(array $data): array
-    {
-        $data['data']['updated_at'] = $this->opTimestamp;
-        return $data;
-    }
-
-    protected function logUpdate(array $data)
-    {
-        $logData = $this->queryLogData($data['id'][0]);
-        $logData['action'] = 'update';
-        model('HistModel')->insert($logData);
-        return $data;
-    }
-
-    protected function queryLogData(string|int $id)
-    {
-        $entityData = $this->db->table($this->table)
-            ->where('id', $id)
-            ->get()->getResultArray();
-        $entityData = $entityData[0];
-        $entityData['table'] = $this->table;
-        return $entityData;
-    }
+    // protected function addUpdateTimestamps(array $data): array
+    // {
+    //     $data['data']['updated_at'] = $this->opTimestamp;
+    //     return $data;
+    // }
 
     protected function customDelete(array $data): array
     {   
@@ -83,11 +55,9 @@ abstract class LogModel extends BaseModel{
         return $data;
     }
 
-    protected function logDelete(array $data)
+    protected function addUser(array $data): array
     {
-        $logData = $this->queryLogData($data['id'][0]);
-        $logData['action'] = 'delete';
-        model('HistModel')->insert($logData);
+        $data['data']['user'] = service('authenticator')->getUser()->username;
         return $data;
     }
 
@@ -120,19 +90,5 @@ abstract class LogModel extends BaseModel{
         }
         $this->resetQuery();
         return true;
-    }
-
-    protected function logRestore(array $data): array
-    {
-        $logData = $this->queryLogData($data['id']);
-        $logData['action'] = 'restore';
-        model('HistModel')->insert($logData);
-        return $data;
-    }
-
-    protected function addUser(array $data): array
-    {
-        $data['data']['user'] = service('authenticator')->getUser()->username;
-        return $data;
     }
 }

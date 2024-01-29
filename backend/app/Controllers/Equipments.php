@@ -296,7 +296,7 @@ class Equipments extends APIController
         try{
             return $this->__get__();
         } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
+            return $this->throwError(500, $e);
         }
     }
 
@@ -353,7 +353,7 @@ class Equipments extends APIController
         try{
             return $this->__post__();
         } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
+            return $this->throwError(500, $e);
         }
     }
 
@@ -404,7 +404,7 @@ class Equipments extends APIController
         try{
             return $this->__getHist__();
         } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
+            return $this->throwError(500, $e);
         }
     }
 
@@ -424,7 +424,7 @@ class Equipments extends APIController
         try{
             return $this->__put__();
         } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
+            return $this->throwError(500, $e);
         }
     }
 
@@ -473,7 +473,7 @@ class Equipments extends APIController
         try{
             return $this->__delete__();
         } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
+            return $this->throwError(500, $e);
         }
     }
 
@@ -509,9 +509,9 @@ class Equipments extends APIController
     public function restore(): ResponseInterface
     {
         try{
-            return $this->__delete__();
+            return $this->__restore__();
         } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
+            return $this->throwError(500, $e);
         }
     }
 

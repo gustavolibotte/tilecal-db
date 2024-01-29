@@ -25,6 +25,24 @@ abstract class APIController extends BaseController
         return $this->respond($res, $status, $message);
     }
 
+    protected function throwError(int $code, Throwable $e, bool $withTrace=false)
+    {
+        $data = [
+            'message' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile()
+        ];
+        if ($withTrace){
+            $data['trace'] = $e->getTrace();
+        }
+        return $this->fail(
+            $data,
+            $code,
+            $code,
+            $e->getMessage()
+        );
+    }
+
     protected function parseOrdering(string $varName, string $tableName, BaseBuilder|Model $queryBuilder): BaseBuilder|Model
     {
         $orderBy = $this->request->getVar($varName);
