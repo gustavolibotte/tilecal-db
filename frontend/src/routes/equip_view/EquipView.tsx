@@ -23,9 +23,10 @@ export default function EquipView() {
   const { equipId } = useParams();
   const [activeIndex, setActiveIndex] = useState(0);
   const [visibleEditForm, setVisibleEditForm] = useState(false);
+  const queryKey = ['equipment', 'get', {id: equipId, withDeleted: true}]
 
   const {isPending, isError, data: response}: any = useQuery({
-    queryKey: ['equipment', 'get', {id: equipId}]
+    queryKey: queryKey
   });
 
   const queryClient = useQueryClient();
@@ -38,7 +39,25 @@ export default function EquipView() {
     onSuccess: () => {
       toast.success('Equipment deleted with success.');
       queryClient.invalidateQueries({
-        queryKey: ['equipment', 'get', {id: equipId}]
+        queryKey: queryKey
+      })
+    },
+    onError: (error: AxiosError) => {
+      toast.dismiss();
+      console.log(error);
+      toast.error('An error has occured.');
+    }
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: makeMutationFunction(
+      'patch',
+      ENDPOINT['equipment']
+    ),
+    onSuccess: () => {
+      toast.success('Equipment restored with success.');
+      queryClient.invalidateQueries({
+        queryKey: queryKey
       })
     },
     onError: (error: AxiosError) => {
@@ -61,6 +80,28 @@ export default function EquipView() {
     }
     const typeName = response.data[0].type_name;
     const editForm = (typeName == 'PMT')? <PmtForm equipId={equipId}/>: <EquipForm equipId={equipId} typeName={typeName}/>;
+    const equipData = response.data[0];
+    let buttons;
+    if (equipData.deleted_at){
+      buttons = (
+        <Button type="button" label="Restore" severity='success'
+          onClick={() => {restoreMutation.mutate({id: equipId})}}/>
+      );
+    } else{
+      buttons = (
+        <>
+        <Button type="button" label="Delete" severity='danger'
+          onClick={() => deleteMutation.mutate({id: equipId})}/>
+        <Button type="button" label="Edit" icon='pi pi-pencil'
+          onClick={() => setVisibleEditForm(true)}/>
+        <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}
+          onHide={() => setVisibleEditForm(false)}>
+          {editForm}
+        </Dialog>
+        </>
+      );
+    }
+    
     component = (
       <>
       <h1>{typeName}: {equipId}</h1>
@@ -73,18 +114,11 @@ export default function EquipView() {
               </div>
               <div className="col-6">
                 <div className="flex flex-row-reverse flex-wrap gap-2">
-                  <Button type="button" label="Delete" severity='danger' data-pr-tooltip="Refresh"
-                    onClick={() => deleteMutation.mutate({id: equipId})}/>
-                  <Button type="button" label="Edit" data-pr-tooltip="Refresh"  icon='pi pi-pencil'
-                   onClick={() => setVisibleEditForm(true)}/>
-                  <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}
-                    onHide={() => setVisibleEditForm(false)}>
-                    {editForm}
-                  </Dialog>
+                  {buttons}
                 </div>
               </div>
             </div>
-            <EquipInfo equipData={response.data[0]}/>
+            <EquipInfo equipData={equipData}/>
             <hr></hr>
             <h2>Related Equipment</h2>
             <RelatedEquipTable equipmentId={equipId}/>
