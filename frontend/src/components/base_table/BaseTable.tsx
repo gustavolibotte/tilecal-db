@@ -107,7 +107,7 @@ export function BaseTable(props: TableProps){
       reorderableColumns
       rows={10}
       rowsPerPageOptions={[5, 10, 25, 50]}
-      sortMode="multiple"
+      sortMode={props.sortMode}
       multiSortMeta={props.multiSortMeta}
       removableSort
       expandedRows={props.expandedRows}

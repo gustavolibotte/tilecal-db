@@ -102,7 +102,7 @@ export default function PmtForm({equipId}: PmtFormProps) {
           formik.setFieldError(key as keyof EquipFormSchema, responseData.messages[key]);
         });
       } else{
-        toast.error('An error has occured.')
+        toast.error('An error has occured.');
       }
     },
   });

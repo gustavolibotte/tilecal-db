@@ -6,6 +6,7 @@ import EquipInfo from '../equip_info/EquipInfo';
 import './equip_hist_table.css';
 import { Link } from 'react-router-dom';
 import { getEquipviewRoute, getFileViewRoute } from '../../utils/routes';
+import { DataTableSortMeta } from 'primereact/datatable';
 
 interface EquipHistTableProps {
   equipmentId: string;
@@ -92,6 +93,13 @@ export default function EquipHistTable(props: EquipHistTableProps) {
     }
   ];
 
+  const multiSortMeta: DataTableSortMeta[] = [
+    {
+      field: 'created_at',
+      order: -1
+    }
+  ]
+
   return (
     <>
       <BaseTable
@@ -108,8 +116,8 @@ export default function EquipHistTable(props: EquipHistTableProps) {
         rowExpansionTemplate={rowExpansionTemplate}
         onRowExpand={onRowExpand}
         onRowCollapse={onRowCollapse}
-        sortField="created_at"
-        sortOrder={-1} />
+        sortMode='multiple'
+        multiSortMeta={multiSortMeta}/>
     </>
   )
 }

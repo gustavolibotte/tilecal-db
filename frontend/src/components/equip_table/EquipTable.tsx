@@ -82,6 +82,7 @@ export default function EquipTable(props: EquipTableProps) {
     dataKey='id'
     fileName='equip_index'
     queryKey={props.queryKey}
+    sortMode='multiple'
     multiSortMeta={multiSortMeta}/>
   </>
   )

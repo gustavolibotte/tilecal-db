@@ -98,6 +98,7 @@ export default function RelatedEquipTable(props: RelatedEquipTableProps) {
     columns={columns}
     dataKey='id'
     fileName='equip_index'
+    sortMode='multiple'
     multiSortMeta={multiSortMeta}
     queryKey={[
       'equipment',
