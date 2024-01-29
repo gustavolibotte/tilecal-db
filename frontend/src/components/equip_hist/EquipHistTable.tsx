@@ -1,21 +1,14 @@
-import { capitalize } from '../../utils/string';
-import { BaseTable, ExpandRowType } from '../base_table/BaseTable';
-import { ColumnMeta } from '../base_table/BaseTable';
+import { BaseTable, ExpandRowType, ColumnMeta } from '../base_table/BaseTable';
 import { useState, ReactNode } from 'react';
 import EquipInfo from '../equip_info/EquipInfo';
 import './equip_hist_table.css';
-import { Link } from 'react-router-dom';
-import { getEquipviewRoute, getFileViewRoute } from '../../utils/routes';
 import { DataTableSortMeta } from 'primereact/datatable';
+import { HistAction, HistData } from '../hist/Hist';
 
 interface EquipHistTableProps {
   equipmentId: string;
 }
 
-interface HistData {
-  hist_type: string
-  [otherKeys: string | number | symbol]: any
-}
 
 export default function EquipHistTable(props: EquipHistTableProps) {
   const [expandedRows, setExpandedRows] = useState<ExpandRowType>(undefined);
@@ -25,44 +18,12 @@ export default function EquipHistTable(props: EquipHistTableProps) {
     switch (rowData.hist_type) {
       case 'equip':
         return (
-          <EquipInfo equipData={rowData} />
+          <EquipInfo equipData={rowData} hist/>
         );
       default:
         return (
           <h5> Could not render this history log.</h5>
         );
-    }
-  }
-
-  const actionTemplate = (rowData: HistData): ReactNode => {
-    const histType = rowData.hist_type;
-    const action = rowData.action;
-    if (histType == 'file_rel' && action == 'insert') {
-      return (
-        <p>
-          Links file <Link to={getFileViewRoute(rowData.file_id)}> {rowData.file_name} </Link> to <Link to={getEquipviewRoute(props.equipmentId)}>{props.equipmentId}</Link>
-        </p>
-      );
-    } else if (histType == 'file_rel' && action == 'delete') {
-      return (
-        <p>
-          Unlinks file <Link to={getFileViewRoute(rowData.file_id)}>{rowData.file_name} </Link> to <Link to={getEquipviewRoute(props.equipmentId)}>{props.equipmentId}</Link>
-        </p>
-      );
-    } else if (histType == 'parent_rel' && action == 'insert') {
-      return (
-        <p>
-          Assembles <Link to={getEquipviewRoute(rowData.child_equip_id)}>{rowData.child_equip_id}</Link> into <Link to={getEquipviewRoute(rowData.parent_equip_id)}> {rowData.parent_equip_id} </Link>
-        </p>
-      );
-    } else if (histType == 'parent_rel' && action == 'delete') {
-      return (
-        <p>
-          Disassembles <Link to={getEquipviewRoute(rowData.child_equip_id)}>{rowData.child_equip_id}</Link> into <Link to={getEquipviewRoute(rowData.parent_equip_id)}> {rowData.parent_equp_id} </Link>
-        </p>
-      );
-    } else{
-      return capitalize(rowData.action);
     }
   }
   const onRowCollapse = () => { };
@@ -87,7 +48,7 @@ export default function EquipHistTable(props: EquipHistTableProps) {
     },
     {
       field: 'action', header: 'Action',
-      body: actionTemplate,
+      body: HistAction,
       filter: true, sortable: true,
       filterPlaceholder: 'Search'
     }

@@ -3,6 +3,7 @@ import { snakeToSpaced } from "../../utils/string";
 
 interface EquipInfoProps {
   equipData: any    // Any is there just to give a typing
+  hist?: boolean
 };
 
 export default function EquipInfo(props: EquipInfoProps) {
@@ -19,8 +20,8 @@ export default function EquipInfo(props: EquipInfoProps) {
     { name: 'ID', field: 'id' },
     { name: 'Type', field: 'type_name' },
     { name: "Location", field: 'location_name', template: getDetectorLocation },
-    { name: 'Status', field: 'status' },
-    { name: 'Owner', field: 'owner_mne' },
+    { name: 'Status', field: 'status_name' },
+    { name: 'Owner', field: 'owner_name' },
     { name: 'Serial', field: 'serial' }
   ];
 
@@ -35,10 +36,15 @@ export default function EquipInfo(props: EquipInfoProps) {
 
   fieldConfig = fieldConfig.concat([
     { name: 'Comments', field: 'comments' },
-    { name: "Created At", field: 'created_at' },
-    { name: "Updated At", field: 'updated_at' },
-    { name: "Deleted At", field: 'deleted_at' }
   ]);
+
+  if (!props.hist){
+    fieldConfig = fieldConfig.concat([
+      { name: "Created At", field: 'created_at' },
+      { name: "Updated At", field: 'updated_at' },
+      { name: "Deleted At", field: 'deleted_at' }
+    ]);
+  }
 
   return (
     <DataInfo

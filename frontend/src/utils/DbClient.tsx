@@ -1,27 +1,29 @@
 import axios from 'axios';
 
 interface EndpointType {
-    equipment: string;
-    location: string;
-    institute: string;
-    status: string;
-    detector_location: string;
-    file: string;
-    equipment_hist: string;
+  equipment: string;
+  location: string;
+  institute: string;
+  status: string;
+  detector_location: string;
+  file: string;
+  equipment_hist: string;
+  file_hist: string;
 }
 
 export const ENDPOINT: EndpointType = {
-    equipment: 'http://localhost:8080/api/equipment',
-    location: 'http://localhost:8080/api/location',
-    institute: 'http://localhost:8080/api/institute',
-    status: 'http://localhost:8080/api/status',
-    detector_location: 'http://localhost:8080/api/detector-location',
-    file: 'http://localhost:8080/api/file',
-    equipment_hist: 'http://localhost:8080/api/equipment-hist'
+  equipment: 'http://localhost:8080/api/equipment',
+  location: 'http://localhost:8080/api/location',
+  institute: 'http://localhost:8080/api/institute',
+  status: 'http://localhost:8080/api/status',
+  detector_location: 'http://localhost:8080/api/detector-location',
+  file: 'http://localhost:8080/api/file',
+  equipment_hist: 'http://localhost:8080/api/equipment-hist',
+  file_hist: 'http://localhost:8080/api/file-hist'
 };
 
 interface GetInputType {
-    queryKey: any;
+  queryKey: any;
 }
 
 export type AppResponseType = SuccessResponseType;
@@ -57,13 +59,13 @@ export async function defaultQueryFunction({queryKey}: GetInputType): Promise<Ap
 }
 
 export function makeMutationFunction(method: string, endpoint: string){
-    async function mutationFunction(data: any){
-        const response = await axios({
-            url: endpoint,
-            method: method,
-            data: data
-        }).then((res) => res.data);
-        return response.data;
-    }
-    return mutationFunction;
+  async function mutationFunction(data: any){
+      const response = await axios({
+          url: endpoint,
+          method: method,
+          data: data
+      }).then((res) => res.data);
+      return response.data;
+  }
+  return mutationFunction;
 }
