@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import TabPage from '../../components/tab_page/TabPage';
 import { TabPanel } from 'primereact/tabview';
 import EquipInfo from '../../components/equip_info/EquipInfo';
-import { Mutation, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import EquipForm from '../../components/equip_form/EquipForm';

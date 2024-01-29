@@ -1,4 +1,4 @@
-import { ChangeEventHandler, Component } from 'react';
+import { Component } from 'react';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import FormField from '../form_field/FormField';
 import { classNames } from 'primereact/utils';
