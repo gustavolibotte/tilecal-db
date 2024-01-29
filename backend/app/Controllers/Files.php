@@ -209,7 +209,7 @@ class Files extends APIController
         try{
             return $this->__get__();
         } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
+            return $this->throwError(500, $e);
         }
     }
 
@@ -256,7 +256,7 @@ class Files extends APIController
         try{
             return $this->__getHist__();
         } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
+            return $this->throwError(500, $e);
         }
     }
 

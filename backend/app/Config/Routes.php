@@ -97,12 +97,17 @@ $routes->get('api/detector-location', 'DetectorLocation::get', [
     'as' => 'api_detector_location_get'
 ]);
 
-
-
+// File API
 $routes->get('api/file', 'Files::get', [
     'filter' => 'auth:view',
     'as' => 'api_file_get'
 ]);
+$routes->get('api/file-hist', 'Files::getHist', [
+    'filter' => 'auth:view',
+    'as' => 'api_file_hist_get'
+]);
+
+
 $routes->get('api/equipments/get', 'Equipments::get', [
     'filter' => 'auth:view',
     'as' => 'equipment_get'
