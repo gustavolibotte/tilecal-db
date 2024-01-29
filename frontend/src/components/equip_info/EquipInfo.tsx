@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
-import { List, ListItem } from "../list/List";
-import { snakeToSpaced } from "../../utils/string";
+import DataInfo from "../data_info/DataInfo";
 
 interface EquipInfoProps {
   equipData: any    // Any is there just to give a typing
@@ -8,30 +7,30 @@ interface EquipInfoProps {
 
 export default function EquipInfo(props: EquipInfoProps) {
 
-  const getItem = (name: string, value: any): ReactNode => {
-    return (<ListItem key={name}><b>{name}</b>: {value}</ListItem>);
-  }
-  let locationText = props.equipData.location_name;
-  if (props.equipData.location_description){
-    locationText += ` - ${props.equipData.location_description}`;
+  const getDetectorLocation = (data: any): string => {
+    let locationText = data.location_name;
+    if (data.location_description) {
+      locationText += ` - ${data.location_description}`;
+    }
+    return locationText;
   }
 
-  let typeParamsItems: any = [];
-  if (props.equipData.type_params){
-    typeParamsItems = Object.keys(props.equipData.type_params).map((key: string) => {
-      return getItem(snakeToSpaced(key), props.equipData.type_params[key]);
-    });
-  }
+  const fieldConfig = [
+    { name: 'ID', field: 'id' },
+    { name: 'Type', field: 'type_name' },
+    { name: "Location", field: 'location_name', template: getDetectorLocation },
+    { name: 'Status', field: 'status' },
+    { name: 'Owner', field: 'owner_mne' },
+    { name: 'Serial', field: 'serial' },
+    { name: 'Comments', field: 'comments' },
+  ];
+
+  const expandField = ['type_params'];
 
   return (
-      <List>
-        {getItem('ID', props.equipData.id)}
-        {getItem('Type', props.equipData.type_name)}
-        {getItem('Location', locationText)}
-        {getItem('Status', props.equipData.status_name)}
-        {getItem('Owner', props.equipData.owner_name)}
-        {getItem('Serial', props.equipData.serial)}
-        {typeParamsItems}
-      </List>
+    <DataInfo
+      data={props.equipData}
+      fields={fieldConfig}
+      expandFields={expandField}/>
   );
 }
