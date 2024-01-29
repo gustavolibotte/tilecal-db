@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import TabPage from '../../components/tab_page/TabPage';
 import { TabPanel } from 'primereact/tabview';
 import EquipInfo from '../../components/equip_info/EquipInfo';
-import { useQuery } from '@tanstack/react-query';
+import { Mutation, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import EquipForm from '../../components/equip_form/EquipForm';
@@ -13,15 +13,39 @@ import NotFound from '../../components/not_found/NotFound';
 import RelatedEquipTable from '../../components/related_equip_table/RelatedEquipTable';
 import EquipHistTable from '../../components/equip_hist/EquipHistTable';
 import './equip_view.css';
+import { ENDPOINT, makeMutationFunction } from '../../utils/DbClient';
+import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
 
 
 export default function EquipView() {
+
   const { equipId } = useParams();
   const [activeIndex, setActiveIndex] = useState(0);
   const [visibleEditForm, setVisibleEditForm] = useState(false);
 
   const {isPending, isError, data: response}: any = useQuery({
     queryKey: ['equipment', 'get', {id: equipId}]
+  });
+
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: makeMutationFunction(
+      'delete',
+      ENDPOINT['equipment']
+    ),
+    onSuccess: () => {
+      toast.success('Equipment deleted with success.');
+      queryClient.invalidateQueries({
+        queryKey: ['equipment', 'get', {id: equipId}]
+      })
+    },
+    onError: (error: AxiosError) => {
+      toast.dismiss();
+      console.log(error);
+      toast.error('An error has occured.');
+    }
   });
 
   let component: ReactNode;
@@ -49,13 +73,14 @@ export default function EquipView() {
               </div>
               <div className="col-6">
                 <div className="flex flex-row-reverse flex-wrap gap-2">
-                  <Button type="button" label="Delete" severity='danger' data-pr-tooltip="Refresh"/>
+                  <Button type="button" label="Delete" severity='danger' data-pr-tooltip="Refresh"
+                    onClick={() => deleteMutation.mutate({id: equipId})}/>
+                  <Button type="button" label="Edit" data-pr-tooltip="Refresh"  icon='pi pi-pencil'
+                   onClick={() => setVisibleEditForm(true)}/>
                   <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}
                     onHide={() => setVisibleEditForm(false)}>
                     {editForm}
                   </Dialog>
-                  <Button type="button" label="Edit" data-pr-tooltip="Refresh"  icon='pi pi-pencil'
-                   onClick={() => setVisibleEditForm(true)}/>
                 </div>
               </div>
             </div>
