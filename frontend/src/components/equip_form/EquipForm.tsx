@@ -145,9 +145,11 @@ export default function EquipForm({typeName, equipId}: EquipFormProps) {
   });
 
   return (
-      <div className="card flex justify-content-center">
-          <form onSubmit={formik.handleSubmit} className="flex flex-column gap-2">
-            {!equipId && <FormText
+    <div className="card flex justify-content-center flex-column gap-2">
+        <form onSubmit={formik.handleSubmit}>
+          {!equipId && 
+          <div className='mt-3'>
+            <FormText
               id='id'
               name='ID'
               required
@@ -156,7 +158,9 @@ export default function EquipForm({typeName, equipId}: EquipFormProps) {
               onChange={(e) => {
                 formik.setFieldValue('id', e.target.value);
               }}
-              errorText={getFormErrorMessage('id')}/>}
+              errorText={getFormErrorMessage('id')}/>
+          </div>}
+          <div className='mt-3'>
             <FormDropdown
               id='owner_mne'
               name='Owner'
@@ -168,6 +172,8 @@ export default function EquipForm({typeName, equipId}: EquipFormProps) {
                 formik.setFieldValue('owner_mne', e.value);
               }}
               errorText={getFormErrorMessage('owner_mne')}/>
+          </div>
+          <div className='mt-3'>
             <FormDropdown
               id='location_name'
               name='Location'
@@ -179,6 +185,8 @@ export default function EquipForm({typeName, equipId}: EquipFormProps) {
                 formik.setFieldValue('location_name', e.value);
               }}
               errorText={getFormErrorMessage('location_name')}/>
+          </div>
+          <div className='mt-3'>
             <FormDropdown
               id='status_name'
               name='Status'
@@ -190,6 +198,8 @@ export default function EquipForm({typeName, equipId}: EquipFormProps) {
                 formik.setFieldValue('status_name', e.value);
               }}
               errorText={getFormErrorMessage('status_name')}/>
+          </div>
+          <div className='mt-3'>
             <FormDropdown
               id='detector_location'
               name='Detector Location'
@@ -200,6 +210,8 @@ export default function EquipForm({typeName, equipId}: EquipFormProps) {
                 formik.setFieldValue('detector_location', e.value);
               }}
               errorText={getFormErrorMessage('detector_location')}/>
+          </div>
+          <div className='mt-3'>
             <FormText
               id='serial'
               name='Serial'
@@ -209,17 +221,20 @@ export default function EquipForm({typeName, equipId}: EquipFormProps) {
                 formik.setFieldValue('serial', e.target.value);
               }}
               errorText={getFormErrorMessage('serial')}/>
-            <FormText
-              id='comments'
-              name='Comments'
-              value={formik.values.comments}
-              help='Remarks about the equipment'
-              onChange={(e) => {
-                formik.setFieldValue('comments', e.target.value);
-              }}
-              errorText={getFormErrorMessage('comments')}/>
-            <Button type="submit" label="Submit" />
-          </form>
-      </div>
+          </div>
+          <div className='mt-3'>
+          <FormText
+            id='comments'
+            name='Comments'
+            value={formik.values.comments}
+            help='Remarks about the equipment'
+            onChange={(e) => {
+              formik.setFieldValue('comments', e.target.value);
+            }}
+            errorText={getFormErrorMessage('comments')}/>
+          </div>
+          <div className='mt-3'><Button type="submit" label="Submit" /></div>
+        </form>
+    </div>
   )
 }
