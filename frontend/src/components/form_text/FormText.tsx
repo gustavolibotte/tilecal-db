@@ -27,7 +27,7 @@ export default class FormText extends Component<FormTextProps> {
           name={this.props.id}
           value={this.props.value}
           onChange={this.props.onChange}
-          className={classNames({ 'p-invalid': Boolean(this.props.errorText) })}
+          className={classNames({ 'p-invalid': Boolean(this.props.errorText)})}
       />
     </FormField>
     )

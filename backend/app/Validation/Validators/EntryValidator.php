@@ -115,6 +115,9 @@ abstract class EntryValidator
     protected function getValueFromRequest($request, $fieldName){
         if (in_array($fieldName, $this->fileFields)){
             $uploadedFile = $request->getFile($fieldName);
+            if (is_null($uploadedFile)){
+                return null;
+            }
             if (!is_uploaded_file($uploadedFile->getRealPath())){
                 return null;
             }

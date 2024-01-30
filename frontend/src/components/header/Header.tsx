@@ -96,8 +96,9 @@ export default class Header extends Component<HeaderProps, HeaderState>{
       {
         label: 'Files',
         items: [
-          { template: <MenuLink route='files' label='Index'/> },
-          { label: <MenuLink route='deleted-files' label='Deleted'/> }
+          { template: <MenuLink route='file' label='Index'/> },
+          { template: <MenuLink route='file/upload' label='Upload'/> },
+          { template: <MenuLink route='deleted-files' label='Deleted'/> }
         ]
       }
     ]

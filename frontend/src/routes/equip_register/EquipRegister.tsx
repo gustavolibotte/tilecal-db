@@ -11,7 +11,7 @@ export default function EquipRegister() {
     <div className="col-12">
       <h1>{`${typeName} Register`}</h1>
       <p>"*" means the field is required</p>
-      { form };
+      { form }
     </div>
   )
 }

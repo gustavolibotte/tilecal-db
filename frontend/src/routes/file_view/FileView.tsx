@@ -8,9 +8,9 @@ import { TabPanel } from 'primereact/tabview';
 import NotFound from '../../components/not_found/NotFound';
 import './file_view.css'
 import FileInfo from '../../components/file_info/FileInfo';
-import RelatedEquipTable from '../../components/related_equip_table/RelatedEquipTable';
 import EquipTable from '../../components/equip_table/EquipTable';
 import FileHistTable from '../../components/file_hist_table/FileHistTable';
+import FileForm from '../../components/file_form/FileForm';
 
 export default function FileView() {
 
@@ -48,9 +48,9 @@ export default function FileView() {
         <Button type="button" label="Delete" severity='danger'/>
         <Button type="button" label="Edit" icon='pi pi-pencil'
           onClick={() => setVisibleEditForm(true)}/>
-        <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}
+        <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '30vw' }}
           onHide={() => setVisibleEditForm(false)}>
-          EDIT FORM
+          <FileForm fileId={fileId}/>
         </Dialog>
         </>
       );

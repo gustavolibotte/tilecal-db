@@ -289,9 +289,14 @@ class Files extends APIController
         }
 
         $validator = (new FileValidator())->addRequest($this->request);
-        $file = $validator->getValidatedData();
-        model('FileModel')->insert($file);
-        return $this->buildAPIResponse(200, [], 'File uploaded with success.');
+        if ($validator->validate()){
+            $file = $validator->getValidatedData();
+            model('FileModel')->insert($file);
+            return $this->buildAPIResponse(200, [], 'File uploaded with success.');
+        }
+        $errors = $validator->getErrors();
+        return $this->fail($errors, 400, 'Invalid data.');
+        
     }
 
     public function downloadHist()

@@ -13,6 +13,7 @@ import { defaultQueryFunction } from './utils/DbClient.tsx';
 
 import 'primeicons/primeicons.css';
 import "primereact/resources/themes/md-light-indigo/theme.css";
+import FileUpload from './routes/file_upload/FileUpload.tsx';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,11 +46,15 @@ export default function App(){
       element: <EquipView/>,
     },
     {
+      path: 'file/upload',
+      element: <FileUpload/>,
+    },
+    {
       path: 'file/:fileId',
       element: <FileView/>,
     },
     {
-      path: "files",
+      path: "file",
       element: <FileIndex/>,
     },
   ]

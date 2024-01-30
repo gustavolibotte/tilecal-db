@@ -58,12 +58,13 @@ export async function defaultQueryFunction({queryKey}: GetInputType): Promise<Ap
   return response;
 }
 
-export function makeMutationFunction(method: string, endpoint: string){
+export function makeMutationFunction(method: string, endpoint: string, headers: any = null){
   async function mutationFunction(data: any){
       const response = await axios({
           url: endpoint,
           method: method,
-          data: data
+          data: data,
+          headers: headers
       }).then((res) => res.data);
       return response.data;
   }
