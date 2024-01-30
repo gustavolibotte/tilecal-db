@@ -48,7 +48,7 @@ export default function FileView() {
         <Button type="button" label="Delete" severity='danger'/>
         <Button type="button" label="Edit" icon='pi pi-pencil'
           onClick={() => setVisibleEditForm(true)}/>
-        <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '30vw' }}
+        <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}
           onHide={() => setVisibleEditForm(false)}>
           <FileForm fileId={fileId}/>
         </Dialog>

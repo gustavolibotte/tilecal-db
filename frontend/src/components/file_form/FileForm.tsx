@@ -29,11 +29,6 @@ export default function FileForm({ fileId }: FileFormProps) {
     name: '', description: '', file: undefined
   };
 
-  // const [fieldValues, setFieldValues] = useState<FileFormSchema>(initialValues);
-
-  // const [fieldErrors, setFieldErrors] = useState<FileFormSchema>(initialValues);
-
-  // const uploadField: any = useRef(null);
 
   const headers = {
     'Content-Type': 'multipart/form-data'
@@ -70,8 +65,6 @@ export default function FileForm({ fileId }: FileFormProps) {
   });
 
   const submitData = async (data: FileFormSchema) => {
-    // data['id'] = fileId;
-    // data.file = data.file.name;
     const formData = new FormData();
     if (data.file){
       formData.append('file', data.file)
@@ -90,18 +83,6 @@ export default function FileForm({ fileId }: FileFormProps) {
   const getFormErrorMessage = (name: keyof FileFormSchema): string | null => {
     return !!(formik.touched[name] && formik.errors[name]) ? String(formik.errors[name]) : null;
   };
-
-  // const onBeforeSelect = (e: FileUploadSelectEvent) => {
-  //   if (e.files.length > 1) {
-  //     toast.error(DEFAULT_ERROR_MSG);
-  //     console.log('Tried to select more than one file');
-  //     return false;
-  //   }
-  //   console.log('files');
-  //   console.log(e.files);
-  //   formik.setFieldValue('file', e.files[0]);
-  //   return true;
-  // }
 
   return (
     <div className="card flex justify-content-center flex-column gap-2">
