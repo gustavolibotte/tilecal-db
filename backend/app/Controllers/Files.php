@@ -271,6 +271,29 @@ class Files extends APIController
         return $this->buildAPIResponse(200, $history);
     }
 
+    
+    public function post(): ResponseInterface
+    {
+        try{
+            return $this->__post__();
+        } catch (Throwable $e){
+            return $this->throwError(500, $e);
+        }
+    }
+
+    protected function __post__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('file_upload');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
+        $validator = (new FileValidator())->addRequest($this->request);
+        $file = $validator->getValidatedData();
+        model('FileModel')->insert($file);
+        return $this->buildAPIResponse(200, [], 'File uploaded with success.');
+    }
+
     public function downloadHist()
     {
         $feature = model('FeatureModel')->findName('file_download');

@@ -106,6 +106,10 @@ $routes->get('api/file-hist', 'Files::getHist', [
     'filter' => 'auth:view',
     'as' => 'api_file_hist_get'
 ]);
+$routes->post('api/file', 'Files::post', [
+    'filter' => 'auth:upload',
+    'as' => 'api_file_upload'
+]);
 
 
 $routes->get('api/equipments/get', 'Equipments::get', [
