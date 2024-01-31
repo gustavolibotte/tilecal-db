@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
 import { INVALID_DATA_MSG } from '../../utils/constants';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import {
   ENDPOINT,
@@ -53,8 +53,6 @@ export default function PmtForm({ equipId, onSuccess }: PmtFormProps) {
   const detectorLocationQuery: any = useQuery({
     queryKey: ['detector_location', 'get', {}]
   });
-
-  const queryClient = useQueryClient();
 
   let initialValues: EquipFormSchema = {
     id: '',

@@ -1,7 +1,7 @@
 import { useFormik } from 'formik';
 import { toast } from 'react-toastify';
 import { DEFAULT_ERROR_MSG, INVALID_DATA_MSG, MAX_FILE_SIZE } from '../../utils/constants';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import FormText from '../form_text/FormText';
 import { ENDPOINT, makeMutationFunction } from '../../utils/DbClient';
@@ -31,8 +31,6 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
   const headers = {
     'Content-Type': 'multipart/form-data'
   };
-
-  const queryClient = useQueryClient();
 
   const fileMutation = useMutation({
     mutationFn: makeMutationFunction(

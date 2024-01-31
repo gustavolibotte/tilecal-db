@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { List, ListItem } from "../list/List";
-import { snakeToSpaced } from "../../utils/string";
 
 export interface DataInfoProps {
   data: any;

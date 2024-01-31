@@ -20,7 +20,7 @@ export default function HistInfo(props: HistInfoProps) {
       );
     case 'file':
       return (
-        <FileInfo/>
+        <FileInfo fileData={props.histData}/>
       );
     case 'parent_rel':
       return(
