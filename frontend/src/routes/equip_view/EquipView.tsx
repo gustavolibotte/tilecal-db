@@ -16,6 +16,7 @@ import './equip_view.css';
 import { ENDPOINT, makeMutationFunction } from '../../utils/DbClient';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
+import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
 
 
 export default function EquipView() {
@@ -94,14 +95,26 @@ export default function EquipView() {
     let buttons;
     if (equipData.deleted_at){
       buttons = (
-        <Button type="button" label="Restore" severity='success'
-          onClick={() => {restoreMutation.mutate({id: equipId})}}/>
+        <ButtonConfirmation
+          actionLabel='Restore'
+          actionSeverity='success'
+          confirmSeverity='success'
+          cancelSeverity='danger'
+          onConfirmation={() => restoreMutation.mutate({id: equipId})}
+          dialogHeader='Restore data?'/>
       );
     } else{
       buttons = (
         <>
-        <Button type="button" label="Delete" severity='danger'
-          onClick={() => deleteMutation.mutate({id: equipId})}/>
+        <ButtonConfirmation
+          actionLabel='Delete'
+          actionSeverity='danger'
+          confirmSeverity='success'
+          cancelSeverity='danger'
+          onConfirmation={() => deleteMutation.mutate({id: equipId})}
+          dialogHeader='Delete data?'/>
+        {/* <Button type="button" label="Delete" severity='danger'
+          onClick={() => deleteMutation.mutate({id: equipId})}/> */}
         <Button type="button" label="Edit" icon='pi pi-pencil'
           onClick={() => setVisibleEditForm(true)}/>
         <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}
