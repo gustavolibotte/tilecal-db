@@ -299,6 +299,53 @@ class Files extends APIController
         
     }
 
+    public function put(): ResponseInterface
+    {
+        try{
+            return $this->__put__();
+        } catch (Throwable $e){
+            return $this->throwError(500, $e);
+        }
+    }
+
+    public function __put__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('file_edit');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
+        $data = ['id' => $this->request->getVar('id')];
+        $rules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'is_not_unique[files.id]'
+                ],
+                'errors' => [
+                    'required' => 'File ID is required',
+                    'is_not_unique' => 'File with ID "{value}" doesn\'t exist.'
+                ]
+            ]
+        ];
+
+        if (!$this->validateData($data, $rules)){
+            $errors = $this->validator->getErrors();
+            return $this->fail([], 400, $errors['id']);
+        }
+        
+        $validator = (new FileValidator())
+            ->asEdit()
+            ->addRequest($this->request);
+        if ($validator->validate()){
+            $file = $validator->getValidatedData();
+            model('FileModel')->update($data['id'], $file);
+            return $this->buildAPIResponse(200, [], 'Altered file with success.');
+        }
+        $errors = $validator->getErrors();
+        return $this->fail($errors, 400, 'Invalid data.');
+    }
+
     public function downloadHist()
     {
         $feature = model('FeatureModel')->findName('file_download');

@@ -110,6 +110,10 @@ $routes->post('api/file', 'Files::post', [
     'filter' => 'auth:upload',
     'as' => 'api_file_upload'
 ]);
+$routes->put('api/file', 'Files::put', [
+    'filter' => 'auth:edit',
+    'as' => 'api_file_edit'
+]);
 
 
 $routes->get('api/equipments/get', 'Equipments::get', [
