@@ -114,6 +114,14 @@ $routes->post('api/file-put', 'Files::put', [
     'filter' => 'auth:edit',
     'as' => 'api_file_edit'
 ]);
+$routes->delete('api/file', 'Files::delete', [
+  'filter' => 'auth:delete',
+  'as' => 'api_file_delete'
+]);
+$routes->patch('api/file', 'Files::restore', [
+  'filter' => 'auth:delete',
+  'as' => 'api_file_restore'
+]);
 
 
 $routes->get('api/equipments/get', 'Equipments::get', [
@@ -197,11 +205,11 @@ $routes->get('files/view/(:num)', 'Files::view/$1', [
     'filter' => 'auth:view',
     'as' => 'file_view'
 ]);
-$routes->post('files/delete/(:num)', 'Files::delete/$1', [
+$routes->post('files/delete/(:num)', 'Files::oldDelete/$1', [
     'filter' => 'auth:delete',
     'as' => 'file_delete'
 ]);
-$routes->post('files/restore/(:num)',  'Files::restore/$1', [
+$routes->post('files/restore/(:num)',  'Files::oldRestore/$1', [
     'filter' => 'auth:delete',
     'as' => 'file_restore'
 ]);

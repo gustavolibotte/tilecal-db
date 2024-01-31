@@ -1,6 +1,6 @@
 import { useState, ReactNode } from 'react';
 import { useParams } from 'react-router-dom'
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import TabPage from '../../components/tab_page/TabPage';
@@ -11,6 +11,11 @@ import FileInfo from '../../components/file_info/FileInfo';
 import EquipTable from '../../components/equip_table/EquipTable';
 import FileHistTable from '../../components/file_hist_table/FileHistTable';
 import FileForm from '../../components/file_form/FileForm';
+import { makeMutationFunction, ENDPOINT } from '../../utils/DbClient';
+import { toast } from 'react-toastify';
+import { DEFAULT_ERROR_MSG } from '../../utils/constants';
+import { AxiosError } from 'axios';
+
 
 export default function FileView() {
 
@@ -24,6 +29,42 @@ export default function FileView() {
   });
 
   const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: makeMutationFunction(
+      'delete',
+      ENDPOINT['file']
+    ),
+    onSuccess: () => {
+      toast.success('File deleted with success.');
+      queryClient.invalidateQueries({
+        queryKey: queryKey
+      })
+    },
+    onError: (error: AxiosError) => {
+      toast.dismiss();
+      console.log(error);
+      toast.error(DEFAULT_ERROR_MSG);
+    }
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: makeMutationFunction(
+      'patch',
+      ENDPOINT['file']
+    ),
+    onSuccess: () => {
+      toast.success('File restored with success.');
+      queryClient.invalidateQueries({
+        queryKey: queryKey
+      })
+    },
+    onError: (error: AxiosError) => {
+      toast.dismiss();
+      console.log(error);
+      toast.error('An error has occured.');
+    }
+  });
 
   let component: ReactNode;
   if (isPending){
@@ -40,12 +81,14 @@ export default function FileView() {
     let buttons;
     if (fileData.deleted_at){
       buttons = (
-        <Button type="button" label="Restore" severity='success'/>
+        <Button type="button" label="Restore" severity='success'
+          onClick={() => {restoreMutation.mutate({id: fileId})}}/>
       );
     } else{
       buttons = (
         <>
-        <Button type="button" label="Delete" severity='danger'/>
+        <Button type="button" label="Delete" severity='danger'
+          onClick={() => {deleteMutation.mutate({id: fileId})}}/>
         <Button type="button" label="Edit" icon='pi pi-pencil'
           onClick={() => setVisibleEditForm(true)}/>
         <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}

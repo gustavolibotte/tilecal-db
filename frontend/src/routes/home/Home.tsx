@@ -24,7 +24,7 @@ export default class Home extends Component {
                   <i className="pi pi-file text-4xl text-blue-500"></i>
               </span>
               <div className="text-900 text-xl mb-3 font-medium">Files</div>
-              <span className="text-700 line-height-3"><Link to='files'>Index</Link></span>
+              <span className="text-700 line-height-3"><Link to='file'>Index</Link></span>
           </div>
         </div>
       </div>

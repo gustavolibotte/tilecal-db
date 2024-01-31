@@ -168,7 +168,7 @@ class Files extends APIController
         return default_view('files/upload', $registerData);
     }
 
-    public function delete($fileId)
+    public function oldDelete($fileId)
     {
 
         $feature = model('FeatureModel')->findName('file_delete');
@@ -189,7 +189,7 @@ class Files extends APIController
         }
     }
 
-    public function restore($fileId)
+    public function oldRestore($fileId)
     {
         $feature = model('FeatureModel')->findName('file_restore');
         if (!$feature->isActive()){
@@ -344,6 +344,84 @@ class Files extends APIController
         }
         $errors = $validator->getErrors();
         return $this->fail($errors, 400, 'Invalid data.');
+    }
+
+    public function delete(): ResponseInterface
+    {
+        try{
+            return $this->__delete__();
+        } catch (Throwable $e){
+            return $this->throwError(500, $e);
+        }
+    }
+
+    protected function __delete__(): ResponseInterface
+    {
+
+        $feature = model('FeatureModel')->findName('file_delete');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+        $data = ['id' => $this->request->getVar('id')];
+        $rules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'is_not_unique[files.id]'
+                ],
+                'errors' => [
+                    'required' => 'File ID is required',
+                    'is_not_unique' => 'File with ID "{value}" doesn\'t exist.'
+                ]
+            ]
+        ];
+
+        if (!$this->validateData($data, $rules)){
+            $errors = $this->validator->getErrors();
+            return $this->fail([], 400, $errors['id']);
+        }
+
+        model('FileModel')->delete($data['id']);
+        return $this->buildAPIResponse(200, [], 'Deleted file with success.');
+    }
+
+    public function restore(): ResponseInterface
+    {
+        try{
+            return $this->__restore__();
+        } catch (Throwable $e){
+            return $this->throwError(500, $e);
+        }
+    }
+
+    protected function __restore__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('file_restore');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+
+        $data = ['id' => $this->request->getVar('id')];
+        $rules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'is_not_unique[files.id]'
+                ],
+                'errors' => [
+                    'required' => 'File ID is required',
+                    'is_not_unique' => 'File with ID "{value}" doesn\'t exist.'
+                ]
+            ]
+        ];
+
+        if (!$this->validateData($data, $rules)){
+            $errors = $this->validator->getErrors();
+            return $this->fail([], 400, $errors['id']);
+        }
+
+        model('FileModel')->restore($data['id']);
+        return $this->buildAPIResponse(200, [], 'Deleted file with success.');
     }
 
     public function downloadHist()
