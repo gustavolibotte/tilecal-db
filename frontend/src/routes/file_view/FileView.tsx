@@ -1,6 +1,6 @@
 import { useState, ReactNode } from 'react';
 import { useParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import TabPage from '../../components/tab_page/TabPage';
@@ -23,7 +23,7 @@ export default function FileView() {
     queryKey: queryKey
   });
 
-  // const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
   let component: ReactNode;
   if (isPending){
@@ -50,7 +50,13 @@ export default function FileView() {
           onClick={() => setVisibleEditForm(true)}/>
         <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}
           onHide={() => setVisibleEditForm(false)}>
-          <FileForm fileId={fileId}/>
+          <FileForm
+            fileId={fileId}
+            onSuccess={() => {
+              queryClient.invalidateQueries({
+                queryKey: queryKey
+              });
+            }}/>
         </Dialog>
         </>
       );

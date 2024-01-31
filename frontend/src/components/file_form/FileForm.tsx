@@ -1,7 +1,7 @@
 import { useFormik } from 'formik';
 import { toast } from 'react-toastify';
 import { DEFAULT_ERROR_MSG, INVALID_DATA_MSG, MAX_FILE_SIZE } from '../../utils/constants';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import FormText from '../form_text/FormText';
 import { ENDPOINT, makeMutationFunction } from '../../utils/DbClient';
@@ -18,19 +18,22 @@ interface FileFormSchema {
 }
 
 interface FileFormProps {
-  fileId?: string
+  fileId?: string;
+  onSuccess?: () => void;
 }
 
-export default function FileForm({ fileId }: FileFormProps) {
+export default function FileForm({ fileId, onSuccess }: FileFormProps) {
 
   const initialValues = {
     name: '', description: '', file: undefined
   };
 
-
   const headers = {
     'Content-Type': 'multipart/form-data'
   };
+
+  const queryClient = useQueryClient();
+
   const fileMutation = useMutation({
     mutationFn: makeMutationFunction(
       'post',
@@ -44,7 +47,14 @@ export default function FileForm({ fileId }: FileFormProps) {
     },
     onSuccess: () => {
       toast.dismiss();
-      toast.success('File uploaded with success');
+      if (fileId){
+        toast.success('File edited with success');
+      } else{
+        toast.success('File uploaded with success');
+      }
+      if (onSuccess){
+        onSuccess();
+      }
       formik.resetForm();
     },
     onError: (error: AxiosError) => {
@@ -73,9 +83,9 @@ export default function FileForm({ fileId }: FileFormProps) {
     }
     formData.append('name', data.name);
     formData.append('description', data.description);
-    console.log(formData);
-    fileMutation.mutate(data);
     console.log(data);
+    console.log(formData);
+    fileMutation.mutate(formData);
   }
 
   const formik = useFormik({
@@ -117,7 +127,7 @@ export default function FileForm({ fileId }: FileFormProps) {
         <div className='mt-3'>
           <FormFile
             id='file'
-            name='file'
+            name='File'
             help={`File to upload (${MAX_FILE_SIZE/1000000}MB max size)`}
             onChange={(event: any) => {
               formik.setFieldValue("file", event.currentTarget.files[0]);
