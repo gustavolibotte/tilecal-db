@@ -26,9 +26,10 @@ interface EquipFormSchema {
 interface EquipFormProps {
   typeName: string;
   equipId?: string
+  onSuccess?: () => void 
 }
 
-export default function EquipForm({typeName, equipId}: EquipFormProps) {
+export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps) {
 
   let initialValues: EquipFormSchema = {
     id: '',
@@ -45,11 +46,22 @@ export default function EquipForm({typeName, equipId}: EquipFormProps) {
       equipId? 'put': 'post', 
       ENDPOINT['equipment']),
     onMutate: () => {
-      toast.info('Registering equipment.');
+      if (equipId){
+        toast.info('Editing equipment.');
+      } else{
+        toast.info('Registering equipment.');
+      }
     },
     onSuccess: () => {
       toast.dismiss();
-      toast.success('Equipment registered with success');
+      if (equipId){
+        toast.success('Equipment edited with success');
+      } else{
+        toast.success('Equipment registered with success');
+      }
+      if (onSuccess){
+        onSuccess();
+      }
       formik.resetForm();
     },
     onError: (error: AxiosError) => {

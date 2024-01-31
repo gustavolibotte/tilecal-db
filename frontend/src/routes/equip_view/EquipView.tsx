@@ -79,7 +79,17 @@ export default function EquipView() {
       return <NotFound/>;
     }
     const typeName = response.data[0].type_name;
-    const editForm = (typeName == 'PMT')? <PmtForm equipId={equipId}/>: <EquipForm equipId={equipId} typeName={typeName}/>;
+    const onSuccess = () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKey
+      });
+    }
+    let editForm;
+    if (typeName == 'PMT'){
+      editForm = <PmtForm equipId={equipId} onSuccess={onSuccess}/>;
+    } else{
+      editForm = <EquipForm equipId={equipId} typeName={typeName} onSuccess={onSuccess}/>;
+    }
     const equipData = response.data[0];
     let buttons;
     if (equipData.deleted_at){

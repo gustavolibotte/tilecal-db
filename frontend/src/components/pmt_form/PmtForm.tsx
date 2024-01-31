@@ -32,10 +32,11 @@ interface EquipFormSchema {
 }
 
 interface PmtFormProps {
-  equipId?: string
+  equipId?: string;
+  onSuccess?: () => void;
 }
 
-export default function PmtForm({ equipId }: PmtFormProps) {
+export default function PmtForm({ equipId, onSuccess }: PmtFormProps) {
 
   const locationQuery: any = useQuery({
     queryKey: ['location', 'get', {}]
@@ -85,11 +86,11 @@ export default function PmtForm({ equipId }: PmtFormProps) {
       toast.dismiss();
       if (equipId) {
         toast.success('Equipment edited with success.');
-        queryClient.invalidateQueries({
-          queryKey: ['equipment', 'get', { id: equipId }]
-        });
       } else {
         toast.success('Equipment registered with success.');
+      }
+      if (onSuccess){
+        onSuccess();
       }
       formik.resetForm();
     },
