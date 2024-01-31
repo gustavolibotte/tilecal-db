@@ -3,15 +3,13 @@ import { toast } from 'react-toastify';
 import { DEFAULT_ERROR_MSG, INVALID_DATA_MSG, MAX_FILE_SIZE } from '../../utils/constants';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { FileUpload, FileUploadSelectEvent } from 'primereact/fileupload';
 import FormText from '../form_text/FormText';
 import { ENDPOINT, makeMutationFunction } from '../../utils/DbClient';
 import FormTextArea from '../form_text_area/FormTextArea';
 import { Button } from 'primereact/button';
-import { useRef, useState } from 'react';
-import * as Tup from 'yup';
 
 import './file_form.css';
+import FormFile from '../form_file/FormFile';
 
 interface FileFormSchema {
   name: string;
@@ -35,8 +33,8 @@ export default function FileForm({ fileId }: FileFormProps) {
   };
   const fileMutation = useMutation({
     mutationFn: makeMutationFunction(
-      fileId ? 'put' : 'post',
-      ENDPOINT['file'],
+      'post',
+      fileId? ENDPOINT['file_put']: ENDPOINT['file'],
       headers),
     onMutate: () => {
       toast.info('Uploading file.', {
@@ -67,10 +65,15 @@ export default function FileForm({ fileId }: FileFormProps) {
   const submitData = async (data: FileFormSchema) => {
     const formData = new FormData();
     if (data.file){
-      formData.append('file', data.file)
+      formData.append('file', data.file);
+    }
+    if (fileId){
+      console.log(fileId);
+      formData.append('id', fileId);
     }
     formData.append('name', data.name);
     formData.append('description', data.description);
+    console.log(formData);
     fileMutation.mutate(data);
     console.log(data);
   }
@@ -93,7 +96,7 @@ export default function FileForm({ fileId }: FileFormProps) {
             name='Name'
             value={formik.values.name}
             help='File name'
-            required
+            required={fileId? false: true}
             onChange={(e) => {
               formik.setFieldValue('name', e.target.value);
             }}
@@ -112,9 +115,14 @@ export default function FileForm({ fileId }: FileFormProps) {
             errorText={getFormErrorMessage('description')} />
         </div>
         <div className='mt-3'>
-          <input className='p-button' id="file" name="file" type="file" onChange={(event: any) => {
-            formik.setFieldValue("file", event.currentTarget.files[0]);
-          }} />
+          <FormFile
+            id='file'
+            name='file'
+            help={`File to upload (${MAX_FILE_SIZE/1000000}MB max size)`}
+            onChange={(event: any) => {
+              formik.setFieldValue("file", event.currentTarget.files[0]);
+            }}
+            errorText={getFormErrorMessage('file')} />
         </div>
         <div className='mt-3'><Button type="submit" label="Upload" icon="pi pi-file-import"/></div>
       </form>

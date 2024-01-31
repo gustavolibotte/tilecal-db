@@ -9,6 +9,7 @@ interface EndpointType {
   file: string;
   equipment_hist: string;
   file_hist: string;
+  file_put: string;
 }
 
 export const ENDPOINT: EndpointType = {
@@ -19,7 +20,8 @@ export const ENDPOINT: EndpointType = {
   detector_location: 'http://localhost:8080/api/detector-location',
   file: 'http://localhost:8080/api/file',
   equipment_hist: 'http://localhost:8080/api/equipment-hist',
-  file_hist: 'http://localhost:8080/api/file-hist'
+  file_hist: 'http://localhost:8080/api/file-hist',
+  file_put: 'http://localhost:8080/api/file-put'
 };
 
 interface GetInputType {

@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import { InputNumber, InputNumberChangeEvent } from 'primereact/inputnumber';
 import FormField from '../form_field/FormField';
 import { classNames } from 'primereact/utils';
@@ -13,23 +12,21 @@ interface FormTextProps {
   required?: boolean;
 }
 
-export default class FormNumber extends Component<FormTextProps> {
-  render() {
-    return (
-    <FormField
-      id={this.props.id}
-      name={this.props.name}
-      help={this.props.help}
-      errorText={this.props.errorText}
-      required={this.props.required}>
-      <InputNumber
-          id={this.props.id}
-          name={this.props.id}
-          value={this.props.value}
-          onChange={this.props.onChange}
-          className={classNames({ 'p-invalid': Boolean(this.props.errorText) })}
-      />
-    </FormField>
-    )
-  }
+export default function FormNumber(props: FormTextProps){
+  return (
+  <FormField
+    id={props.id}
+    name={props.name}
+    help={props.help}
+    errorText={props.errorText}
+    required={props.required}>
+    <InputNumber
+        id={props.id}
+        name={props.id}
+        value={props.value}
+        onChange={props.onChange}
+        className={classNames({ 'p-invalid': Boolean(props.errorText) })}
+    />
+  </FormField>
+  )
 }
