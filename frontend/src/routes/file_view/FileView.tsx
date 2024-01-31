@@ -23,6 +23,7 @@ export default function FileView() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [visibleEditForm, setVisibleEditForm] = useState(false);
   const queryKey = ['file', 'get', {id: fileId, withDeleted: true}];
+  const equipTableQuery = ['equipment', 'get', { relatedFileId: fileId }];
 
   const {isPending, isError, data: response}: any = useQuery({
     queryKey: queryKey
@@ -30,16 +31,27 @@ export default function FileView() {
 
   const queryClient = useQueryClient();
 
+  const invalidateQueries = () => {
+    queryClient.invalidateQueries({
+      queryKey: queryKey
+    })
+    queryClient.invalidateQueries({
+      queryKey: equipTableQuery
+    })
+  }
+
   const deleteMutation = useMutation({
     mutationFn: makeMutationFunction(
       'delete',
       ENDPOINT['file']
     ),
+    onMutate: () => {
+      toast.info('Deleting');
+    },
     onSuccess: () => {
+      toast.dismiss();
       toast.success('File deleted with success.');
-      queryClient.invalidateQueries({
-        queryKey: queryKey
-      })
+      invalidateQueries();
     },
     onError: (error: AxiosError) => {
       toast.dismiss();
@@ -53,11 +65,13 @@ export default function FileView() {
       'patch',
       ENDPOINT['file']
     ),
+    onMutate: () => {
+      toast.info('Restoring');
+    },
     onSuccess: () => {
+      toast.dismiss();
       toast.success('File restored with success.');
-      queryClient.invalidateQueries({
-        queryKey: queryKey
-      })
+      invalidateQueries();
     },
     onError: (error: AxiosError) => {
       toast.dismiss();
@@ -124,7 +138,7 @@ export default function FileView() {
             <FileInfo fileData={fileData}/>
             <hr></hr>
             <h2>Related Equipment</h2>
-            <EquipTable queryKey={['equipment', 'get', { relatedFileId: fileId }]}/>
+            <EquipTable queryKey={equipTableQuery}/>
           </div>
         </TabPanel>
         <TabPanel header="History">

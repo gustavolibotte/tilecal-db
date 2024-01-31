@@ -22,7 +22,7 @@ abstract class LogModel extends BaseModel{
         $this->opTimestamp = service('time')->getRequestTimestamp()->format('Y-m-d H:i:s.u');
         $this->beforeInsert[] = 'addInsertTimestamps';
         $this->beforeInsert[] = 'addUser';
-        // $this->beforeUpdate[] = 'addUpdateTimestamps';
+        $this->beforeUpdate[] = 'addUpdateTimestamps';
         $this->beforeUpdate[] = 'addUser';
         $this->beforeDelete[] = 'customDelete';
     }
@@ -34,11 +34,11 @@ abstract class LogModel extends BaseModel{
         return $data;
     }
 
-    // protected function addUpdateTimestamps(array $data): array
-    // {
-    //     $data['data']['updated_at'] = $this->opTimestamp;
-    //     return $data;
-    // }
+    protected function addUpdateTimestamps(array $data): array
+    {
+        $data['data']['updated_at'] = $this->opTimestamp;
+        return $data;
+    }
 
     protected function customDelete(array $data): array
     {   

@@ -28,6 +28,7 @@ class FileModel extends LogModel
         helper(['app_array']);
         $this->beforeInsert[] = 'treatFileObj';
         $this->beforeUpdate[] = 'treatFileObj';
+        $this->afterDelete[] = 'deleteRelationsCallback';
     }
 
     public function minQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
@@ -79,7 +80,7 @@ class FileModel extends LogModel
 
     public function deleteRelations(int|string|array $id): bool
     {
-        $equipments2FilesModel = model('Equipments2FilesModel');
+        $equipments2FilesModel = model('Equipment2FileModel');
         $whereClause = (is_array($id))? 'whereIn': 'where';
         $relations = $equipments2FilesModel
             ->select('id')
