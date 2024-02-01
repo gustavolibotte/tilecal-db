@@ -51,7 +51,7 @@ export class User{
     return this.isEditor();
   }
 
-  canAlter(): Boolean{
+  canEdit(): Boolean{
     return this.isEditor();
   }
 
@@ -68,19 +68,25 @@ export class User{
   }
 }
 
-export function useUser(): Boolean | User{
+export function useUser(): User{
     // The backend ensures that the typing is met but I don't know
     // how to make typescript believe in me
   let queryReturn: any = useQuery({
     queryKey: ['user', 'get', {}]
   })
 
+  // User params that makes every role be negated
+  const loadingUser = {
+    username: 'Loading',
+    roles: []
+  }
+
   if (queryReturn.isError){
     console.log('Error retrieving user data');
     console.log(queryReturn.data);
-    return false;
+    return new User(loadingUser);
   } else if(queryReturn.isPending){
-    return false;
+    return new User(loadingUser);
   }
   return new User(queryReturn.data.data);
 }

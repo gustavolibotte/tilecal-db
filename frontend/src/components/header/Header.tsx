@@ -29,7 +29,7 @@ export default function Header() {
   }
 
   const equipItems: any = [{ template: <MenuLink route='equipment' label='Index' /> }];
-  if (user && user.canDelete()){
+  if (user.canDelete()){
     equipItems.push({ template: <MenuLink route='deleted-equipment' label='Deleted' /> });
   }
   equipItems.push({ separator: true });
@@ -41,7 +41,7 @@ export default function Header() {
   );
 
   let registerItems: any;
-  if (user && user.canRegister()){
+  if (user.canRegister()){
     registerItems = equipTypes.map(
       (et: EquipType) => {
         // return {label: et.label, url: getSpecEquipRoute(et.label)};
@@ -53,10 +53,10 @@ export default function Header() {
   }
 
   const fileItems = [{ template: <MenuLink route='file' label='Index' /> }];
-  if (user && user.canUpload()){
+  if (user.canUpload()){
     fileItems.push({ template: <MenuLink route='file/upload' label='Upload' /> });
   }
-  if (user && user.canDelete()){
+  if (user.canDelete()){
     fileItems.push({ template: <MenuLink route='deleted-files' label='Deleted' /> });
   }
 

@@ -17,6 +17,7 @@ import { ENDPOINT, makeMutationFunction } from '../../utils/DbClient';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
+import { useUser } from '../../utils/user';
 
 
 export default function EquipView() {
@@ -24,8 +25,10 @@ export default function EquipView() {
   const { equipId } = useParams();
   const [activeIndex, setActiveIndex] = useState(0);
   const [visibleEditForm, setVisibleEditForm] = useState(false);
-  const queryKey = ['equipment', 'get', {id: equipId, withDeleted: true}]
 
+  const user = useUser();
+
+  const queryKey = ['equipment', 'get', {id: equipId, withDeleted: true}];
   const {isPending, isError, data: response}: any = useQuery({
     queryKey: queryKey
   });
@@ -93,7 +96,7 @@ export default function EquipView() {
     }
     const equipData = response.data[0];
     let buttons;
-    if (equipData.deleted_at){
+    if (equipData.deleted_at && user.canRestore()){
       buttons = (
         <ButtonConfirmation
           actionLabel='Restore'
@@ -106,21 +109,19 @@ export default function EquipView() {
     } else{
       buttons = (
         <>
-        <ButtonConfirmation
+        {user.canDelete() &&<ButtonConfirmation
           actionLabel='Delete'
           actionSeverity='danger'
           confirmSeverity='success'
           cancelSeverity='danger'
           onConfirmation={() => deleteMutation.mutate({id: equipId})}
-          dialogHeader='Delete data?'/>
-        {/* <Button type="button" label="Delete" severity='danger'
-          onClick={() => deleteMutation.mutate({id: equipId})}/> */}
-        <Button type="button" label="Edit" icon='pi pi-pencil'
-          onClick={() => setVisibleEditForm(true)}/>
-        <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}
+          dialogHeader='Delete data?'/>}
+        {user.canEdit() && <Button type="button" label="Edit" icon='pi pi-pencil'
+          onClick={() => setVisibleEditForm(true)}/>}
+        {user.canEdit() && <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}
           onHide={() => setVisibleEditForm(false)}>
           {editForm}
-        </Dialog>
+        </Dialog>}
         </>
       );
     }

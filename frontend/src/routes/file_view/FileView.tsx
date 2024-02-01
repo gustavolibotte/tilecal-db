@@ -15,7 +15,8 @@ import { makeMutationFunction, ENDPOINT } from '../../utils/DbClient';
 import { toast } from 'react-toastify';
 import { DEFAULT_ERROR_MSG } from '../../utils/constants';
 import { AxiosError } from 'axios';
-
+import { useUser } from '../../utils/user';
+import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
 
 export default function FileView() {
 
@@ -24,6 +25,7 @@ export default function FileView() {
   const [visibleEditForm, setVisibleEditForm] = useState(false);
   const queryKey = ['file', 'get', {id: fileId, withDeleted: true}];
   const equipTableQuery = ['equipment', 'get', { relatedFileId: fileId }];
+  const user = useUser();
 
   const {isPending, isError, data: response}: any = useQuery({
     queryKey: queryKey
@@ -93,19 +95,29 @@ export default function FileView() {
     }
     const fileData = response.data[0];
     let buttons;
-    if (fileData.deleted_at){
+    if (fileData.deleted_at && user.canRestore()){
       buttons = (
-        <Button type="button" label="Restore" severity='success'
-          onClick={() => {restoreMutation.mutate({id: fileId})}}/>
+        <ButtonConfirmation
+          actionLabel='Restore'
+          actionSeverity='success'
+          confirmSeverity='success'
+          cancelSeverity='danger'
+          onConfirmation={() => restoreMutation.mutate({id: fileId})}
+          dialogHeader='Restore data?'/>
       );
     } else{
       buttons = (
         <>
-        <Button type="button" label="Delete" severity='danger'
-          onClick={() => {deleteMutation.mutate({id: fileId})}}/>
-        <Button type="button" label="Edit" icon='pi pi-pencil'
-          onClick={() => setVisibleEditForm(true)}/>
-        <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}
+        {user.canDelete() &&<ButtonConfirmation
+          actionLabel='Delete'
+          actionSeverity='danger'
+          confirmSeverity='success'
+          cancelSeverity='danger'
+          onConfirmation={() => deleteMutation.mutate({id: fileId})}
+          dialogHeader='Delete data?'/>}
+        {user.canEdit() && <Button type="button" label="Edit" icon='pi pi-pencil'
+          onClick={() => setVisibleEditForm(true)}/>}
+        {user.canEdit() && <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}
           onHide={() => setVisibleEditForm(false)}>
           <FileForm
             fileId={fileId}
@@ -114,7 +126,7 @@ export default function FileView() {
                 queryKey: queryKey
               });
             }}/>
-        </Dialog>
+        </Dialog>}
         </>
       );
     }
