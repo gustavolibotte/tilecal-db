@@ -129,6 +129,12 @@ $routes->patch('api/file', 'Files::restore', [
   'as' => 'api_file_restore'
 ]);
 
+// User API
+$routes->get('api/user', 'User::get', [
+  'filter' => 'auth:view',
+  'as' => 'api_user_get'
+]);
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing

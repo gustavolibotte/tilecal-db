@@ -2,9 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Library\Forms\AssembleForm;
 use App\Library\Forms\EquipmentBatchRegisterForm;
-use App\Library\Forms\EquipmentForm;
 use App\Validation\Validators\BatchRegisterValidator;
 use App\Validation\Validators\EquipmentAssembleValidator;
 use App\Validation\Validators\EquipmentValidator;
@@ -64,7 +62,7 @@ class Equipments extends APIController
         $viewData['cancelUrl'] = url_to('equipment_index');
         return default_view('equipment/batch_register', $viewData);
     }
-    
+
     public function assemble(string $equipmentId)
     {
         $feature = model('FeatureModel')->findName('parent_relation');
