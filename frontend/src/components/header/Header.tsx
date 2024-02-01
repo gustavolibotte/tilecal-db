@@ -10,46 +10,56 @@ interface EquipType {
   name: string;
 }
 
-function HeaderUsername(){
-
-  const user: any = useUser();
-  
-  if (user){
-    return <span className="p-menuitem-text text-s">{user.username}</span>;
-  }
-  return <span className="p-menuitem-text text-s">Loading</span>;
-}
-
 export default function Header() {
   const equipTypeQuery: any = useQuery({
-    queryKey: ['equipment_types', 'get', {}]
+    queryKey: ['equipment_type', 'get', {}]
   });
 
-  let equipTypes;
+  const user: any = useUser();
+
+  let equipTypes: EquipType[];
   if (equipTypeQuery.isError){
-    console.log(equipTypeQuery);
+    console.log(equipTypeQuery.data);
+    console.log(equipTypeQuery.error);
     equipTypes = [];
   } else if (equipTypeQuery.isSuccess){
-    equipTypes = equipTypeQuery.data.response.data;
+    equipTypes = equipTypeQuery.data.data;
   } else {
     equipTypes = [];
   }
 
-  let equipItems: any = equipTypes.map(
+  const equipItems: any = [{ template: <MenuLink route='equipment' label='Index' /> }];
+  if (user && user.canDelete()){
+    equipItems.push({ template: <MenuLink route='deleted-equipment' label='Deleted' /> });
+  }
+  equipItems.push({ separator: true });
+  equipTypes.forEach(
     (et: EquipType) => {
       // return {label: et.label, url: getSpecEquipRoute(et.label)};
-      return { template: <MenuLink route={getSpecEquipRoute(et.name)} label={et.name} /> };
+      equipItems.push({ template: <MenuLink route={getSpecEquipRoute(et.name)} label={et.name} /> });
     }
   );
-  let registerItems: any = equipTypes.map(
-    (et: EquipType) => {
-      // return {label: et.label, url: getSpecEquipRoute(et.label)};
-      return { template: <MenuLink route={getEquipRegisterRoute(et.name)} label={et.name} /> };
-    }
-  );
-  equipItems.unshift({ separator: true });
-  equipItems.unshift({ template: <MenuLink route='deleted-equipment' label='Deleted' /> });
-  equipItems.unshift({ template: <MenuLink route='equipment' label='Index' /> });
+
+  let registerItems: any;
+  if (user && user.canRegister()){
+    registerItems = equipTypes.map(
+      (et: EquipType) => {
+        // return {label: et.label, url: getSpecEquipRoute(et.label)};
+        return { template: <MenuLink route={getEquipRegisterRoute(et.name)} label={et.name} /> };
+      }
+    );
+  } else{
+    registerItems = [];
+  }
+
+  const fileItems = [{ template: <MenuLink route='file' label='Index' /> }];
+  if (user && user.canUpload()){
+    fileItems.push({ template: <MenuLink route='file/upload' label='Upload' /> });
+  }
+  if (user && user.canDelete()){
+    fileItems.push({ template: <MenuLink route='deleted-files' label='Deleted' /> });
+  }
+
   const items = [
     {
       label: 'Equipment',
@@ -61,17 +71,20 @@ export default function Header() {
     },
     {
       label: 'Files',
-      items: [
-        { template: <MenuLink route='file' label='Index' /> },
-        { template: <MenuLink route='file/upload' label='Upload' /> },
-        { template: <MenuLink route='deleted-files' label='Deleted' /> }
-      ]
+      items: fileItems
     }
   ]
 
+  let end;
+  if (user){
+    end = <span className="p-menuitem-text text-s">{user.username}</span>;
+  } else{
+    end = <span className="p-menuitem-text text-s">Loading</span>;
+  }
+
   return (
     <div className="card w-auto ">
-      <Menubar model={items} start={<HomeButton/>} end={<HeaderUsername/>}
+      <Menubar model={items} start={<HomeButton/>} end={end}
         className='shadow-2' />
     </div>
   )
