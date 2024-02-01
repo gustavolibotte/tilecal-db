@@ -11,6 +11,7 @@ interface EndpointType {
   file_hist: string;
   file_put: string;
   user: string;
+  equipment_type: string;
 }
 
 export const ENDPOINT: EndpointType = {
@@ -23,7 +24,8 @@ export const ENDPOINT: EndpointType = {
   equipment_hist: 'http://localhost:8080/api/equipment-hist',
   file_hist: 'http://localhost:8080/api/file-hist',
   file_put: 'http://localhost:8080/api/file-put',
-  user: 'http://localhost:8080/api/user'
+  user: 'http://localhost:8080/api/user',
+  equipment_type: 'http://localhost:8080/api/equipment-type',
 };
 
 interface GetInputType {

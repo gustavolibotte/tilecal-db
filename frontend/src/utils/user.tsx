@@ -68,17 +68,19 @@ export class User{
   }
 }
 
-export function useUser(){
-  const queryReturn = useQuery({
+export function useUser(): Boolean | User{
+    // The backend ensures that the typing is met but I don't know
+    // how to make typescript believe in me
+  let queryReturn: any = useQuery({
     queryKey: ['user', 'get', {}]
   })
 
-  if (queryReturn.isSuccess){
-    // The backend ensures that the typing is met but I don't know
-    // how to make typescript believe in me
-    // @ts-ignore
-    queryReturn.data = new User(queryReturn.data);
-    return queryReturn;
+  if (queryReturn.isError){
+    console.log('Error retrieving user data');
+    console.log(queryReturn.data);
+    return false;
+  } else if(queryReturn.isPending){
+    return false;
   }
-  return queryReturn;
+  return new User(queryReturn.data.data);
 }

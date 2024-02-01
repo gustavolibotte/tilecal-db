@@ -11,7 +11,7 @@ export default class PageLayout extends Component{
   return(
     <div>
       <ToastContainer/>
-      <Header equipTypeUrl='http://localhost:8080/api/equipment-type'/>
+      <Header/>
       <Outlet/>
     </div>
   )

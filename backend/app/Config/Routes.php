@@ -130,7 +130,7 @@ $routes->patch('api/file', 'Files::restore', [
 ]);
 
 // User API
-$routes->get('api/user', 'User::get', [
+$routes->get('api/user', 'User::g', [
   'filter' => 'auth:view',
   'as' => 'api_user_get'
 ]);
