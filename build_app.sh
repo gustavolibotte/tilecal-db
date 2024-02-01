@@ -1,5 +1,12 @@
 #!/bin/bash
 # set -e
+
+# Install backend dependencies
+cd backend
+composer update
+cd ../
+
+# Build React app
 PUBLIC_DIR="backend/public"
 DIST_DIR="$PUBLIC_DIR/dist"
 if [ -d "$DIST_DIR" ]; then
@@ -15,7 +22,7 @@ if [ -d "$ASSETS_DIR" ]; then
 fi
 
 VIEWS_DIR="backend/app/Views"
-cd frontend && npm run build && cd ../
+cd frontend && npm install && npm run build && cd ../
 mv $DIST_DIR/index.html $VIEWS_DIR/index.html
 mv $DIST_DIR/assets $PUBLIC_DIR
 rm -r $DIST_DIR
