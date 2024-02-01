@@ -13,7 +13,7 @@ import NotFound from '../../components/not_found/NotFound';
 import RelatedEquipTable from '../../components/related_equip_table/RelatedEquipTable';
 import EquipHistTable from '../../components/equip_hist/EquipHistTable';
 import './equip_view.css';
-import { ENDPOINT, makeMutationFunction } from '../../utils/DbClient';
+import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
@@ -38,7 +38,7 @@ export default function EquipView() {
   const deleteMutation = useMutation({
     mutationFn: makeMutationFunction(
       'delete',
-      ENDPOINT['equipment']
+      getEndpoint('equipment')
     ),
     onSuccess: () => {
       toast.success('Equipment deleted with success.');
@@ -56,7 +56,7 @@ export default function EquipView() {
   const restoreMutation = useMutation({
     mutationFn: makeMutationFunction(
       'patch',
-      ENDPOINT['equipment']
+      getEndpoint('equipment')
     ),
     onSuccess: () => {
       toast.success('Equipment restored with success.');

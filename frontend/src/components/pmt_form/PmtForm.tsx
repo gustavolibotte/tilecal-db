@@ -9,7 +9,7 @@ import { INVALID_DATA_MSG } from '../../utils/constants';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import {
-  ENDPOINT,
+  getEndpoint,
   makeMutationFunction,
 } from '../../utils/DbClient';
 import FormNumber from '../form_number/FormNumber';
@@ -72,7 +72,7 @@ export default function PmtForm({ equipId, onSuccess }: PmtFormProps) {
   const equipMutation = useMutation({
     mutationFn: makeMutationFunction(
       equipId ? 'put' : 'post',
-      ENDPOINT['equipment']),
+      getEndpoint('equipment')),
     onMutate: () => {
       if (equipId) {
         toast.info('Editing equipment.');

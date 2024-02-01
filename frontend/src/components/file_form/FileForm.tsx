@@ -4,7 +4,7 @@ import { DEFAULT_ERROR_MSG, INVALID_DATA_MSG, MAX_FILE_SIZE } from '../../utils/
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import FormText from '../form_text/FormText';
-import { ENDPOINT, makeMutationFunction } from '../../utils/DbClient';
+import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
 import FormTextArea from '../form_text_area/FormTextArea';
 import { Button } from 'primereact/button';
 
@@ -35,7 +35,7 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
   const fileMutation = useMutation({
     mutationFn: makeMutationFunction(
       'post',
-      fileId? ENDPOINT['file_put']: ENDPOINT['file'],
+      fileId? getEndpoint('file_put'): getEndpoint('file'),
       headers),
     onMutate: () => {
       toast.info('Uploading file.', {
@@ -81,8 +81,6 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
     }
     formData.append('name', data.name);
     formData.append('description', data.description);
-    console.log(data);
-    console.log(formData);
     fileMutation.mutate(formData);
   }
 

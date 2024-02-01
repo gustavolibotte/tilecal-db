@@ -11,7 +11,7 @@ import FileInfo from '../../components/file_info/FileInfo';
 import EquipTable from '../../components/equip_table/EquipTable';
 import FileHistTable from '../../components/file_hist_table/FileHistTable';
 import FileForm from '../../components/file_form/FileForm';
-import { makeMutationFunction, ENDPOINT } from '../../utils/DbClient';
+import { makeMutationFunction, getEndpoint } from '../../utils/DbClient';
 import { toast } from 'react-toastify';
 import { DEFAULT_ERROR_MSG } from '../../utils/constants';
 import { AxiosError } from 'axios';
@@ -45,7 +45,7 @@ export default function FileView() {
   const deleteMutation = useMutation({
     mutationFn: makeMutationFunction(
       'delete',
-      ENDPOINT['file']
+      getEndpoint('file')
     ),
     onMutate: () => {
       toast.info('Deleting');
@@ -65,7 +65,7 @@ export default function FileView() {
   const restoreMutation = useMutation({
     mutationFn: makeMutationFunction(
       'patch',
-      ENDPOINT['file']
+      getEndpoint('file')
     ),
     onMutate: () => {
       toast.info('Restoring');

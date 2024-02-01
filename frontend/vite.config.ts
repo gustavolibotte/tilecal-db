@@ -6,5 +6,8 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: '../backend/public/dist'
+  },
+  define: {
+    __APP_BASEURL__: JSON.stringify(process.env.app_baseURL),
   }
 })

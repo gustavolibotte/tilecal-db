@@ -14,19 +14,23 @@ interface EndpointType {
   equipment_type: string;
 }
 
-export const ENDPOINT: EndpointType = {
-  equipment: 'http://localhost:8080/api/equipment',
-  location: 'http://localhost:8080/api/location',
-  institute: 'http://localhost:8080/api/institute',
-  status: 'http://localhost:8080/api/status',
-  detector_location: 'http://localhost:8080/api/detector-location',
-  file: 'http://localhost:8080/api/file',
-  equipment_hist: 'http://localhost:8080/api/equipment-hist',
-  file_hist: 'http://localhost:8080/api/file-hist',
-  file_put: 'http://localhost:8080/api/file-put',
-  user: 'http://localhost:8080/api/user',
-  equipment_type: 'http://localhost:8080/api/equipment-type',
+const ENDPOINT: EndpointType = {
+  equipment: 'api/equipment',
+  location: 'api/location',
+  institute: 'api/institute',
+  status: 'api/status',
+  detector_location: 'api/detector-location',
+  file: 'api/file',
+  equipment_hist: 'api/equipment-hist',
+  file_hist: 'api/file-hist',
+  file_put: 'api/file-put',
+  user: 'api/user',
+  equipment_type: 'api/equipment-type',
 };
+
+export function getEndpoint(name: keyof EndpointType): string{
+  return `${__APP_BASEURL__}/${ENDPOINT[name]}`;
+}
 
 interface GetInputType {
   queryKey: any;
@@ -40,7 +44,12 @@ interface SuccessResponseType {
 }
 
 const parseQueryKey = (queryKey: any[]) => {
-  const endpoint = ENDPOINT[queryKey[0] as keyof EndpointType];
+  let endpoint;
+  if (queryKey[0] == 'equipment_type'){
+    endpoint = `${__APP_BASEURL__}/api/equipment-type`;
+  } else{
+    endpoint = getEndpoint(queryKey[0] as keyof EndpointType);
+  }
   const method = queryKey[1];
   const queryParams = queryKey[2];
   return {endpoint: endpoint, method: method, queryParams: queryParams};
