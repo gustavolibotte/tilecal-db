@@ -1,4 +1,5 @@
 #!/bin/bash
+chmod -R 777 /var/www/html
 APP_EOS_DIR="/eos/user/t/tilep2db/${CI_ENVIRONMENT}"
 APP_FILES_DIR="${APP_EOS_DIR}/files"
 APP_WRITABLE_DIR="${APP_EOS_DIR}/writable"
