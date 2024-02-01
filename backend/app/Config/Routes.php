@@ -14,7 +14,7 @@ $routes->setDefaultNamespace('App\Controllers');
 $routes->setDefaultController('Home');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
-$routes->set404Override('\App\Controllers\Equipments::notFound');
+$routes->set404Override('\App\Controllers\Home::index');
 $routes->setAutoRoute(false);
 // The Auto Routing (Legacy) is very dangerous. It is easy to create vulnerable apps
 // where controller filters or CSRF protection are bypassed.
@@ -30,7 +30,7 @@ $routes->setAutoRoute(false);
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'Home::index', [
+$routes->get('/','Home::index', [
     'filter' => 'auth:view',
     'as' => 'home'
 ]);
@@ -71,6 +71,12 @@ $routes->delete('api/equipment', 'Equipments::delete', [
 $routes->patch('api/equipment', 'Equipments::restore', [
     'filter' => 'auth:delete',
     'as' => 'api_equipment_restore'
+]);
+
+// EquipmentTypes API
+$routes->get('api/equipment-type', 'EquipmentType::get',[
+  'filter' => 'auth:view',
+  'as' => 'api_equip_type_get'
 ]);
 
 // Location API
@@ -123,120 +129,6 @@ $routes->patch('api/file', 'Files::restore', [
   'as' => 'api_file_restore'
 ]);
 
-
-$routes->get('api/equipments/get', 'Equipments::get', [
-    'filter' => 'auth:view',
-    'as' => 'equipment_get'
-]);
-$routes->get('api/equipments/getHist', 'Equipments::getHist', [
-    'filter' => 'auth:view',
-    'as' => 'equipment_get_hist'
-]);
-$routes->get('api/files/get', 'Files::get', [
-    'filter' => 'auth:view',
-    'as' => 'file_get'
-]);
-$routes->get('api/files/getHist', 'Files::getHist', [
-    'filter' => 'auth:view',
-    'as' => 'file_get_hist'
-]);
-$routes->get('api/files/histDownload', 'Files::downloadHist', [
-    'filter' => 'auth:view',
-    'as' => 'file_hist_download'
-]);
-$routes->post('api/equipments/disassemble', 'Equipments::disassemble', [
-    'filter' => 'auth:delete',
-    'as' => 'equipment_disassemble'
-]);
-
-// Equipment page routes
-$routes->get('equipments', 'Equipments::index', [
-    'filter' => 'auth:view',
-    'as' => 'equipment_index'
-]);
-$routes->get('equipments?onlyDeleted=true', 'Equipments::index', [
-    'filter' => 'auth:delete',
-    'as' => 'equipment_index_deleted'
-]);
-$routes->get('equipments?typeName=(:segment)', 'Equipments::index', [
-    'filter' => 'auth:view',
-    'as' => 'equipment_index_type'
-]);
-$routes->get('equipments/view/(:alphanum)', 'Equipments::view/$1', [
-    'filter' => 'auth:view',
-    'as' => 'equipment_view'
-]);
-$routes->match(['get', 'post'], 'equipments/register/(:segment)', 'Equipments::register/$1', [
-    'filter' => 'auth:register',
-    'as' => 'equipment_register'
-]);
-$routes->match(['get', 'post'], 'equipments/batch-register', 'Equipments::batchRegister', [
-    'filter' => 'auth:register',
-    'as' => 'equipment_batch_register'
-]);
-$routes->post('equipments/edit/(:alphanum)',  'Equipments::edit/$1', [
-    'filter' => 'auth:edit',
-    "as" => 'equipment_edit'
-]);
-$routes->post('equipments/delete/(:alphanum)', 'Equipments::oldDelete/$1', [
-    'filter' => 'auth:delete',
-    'as' => 'equipment_delete'
-]);
-$routes->post('equipments/restore/(:alphanum)',  'Equipments::oldRestore/$1', [
-    'filter' => 'auth:delete',
-    "as" => 'equipment_restore'
-]);
-$routes->post('equipments/assemble/(:alphanum)', 'Equipments::assemble/$1',[
-    'filter' => 'auth:edit',
-    "as" => 'equipment_assemble'
-]);
-
-
-// File routes
-$routes->get('files', 'Files::index', [
-    'filter' => 'auth:view',
-    'as' => 'file_index'
-]);
-$routes->get('files?onlyDeleted=true', 'Files::index', [
-    'filter' => 'auth:delete',
-    'as' => 'file_index_deleted'
-]);
-$routes->get('files/view/(:num)', 'Files::view/$1', [
-    'filter' => 'auth:view',
-    'as' => 'file_view'
-]);
-$routes->post('files/delete/(:num)', 'Files::oldDelete/$1', [
-    'filter' => 'auth:delete',
-    'as' => 'file_delete'
-]);
-$routes->post('files/restore/(:num)',  'Files::oldRestore/$1', [
-    'filter' => 'auth:delete',
-    'as' => 'file_restore'
-]);
-$routes->post('files/update/(:num)', 'Files::update/$1', [
-    'filter' => 'auth:edit',
-    'as' => 'file_update'
-]);
-$routes->match(['get', 'post'], 'files/upload', 'Files::upload', [
-    'filter' => 'auth:upload',
-    'as' => 'file_upload'
-]);
-$routes->get('files/download/(:num)', 'Files::download/$1', [
-    'filter' => 'auth:download',
-    'as' => 'file_download'
-]);
-
-// EquipmentTypes
-$routes->get('api/equipment-type', 'EquipmentType::get',[
-    'filter' => 'auth:view',
-    'as' => 'api_equip_type_get'
-]);
-
-// Errors
-$routes->get('unauthorized', 'Equipments::unauthorized');
-$routes->get('notfound', 'Equipments::notFound');
-$routes->get('deleted-entry', 'Equipments::deletedEntry');
-$routes->get('forbidden', 'Equipments::forbidden');
 /*
  * --------------------------------------------------------------------
  * Additional Routing
