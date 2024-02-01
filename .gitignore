@@ -148,3 +148,6 @@ output/
 
 # Python
 __pycache__/
+
+# Ignore build generated files
+backend/app/Views/index.php
