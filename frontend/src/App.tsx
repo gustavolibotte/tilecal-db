@@ -14,6 +14,7 @@ import { defaultQueryFunction } from './utils/DbClient.tsx';
 import 'primeicons/primeicons.css';
 import "primereact/resources/themes/md-light-indigo/theme.css";
 import FileUpload from './routes/file_upload/FileUpload.tsx';
+import EquipBatchRegister from './routes/equip_batch_register/EquipBatchRegister.tsx';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,6 +37,10 @@ export default function App(){
     {
       path: "equipment/type/:typeName",
       element: <SpecEquipIndex/>,
+    },
+    {
+      path: "equipment/batch-register",
+      element: <EquipBatchRegister/>,
     },
     {
       path: 'equipment/register/:typeName',

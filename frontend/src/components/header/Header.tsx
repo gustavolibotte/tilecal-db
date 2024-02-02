@@ -18,18 +18,18 @@ export default function Header() {
   const user: any = useUser();
 
   let equipTypes: EquipType[];
-  if (equipTypeQuery.isError){
+  if (equipTypeQuery.isError) {
     console.log(equipTypeQuery.data);
     console.log(equipTypeQuery.error);
     equipTypes = [];
-  } else if (equipTypeQuery.isSuccess){
+  } else if (equipTypeQuery.isSuccess) {
     equipTypes = equipTypeQuery.data.data;
   } else {
     equipTypes = [];
   }
 
   const equipItems: any = [{ template: <MenuLink route='equipment' label='Index' /> }];
-  if (user.canDelete()){
+  if (user.canDelete()) {
     equipItems.push({ template: <MenuLink route='deleted-equipment' label='Deleted' /> });
   }
   equipItems.push({ separator: true });
@@ -40,23 +40,26 @@ export default function Header() {
     }
   );
 
-  let registerItems: any;
-  if (user.canRegister()){
-    registerItems = equipTypes.map(
+  const registerItems = [];
+  if (user.canRegister()) {
+    registerItems.push(
+      { template: <MenuLink route='equipment/batch-register' label='Batch Register' /> }
+    );
+    registerItems.push({ separator: true });
+    equipTypes.forEach(
       (et: EquipType) => {
-        // return {label: et.label, url: getSpecEquipRoute(et.label)};
-        return { template: <MenuLink route={getEquipRegisterRoute(et.name)} label={et.name} /> };
+        registerItems.push(
+          { template: <MenuLink route={getEquipRegisterRoute(et.name)} label={et.name} /> }
+        );
       }
     );
-  } else{
-    registerItems = [];
   }
 
   const fileItems = [{ template: <MenuLink route='file' label='Index' /> }];
-  if (user.canUpload()){
+  if (user.canUpload()) {
     fileItems.push({ template: <MenuLink route='file/upload' label='Upload' /> });
   }
-  if (user.canDelete()){
+  if (user.canDelete()) {
     fileItems.push({ template: <MenuLink route='deleted-files' label='Deleted' /> });
   }
 
@@ -76,15 +79,15 @@ export default function Header() {
   ]
 
   let end;
-  if (user){
+  if (user) {
     end = <span className="p-menuitem-text text-s">{user.username}</span>;
-  } else{
+  } else {
     end = <span className="p-menuitem-text text-s">Loading</span>;
   }
 
   return (
     <div className="card w-auto ">
-      <Menubar model={items} start={<HomeButton/>} end={end}
+      <Menubar model={items} start={<HomeButton />} end={end}
         className='shadow-2' />
     </div>
   )
