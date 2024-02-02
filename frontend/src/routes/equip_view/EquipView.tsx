@@ -18,6 +18,7 @@ import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
 import { useUser } from '../../utils/user';
+import AssembleForm from '../../components/assemble_form/AssembleForm';
 
 
 export default function EquipView() {
@@ -25,6 +26,7 @@ export default function EquipView() {
   const { equipId } = useParams();
   const [activeIndex, setActiveIndex] = useState(0);
   const [visibleEditForm, setVisibleEditForm] = useState(false);
+  const [visibleAssembleForm, setvisibleAssembleForm] = useState(false);
 
   const user = useUser();
 
@@ -118,11 +120,29 @@ export default function EquipView() {
           dialogHeader='Delete data?'/>}
         {user.canEdit() && <Button type="button" label="Edit" icon='pi pi-pencil'
           onClick={() => setVisibleEditForm(true)}/>}
-        {user.canEdit() && <Dialog header="Edit equipment" visible={visibleEditForm} style={{ width: '50vw' }}
+        {user.canEdit() && <Dialog header="Edit equipment" visible={visibleEditForm}
+          style={{ width: '50vw' }}
           onHide={() => setVisibleEditForm(false)}>
           {editForm}
         </Dialog>}
         </>
+      );
+    }
+
+    let assembleButton: ReactNode = <></>;
+    if(user.canEdit()){
+      assembleButton = (
+      <>
+        <Button type='button' label='Assemble equipment'
+          onClick={() => setvisibleAssembleForm(true)}/>
+        <Dialog header='Assemble Equipment' visible={visibleAssembleForm}
+          style={{ width: '50vw' }}
+          onHide={() => setvisibleAssembleForm(false)}>
+          <AssembleForm 
+            parentId={equipId? equipId: ''}
+            parentTypeName={equipData.type_name}/>
+        </Dialog>
+      </>
       );
     }
     
@@ -144,7 +164,16 @@ export default function EquipView() {
             </div>
             <EquipInfo equipData={equipData}/>
             <hr></hr>
-            <h2>Related Equipment</h2>
+            <div className="grid">
+              <div className="col-6">
+                <h2>Related Equipment</h2>
+              </div>
+              <div className="col-6">
+                <div className="flex flex-row-reverse flex-wrap gap-2">
+                  {assembleButton}
+                </div>
+              </div>
+            </div>
             <RelatedEquipTable equipmentId={equipId}/>
             <hr></hr>
             <h2>Related Files</h2>
