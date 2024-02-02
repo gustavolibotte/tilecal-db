@@ -1,6 +1,6 @@
 import { useFormik } from 'formik';
 import { toast } from 'react-toastify';
-import { DEFAULT_ERROR_MSG, INVALID_DATA_MSG, MAX_FILE_SIZE } from '../../utils/constants';
+import { DEFAULT_ERROR_MSG, INVALID_DATA_MSG } from '../../utils/constants';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import FormText from '../form_text/FormText';
@@ -124,7 +124,7 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
           <FormFile
             id='file'
             name='File'
-            help={`File to upload (${MAX_FILE_SIZE/1000000}MB max size)`}
+            help={`File to upload (${__MAX_FILE_SIZE__/1000000}MB max size)`}
             onChange={(event: any) => {
               formik.setFieldValue("file", event.currentTarget.files[0]);
             }}
