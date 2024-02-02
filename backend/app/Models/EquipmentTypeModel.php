@@ -2,6 +2,8 @@
 
 namespace App\Models;
 use App\Entities\EquipmentType;
+use CodeIgniter\Database\BaseBuilder;
+use CodeIgniter\Model;
 use TypeError;
 
 class EquipmentTypeModel extends LogModel
@@ -75,5 +77,26 @@ class EquipmentTypeModel extends LogModel
             $typeId = $name2Id[$typeId];
         }
         return $slot;
+    }
+    
+    public function joinWithGroupedTypeSlots(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
+    {
+        if (is_null($queryBuilder)){
+            $queryBuilder = $this;
+        }
+
+        $query = "(SELECT parent_type_id,
+                    JSON_ARRAYAGG(name) AS slot_names,
+                    JSON_ARRAYAGG(id) AS slot_id
+                FROM type_slots ts 
+                WHERE deleted_at IS NULL
+                GROUP BY parent_type_id) grouped_type_slots";
+        
+        $queryBuilder = $queryBuilder->join(
+            $query,
+            'equipment_types.id=grouped_type_slots.parent_type_id',
+            'LEFT'
+        );
+        return $queryBuilder;
     }
 }

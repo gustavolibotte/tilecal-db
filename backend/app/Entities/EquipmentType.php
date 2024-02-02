@@ -10,6 +10,7 @@ class EquipmentType extends BaseEntity
         'id' => 'integer',
         'in_detector' => 'bool',
         'params' => 'json-array',
-        'slots' => '?json'
+        'slots' => '?json',
+        'slot_names' => '?json'
     ];
 }

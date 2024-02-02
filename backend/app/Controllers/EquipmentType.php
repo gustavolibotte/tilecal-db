@@ -18,8 +18,12 @@ class EquipmentType extends APIController
 
     public function __get__(): ResponseInterface
     {
-        $data = model('EquipmentTypeModel')
+        $equipmentTypeModel = model('EquipmentTypeModel');
+        $this->parseFilterCondition('type_name', 'equipment_types.name', $equipmentTypeModel);
+        $data = $equipmentTypeModel
+            ->joinWithGroupedTypeSlots()
             ->select('name')
+            ->select('slot_names')
             ->where('active', 1)
             ->findAll();
         return $this->buildAPIResponse(200, empty($data)? []: $data);
