@@ -76,6 +76,14 @@ $routes->patch('api/equipment', 'Equipments::restore', [
     'filter' => 'auth:delete',
     'as' => 'api_equipment_restore'
 ]);
+$routes->post('api/equipment/assemble', 'Equipments::assemble', [
+    'filter' => 'auth:edit',
+    'as' => 'api_equipment_assemble'
+]);
+$routes->post('api/equipment/disassemble', 'Equipments::disassemble', [
+    'filter' => 'auth:edit',
+    'as' => 'api_equipment_disassemble'
+]);
 
 // EquipmentTypes API
 $routes->get('api/equipment-type', 'EquipmentType::get',[

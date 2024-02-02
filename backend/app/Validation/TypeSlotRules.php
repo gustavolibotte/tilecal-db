@@ -40,7 +40,14 @@ class TypeSlotRules
         $params = explode(',', $params);
         $parentId = $params[0];
         $childId = $params[1];
-        $slotId = $value;
+        $slotType = $params[2];
+        if ($slotType === 'name'){
+            $slotId = model('TypeSlotModel')
+                ->where('name', $value)
+                ->first()->id;
+        } else{
+            $slotId = $value;
+        }
 
         $equipmentModel = model('EquipmentModel');
         if (!$equipmentModel->equipHasSlot($parentId, $slotId)){

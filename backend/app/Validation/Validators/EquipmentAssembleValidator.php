@@ -38,12 +38,31 @@ class EquipmentAssembleValidator extends EntryValidator
 
         $this->validationRules['slot_id'] = [
             "rules" => [
-                "required",
-                "slot_is_available[{parent_id},{child_id}]",
-            ],
-            "errors" => [
-                "required" => "You must supply a slot."
+                "permit_empty",
+                "slot_is_available[{parent_id},{child_id},id]",
             ]
         ];
+
+        $this->validationRules['slot_name'] = [
+            "rules" => [
+                'required_without[slot_id]',
+                'permit_empty',
+                "slot_is_available[{parent_id},{child_id},name]",
+            ],
+            'errors' => [
+                'required_without' => 'A slot is required for the assembly.'
+            ]
+        ];
+    }
+
+    protected function getData()
+    {
+        $fieldValues = $this->getFieldValues();
+        if (empty($fieldValues['slot_id'])){
+            $fieldValues['slot_id'] = model('TypeSlotModel')
+                ->where('name', $fieldValues['slot_name'])
+                ->first()->id;
+        }
+        return $fieldValues;
     }
 }

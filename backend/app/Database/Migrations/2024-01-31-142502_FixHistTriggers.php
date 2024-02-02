@@ -27,6 +27,14 @@ class FixHistTriggers extends Migration
         $this->db->query("
             DROP TRIGGER IF EXISTS `files_hist_update`;
         ");
+
+        $this->db->query("
+            DROP TRIGGER IF EXISTS `parent_child_equips_hist_delete`;
+        ");
+
+        $this->db->query("
+        DROP TRIGGER IF EXISTS `parent_child_equips_hist_update`;
+    ");
     }
 
     protected function upTriggers()
@@ -53,6 +61,15 @@ class FixHistTriggers extends Migration
                 VALUES (NEW.user, action_var, NEW.id, NEW.path, NEW.name, NEW.description, NEW.updated_at);
             END;
         ");
+        $this->db->query("
+            CREATE TRIGGER parent_child_equips_hist_delete
+            AFTER DELETE ON parent_child_equips
+            FOR EACH ROW
+            BEGIN
+                INSERT INTO parent_child_equips_hist(`user`, `action`, record_id, parent_equip_id, child_equip_id, slot_id, created_at)
+                VALUES (OLD.user, 'delete', OLD.id, OLD.parent_equip_id, OLD.child_equip_id, OLD.slot_id, OLD.created_at);
+            END;
+        ");
     }
 
     protected function downTriggers()
@@ -77,6 +94,17 @@ class FixHistTriggers extends Migration
                 SET action_var = get_action_from_update(NEW.deleted_at, OLD.deleted_at, NEW.updated_at, OLD.updated_at);
                 INSERT INTO files_hist(`user`, `action`, record_id, path, name, description, created_at)
                 VALUES (NEW.user, 'insert', NEW.id, NEW.path, NEW.name, NEW.description, NEW.updated_at);
+            END;
+        ");
+        $this->db->query("
+            CREATE TRIGGER parent_child_equips_hist_update
+            AFTER UPDATE ON parent_child_equips
+            FOR EACH ROW
+            BEGIN
+                DECLARE action_var VARCHAR(7);
+                SET action_var = get_action_from_update(NEW.deleted_at, OLD.deleted_at, NEW.updated_at, OLD.updated_at);
+                INSERT INTO parent_child_equips_hist(`user`, `action`, record_id, parent_equip_id, child_equip_id, slot_id, created_at)
+                VALUES (NEW.user, action_var, NEW.id, NEW.parent_equip_id, NEW.child_equip_id, NEW.slot_id, NEW.created_at);
             END;
         ");
     }

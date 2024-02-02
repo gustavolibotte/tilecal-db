@@ -12,37 +12,6 @@ use Throwable;
 
 class Equipments extends APIController
 {
-    public function assemble(string $equipmentId)
-    {
-        $feature = model('FeatureModel')->findName('parent_relation');
-        if (!$feature->isActive()){
-            return $this->serviceUnavailable();
-        }
-        $validator = (new EquipmentAssembleValidator())->addRequest($this->request);
-        $messenger = \Config\Services::messenger();
-        if ($validator->validate()){
-            $validatedData = $validator->getValidatedData();
-            model('EquipmentModel')->updateParent(
-                $validatedData['child_id'],
-                $validatedData['parent_id'],
-                $validatedData['slot_id']
-            );
-            $messenger->addMessage(
-                sprintf('Assembled equipment %s to %s',
-                    $validatedData['child_id'],
-                    $validatedData['parent_id']
-                ),
-                'success'
-            );
-        } else{
-            foreach ($validator->getErrors() as $errorMsg){
-                $messenger->addMessage($errorMsg, 'danger');
-            }
-        }
-        $messenger->dumpMessages();
-        return redirect()->route('equipment_view', [$equipmentId]);
-    }
-
     public function get(): ResponseInterface
     {
         try{
@@ -335,30 +304,18 @@ class Equipments extends APIController
 
     }
 
-    /**
-     * Disassembles an equipment in 3 diferent ways:
-     * The params bellow are actually extracted from the request.
-     *
-     * @param string $id Equipment Id to operate on
-     * @param string $operation Has 3 possibilities
-     * 'children': removes all the children from equipment $id
-     * 'parent': removes equipment $id from its parent
-     * 'all': applies both conditions
-     * 
-     * @return ResponseInterface
-     */ 
     public function disassemble(): ResponseInterface
     {
         try{
             return $this->__disassemble__();
         } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
+            return $this->throwError(500, $e);
         }
     }
 
     protected function __disassemble__(): ResponseInterface
     {
-        $requestInput = [
+        $data = [
             'parent_id' => $this->request->getVar('parent_id'),
             'child_id' => $this->request->getVar('child_id')
         ];
@@ -367,31 +324,59 @@ class Equipments extends APIController
             'child_id' => [
                 'rules' => [
                     'required',
-                    'is_not_unique[equipments.id]'
+                    'is_not_unique[parent_child_equips.child_equip_id]'
                 ],
                 'errors' => [
                     'required' => 'Mising child_id parameter.',
-                    'is_not_unique' => 'No equipment with ID {value}.'
+                    'is_not_unique' => 'The equipment {value} ID is not assembled to any equipment.'
                 ]
             ],
             'parent_id' => [
                 'rules' => [
                     'required',
-                    'is_not_unique[equipments.id]'
+                    'is_not_unique[parent_child_equips.parent_equip_id]'
                 ],
                 'errors' => [
                     'required' => 'Mising parent_id parameter.',
-                    'is_not_unique' => 'No equipment with ID {value}.'
+                    'is_not_unique' => 'The equipment {value} ID has no equipment assembled to it.'
                 ]
             ],
         ];
-        if (!$validator->setRules($rules)->run($requestInput)){
-            return $this->failValidationErrors($validator->getErrors());
+        if (!$validator->setRules($rules)->run($data)){
+            return $this->fail($validator->getErrors(), 400, 'Invalid data.');
         }
         model('EquipmentModel')->disassemble(
-            $requestInput['parent_id'],
-            $requestInput['child_id']
+            $data['parent_id'],
+            $data['child_id']
         );
-        return $this->respond(['status' => 200], 200);
+        return $this->buildAPIResponse(200, []);
+    }
+
+    public function assemble()
+    {
+        try{
+            return $this->__assemble__();
+        } catch (Throwable $e){
+            return $this->throwError(500, $e);
+        }
+    }
+
+    protected function __assemble__()
+    {
+        $feature = model('FeatureModel')->findName('parent_relation');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+        $validator = (new EquipmentAssembleValidator())->addRequest($this->request);
+        if ($validator->validate()){
+            $validatedData = $validator->getValidatedData();
+            model('EquipmentModel')->updateParent(
+                $validatedData['child_id'],
+                $validatedData['parent_id'],
+                $validatedData['slot_id']
+            );
+            return $this->buildAPIResponse(200, []);
+        }
+        return $this->fail($validator->getErrors(), 400, 'Invalid data.');
     }
 }
