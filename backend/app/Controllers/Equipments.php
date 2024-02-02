@@ -326,7 +326,7 @@ class Equipments extends APIController
             }
             $iRow = remove_value('iRow', $res);
             $errorMsg = sprintf(
-                'Validation error in entry %s.',
+                'Validation error in entry on row %s.',
                 $iRow
             );
             return $this->fail($res, 400, $errorMsg);

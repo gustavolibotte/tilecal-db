@@ -6,7 +6,7 @@ export interface DataInfoProps {
   fields: DataInfoFieldMeta[];
 };
 
-interface DataInfoFieldMeta {
+export interface DataInfoFieldMeta {
   name: string;
   field: string;
   template?: (data: any) => ReactNode

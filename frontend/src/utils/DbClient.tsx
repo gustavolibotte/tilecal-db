@@ -12,6 +12,7 @@ interface EndpointType {
   file_put: string;
   user: string;
   equipment_type: string;
+  equipment_batch: string;
 }
 
 const ENDPOINT: EndpointType = {
@@ -26,6 +27,7 @@ const ENDPOINT: EndpointType = {
   file_put: 'api/file-put',
   user: 'api/user',
   equipment_type: 'api/equipment-type',
+  equipment_batch: 'api/equipment/batch-register'
 };
 
 export function getEndpoint(name: keyof EndpointType): string{

@@ -1,46 +1,76 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import './equip_batch_form.css';
-import { DEFAULT_ERROR_MSG } from '../../utils/constants';
+import { DEFAULT_ERROR_MSG, INVALID_DATA_MSG } from '../../utils/constants';
 import { useFormik } from 'formik';
 import FormDropdown from '../form_dropdown/FormDropdown';
 import FormFile from '../form_file/FormFile';
 import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
 import { AxiosError } from 'axios';
-import { ProgressBar } from 'primereact/progressbar';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
+import { toast } from 'react-toastify';
+import { snakeToSpaced } from '../../utils/string';
+import { DataInfo, DataInfoFieldMeta } from '../data_info/DataInfo';
+import { Button } from 'primereact/button';
+import { isObjEmpty } from '../../utils/objects';
 
 interface EquipBatchFormSchema {
   type_name: string;
-  file?: File;
+  file: File | string;
 }
 
 export default function EquipBatchForm() {
 
-  const [progress, setProgress] = useState(0);
+  const [equipFieldErrors, setEquipFieldErrors] = useState({});
+  const [errorMessage, setErrorMessage] = useState('');
 
   const equipTypesQuery: any = useQuery({
     queryKey: ['equipment_type', 'get', {}]
   });
 
   const initialValues = {
-    type_name: '', file: undefined
+    type_name: '', file: ''
   };
 
-  const equipMutation = useMutation({
+  const batchMutation = useMutation({
     mutationFn: makeMutationFunction(
       'post', 
-      getEndpoint('equipment')),
+      getEndpoint('equipment_batch')),
     onMutate: () => {
+      setEquipFieldErrors({});
+      setErrorMessage('');
+      toast.info('Submitting data', {
+        autoClose: false,
+        hideProgressBar:true
+      });
     },
     onSuccess: () => {
+      toast.dismiss();
+      toast.success('Equipment registered with success');
+      formik.resetForm();
     },
     onError: (error: AxiosError) => {
       // The following "?" fields are guaranteed with the app
+      toast.dismiss();
+      const responseData: any = error?.response?.data;
+      if (responseData.error == INVALID_DATA_MSG){
+        Object.keys(responseData.messages).forEach((key: string) => {
+          formik.setFieldError(key as keyof EquipBatchFormSchema, responseData.messages[key]);
+        });
+      } else if (responseData.error.includes('entry')){
+        setEquipFieldErrors(responseData.messages);
+        setErrorMessage(responseData.error);
+      } else{
+        toast.error(DEFAULT_ERROR_MSG);
+        console.log(error);
+      }
     },
   });
 
-  const submitData = () => {
-
+  const submitData = async (data: EquipBatchFormSchema) => {
+    const formData = new FormData();
+    formData.append('type_name', data.type_name);
+    formData.append('file', data.file);
+    batchMutation.mutate(formData);
   };
 
   const formik = useFormik({
@@ -65,13 +95,28 @@ export default function EquipBatchForm() {
       return !!(formik.touched[name] && formik.errors[name]) ? String(formik.errors[name]) : null;
   };
 
-  const submitionComponent = () => {
-    <ProgressBar value={progress}></ProgressBar>
+  const showFieldErrors = (): ReactNode => {
+    if (isObjEmpty(equipFieldErrors) && errorMessage){
+      return <></>;
+    }
+    const fieldConfig: DataInfoFieldMeta[] = [];
+    Object.keys(equipFieldErrors).forEach((key: string) => {
+      fieldConfig.push({name: snakeToSpaced(key), field: key});
+    })
+    return (
+      <div className='mt-3 text-red-500'>
+        <h3>{errorMessage}</h3>
+        <DataInfo
+          data={equipFieldErrors}
+          fields={fieldConfig}/>
+      </div>
+    );
   };
 
   return (
     <div className="card flex justify-content-center flex-column gap-2">
       <form onSubmit={formik.handleSubmit}>
+        {showFieldErrors()}
         <div className='mt-3'>
           <FormDropdown
             id='type_name'
@@ -85,7 +130,7 @@ export default function EquipBatchForm() {
             }}
             errorText={getFormErrorMessage('type_name')}/>
           </div>
-          <div className='mt-3'>
+        <div className='mt-3'>
           <FormFile
             id='file'
             name='Equipment data'
@@ -95,6 +140,7 @@ export default function EquipBatchForm() {
             }}
             errorText={getFormErrorMessage('file')} />
         </div>
+        <div className='mt-3'><Button type="submit" label="Submit" icon="pi pi-file-import"/></div>
       </form>
     </div>
   )
