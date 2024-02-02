@@ -12,57 +12,6 @@ use Throwable;
 
 class Equipments extends APIController
 {
-
-    public function batchRegister()
-    {
-        $feature = model('FeatureModel')->findName('equipment_batch_register');
-        if (!$feature->isActive()){
-            return $this->serviceUnavailable();
-        }
-
-        helper(['form', 'url', 'app_form', 'path', 'app_array']);
-        $messenger = \Config\Services::messenger();
-        if ($this->request->is('post')){
-            $validator = (new BatchRegisterValidator())->addRequest($this->request);
-            if ($validator->validate()){
-                $formData = $validator->getValidatedData();
-                $equipValidator = EquipmentValidator::getFromTypeName($formData['type_name']);
-                // Needs to rename the fields because the front end fields
-                // have user friendly names
-                $res = model('EquipmentModel')->insertFromFile(
-                    $formData['file']->getTempName(),
-                    $equipValidator
-                );
-                if ($res === true){
-                    $messenger->addRegisterSuccess();
-                    $validator->clearState();
-                    $equipValidator->clearState();
-                } else{
-                    $iRow = remove_value('iRow', $res);
-                    foreach ($res as $errorMsg){
-                        $msg = sprintf(
-                            'Row %d: %s',
-                            $iRow, $errorMsg
-                        );
-                        $messenger->addMessage($msg, 'danger');
-                    }
-                }
-            } else{
-                foreach ($validator->getErrors() as $errorMsg){
-                    $messenger->addMessage($errorMsg, 'danger');
-                }
-            }
-        }
-        $form = new EquipmentBatchRegisterForm($this->request);
-        $messenger->dumpMessages();
-        $viewData['forms'] = ['' => $form];
-        $viewData['formUrl'] = uri_string();
-        $viewData['pageTitle'] = 'Batch Register';
-        $viewData['pageHeader'] = 'Batch Equipment Register';
-        $viewData['cancelUrl'] = url_to('equipment_index');
-        return default_view('equipment/batch_register', $viewData);
-    }
-
     public function assemble(string $equipmentId)
     {
         $feature = model('FeatureModel')->findName('parent_relation');
@@ -345,6 +294,45 @@ class Equipments extends APIController
         }
         model('EquipmentModel')->restore($data['id']);
         return $this->buildAPIResponse(200, [], 'Restored equipment with success.');
+    }
+
+    public function batchCreate(): ResponseInterface
+    {
+        try{
+            return $this->__batchCreate__();
+        } catch (Throwable $e){
+            return $this->throwError(500, $e);
+        }
+    }
+
+    protected function __batchCreate__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('equipment_batch_register');
+        if (!$feature->isActive()){
+            return $this->serviceUnavailable();
+        }
+        $validator = (new BatchRegisterValidator())->addRequest($this->request);
+        if ($validator->validate()){
+            $formData = $validator->getValidatedData();
+            $equipValidator = EquipmentValidator::getFromTypeName($formData['type_name']);
+            // Needs to rename the fields because the front end fields
+            // have user friendly names
+            $res = model('EquipmentModel')->insertFromFile(
+                $formData['file']->getTempName(),
+                $equipValidator
+            );
+            if ($res === true){
+                return $this->buildAPIResponse(200);
+            }
+            $iRow = remove_value('iRow', $res);
+            $errorMsg = sprintf(
+                'Validation error in entry %s.',
+                $iRow
+            );
+            return $this->fail($res, 400, $errorMsg);
+        }
+        return $this->fail($validator->getErrors(), 400, 'Invalid data.');
+
     }
 
     /**
