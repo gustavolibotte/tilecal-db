@@ -5,13 +5,14 @@ EXPOSE 8080
 LABEL maintainer="Lucas Nunes"
 LABEL email="lucas.nunes@cern.ch"
 
-ENV CI_VERSION "4.3.6"
-ENV COMPOSER_VERSION "2.6.2"
-ENV NODE_VERSION "20.11.0"
-ENV OPENID_CONNECT_VERSION "1.0.0"
-ENV PHP_JWT_VERSION "6.10.0"
-ENV PHP_SECLIB_VERSION "3.0.34"
-ENV COMPOSER_ALLOW_SUPERUSER 1
+ARG app_baseURL
+ARG CI_VERSION "4.3.6"
+ARG COMPOSER_VERSION "2.6.2"
+ARG NODE_VERSION "20.11.0"
+ARG OPENID_CONNECT_VERSION "1.0.0"
+ARG PHP_JWT_VERSION "6.10.0"
+ARG PHP_SECLIB_VERSION "3.0.34"
+ARG COMPOSER_ALLOW_SUPERUSER 1
 LABEL ci_version=${CI_VERSION}
 
 # Installs needed/useful packages
@@ -48,6 +49,8 @@ RUN a2enmod rewrite \
 
 # Set the working directory to your CodeIgniter app folder
 ADD . repo/
+# RUN echo 'BASE URL IN DOCKERFILE'
+# RUN echo $app_baseURL
 RUN cd repo/ \
 && bash build_app.sh \
 && cp -r backend/* /var/www/html
