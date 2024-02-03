@@ -4,6 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { getEquipviewRoute } from '../../utils/routes';
 import { snakeToSpaced } from '../../utils/string';
 import { DataTableSortMeta } from 'primereact/datatable';
+import './related_equip_table.css';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
+import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
+import ButtonConfirmation from '../button_confirmation/ButtonConfirmation';
 
 interface RelatedEquipTableProps {
     equipmentId: string | undefined;
@@ -20,9 +26,81 @@ export default function RelatedEquipTable(props: RelatedEquipTableProps) {
     return <p>{snakeToSpaced(rowData.slot_name)}</p>;
   }
 
+  const queryKey = [
+    'equipment',
+    'get',
+    {relatedEquipmentId: props.equipmentId? props.equipmentId: null}
+  ];
+
+  const queryClient = useQueryClient();
+
+  const rmRelationMutation = useMutation({
+    mutationFn: makeMutationFunction(
+      'post',
+      getEndpoint('equipment_disassemble')
+    ),
+    onMutate: () => {
+      toast.info('Removing relation.', {
+        autoClose: false,
+        hideProgressBar:true
+      });
+    },
+    onSuccess: () => {
+      toast.dismiss();
+      toast.success('Relation removed with success.');
+      queryClient.invalidateQueries({
+        queryKey: queryKey
+      })
+    },
+    onError: (error: AxiosError) => {
+      toast.dismiss();
+      console.log(error);
+      toast.error('An error has occured.');
+    }
+  });
+
   const getButton = (rowData: any) => {
     return <Button label={rowData.id} onClick={() => navigate(getEquipviewRoute(rowData.id))}/>;
   }
+
+  const getRemoveButton = (rowData: any) => {
+    let mutationData;
+    switch (rowData.relation_type){
+      case 'parent':
+        mutationData = {
+          child_id: props.equipmentId,
+          parent_id: rowData.id
+        }
+        break;
+      case 'child':
+        mutationData = {
+          child_id: rowData.id,
+          parent_id: props.equipmentId
+        }
+      break;
+      default:
+        return (
+        <ButtonConfirmation
+          actionIcon='pi pi-trash'
+          actionSeverity='danger'
+          cancelSeverity='danger'
+          dialogHeader="Can't remove the relation, click confirm to exit without submitting action."
+          onConfirmation={()=>{}}
+        />);
+    }
+    return (
+      <ButtonConfirmation
+        actionIcon='pi pi-trash'
+        actionSeverity='danger'
+        cancelSeverity='danger'
+        dialogHeader='Confirm relation removal?'
+        onConfirmation = {() => {
+          rmRelationMutation.mutate(mutationData)
+        }}
+      />
+    );
+  }
+
   const columns: ColumnMeta[] = [
     {
       field: 'relation_type', header: 'Relation Type', body: relationTypeTemplate,
@@ -78,8 +156,14 @@ export default function RelatedEquipTable(props: RelatedEquipTableProps) {
       field: 'updated_at', header: 'Updated At',
       filter: true, sortable: true,
       filterPlaceholder: 'Search'
+    },
+    {
+      field: 'none', header: 'Remove', body: getRemoveButton,
+      filter: false, sortable: false,
+      filterPlaceholder: 'Search'
     }
   ];
+
   const multiSortMeta: DataTableSortMeta[] = [
     {
       field: 'updated_at',
@@ -100,11 +184,7 @@ export default function RelatedEquipTable(props: RelatedEquipTableProps) {
     fileName='equip_index'
     sortMode='multiple'
     multiSortMeta={multiSortMeta}
-    queryKey={[
-      'equipment',
-      'get',
-      {relatedEquipmentId: props.equipmentId? props.equipmentId: null}
-    ]}/>
+    queryKey={queryKey}/>
   </>
   )
 }

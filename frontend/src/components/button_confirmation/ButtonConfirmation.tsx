@@ -8,6 +8,7 @@ type Severity = "secondary" | "success" | "info" | "warning" | "danger" | "help"
 interface ButtonConfirmationProps{
   actionLabel?: string;
   actionSeverity?: Severity;
+  actionIcon?: string;
   onConfirmation: () => void;
   dialogHeader?: string;
   dialogTemplate?: () => ReactNode;
@@ -28,7 +29,7 @@ export default function ButtonConfirmation(props: ButtonConfirmationProps) {
   return (
     <>
       <Button type="button" label={props.actionLabel} severity={props.actionSeverity}
-        onClick={() => setVisibleDialog(true)}/>
+        onClick={() => setVisibleDialog(true)} icon={props.actionIcon}/>
       <Dialog header={props.dialogHeader? props.dialogHeader: 'Confirm operation'}
         visible={visibleDialog}  style={props.dialogStyle}
         onHide={() => {setVisibleDialog(false)}}>
