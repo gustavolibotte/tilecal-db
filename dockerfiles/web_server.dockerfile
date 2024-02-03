@@ -47,11 +47,8 @@ RUN a2enmod rewrite \
 && a2ensite httpd
 
 # Set the working directory to your CodeIgniter app folder
-WORKDIR /var/www/html
-ADD tilecal-db/ .
-RUN composer require codeigniter4/framework:${CI_VERSION} && \
-composer require jumbojett/openid-connect-php:${OPENID_CONNECT_VERSION} && \
-composer require firebase/php-jwt:${PHP_JWT_VERSION} && \
-composer require fakerphp/faker && \
-composer require phpseclib/phpseclib:${PHP_SECLIB_VERSION}
+ADD . repo/
+RUN cd repo/ \
+&& bash build_app.sh \
+&& cp -r backend/* /var/www/html
 

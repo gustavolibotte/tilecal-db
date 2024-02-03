@@ -84,7 +84,6 @@ phpunit
 # Composer
 #-------------------------
 vendor/
-composer*
 
 #-------------------------
 # IDE / Development Files
@@ -149,3 +148,7 @@ output/
 
 # Python
 __pycache__/
+
+# Ignore build generated files
+backend/app/Views/index.html
+backend/public/assets
