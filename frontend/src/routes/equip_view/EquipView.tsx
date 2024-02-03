@@ -130,7 +130,7 @@ export default function EquipView() {
     }
 
     let assembleButton: ReactNode = <></>;
-    if(user.canEdit()){
+    if(user.canEdit() && (!equipData.deleted_at)){
       assembleButton = (
       <>
         <Button type='button' label='Assemble equipment'

@@ -1,4 +1,7 @@
 #!/bin/bash
+if [ $CI_ENVIRONMENT = 'local' ]; then
+    chmod -R 777 /var/www/html
+fi
 APP_EOS_DIR="/eos/user/t/tilep2db/${CI_ENVIRONMENT}"
 APP_FILES_DIR="${APP_EOS_DIR}/files"
 APP_WRITABLE_DIR="${APP_EOS_DIR}/writable"
@@ -19,4 +22,8 @@ if [ ! -d "$APP_WRITABLE_DIR" ]; then
 
     # Custom paths
     mkdir -p "${APP_WRITABLE_DIR}/validation_logs"
+fi
+
+if [ $CI_ENVIRONMENT = 'local' ]; then
+    chmod -R 777 $APP_EOS_DIR
 fi
