@@ -3,9 +3,13 @@ import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
 import { getEquipviewRoute } from '../../utils/routes';
 import { DataTableSortMeta } from 'primereact/datatable';
+import { useQuery } from '@tanstack/react-query';
+import { DEFAULT_ERROR_MSG } from '../../utils/constants';
+import { snakeToSpaced } from '../../utils/string';
 
 interface EquipTableProps {
   queryKey: any[];
+  typeName?: string;
 }
 
 export default function EquipTable(props: EquipTableProps) {
@@ -15,7 +19,31 @@ export default function EquipTable(props: EquipTableProps) {
     return <Button label={rowData.id} onClick={() => navigate(getEquipviewRoute(rowData.id))}/>;
   }
 
-  const columns: ColumnMeta[] = [
+  const extraColumns: ColumnMeta[] = [];
+  if (props.typeName){
+    props.queryKey[2].type_name = props.typeName;
+
+    const equipTypeQuery: any = useQuery({
+      queryKey: ['equipment_type', 'get', {type_name: props.typeName}]
+    });
+
+    if (equipTypeQuery.isError){
+      return <h4>{DEFAULT_ERROR_MSG}</h4>;
+    } else if (equipTypeQuery.isPending){
+      return <h4>Loading...</h4>;
+    }
+    const equipTypeData = equipTypeQuery.data.data[0];
+    equipTypeData.params.forEach((field: string) => {
+      extraColumns.push({
+        field: `type_params.${field}`, header: snakeToSpaced(field),
+        filter: true, sortable: true,
+        filterPlaceholder: 'Search'
+      })
+    })
+
+  }
+
+  let columns: ColumnMeta[] = [
     {
       field: 'id', header: 'ID', body: getButton,
       filter: true, sortable: true,
@@ -45,7 +73,10 @@ export default function EquipTable(props: EquipTableProps) {
       field: 'detector_location_name', header: 'Detector Location',
       filter: true, sortable: true,
       filterPlaceholder: 'Search'
-    },
+    }
+  ];
+  columns = columns.concat(extraColumns)
+  columns = columns.concat([
     {
       field: 'comments', header: 'Comments',
       filter: true, sortable: true,
@@ -61,7 +92,7 @@ export default function EquipTable(props: EquipTableProps) {
       filter: true, sortable: true,
       filterPlaceholder: 'Search'
     }
-  ];
+  ]);
 
   const multiSortMeta: DataTableSortMeta[] = [
     {
@@ -75,7 +106,6 @@ export default function EquipTable(props: EquipTableProps) {
   ]
 
   return (
-    <>
     <BaseTable
     expandField=''
     columns={columns}
@@ -84,6 +114,5 @@ export default function EquipTable(props: EquipTableProps) {
     queryKey={props.queryKey}
     sortMode='multiple'
     multiSortMeta={multiSortMeta}/>
-  </>
   )
 }

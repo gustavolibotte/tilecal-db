@@ -23,6 +23,7 @@ class EquipmentType extends APIController
         $data = $equipmentTypeModel
             ->joinWithGroupedTypeSlots()
             ->select('name')
+            ->select('params')
             ->select('slot_names')
             ->where('active', 1)
             ->findAll();

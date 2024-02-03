@@ -92,7 +92,6 @@ export function BaseTable(props: TableProps){
     });   // Triggers query refetch
     clearFilter();
   }
-
   const renderDataTable = (data: Array<any>): ReactNode => {
     return (<DataTable
       ref={dt}
@@ -139,6 +138,7 @@ export function BaseTable(props: TableProps){
   } else if (isPending){
     return renderDataTable([]);
   } else{
+    console.log(response.data);
     return renderDataTable(response.data);
   }
 }

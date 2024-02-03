@@ -9,7 +9,9 @@ export default function SpecEquipIndex(){
   return (
     <div className="col-12">
       <h1>{typeName} Index</h1>
-      <EquipTable queryKey={['equipment', 'get', {type_name: typeName}]}/>
+      <EquipTable
+        queryKey={['equipment', 'get', {type_name: typeName}]}
+        typeName={typeName}/>
     </div>
   );
 }
