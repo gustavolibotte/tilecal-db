@@ -30,6 +30,16 @@ export default function App(){
       path: "/",
       element: <Home />,
     },
+    // On deploy the server includes index.php sometimes
+    {
+      path: "index.php",
+      element: <Home />,
+    },
+    // OIDC callback
+    {
+      path: "callback",
+      element: <Home />,
+    },
     {
       path: "equipment",
       element: <EquipIndex/>,
