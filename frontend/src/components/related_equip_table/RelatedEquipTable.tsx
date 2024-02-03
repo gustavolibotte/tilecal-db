@@ -64,7 +64,7 @@ export default function RelatedEquipTable(props: RelatedEquipTableProps) {
   }
 
   const getRemoveButton = (rowData: any) => {
-    let mutationData;
+    let mutationData: any;
     switch (rowData.relation_type){
       case 'parent':
         mutationData = {
