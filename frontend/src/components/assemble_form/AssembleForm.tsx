@@ -87,7 +87,6 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
 
   const equipTypeData = equipTypeQuery.data.data[0];
   let equipSlotOptions;
-  console.log(equipTypeData)
   if (equipTypeData.slot_names){
     equipSlotOptions = equipTypeData.slot_names.map((slotName: string) => {
       return {

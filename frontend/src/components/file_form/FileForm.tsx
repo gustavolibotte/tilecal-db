@@ -76,7 +76,6 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
       formData.append('file', data.file);
     }
     if (fileId){
-      console.log(fileId);
       formData.append('id', fileId);
     }
     formData.append('name', data.name);

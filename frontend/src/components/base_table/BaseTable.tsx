@@ -138,7 +138,6 @@ export function BaseTable(props: TableProps){
   } else if (isPending){
     return renderDataTable([]);
   } else{
-    console.log(response.data);
     return renderDataTable(response.data);
   }
 }

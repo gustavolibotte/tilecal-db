@@ -57,7 +57,15 @@ class Files extends APIController
             return $this->fail("", 503);
         }
 
-        $fileModel = model('FileModel')->asArray();
+        $fileModel = model('FileModel')
+            ->select('files.id as id')
+            ->select('files.name as name')
+            ->select('files.description as description')
+            ->select('files.created_at as created_at')
+            ->select('files.updated_at as updated_at')
+            ->select('files.deleted_at as deleted_at')
+            ->select('files.user as user')
+            ->asArray();
         $fileModel = $this->parseFilterCondition('id', 'files.id', $fileModel);
         $fileModel = $this->parseFilterCondition('name', 'files.name', $fileModel);
         $this->parseOrdering('orderBy', 'files', $fileModel);

@@ -35,9 +35,7 @@ const ENDPOINT: EndpointType = {
 };
 
 export function getEndpoint(name: keyof EndpointType): string{
-  console.log(process.env.app_baseURL);
   const url =  `${__APP_BASEURL__}/${ENDPOINT[name]}`;
-  console.log(url);
   return url;
 }
 
