@@ -14,6 +14,7 @@ $routes->setDefaultNamespace('App\Controllers');
 $routes->setDefaultController('Home');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
+// returns home on 404 to return the react app
 $routes->set404Override('\App\Controllers\Home::index');
 $routes->setAutoRoute(false);
 // The Auto Routing (Legacy) is very dangerous. It is easy to create vulnerable apps
@@ -145,6 +146,12 @@ $routes->patch('api/file', 'Files::restore', [
 $routes->get('api/user', 'User::get', [
   'filter' => 'auth:view',
   'as' => 'api_user_get'
+]);
+
+// Adds any route to return the react app in any case
+$routes->get('(:any)', 'Home::index', [
+    'filter' => 'auth:view',
+    'as' => 'any'
 ]);
 
 /*
