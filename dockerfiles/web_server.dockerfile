@@ -6,6 +6,7 @@ LABEL maintainer="Lucas Nunes"
 LABEL email="lucas.nunes@cern.ch"
 
 ARG app_baseURL
+ARG ENVIRONMENT
 ARG CI_VERSION "4.3.6"
 ARG COMPOSER_VERSION "2.6.2"
 ARG NODE_VERSION "20.11.0"

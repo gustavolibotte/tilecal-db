@@ -4,6 +4,7 @@ set -e
 # Install backend dependencies
 cd backend
 composer update
+source setup_directories.sh
 cd ../
 
 # Build React app

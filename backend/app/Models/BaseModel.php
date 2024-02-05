@@ -111,8 +111,8 @@ abstract class BaseModel extends Model
     private function fileAction(
         string $filepath,
         EntryValidator $validator,
-        ?LoggerInterface $logger=null,
-        string $action): bool|array|string
+        string $action,
+        ?LoggerInterface $logger=null): bool|array|string
     {
         helper(['filesystem', 'app_array']);
         $fieldRename = $validator->fieldRename;
