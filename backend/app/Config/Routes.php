@@ -149,10 +149,10 @@ $routes->get('api/user', 'User::get', [
 ]);
 
 // Adds any route to return the react app in any case
-$routes->get('(:any)', 'Home::index', [
-    'filter' => 'auth:view',
-    'as' => 'any'
-]);
+// $routes->get('(:any)', 'Home::index', [
+//     'filter' => 'auth:view',
+//     'as' => 'any'
+// ]);
 
 /*
  * --------------------------------------------------------------------
