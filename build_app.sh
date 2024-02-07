@@ -27,6 +27,6 @@ fi
 
 VIEWS_DIR="backend/app/Views"
 cd frontend && npm install && npm run build && cd ../
-mv $DIST_DIR/index.html $VIEWS_DIR/index.html
+mv $DIST_DIR/index.html $VIEWS_DIR/index.php
 mv $DIST_DIR/assets $PUBLIC_DIR
 rm -r $DIST_DIR

@@ -151,6 +151,7 @@ __pycache__/
 
 # Ignore build generated files
 backend/app/Views/index.html
+backend/app/Views/index.php
 backend/public/assets
 
 # Logs
