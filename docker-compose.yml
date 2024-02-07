@@ -35,5 +35,9 @@ services:
       - "3306:3306"
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+  openshift:
+    image: gitlab-registry.cern.ch/paas-tools/openshift-client
+    container_name: openshift-client
+    tty: true
 volumes:
   mysqldata:

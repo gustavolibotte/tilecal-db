@@ -4,7 +4,9 @@ set -e
 # Install backend dependencies
 cd backend
 composer update
-source setup_directories.sh
+if [ $ENVIRONMENT = 'local' ]; then
+    source setup_directories.sh
+fi
 cd ../
 
 # Build React app
