@@ -127,12 +127,25 @@ class Equipments extends APIController
 
     protected function __getHist__(): ResponseInterface
     {
-        $id = $this->request->getVar('id');
-        if (empty($id)){
-            throw new ValueError('An id value must be given.');
+        $data = ['id' => $this->request->getVar('id')];
+        $rules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'is_not_unique[equipments.id]'
+                ],
+                'errors' => [
+                    'required' => 'Equipment ID is required.',
+                    'is_not_unique' => 'Equipment with ID "{value}" doesn\'t exist.'
+                ]
+            ]
+        ];
+        if (!$this->validateData($data, $rules)){
+            $errors = $this->validator->getErrors();
+            return $this->failInvalidParams($errors);
         }
         $history = model('HistModel')
-            ->getEquipmentHist($id);
+            ->getEquipmentHist($data['id']);
         return $this->respondQueryResults($history);
     }
 
