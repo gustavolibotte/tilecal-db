@@ -113,7 +113,7 @@ abstract class APIController extends BaseController
             $message = $e->getMessage();
         } else{
             $data = null;
-            $message = ''
+            $message = '';
         }
         return $this->buildAPIResponse(500, $data, $message);
     }
