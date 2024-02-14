@@ -53,6 +53,10 @@ $routes->get('api/equipment', 'Equipments::get', [
     'filter' => 'auth:view',
     'as' => 'api_equipment_get'
 ]);
+$routes->get('api/shrebbles', 'Equipments::get', [
+    'filter' => 'auth:view',
+    'as' => 'api_equipment_get'
+]);
 $routes->get('api/equipment-hist', 'Equipments::getHist', [
     'filter' => 'auth:view',
     'as' => 'api_equipment_hist_get'
@@ -148,11 +152,12 @@ $routes->get('api/user', 'User::get', [
   'as' => 'api_user_get'
 ]);
 
-// Adds any route to return the react app in any case
-// $routes->get('(:any)', 'Home::index', [
-//     'filter' => 'auth:view',
-//     'as' => 'any'
-// ]);
+if (Services::environment()->isSafe()){
+    $routes->get('api/test', 'APITest::index', [
+        'filter' => 'auth:view',
+        'as' => 'api_test_endpoint'
+    ]);
+}
 
 /*
  * --------------------------------------------------------------------

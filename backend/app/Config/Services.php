@@ -7,6 +7,7 @@ use App\Library\Authenticator;
 use App\Library\Messenger;
 use App\Library\Time;
 use App\Library\AppLogger;
+use App\Library\Environment;
 
 /**
  * Services Configuration file.
@@ -73,5 +74,13 @@ class Services extends BaseService
             return static::getSharedInstance('logger');
         }
         return new AppLogger(config('Logger'));
+    }
+
+    public static function environment($getShared=true): Environment
+    {
+        if ($getShared){
+            return static::getSharedInstance('environment');
+        }
+        return new Environment();
     }
 }
