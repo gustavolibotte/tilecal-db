@@ -76,8 +76,8 @@ export default function App(){
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <PageLayout />,
-      errorElement: <NotFound />,
+      element: <PageLayout useOutlet/>,
+      errorElement: <NotFound useLayout/>,
       children: children,
     },
   ]);
