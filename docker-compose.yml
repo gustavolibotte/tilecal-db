@@ -7,6 +7,7 @@ services:
       dockerfile: ./dockerfiles/web_server.dockerfile
       args:
         - app_baseURL=${app_baseURL}
+        - app_indexPage=${app_indexPage}
         - ENVIRONMENT=${ENVIRONMENT}
     image: tilecal-db:${TILECAL_DB_VERSION}
     container_name: tilecal-db-web-server
