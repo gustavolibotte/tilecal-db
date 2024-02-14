@@ -41,20 +41,31 @@ abstract class APIController extends BaseController
         );
     }
 
-    protected function respondCreated(array $data=[])
+    protected function respondWithId(array|int|string $id, string $message): ResponseInterface
     {
+        if (!is_array($id)){
+            $id = [$id];
+        }
         return $this->buildAPIResponse(
             201,
-            $data,
+            $id,
+            $message
+        );
+
+    }
+
+    protected function respondCreated(array|int|string $id=[])
+    {
+        return $this->respondWithId(
+            $id,
             'Created'
         );
     }
 
-    protected function respondUpdated(array $data=[])
+    protected function respondUpdated(array|int|string $id=[])
     {
-        return $this->buildAPIResponse(
-            200,
-            $data,
+        return $this->respondWithId(
+            $id,
             'Updated'
         );
     }
@@ -68,29 +79,27 @@ abstract class APIController extends BaseController
         );
     }
 
-    protected function respondDeleted(int|string $id)
+    protected function respondDeleted(array|int|string $id=[])
     {
-        return $this->buildAPIResponse(
-            200,
-            ['id' => $id],
+
+        return $this->respondWithId(
+            $id,
             'Deleted'
         );
     }
 
-    protected function respondRestored(int|string $id)
+    protected function respondRestored(array|int|string $id=[])
     {
-        return $this->buildAPIResponse(
-            200,
-            ['id' => $id],
+        return $this->respondWithId(
+            $id,
             'Restored'
         );
     }
 
-    protected function respondPurged(int|string $id)
+    protected function respondPurged(array|int|string $id=[])
     {
-        return $this->buildAPIResponse(
-            200,
-            ['id' => $id],
+        return $this->respondWithId(
+            $id,
             'Purged'
         );
     }
@@ -119,6 +128,11 @@ abstract class APIController extends BaseController
     protected function failServiceUnavailable(): ResponseInterface
     {
         return $this->buildAPIResponse(503, message:'Service Unavailable');
+    }
+
+    protected function failInvalidParams(array $validationErrors): ResponseInterface
+    {
+        return $this->failValidationErrors($validationErrors, 'Invalid Params');
     }
 
     protected function failValidationError(string $message): ResponseInterface
