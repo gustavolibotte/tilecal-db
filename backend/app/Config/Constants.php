@@ -102,5 +102,5 @@ define('FORM_SELECT_NULL_OPTION', 'null_option');
  * @var array ENV constants Some places call dev others development this avoids confusion
  */
 defined('PROD_ENV') || define('PROD_ENV','production');
-defined('DEV_ENV') || define('PROD_ENV','development');
-defined('LOCAL_ENV') || define('PROD_ENV','local');
+defined('DEV_ENV') || define('DEV_ENV','development');
+defined('LOCAL_ENV') || define('LOCAL_ENV','local');
