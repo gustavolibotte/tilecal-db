@@ -11,11 +11,11 @@ $routes = Services::routes();
  * --------------------------------------------------------------------
  */
 $routes->setDefaultNamespace('App\Controllers');
-$routes->setDefaultController('Home');
+$routes->setDefaultController('NotFound');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 // returns home on 404 to return the react app
-$routes->set404Override('\App\Controllers\Home::index');
+$routes->set404Override('\App\Controllers\NotFound::index');
 $routes->setAutoRoute(false);
 // The Auto Routing (Legacy) is very dangerous. It is easy to create vulnerable apps
 // where controller filters or CSRF protection are bypassed.
