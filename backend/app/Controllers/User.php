@@ -16,7 +16,7 @@ class User extends APIController
         try{
             return $this->__get__();
         } catch (Throwable $e){
-            return $this->throwError(500, $e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -28,6 +28,6 @@ class User extends APIController
         foreach ($this->returnFields as $fieldName){
             $data[$fieldName] = $user->$fieldName;
         }
-        return $this->buildAPIResponse(200, $data, '');
+        return $this->respondQueryResults($data);
     }
 }

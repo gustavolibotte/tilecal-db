@@ -12,7 +12,7 @@ class EquipmentType extends APIController
         try{
             return $this->__get__();
         } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
+            return $this->failInternalError($e);
         }
     }
 
@@ -27,7 +27,7 @@ class EquipmentType extends APIController
             ->select('slot_names')
             ->where('active', 1)
             ->findAll();
-        return $this->buildAPIResponse(200, empty($data)? []: $data);
+        return $this->respondQueryResults($data);
     }
 
 }

@@ -16,7 +16,7 @@ class Equipments extends APIController
         try{
             return $this->__get__();
         } catch (Throwable $e){
-            return $this->throwError($e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -73,7 +73,7 @@ class Equipments extends APIController
         try{
             return $this->__post__();
         } catch (Throwable $e){
-            return $this->throwError($e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -121,7 +121,7 @@ class Equipments extends APIController
         try{
             return $this->__getHist__();
         } catch (Throwable $e){
-            return $this->throwError($e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -141,7 +141,7 @@ class Equipments extends APIController
         try{
             return $this->__put__();
         } catch (Throwable $e){
-            return $this->throwError($e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -190,7 +190,7 @@ class Equipments extends APIController
         try{
             return $this->__delete__();
         } catch (Throwable $e){
-            return $this->throwError($e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -228,7 +228,7 @@ class Equipments extends APIController
         try{
             return $this->__restore__();
         } catch (Throwable $e){
-            return $this->throwError($e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -266,7 +266,7 @@ class Equipments extends APIController
         try{
             return $this->__batchCreate__();
         } catch (Throwable $e){
-            return $this->throwError($e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -301,7 +301,7 @@ class Equipments extends APIController
         try{
             return $this->__disassemble__();
         } catch (Throwable $e){
-            return $this->throwError($e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -349,7 +349,7 @@ class Equipments extends APIController
         try{
             return $this->__assemble__();
         } catch (Throwable $e){
-            return $this->throwError($e);
+            return $this->failInternalError($e);
         }
     }
 

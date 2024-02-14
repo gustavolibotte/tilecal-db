@@ -16,7 +16,7 @@ class Files extends APIController
     {
         $feature = model('FeatureModel')->findName('file_download');
         if (!$feature->isActive()){
-            return $this->serviceUnavailable();
+            return $this->failServiceUnavailable();
         }
 
         $fileModel = model('FileModel');
@@ -25,7 +25,7 @@ class Files extends APIController
         }
         $file = $fileModel->find($fileId);
         if (is_null($file)){
-            return $this->notFound();
+            return $this->failNotFound();
         }
         return $this->getFileDownloadResponse($file);
     }
@@ -45,7 +45,7 @@ class Files extends APIController
         try{
             return $this->__get__();
         } catch (Throwable $e){
-            return $this->throwError(500, $e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -54,7 +54,7 @@ class Files extends APIController
 
         $feature = model('FeatureModel')->findName('api_file_get');
         if (!$feature->isActive()){
-            return $this->fail("", 503);
+            return $this->failServiceUnavailable();
         }
 
         $fileModel = model('FileModel')
@@ -74,12 +74,12 @@ class Files extends APIController
         $deleteMsg = $this->checkDeletion();
         if (!empty($this->request->getVar('onlyDeleted'))){
             if (!empty($deleteMsg)){
-                return $this->failForbidden(message: $deleteMsg);
+                return $this->failForbidden();
             }
             $fileModel = $fileModel->onlyDeleted();
         } elseif (!empty($this->request->getVar('withDeleted'))){
             if (!empty($deleteMsg)){
-                return $this->failForbidden(message: $deleteMsg);
+                return $this->failForbidden();
             }
             $fileModel = $fileModel->withDeleted();
         }
@@ -92,7 +92,7 @@ class Files extends APIController
         }
         $data = $fileModel->findAll();
         
-        return $this->buildAPIResponse(200, empty($data)? []: $data);
+        return $this->respondQueryResults($data);
     }
 
     public function getHist(): ResponseInterface
@@ -100,7 +100,7 @@ class Files extends APIController
         try{
             return $this->__getHist__();
         } catch (Throwable $e){
-            return $this->throwError(500, $e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -112,7 +112,7 @@ class Files extends APIController
         }
         $history = model('HistModel')
             ->getFileHist($id);
-        return $this->buildAPIResponse(200, $history);
+        return $this->respondQueryResults($history);
     }
 
     
@@ -121,7 +121,7 @@ class Files extends APIController
         try{
             return $this->__post__();
         } catch (Throwable $e){
-            return $this->throwError(500, $e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -129,17 +129,16 @@ class Files extends APIController
     {
         $feature = model('FeatureModel')->findName('file_upload');
         if (!$feature->isActive()){
-            return $this->serviceUnavailable();
+            return $this->failServiceUnavailable();
         }
 
         $validator = (new FileValidator())->addRequest($this->request);
         if ($validator->validate()){
             $file = $validator->getValidatedData();
             model('FileModel')->insert($file);
-            return $this->buildAPIResponse(200, [], 'File uploaded with success.');
+            return $this->respondCreated($file->name);
         }
-        $errors = $validator->getErrors();
-        return $this->fail($errors, 400, 'Invalid data.');
+        return $this->failValidationErrors($validator->getErrors());
         
     }
 
@@ -148,7 +147,7 @@ class Files extends APIController
         try{
             return $this->__put__();
         } catch (Throwable $e){
-            return $this->throwError(500, $e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -156,7 +155,7 @@ class Files extends APIController
     {
         $feature = model('FeatureModel')->findName('file_edit');
         if (!$feature->isActive()){
-            return $this->serviceUnavailable();
+            return $this->failServiceUnavailable();
         }
 
         $data = ['id' => $this->request->getVar('id')];
@@ -175,7 +174,7 @@ class Files extends APIController
 
         if (!$this->validateData($data, $rules)){
             $errors = $this->validator->getErrors();
-            return $this->fail([], 400, $errors['id']);
+            return $this->failInvalidParams($errors);
         }
         
         $validator = (new FileValidator())
@@ -184,10 +183,9 @@ class Files extends APIController
         if ($validator->validate()){
             $file = $validator->getValidatedData();
             model('FileModel')->update($data['id'], $file);
-            return $this->buildAPIResponse(200, [], 'Altered file with success.');
+            return $this->respondUpdated();
         }
-        $errors = $validator->getErrors();
-        return $this->fail($errors, 400, 'Invalid data.');
+        return $this->failValidationErrors($validator->getErrors());
     }
 
     public function delete(): ResponseInterface
@@ -195,7 +193,7 @@ class Files extends APIController
         try{
             return $this->__delete__();
         } catch (Throwable $e){
-            return $this->throwError(500, $e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -204,7 +202,7 @@ class Files extends APIController
 
         $feature = model('FeatureModel')->findName('file_delete');
         if (!$feature->isActive()){
-            return $this->serviceUnavailable();
+            return $this->failServiceUnavailable();
         }
         $data = ['id' => $this->request->getVar('id')];
         $rules = [
@@ -221,12 +219,11 @@ class Files extends APIController
         ];
 
         if (!$this->validateData($data, $rules)){
-            $errors = $this->validator->getErrors();
-            return $this->fail([], 400, $errors['id']);
+            return $this->failInvalidParams($this->validator->getErrors());
         }
 
         model('FileModel')->delete($data['id']);
-        return $this->buildAPIResponse(200, [], 'Deleted file with success.');
+        return $this->respondDeleted();
     }
 
     public function restore(): ResponseInterface
@@ -234,7 +231,7 @@ class Files extends APIController
         try{
             return $this->__restore__();
         } catch (Throwable $e){
-            return $this->throwError(500, $e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -242,7 +239,7 @@ class Files extends APIController
     {
         $feature = model('FeatureModel')->findName('file_restore');
         if (!$feature->isActive()){
-            return $this->serviceUnavailable();
+            return $this->failServiceUnavailable();
         }
 
         $data = ['id' => $this->request->getVar('id')];
@@ -260,19 +257,18 @@ class Files extends APIController
         ];
 
         if (!$this->validateData($data, $rules)){
-            $errors = $this->validator->getErrors();
-            return $this->fail([], 400, $errors['id']);
+            return $this->failInvalidParams($this->validator->getErrors());
         }
 
         model('FileModel')->restore($data['id']);
-        return $this->buildAPIResponse(200, [], 'Deleted file with success.');
+        return $this->respondDeleted();
     }
 
     public function downloadHist()
     {
         $feature = model('FeatureModel')->findName('file_download');
         if (!$feature->isActive()){
-            return $this->serviceUnavailable();
+            return $this->failServiceUnavailable();
         }
 
         $fileHIstId = $this->request->getVar('id');

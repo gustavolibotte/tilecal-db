@@ -168,7 +168,7 @@ abstract class APIController extends BaseController
         throw new \BadMethodCallException('failTooManyRequests is not Implemented');
     }
 
-    protected function throwError(Throwable $e)
+    protected function failInternalError(Throwable $e)
     {
         $environment = \Config\Services::environment();
         if ($environment->isSafe()){

@@ -12,7 +12,7 @@ class DetectorLocation extends APIController
         try{
             return $this->__get__();
         } catch (Throwable $e){
-            return $this->throwError($e);
+            return $this->failInternalError($e);
         }
     }
 
@@ -21,6 +21,6 @@ class DetectorLocation extends APIController
         $data = model('DetectorLocationModel')
             ->select('name')
             ->findAll();
-        return $this->buildAPIResponse(200, empty($data)? []: $data);
+        return $this->respondQueryResults($data);
     }
 }

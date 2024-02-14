@@ -12,7 +12,7 @@ class Institute extends APIController
         try{
             return $this->__get__();
         } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
+            return $this->failInternalError($e);
         }
     }
 
@@ -23,6 +23,6 @@ class Institute extends APIController
             ->select('mne')
             ->select('country')
             ->findAll();
-        return $this->buildAPIResponse(200, empty($data)? []: $data);
+        return $this->respondQueryResults($data);
     }
 }
