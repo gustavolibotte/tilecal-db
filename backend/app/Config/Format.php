@@ -21,13 +21,15 @@ class Format extends BaseConfig
      *
      * These formats are only checked when the data passed to the respond()
      * method is an array.
+     * 
+     * For now, only supports application/json
      *
      * @var string[]
      */
     public array $supportedResponseFormats = [
         'application/json',
-        'application/xml', // machine-readable XML
-        'text/xml', // human-readable XML
+        // 'application/xml', // machine-readable XML
+        // 'text/xml', // human-readable XML
     ];
 
     /**
