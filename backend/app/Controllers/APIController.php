@@ -41,26 +41,65 @@ abstract class APIController extends BaseController
         );
     }
 
-    protected function respondCreated()
+    protected function respondCreated(array $data=[])
     {
-        throw new \BadMethodCallException('respondCreated is not Implemented');
+        return $this->buildAPIResponse(
+            201,
+            $data,
+            'Created'
+        );
     }
 
-    protected function respondDeleted()
+    protected function respondUpdated(array $data=[])
     {
-        throw new \BadMethodCallException('respondDeleted is not Implemented');
+        return $this->buildAPIResponse(
+            200,
+            $data,
+            'Updated'
+        );
     }
 
-    protected function respondNoContent()
+    protected function respondQueryResults(?array $data=[])
     {
-        throw new \BadMethodCallException('respondNoContent is not Implemented');
+        $data = empty($data)? []: $data;
+        return $this->buildAPIResponse(
+            200,
+            $data
+        );
+    }
+
+    protected function respondDeleted(int|string $id)
+    {
+        return $this->buildAPIResponse(
+            200,
+            ['id' => $id],
+            'Deleted'
+        );
+    }
+
+    protected function respondRestored(int|string $id)
+    {
+        return $this->buildAPIResponse(
+            200,
+            ['id' => $id],
+            'Restored'
+        );
+    }
+
+    protected function respondPurged(int|string $id)
+    {
+        return $this->buildAPIResponse(
+            200,
+            ['id' => $id],
+            'Purged'
+        );
     }
 
     protected function failUnauthorized(): ResponseInterface
     {
         return $this->buildAPIResponse(
             401,
-            message: 'Unauthorized.'
+            message: 'Unauthorized'
         );
     }
 
@@ -68,21 +107,35 @@ abstract class APIController extends BaseController
     {
         return $this->buildAPIResponse(
             403,
-            message: 'Forbidden.'
+            message: 'Forbidden'
         );
     }
 
     public function failNotFound(): ResponseInterface
     {
-        return $this->buildAPIResponse(404, message: 'Not Found.');
+        return $this->buildAPIResponse(404, message: 'Not Found');
     }
 
-    protected function failValidationError(array $validationErrors): ResponseInterface
+    protected function failServiceUnavailable(): ResponseInterface
+    {
+        return $this->buildAPIResponse(503, message:'Service Unavailable');
+    }
+
+    protected function failValidationError(string $message): ResponseInterface
+    {
+        return $this->buildAPIResponse(
+            400,
+            [$message],
+            'Invalid data'
+        );
+    }
+
+    protected function failValidationErrors(array $validationErrors, ?string $message=''): ResponseInterface
     {
         return $this->buildAPIResponse(
             400,
             $validationErrors,
-            'Invalid data.'
+            empty($message)? 'Invalid data': $message
         );
     }
 
