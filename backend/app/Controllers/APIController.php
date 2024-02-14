@@ -13,40 +13,115 @@ abstract class APIController extends BaseController
 {
     use ResponseTrait;
 
-    protected function buildAPIResponse(int $status, ?array $data=[], string $message=''): ResponseInterface
-    {
-        if (is_null($data)){
-            $data = [];
-        }
+    protected function buildAPIResponse(
+        int $status,
+        ?array $data = null,
+        string $message = '',
+        array $metadata = []
+    ): ResponseInterface {
         $res = [
             'status' => $status,
-            'data' => $data
+            'data' => $data,
+            'message' => $message,
         ];
-        return $this->respond($res, $status, $message);
+        $res = array_merge($res, $metadata);
+        return $this->respond($res, $status);
     }
 
-    protected function throwError(int $code, Throwable $e, bool $withTrace=false)
-    {
-        $data = [
-            'message' => $e->getMessage(),
-            'line' => $e->getLine(),
-            'file' => $e->getFile()
-        ];
-        if ($withTrace){
-            $data['trace'] = $e->getTrace();
-        }
-        return $this->fail(
+    protected function fail(
+        ?array $data = null,
+        string $message = '',
+        array $metadata = []
+    ): ResponseInterface {
+        return $this->buildAPIResponse(
+            400,
             $data,
-            $code,
-            $code,
-            $e->getMessage()
+            $message,
+            $metadata
         );
+    }
+
+    protected function respondCreated()
+    {
+        throw new \BadMethodCallException('respondCreated is not Implemented');
+    }
+
+    protected function respondDeleted()
+    {
+        throw new \BadMethodCallException('respondDeleted is not Implemented');
+    }
+
+    protected function respondNoContent()
+    {
+        throw new \BadMethodCallException('respondNoContent is not Implemented');
+    }
+
+    protected function failUnauthorized(): ResponseInterface
+    {
+        return $this->buildAPIResponse(
+            401,
+            message: 'Unauthorized.'
+        );
+    }
+
+    protected function failForbidden(): ResponseInterface
+    {
+        return $this->buildAPIResponse(
+            403,
+            message: 'Forbidden.'
+        );
+    }
+
+    public function failNotFound(): ResponseInterface
+    {
+        return $this->buildAPIResponse(404, message: 'Not Found.');
+    }
+
+    protected function failValidationError(array $validationErrors): ResponseInterface
+    {
+        return $this->buildAPIResponse(
+            400,
+            $validationErrors,
+            'Invalid data.'
+        );
+    }
+
+    protected function failResourceExists(): ResponseInterface
+    {
+        throw new \BadMethodCallException('failResourceExists is not Implemented');
+    }
+
+    protected function failResourceGone(): ResponseInterface
+    {
+        throw new \BadMethodCallException('failResourceGone is not Implemented');
+    }
+
+    protected function failTooManyRequests(): ResponseInterface
+    {
+        throw new \BadMethodCallException('failTooManyRequests is not Implemented');
+    }
+
+    protected function throwError(Throwable $e)
+    {
+        $environment = \Config\Services::environment();
+        if ($environment->isSafe()){
+            $data = [
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+                'trace' => $e->getTrace()
+            ];
+            $message = $e->getMessage();
+        } else{
+            $data = null;
+            $message = ''
+        }
+        return $this->buildAPIResponse(500, $data, $message);
     }
 
     protected function parseOrdering(string $varName, string $tableName, BaseBuilder|Model $queryBuilder): BaseBuilder|Model
     {
         $orderBy = $this->request->getVar($varName);
-        if ($orderBy == 'updatedAt'){
+        if ($orderBy == 'updatedAt') {
             $queryBuilder = $queryBuilder->orderBy(sprintf('%s.updated_at', $tableName), 'desc');
         }
         return $queryBuilder;
@@ -55,10 +130,10 @@ abstract class APIController extends BaseController
     protected function parseFilterCondition(string $varName, string $colName, BaseBuilder|Model $queryBuilder): BaseBuilder|Model
     {
         $var = $this->request->getVar($varName);
-        if (!empty($var)){
-            if (is_array($var)){
+        if (!empty($var)) {
+            if (is_array($var)) {
                 $queryBuilder = $queryBuilder->whereIn($colName, $var);
-            } else{
+            } else {
                 $queryBuilder = $queryBuilder->where($colName, $var);
             }
         }
@@ -66,15 +141,15 @@ abstract class APIController extends BaseController
     }
 
     protected function parseReturnType(string $varName, BaseBuilder|Model $queryBuilder): BaseBuilder|Model
-    {   
-        if (!empty($this->request->getVar('relatedEquipmentId'))){
+    {
+        if (!empty($this->request->getVar('relatedEquipmentId'))) {
             return $queryBuilder;
         }
         $varValue = $this->request->getVar($varName);
-        if (empty($varValue)){
+        if (empty($varValue)) {
             return $queryBuilder->fullQuery();
         }
-        if ($varValue == 'minimal'){
+        if ($varValue == 'minimal') {
             return $queryBuilder->minQuery();
         } else {
             return $queryBuilder->fullQuery();
