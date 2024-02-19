@@ -3,7 +3,7 @@
 namespace App\Validation;
 use App\Models\EquipmentModel;
 
-class EquipmentRules{
+class EquipmentRules extends RuleSet{
 
 
     public static int $serialMaxSize = 36;
@@ -17,14 +17,14 @@ class EquipmentRules{
     public function equipment_id_is_sanitized($value, ?string &$error): bool
     {
         if (!(strlen($value) === AtlasIdRules::$sequentialNumberLength)){
-            $error = sprintf(
-                'Equipment id must be exactly %d characters in length.',
+            $error = $this->exactLengthMessage(
+                'Equipment id',
                 AtlasIdRules::$sequentialNumberLength
             );
             return false;
         }
         if (!preg_match(AtlasIdRules::$sequentialNumberRegex, $value)){
-            $error = 'Equipment Id is not in the correct format';
+            $error = $this->regexErrorMessage('Equipment id');
             return false;
         }
         return true;

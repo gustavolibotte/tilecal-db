@@ -12,12 +12,11 @@ class EquipmentAssembleValidator extends EntryValidator
         $this->validationRules['parent_id'] = [
             "rules" => [
                 "required",
-                sprintf("exact_length[%s]", AtlasIdRules::$sequentialNumberLength),
+                "equipment_id_is_sanitized",
                 "is_not_unique[equipments.id]"
             ],
             "errors" => [
                 "required" => "You must supply an id for the main equipment.",
-                "exact_length" => "The ID sequential number must have {param} characters. Value given: {value}",
                 "is_not_unique" => "ID {value} doesn't exist."
             ]
         ];
@@ -25,7 +24,7 @@ class EquipmentAssembleValidator extends EntryValidator
         $this->validationRules['child_id'] = [
             "rules" => [
                 "required",
-                sprintf("exact_length[%s]", AtlasIdRules::$sequentialNumberLength),
+                "equipment_id_is_sanitized",
                 "is_not_unique[equipments.id]",
                 "equip_is_not_assembled_into"
             ],
@@ -39,6 +38,7 @@ class EquipmentAssembleValidator extends EntryValidator
         $this->validationRules['slot_id'] = [
             "rules" => [
                 "permit_empty",
+                "equipment_type_slot_id_is_sanitized",
                 "slot_is_available[{parent_id},{child_id},id]",
             ]
         ];
@@ -47,6 +47,7 @@ class EquipmentAssembleValidator extends EntryValidator
             "rules" => [
                 'required_without[slot_id]',
                 'permit_empty',
+                'equipment_type_slot_name_is_sanitized',
                 "slot_is_available[{parent_id},{child_id},name]",
             ],
             'errors' => [
