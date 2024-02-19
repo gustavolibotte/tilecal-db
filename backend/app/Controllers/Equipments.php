@@ -10,6 +10,16 @@ use Throwable;
 
 class Equipments extends APIController
 {
+    protected array $existingIdRule = [
+        'id' => [
+            'rules' => [
+                'required',
+                'equipment_id_is_sanitized',
+                'is_not_unique[equipments.id]'
+            ]
+        ]
+    ];
+
     public function get(): ResponseInterface
     {
         try{
@@ -111,17 +121,14 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
 
-        $equipmentValidation = config('EquipmentValidation');
-        $sanitationRules = $equipmentValidation->getSanitationRules()['type_name'];
         $data = ['type_name' => $this->request->getVar('type_name')];
         $rules = [
             'type_name' => [
-                'rules' => array_merge(
-                    ['required'],
-                    $sanitationRules['rules'],
-                    ['is_not_unique[equipment_types.name]']
-                ),
-                'errors' => $sanitationRules['errors']
+                'rules' => [
+                    'required',
+                    'equipment_type_name_is_sanitized',
+                    'is_not_unique[equipment_types.name]'
+                ]
             ]
         ];
 
@@ -155,19 +162,7 @@ class Equipments extends APIController
     protected function __getHist__(): ResponseInterface
     {
         $data = ['id' => $this->request->getVar('id')];
-        $rules = [
-            'id' => [
-                'rules' => [
-                    'required',
-                    'is_not_unique[equipments.id]'
-                ],
-                'errors' => [
-                    'required' => 'Equipment ID is required.',
-                    'is_not_unique' => 'Equipment with ID "{value}" doesn\'t exist.'
-                ]
-            ]
-        ];
-        if (!$this->validateData($data, $rules)){
+        if (!$this->validateData($data, $this->existingIdRule)){
             $errors = $this->validator->getErrors();
             return $this->failInvalidParams($errors);
         }
@@ -192,19 +187,7 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
         $data = ['id' => $this->request->getVar('id')];
-        $rules = [
-            'id' => [
-                'rules' => [
-                    'required',
-                    'is_not_unique[equipments.id]'
-                ],
-                'errors' => [
-                    'required' => 'Equipment ID is required.',
-                    'is_not_unique' => 'Equipment with ID "{value}" doesn\'t exist.'
-                ]
-            ]
-        ];
-        if (!$this->validateData($data, $rules)){
+        if (!$this->validateData($data, $this->existingIdRule)){
             $errors = $this->validator->getErrors();
             return $this->failInvalidParams($errors);
         }
@@ -242,20 +225,8 @@ class Equipments extends APIController
         }
 
         $data = ['id' => $this->request->getVar('id')];
-        $rules = [
-            'id' => [
-                'rules' => [
-                    'required',
-                    'is_not_unique[equipments.id]'
-                ],
-                'errors' => [
-                    'required' => 'Equipment ID is required.',
-                    'is_not_unique' => 'Equipment with ID "{value}" doesn\'t exist.'
-                ]
-            ]
-        ];
 
-        if (!$this->validateData($data, $rules)){
+        if (!$this->validateData($data, $this->existingIdRule)){
             $errors = $this->validator->getErrors();
             return $this->failInvalidParams($errors);
         }
@@ -280,20 +251,8 @@ class Equipments extends APIController
         }
 
         $data = ['id' => $this->request->getVar('id')];
-        $rules = [
-            'id' => [
-                'rules' => [
-                    'required',
-                    'is_not_unique[equipments.id]'
-                ],
-                'errors' => [
-                    'required' => 'Equipment ID is required.',
-                    'is_not_unique' => 'Equipment with ID "{value}" doesn\'t exist.'
-                ]
-            ]
-        ];
 
-        if (!$this->validateData($data, $rules)){
+        if (!$this->validateData($data, $this->existingIdRule)){
             $errors = $this->validator->getErrors();
             return $this->failInvalidParams($errors);
         }
@@ -356,6 +315,7 @@ class Equipments extends APIController
             'child_id' => [
                 'rules' => [
                     'required',
+                    'equipment_id_is_sanitized',
                     'is_not_unique[parent_child_equips.child_equip_id]'
                 ],
                 'errors' => [
@@ -366,6 +326,7 @@ class Equipments extends APIController
             'parent_id' => [
                 'rules' => [
                     'required',
+                    'equipment_id_is_sanitized',
                     'is_not_unique[parent_child_equips.parent_equip_id]'
                 ],
                 'errors' => [
