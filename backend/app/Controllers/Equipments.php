@@ -6,7 +6,6 @@ use App\Validation\Validators\BatchRegisterValidator;
 use App\Validation\Validators\EquipmentAssembleValidator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
-use ValueError;
 use Throwable;
 
 class Equipments extends APIController
@@ -27,39 +26,67 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
 
-        $equipmentModel = model('EquipmentModel')->asArray();
-        $equipmentModel = $this->parseFilterCondition('id', 'equipments.id', $equipmentModel);
-        $equipmentModel = $this->parseFilterCondition('type_name', 'equipment_types.name', $equipmentModel);
+        $inputSanitationRules = [
+            'id' => [
+                'rules' => [
+                    'permit_empty',
+                    'equipment_id_is_sanitized'
+                ],
+                'errors' => [
+                ]
+            ],
+            'type_name' => [
+                'rules' => [
+                    'equipment_type_name_is_sanitized'
+                ],
+                'errors' => [
+                ]
+            ],
+            'relatedFileId' => [
+                'rules' => [
+                    'file_id_is_sanitized',
+                ],
+                'errors' => [
+                ]
+            ],
+            'onlyDeleted' => [
+                'rules' => [
+                ],
+                'errors' => [
+                ]
+            ],
+        ];
+        $inputRes = $this->getSanitizedInput($inputSanitationRules);
+        if (!$inputRes['valid']){
+            return $this->failInvalidParams($inputRes['errors']);
+        }
+        $userInput = $inputRes['inputData'];
+        $equipmentModel = model('EquipmentModel')->asArray()->fullQuery();
+        $this->parseFilterCondition($userInput['id'], 'equipments.id', $equipmentModel);
+        $this->parseFilterCondition($userInput['type_name'], 'equipment_types.name', $equipmentModel);
 
-        if (!empty($this->request->getVar('relatedFileId'))){
+        if (!empty($userInput['relatedFileId'])){
+            $equipmentModel->joinFiles();
             $equipmentModel = $this->parseFilterCondition(
-                'relatedFileId',
+                $userInput['relatedFileId'],
                 'equipments_to_files.file_id',
-                $equipmentModel->joinFiles()
+                $equipmentModel
             );
         }
 
-        $deleteMsg = $this->checkDeletion();
-        if (!empty($this->request->getVar('onlyDeleted'))){
-            if (!empty($deleteMsg)){
-                return $this->failForbidden();
+        // If user can delete includes searches for deletable entries
+        if ($this->user->isAuthorized('delete')){
+            if (empty($userInput['onlyDeleted'])){
+                $equipmentModel->withDeleted();
+            } else{
+                $equipmentModel->onlyDeleted();
             }
-            $equipmentModel = $equipmentModel->onlyDeleted();
-        } elseif (!empty($this->request->getVar('withDeleted'))){
-            if (!empty($deleteMsg)){
-                return $this->failForbidden();
-            }
-            $equipmentModel = $equipmentModel->withDeleted();
         }
 
-        $this->parseOrdering('orderBy', $equipmentModel->getTable(), $equipmentModel);
-        $this->parseReturnType('returnType', $equipmentModel);
-
-        $relatedEquipmentId = ($this->request->getVar('relatedEquipmentId'));
-        if (empty($relatedEquipmentId)){
+        if (empty($userInput['relatedEquipmentId'])){
             $data = $equipmentModel->findAll();
         } else {
-            $data = $equipmentModel->getRelatedEquipments($relatedEquipmentId);
+            $data = $equipmentModel->getRelatedEquipments($userInput['relatedEquipmentId']);
         }
         helper('app_array');
         foreach($data as &$sample){
@@ -84,17 +111,17 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
 
+        $equipmentValidation = config('EquipmentValidation');
+        $sanitationRules = $equipmentValidation->getSanitationRules()['type_name'];
         $data = ['type_name' => $this->request->getVar('type_name')];
         $rules = [
             'type_name' => [
-                'rules' => [
-                    'required',
-                    'is_not_unique[equipment_types.name]'
-                ],
-                'errors' => [
-                    'required' => 'Equipment type name is required.',
-                    'is_not_unique' => 'The equipment type "{value}" doesn\'t exist.'
-                ]
+                'rules' => array_merge(
+                    ['required'],
+                    $sanitationRules['rules'],
+                    ['is_not_unique[equipment_types.name]']
+                ),
+                'errors' => $sanitationRules['errors']
             ]
         ];
 

@@ -10,6 +10,27 @@ class EquipmentRules{
     public static int $maxCommentsSize = 65535; //MySQL max text size
 
     /**
+     * Checks if the id value is sanitized
+     * @param $value  Value given by CodeIgniter validator
+     * @param ?string &$error Ignored
+     */
+    public function equipment_id_is_sanitized($value, ?string &$error): bool
+    {
+        if (!(strlen($value) === AtlasIdRules::$sequentialNumberLength)){
+            $error = sprintf(
+                'Equipment id must be exactly %d characters in length.',
+                AtlasIdRules::$sequentialNumberLength
+            );
+            return false;
+        }
+        if (!preg_match(AtlasIdRules::$sequentialNumberRegex, $value)){
+            $error = 'Equipment Id is not in the correct format';
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Checks if the a value doesn't exist for a given type. A negation of is_type_not_unique
      *
      * @param $value  Value given by CodeIgniter validator

@@ -21,8 +21,8 @@ abstract class APIController extends BaseController
     ): ResponseInterface {
         $res = [
             'status' => $status,
-            'data' => $data,
             'message' => $message,
+            'data' => $data
         ];
         $res = array_merge($res, $metadata);
         return $this->respond($res, $status);
@@ -194,15 +194,12 @@ abstract class APIController extends BaseController
         return $queryBuilder;
     }
 
-    protected function parseFilterCondition(string $varName, string $colName, BaseBuilder|Model $queryBuilder): BaseBuilder|Model
+    protected function parseFilterCondition(mixed $var, string $colName, BaseBuilder|Model $queryBuilder): BaseBuilder|Model
     {
-        $var = $this->request->getVar($varName);
-        if (!empty($var)) {
-            if (is_array($var)) {
-                $queryBuilder = $queryBuilder->whereIn($colName, $var);
-            } else {
-                $queryBuilder = $queryBuilder->where($colName, $var);
-            }
+        if (is_array($var)) {
+            $queryBuilder = $queryBuilder->whereIn($colName, $var);
+        } else {
+            $queryBuilder = $queryBuilder->where($colName, $var);
         }
         return $queryBuilder;
     }
@@ -221,5 +218,23 @@ abstract class APIController extends BaseController
         } else {
             return $queryBuilder->fullQuery();
         }
+    }
+
+    protected function getSanitizedInput(array $sanitationRules): array
+    {
+        $inputData = [];
+        foreach (array_keys($sanitationRules) as $fieldName){
+            $var = $this->request->getVar($fieldName);
+            $inputData[$fieldName] = empty($var)? '': $var;
+        }
+        $res = [
+            'valid' => $this->validateData($inputData, $sanitationRules),
+            'inputData' => $inputData
+        ];
+        if ($res['valid']){
+            return $res;
+        }
+        $res['errors'] = $this->validator->getErrors();
+        return $res;
     }
 }

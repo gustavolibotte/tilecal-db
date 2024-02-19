@@ -68,12 +68,4 @@ abstract class BaseController extends Controller
             ]
             );
     }
-
-    protected function checkDeletion(): ?string
-    {
-        if (!$this->user->isAuthorized('delete')){
-            return 'You are not allowed to access deleted items';
-        }
-        return null;
-    }
 }

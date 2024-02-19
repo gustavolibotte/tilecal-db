@@ -32,7 +32,7 @@ class AtlasIdRules {
      * Regex rule for the id sequential number part
      * @var string $sequentialNumberRegex
      */
-    public static string $sequentialNumberRegex = '^[A-Z0-9]{7}';
+    public static string $sequentialNumberRegex = '/^[A-Z0-9]+$/';
 
     /**
      * Sequential number length
