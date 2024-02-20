@@ -204,22 +204,6 @@ abstract class APIController extends BaseController
         return $queryBuilder;
     }
 
-    protected function parseReturnType(string $varName, BaseBuilder|Model $queryBuilder): BaseBuilder|Model
-    {
-        if (!empty($this->request->getVar('relatedEquipmentId'))) {
-            return $queryBuilder;
-        }
-        $varValue = $this->request->getVar($varName);
-        if (empty($varValue)) {
-            return $queryBuilder->fullQuery();
-        }
-        if ($varValue == 'minimal') {
-            return $queryBuilder->minQuery();
-        } else {
-            return $queryBuilder->fullQuery();
-        }
-    }
-
     protected function getValidatedData(array $rules): array
     {
         $data = [];
@@ -236,5 +220,17 @@ abstract class APIController extends BaseController
         }
         $res['errors'] = $this->validator->getErrors();
         return $res;
+    }
+
+    public function parseDeletion(BaseBuilder|Model $queryBuilder, bool $onlyDeleted): BaseBuilder|Model
+    {
+        if ($this->user->isAuthorized('delete')){
+            if ($onlyDeleted){
+                $queryBuilder = $queryBuilder->onlyDeleted();
+            } else{
+                $queryBuilder = $queryBuilder->withDeleted();
+            }
+        }
+        return $queryBuilder;
     }
 }

@@ -51,11 +51,42 @@ class Files extends APIController
 
     public function __get__(): ResponseInterface
     {
-
         $feature = model('FeatureModel')->findName('api_file_get');
         if (!$feature->isActive()){
             return $this->failServiceUnavailable();
         }
+        $inputRules = [
+            'id' => [
+                'rules' => [
+                    'permit_empty',
+                    'file_id_is_sanitized'
+                ],
+                'errors' => []
+            ],
+            'name' => [
+                'rules' => [
+                    'permit_empty',
+                    'file_name_is_sanitized'
+                ]
+            ],
+            'onlyDeleted' => [
+                'rules' => [
+                ],
+                'errors' => []
+            ],
+            'relatedEquipmentId' => [
+                'rules' => [
+                    'permit_empty',
+                    'equipment_id_is_sanitized'
+                ]
+            ]
+        ];
+
+        $res = $this->getValidatedData($inputRules);
+        if (!$res['valid']){
+            return $this->failInvalidParams($res['errors']);
+        }
+        $inputData = $res['data'];
 
         $fileModel = model('FileModel')
             ->select('files.id as id')
@@ -66,28 +97,16 @@ class Files extends APIController
             ->select('files.deleted_at as deleted_at')
             ->select('files.user as user')
             ->asArray();
-        $fileModel = $this->parseFilterCondition('id', 'files.id', $fileModel);
-        $fileModel = $this->parseFilterCondition('name', 'files.name', $fileModel);
-        $this->parseOrdering('orderBy', 'files', $fileModel);
-        $this->parseReturnType('returnType', $fileModel);
+        $this->parseFilterCondition($inputData['id'], 'files.id', $fileModel);
+        $this->parseFilterCondition($inputData['name'], 'files.name', $fileModel);
+        $this->parseDeletion($fileModel, !empty($inputData['onlyDeleted']));
 
-        $deleteMsg = $this->checkDeletion();
-        if (!empty($this->request->getVar('onlyDeleted'))){
-            if (!empty($deleteMsg)){
-                return $this->failForbidden();
-            }
-            $fileModel = $fileModel->onlyDeleted();
-        } elseif (!empty($this->request->getVar('withDeleted'))){
-            if (!empty($deleteMsg)){
-                return $this->failForbidden();
-            }
-            $fileModel = $fileModel->withDeleted();
-        }
-
-        if (!empty($this->request->getVar('relatedEquipmentId'))){
-            $fileModel = $this->parseFilterCondition('relatedEquipmentId',
+        if (!empty($inputData['relatedEquipmentId'])){
+            $fileModel->joinEquipments();
+            $fileModel = $this->parseFilterCondition(
+                $inputData['relatedEquipmentId'],
                 'equipments_to_files.equipment_id',
-                $fileModel->joinEquipments()
+                $fileModel
             );
         }
         $data = $fileModel->findAll();
@@ -106,12 +125,21 @@ class Files extends APIController
 
     public function __getHist__(): ResponseInterface
     {
-        $id = $this->request->getVar('id');
-        if (empty($id)){
-            throw new ValueError('An id value must be given.');
+        $inputRules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'file_id_is_sanitized'
+                ]
+            ]
+        ];
+        $res = $this->getValidatedData($inputRules);
+        if (!$res['valid']){
+            return $this->failInvalidParams($res['errors']);
         }
+        $inputData = $res['data'];
         $history = model('HistModel')
-            ->getFileHist($id);
+            ->getFileHist($inputData['id']);
         return $this->respondQueryResults($history);
     }
 
@@ -158,11 +186,11 @@ class Files extends APIController
             return $this->failServiceUnavailable();
         }
 
-        $data = ['id' => $this->request->getVar('id')];
-        $rules = [
+        $inputRules = [
             'id' => [
                 'rules' => [
                     'required',
+                    'file_id_is_sanitized',
                     'is_not_unique[files.id]'
                 ],
                 'errors' => [
@@ -171,18 +199,18 @@ class Files extends APIController
                 ]
             ]
         ];
-
-        if (!$this->validateData($data, $rules)){
-            $errors = $this->validator->getErrors();
-            return $this->failInvalidParams($errors);
+        $res = $this->getValidatedData($inputRules);
+        if (!$res['valid']){
+            return $this->failInvalidParams($res['errors']);
         }
+        $inputData = $res['data'];
         
         $validator = (new FileValidator())
             ->asEdit()
             ->addRequest($this->request);
         if ($validator->validate()){
             $file = $validator->getValidatedData();
-            model('FileModel')->update($data['id'], $file);
+            model('FileModel')->update($inputData['id'], $file);
             return $this->respondUpdated();
         }
         return $this->failValidationErrors($validator->getErrors());
@@ -204,8 +232,7 @@ class Files extends APIController
         if (!$feature->isActive()){
             return $this->failServiceUnavailable();
         }
-        $data = ['id' => $this->request->getVar('id')];
-        $rules = [
+        $inputRules = [
             'id' => [
                 'rules' => [
                     'required',
@@ -217,12 +244,13 @@ class Files extends APIController
                 ]
             ]
         ];
+        $res = $this->getValidatedData($inputRules);
 
-        if (!$this->validateData($data, $rules)){
-            return $this->failInvalidParams($this->validator->getErrors());
+        if (!$res['valid']){
+            return $this->failInvalidParams($res['errors']);
         }
 
-        model('FileModel')->delete($data['id']);
+        model('FileModel')->delete($res['data']['id']);
         return $this->respondDeleted();
     }
 
@@ -242,11 +270,11 @@ class Files extends APIController
             return $this->failServiceUnavailable();
         }
 
-        $data = ['id' => $this->request->getVar('id')];
-        $rules = [
+        $inputRules = [
             'id' => [
                 'rules' => [
                     'required',
+                    'file_id_is_sanitized',
                     'is_not_unique[files.id]'
                 ],
                 'errors' => [
@@ -255,12 +283,13 @@ class Files extends APIController
                 ]
             ]
         ];
+        $res = $this->getValidatedData($inputRules);
 
-        if (!$this->validateData($data, $rules)){
-            return $this->failInvalidParams($this->validator->getErrors());
+        if (!$res['valid']){
+            return $this->failInvalidParams($res['errors']);
         }
 
-        model('FileModel')->restore($data['id']);
+        model('FileModel')->restore($res['data']['id']);
         return $this->respondDeleted();
     }
 
@@ -270,9 +299,22 @@ class Files extends APIController
         if (!$feature->isActive()){
             return $this->failServiceUnavailable();
         }
+        $inputRules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'file_id_is_sanitized'
+                ],
+                'errors' => []
+            ]
+        ];
+        $res = $this->getValidatedData($inputRules);
+        if (!$res['valid']){
+            return $this->failInvalidParams($res['errors']);
+        }
+        $inputData = $res['data'];
 
-        $fileHIstId = $this->request->getVar('id');
-        $fileHistArray = model('HistModel')->getOlderFile($fileHIstId);
+        $fileHistArray = model('HistModel')->getOlderFile($inputData['id']);
         $fileHist = new \App\Entities\File($fileHistArray);
         return $this->getFileDownloadResponse($fileHist);
     }
