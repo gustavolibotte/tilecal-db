@@ -220,16 +220,16 @@ abstract class APIController extends BaseController
         }
     }
 
-    protected function getSanitizedInput(array $sanitationRules): array
+    protected function getValidatedData(array $rules): array
     {
-        $inputData = [];
-        foreach (array_keys($sanitationRules) as $fieldName){
+        $data = [];
+        foreach (array_keys($rules) as $fieldName){
             $var = $this->request->getVar($fieldName);
-            $inputData[$fieldName] = empty($var)? '': $var;
+            $data[$fieldName] = empty($var)? '': $var;
         }
         $res = [
-            'valid' => $this->validateData($inputData, $sanitationRules),
-            'inputData' => $inputData
+            'valid' => $this->validateData($data, $rules),
+            'data' => $data
         ];
         if ($res['valid']){
             return $res;
