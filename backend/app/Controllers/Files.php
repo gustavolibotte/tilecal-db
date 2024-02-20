@@ -2,11 +2,8 @@
 
 namespace App\Controllers;
 
-use App\Library\Forms\FileForm;
 use App\Validation\Validators\FileValidator;
-use CodeIgniter\Files\File;
 use CodeIgniter\HTTP\ResponseInterface;
-use ValueError;
 use Throwable;
 
 class Files extends APIController
@@ -35,9 +32,9 @@ class Files extends APIController
         $extension = '.' . $file->fileObj->guessExtension();
         $filename = (str_ends_with($file->name, $extension))? $file->name: $file->name . $extension;
         return $this->response
-        ->download($file->path, null, true)
-        ->setFileName($filename)
-        ->setContentType($file->mime);
+            ->download($file->path, null, true)
+            ->setFileName($filename)
+            ->setContentType($file->mime);
     }
 
     public function get(): ResponseInterface
