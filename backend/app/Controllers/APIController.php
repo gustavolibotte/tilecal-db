@@ -9,23 +9,21 @@ use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Model;
 use Throwable;
 
-abstract class APIController extends BaseController
+class APIController extends BaseController
 {
-    use ResponseTrait;
-
     protected function buildAPIResponse(
         int $status,
         ?array $data = null,
         string $message = '',
         array $metadata = []
     ): ResponseInterface {
-        $res = [
-            'status' => $status,
-            'message' => $message,
-            'data' => $data
-        ];
-        $res = array_merge($res, $metadata);
-        return $this->respond($res, $status);
+        helper('response');
+        return buildAPIResponse(
+            $status,
+            $data,
+            $message,
+            $metadata
+        );
     }
 
     protected function fail(

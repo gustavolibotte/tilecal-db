@@ -268,6 +268,17 @@ class Equipments extends APIController
             return $this->failInvalidParams($res['errors']);
         }
         $data = $res['data'];
+
+        $equipment = model('EquipmentModel')
+            ->onlyDeleted()
+            ->find($data['id']);
+        if (empty($equipment)){
+            return $this->buildAPIResponse(
+                200,
+                [],
+                'Equipment is not deleted.'
+            );
+        }
         model('EquipmentModel')->restore($data['id']);
         return $this->respondRestored($data['id']);
     }

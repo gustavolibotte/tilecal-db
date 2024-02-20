@@ -8,12 +8,13 @@ class User extends BaseEntity
     protected $dates   = ['authTime'];
     protected $casts   = [];
 
-    public function isAuthorized(string $action){
-
-        if ($this->canAll()){
+    public function isAuthorized(?string $action){
+        
+        if (empty($action)){
+            return false;
+        } else if($this->canAll()){
             return true;
-        }
-        else{
+        } else{
             $actionMethod = sprintf('can%s', ucfirst($action));
             return $this->$actionMethod();
         }
