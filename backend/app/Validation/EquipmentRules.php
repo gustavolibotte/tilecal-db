@@ -3,11 +3,13 @@
 namespace App\Validation;
 use App\Models\EquipmentModel;
 
-class EquipmentRules extends RuleSet{
+class EquipmentRules{
 
 
     public static int $serialMaxSize = 36;
-    public static int $maxCommentsSize = 65535; //MySQL max text size
+    public static string $serialRegex = '/^[A-Za-z0-9 -_]*$/';
+    public static int $commentsMaxSize = 65535; //MySQL max text size
+    public static string $commentsRegex = '/^.*$/';
 
     /**
      * Checks if the id value is sanitized
@@ -16,18 +18,42 @@ class EquipmentRules extends RuleSet{
      */
     public function equipment_id_is_sanitized($value, ?string &$error): bool
     {
-        if (!(strlen($value) === AtlasIdRules::$sequentialNumberLength)){
-            $error = $this->exactLengthMessage(
-                'Equipment id',
-                AtlasIdRules::$sequentialNumberLength
-            );
-            return false;
-        }
-        if (!preg_match(AtlasIdRules::$sequentialNumberRegex, $value)){
-            $error = $this->regexErrorMessage('Equipment id');
-            return false;
-        }
-        return true;
+        helper('string_validation');
+        $fieldName = 'Equipment id';
+        return (
+            exact_length($value, AtlasIdRules::$sequentialNumberLength, $fieldName, $error) &&
+            regex_match($value, AtlasIdRules::$sequentialNumberRegex, $fieldName, $error)
+        );
+    }
+
+    /**
+     * Checks if the serial value is sanitized
+     * @param $value  Value given by CodeIgniter validator
+     * @param ?string &$error Ignored
+     */
+    public function equipment_serial_is_sanitized($value, ?string &$error): bool
+    {
+        helper('string_validation');
+        $fieldName = 'Equipment serial';
+        return (
+            max_length($value, Self::$serialMaxSize, $fieldName, $error) &&
+            regex_match($value, Self::$serialRegex, $fieldName, $error)
+        );
+    }
+
+    /**
+     * Checks if the serial value is sanitized
+     * @param $value  Value given by CodeIgniter validator
+     * @param ?string &$error Ignored
+     */
+    public function equipment_comments_is_sanitized($value, ?string &$error): bool
+    {
+        helper('string_validation');
+        $fieldName = 'Equipment comments';
+        return (
+            max_length($value, Self::$commentsMaxSize, $fieldName, $error) &&
+            regex_match($value, Self::$commentsRegex, $fieldName, $error)
+        );
     }
 
     /**

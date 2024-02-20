@@ -14,12 +14,10 @@ class BatchRegisterValidator extends EntryValidator
         $this->validationRules['type_name'] = [
             "rules" => [
                 "required",
+                "equipment_type_name_is_sanitized",
                 "is_not_unique[equipment_types.name]",
             ],
-            "errors" => [
-                "required" => "You must supply an equipment type for registering.",
-                "is_not_unique" => "The selected equipment type is not valid.",
-            ]
+            "errors" => []
         ];
 
         $notCsvMsg = "Only csv files are supported for batch registering.";

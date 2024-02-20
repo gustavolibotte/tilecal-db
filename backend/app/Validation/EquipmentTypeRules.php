@@ -2,10 +2,11 @@
 
 namespace App\Validation;
 
-class EquipmentTypeRules extends RuleSet{
+class EquipmentTypeRules{
 
     public static $maxNameLength = 30;
     public static $baseNameRegex = '/^[A-Za-z0-9 ]+$/';
+    public static $typeSlotIdRegex = '/^[0-9]+$/';
 
     /**
      * Checks if the name value is sanitized
@@ -14,15 +15,12 @@ class EquipmentTypeRules extends RuleSet{
      */
     public function equipment_type_name_is_sanitized($value, ?string &$error): bool
     {
-        if (!(strlen($value) <= Self::$maxNameLength)){
-            $error = $this->maxLengthMessage('Equipment type name', Self::$maxNameLength);
-            return false;
-        }
-        if (!preg_match(Self::$baseNameRegex, $value)){
-            $error = $this->regexErrorMessage('Equipment type name');
-            return false;
-        }
-        return true;
+        helper('string_validation');
+        $fieldName = 'Equipment type name';
+        return (
+            max_length($value, Self::$maxNameLength, $fieldName, $error) &&
+            regex_match($value, Self::$baseNameRegex, $fieldName, $error)
+        );
     }
 
     /**
@@ -32,11 +30,12 @@ class EquipmentTypeRules extends RuleSet{
      */
     public function equipment_type_slot_id_is_sanitized($value, ?string &$error): bool
     {
-        if (!preg_match('/^[0-9]+$/', $value)){
-            $error = $this->regexErrorMessage('Equipment Type slot id');
-            return false;
-        }
-        return true;
+
+        helper('string_validation');
+        $fieldName = 'Equipment type slot id';
+        return (
+            regex_match($value, Self::$typeSlotId, $fieldName, $error)
+        );
     }
 
     /**
@@ -46,10 +45,10 @@ class EquipmentTypeRules extends RuleSet{
      */
     public function equipment_type_slot_name_is_sanitized($value, ?string &$error): bool
     {
-        if (!preg_match('/^[A-Za-z0-9 ]+$/', $value)){
-            $error = $this->regexErrorMessage('Equipment type slot name');
-            return false;
-        }
-        return true;
+        helper('string_validation');
+        $fieldName = 'Equipment type slot name';
+        return (
+            regex_match($value, '/^[A-Za-z0-9 ]+$/', $fieldName, $error)
+        );
     }
 }

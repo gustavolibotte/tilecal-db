@@ -2,8 +2,9 @@
 
 namespace App\Validation;
 
-class InstituteRules extends RuleSet{
+class InstituteRules{
 
+    public static $idRegex = '/^[0-9]+$/';
     public static $maxNameLength = 300;
     public static $nameRegex = '/^[A-Za-z0-9 ]+$/';
     public static $mneLength = 3;
@@ -16,11 +17,11 @@ class InstituteRules extends RuleSet{
      */
     public function institute_id_is_sanitized($value, ?string &$error): bool
     {
-        if (!preg_match('/^[0-9]+$/', $value)){
-            $error = $this->regexErrorMessage('Institute id');
-            return false;
-        }
-        return true;
+        helper('string_validation');
+        $fieldName = 'Institute id';
+        return (
+            regex_match($value, Self::$idRegex, $fieldName, $error)
+        );
     }
 
     /**
@@ -31,16 +32,12 @@ class InstituteRules extends RuleSet{
     public function institute_name_is_sanitized($value, ?string &$error): bool
     {
 
-        if (!(strlen($value) <= Self::$maxNameLength)){
-            $error = $this->maxLengthMessage('Institute name', Self::$maxNameLength);
-            return false;
-        }
-
-        if (!preg_match(Self::$nameRegex, $value)){
-            $error = $this->regexErrorMessage('Institute name');
-            return false;
-        }
-        return true;
+        helper('string_validation');
+        $fieldName = 'Institute name';
+        return (
+            max_length($value, Self::$maxNameLength, $fieldName, $error) &&
+            regex_match($value, Self::$nameRegex, $fieldName, $error)
+        );
     }
 
     /**
@@ -51,15 +48,11 @@ class InstituteRules extends RuleSet{
     public function institute_mne_is_sanitized($value, ?string &$error): bool
     {
 
-        if (!(strlen($value) === Self::$mneLength)){
-            $error = $this->exactLengthMessage('Institute mne', Self::$maxNameLength);
-            return false;
-        }
-
-        if (!preg_match(Self::$mneRegex, $value)){
-            $error = $this->regexErrorMessage('Institute mne');
-            return false;
-        }
-        return true;
+        helper('string_validation');
+        $fieldName = 'Institute mne';
+        return (
+            exact_length($value, Self::$mneLength, $fieldName, $error) &&
+            regex_match($value, Self::$mneRegex, $fieldName, $error)
+        );
     }
 }

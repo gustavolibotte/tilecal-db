@@ -47,6 +47,7 @@ class Equipments extends APIController
             ],
             'type_name' => [
                 'rules' => [
+                    'permit_empty',
                     'equipment_type_name_is_sanitized'
                 ],
                 'errors' => [
@@ -54,6 +55,7 @@ class Equipments extends APIController
             ],
             'relatedFileId' => [
                 'rules' => [
+                    'permit_empty',
                     'file_id_is_sanitized',
                 ],
                 'errors' => [

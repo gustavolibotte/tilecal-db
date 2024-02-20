@@ -16,6 +16,7 @@ class FileValidator extends EntryValidator
         $this->updateRules['id'] = [
             'rules' => [
                 'required',
+                'file_id_is_sanitized',
                 'is_not_unique[files.id]'
             ],
             'errors' => [
@@ -27,7 +28,7 @@ class FileValidator extends EntryValidator
         $this->validationRules["name"]= [
             "rules" => [
                 "required",
-                sprintf("max_length[%d]", AppFileRules::$maxNameSize),
+                "file_name_is_sanitized",
                 "is_unique[files.name]"
             ],
             "errors" => [
@@ -39,13 +40,10 @@ class FileValidator extends EntryValidator
         $this->updateRules["name"]= [
             "rules" => [
                 "permit_empty",
-                'min_length[1]',
-                sprintf("max_length[%d]", AppFileRules::$maxNameSize),
+                'file_name_is_sanitized',
                 "is_unique[files.name]"
             ],
             "errors" => [
-                "min_length" => "Name field must have at least {param} character.",
-                "max_length" => "Name max number of characters is {param}.",
                 "is_unique" => "The filename {value} already exists"
             ]
         ];
