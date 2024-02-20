@@ -3,7 +3,7 @@
 namespace App\Validation\Validators;
 use App\Entities\AtlasId;
 use App\Entities\EquipmentType;
-use App\Validation\AtlasIdRules;
+use App\Validation\EquipmentRules;
 use CodeIgniter\Database\Exceptions\DataException;
 use App\Entities\Equipment;
 use Error;
@@ -187,7 +187,7 @@ class EquipmentValidator extends EntryValidator
             "rules" => [
                 "permit_empty",
                 'equipment_serial_is_sanitized',
-                sprintf("max_length[%d]", self::$serialMaxSize),
+                sprintf("max_length[%d]", EquipmentRules::$serialMaxSize),
                 sprintf("is_type_unique[serial,%d]", $this->equipmentType->id)
             ],
             "errors" => [

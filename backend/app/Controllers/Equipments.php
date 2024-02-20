@@ -36,7 +36,7 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
 
-        $inputSanitationRules = [
+        $inputRules = [
             'id' => [
                 'rules' => [
                     'permit_empty',
@@ -61,6 +61,13 @@ class Equipments extends APIController
                 'errors' => [
                 ]
             ],
+            'relatedEquipmentId' => [
+                'rules' => [
+                    'permit_empty',
+                    'equipment_id_is_sanitized'
+                ],
+                'errors' => []
+            ],
             'onlyDeleted' => [
                 'rules' => [
                 ],
@@ -68,16 +75,17 @@ class Equipments extends APIController
                 ]
             ],
         ];
-        $inputRes = $this->getValidatedData($inputSanitationRules);
+        $inputRes = $this->getValidatedData($inputRules);
         if (!$inputRes['valid']){
             return $this->failInvalidParams($inputRes['errors']);
         }
         $inputData = $inputRes['data'];
-        $equipmentModel = model('EquipmentModel')->asArray()->fullQuery();
-        $this->parseFilterCondition($inputData['id'], 'equipments.id', $equipmentModel);
-        $this->parseFilterCondition($inputData['type_name'], 'equipment_types.name', $equipmentModel);
 
-        if (!empty($userInput['relatedFileId'])){
+        $equipmentModel = model('EquipmentModel')->asArray();
+        $equipmentModel = $this->parseFilterCondition($inputData['id'], 'equipments.id', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition($inputData['type_name'], 'equipment_types.name', $equipmentModel);
+
+        if (!empty($inputData['relatedFileId'])){
             $equipmentModel->joinFiles();
             $equipmentModel = $this->parseFilterCondition(
                 $inputData['relatedFileId'],
@@ -86,18 +94,12 @@ class Equipments extends APIController
             );
         }
 
-        // If user can delete includes searches for deletable entries
-        if ($this->user->isAuthorized('delete')){
-            if (empty($userInput['onlyDeleted'])){
-                $equipmentModel->withDeleted();
-            } else{
-                $equipmentModel->onlyDeleted();
-            }
-        }
+        $equipmentModel = $this->parseDeletion($equipmentModel, !empty($inputData['onlyDeleted']));
 
-        if (empty($userInput['relatedEquipmentId'])){
-            $data = $equipmentModel->findAll();
+        if (empty($inputData['relatedEquipmentId'])){
+            $data = $equipmentModel->fullQuery()->findAll();
         } else {
+            echo 'RELATED';
             $data = $equipmentModel->getRelatedEquipments($inputData['relatedEquipmentId']);
         }
         helper('app_array');

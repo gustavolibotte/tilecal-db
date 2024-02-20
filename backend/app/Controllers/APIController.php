@@ -195,7 +195,10 @@ abstract class APIController extends BaseController
     }
 
     protected function parseFilterCondition(mixed $var, string $colName, BaseBuilder|Model $queryBuilder): BaseBuilder|Model
-    {
+    {   
+        if (empty($var)){
+            return $queryBuilder;
+        }
         if (is_array($var)) {
             $queryBuilder = $queryBuilder->whereIn($colName, $var);
         } else {
