@@ -1,6 +1,6 @@
 <?php
 
-function regex_match($value, $pattern, $fieldName, &$error): bool
+function regex_match(mixed $value, string $pattern, string $fieldName, ?string &$error): bool
 {
     if (!(preg_match($pattern, $value))){
         $error = sprintf(
@@ -12,7 +12,7 @@ function regex_match($value, $pattern, $fieldName, &$error): bool
     return true;
 }
 
-function max_length($value, $limit, $fieldName, &$error): bool
+function max_length(mixed $value, int $limit, string $fieldName, ?string &$error): bool
 {
     if (strlen($value) > $limit){
         $error = sprintf(
@@ -24,7 +24,7 @@ function max_length($value, $limit, $fieldName, &$error): bool
     return true;
 }
 
-function min_length($value, $limit, $fieldName, &$error): bool
+function min_length(mixed $value, int $limit, string $fieldName, ?string &$error): bool
 {
     if (strlen($value) < $limit){
         $error = sprintf(
@@ -36,7 +36,7 @@ function min_length($value, $limit, $fieldName, &$error): bool
     return true;
 }
 
-function exact_length($value, $length, $fieldName, &$error): bool
+function exact_length(mixed $value, int $length, string $fieldName, ?string &$error): bool
 {
     if (strlen($value) != $length){
         $error = sprintf(

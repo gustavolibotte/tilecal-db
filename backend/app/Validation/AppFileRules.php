@@ -10,8 +10,8 @@ class AppFileRules{
     public static int $maxDescriptionSize = 65535;
     public static int $minDescriptionSize = 10;
     public static string $fileIdRegex = '/^[0-9]$/';
-    public static string $nameMaxLength = 100;
-    public static string $nameMinLength = 1;
+    public static int $nameMaxLength = 100;
+    public static int $nameMinLength = 1;
     public static string $nameRegex = '/^[A-Za-z_]+$/';
 
     /**
