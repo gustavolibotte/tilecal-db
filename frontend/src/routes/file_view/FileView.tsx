@@ -16,6 +16,8 @@ import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import { useUser } from '../../utils/user';
 import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
+import DownloadButton from '../../components/download_button/DownloadButton';
+import { concatenateUrlParams } from '../../utils/routes';
 
 export default function FileView() {
 
@@ -129,16 +131,19 @@ export default function FileView() {
         </>
       );
     }
-    
+
     component = (
       <>
-      <h1>File: {fileData.name}</h1>
+      <h1>File:{fileData.name}</h1>
       <TabPage activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
         <TabPanel header="Info">
           <div className="m-0">
             <div className="grid">
               <div className="col-6">
-                <h2>File Info</h2>
+                <div className="flex flex-wrap align-items-center justify-content gap-3">
+                  <h2>File Info</h2>
+                  <DownloadButton downloadUrl={getEndpoint('file_download')} params={{id: fileId}}/>
+                </div>
               </div>
               <div className="col-6">
                 <div className="flex flex-row-reverse flex-wrap gap-2">
