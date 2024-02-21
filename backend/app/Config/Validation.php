@@ -33,7 +33,8 @@ class Validation extends BaseConfig
         \App\Validation\InstituteRules::class,
         \App\Validation\DetectorLocationRules::class,
         \App\Validation\StatusRules::class,
-        \App\Validation\LocationRules::class
+        \App\Validation\LocationRules::class,
+        App\Validation\HistRules::class
     ];
 
     /**

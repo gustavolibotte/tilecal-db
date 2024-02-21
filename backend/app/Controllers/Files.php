@@ -9,21 +9,40 @@ use Throwable;
 class Files extends APIController
 {
 
-    public function download($fileId)
+    public function download(): ResponseInterface
+    {
+        try{
+            return $this->__download__();
+        } catch (Throwable $e){
+            return $this->failInternalError($e);
+        }
+    }
+
+    public function __download__()
     {
         $feature = model('FeatureModel')->findName('file_download');
         if (!$feature->isActive()){
             return $this->failServiceUnavailable();
         }
 
+        $inputRules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'file_id_is_sanitized',
+                    'is_not_unique[files.id]'
+                ],
+                'errors' => []
+            ]
+        ];
+        $res = $this->getValidatedData($inputRules);
+        if (!$res['valid']){
+            return $this->failInvalidParams($res['errors']);
+        }
+        $inputData = $res['inputData'];
+
         $fileModel = model('FileModel');
-        if ($this->user->isAuthorized('delete')){
-            $fileModel->withDeleted();
-        }
-        $file = $fileModel->find($fileId);
-        if (is_null($file)){
-            return $this->failNotFound();
-        }
+        $file = $fileModel->find($inputData['id']);
         return $this->getFileDownloadResponse($file);
     }
 
@@ -290,7 +309,16 @@ class Files extends APIController
         return $this->respondDeleted();
     }
 
-    public function downloadHist()
+    public function downloadHist(): ResponseInterface
+    {
+        try{
+            return $this->__downloadHist__();
+        } catch (Throwable $e){
+            return $this->failInternalError($e);
+        }
+    }
+
+    public function __downloadHist__()
     {
         $feature = model('FeatureModel')->findName('file_download');
         if (!$feature->isActive()){
@@ -300,7 +328,7 @@ class Files extends APIController
             'id' => [
                 'rules' => [
                     'required',
-                    'file_id_is_sanitized'
+                    'hist_id_is_sanitized'
                 ],
                 'errors' => []
             ]

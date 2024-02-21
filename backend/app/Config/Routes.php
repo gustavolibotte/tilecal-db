@@ -141,6 +141,14 @@ $routes->patch('api/file', 'Files::restore', [
   'filter' => 'auth:delete',
   'as' => 'api_file_restore'
 ]);
+$routes->get('api/file/download', 'Files::download', [
+    'filter' => 'auth:view',
+    'as' => 'api_file_download'
+]);
+$routes->get('api/file/download-hist', 'Files::downloadHist', [
+    'filter' => 'auth:view',
+    'as' => 'api_file_download_hist'
+]);
 
 // User API
 $routes->get('api/user', 'User::get', [
