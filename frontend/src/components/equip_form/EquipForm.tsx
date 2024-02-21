@@ -4,7 +4,6 @@ import { Button } from 'primereact/button';
 import { toast } from 'react-toastify';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
-import { INVALID_DATA_MSG } from '../../utils/constants';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import {
@@ -68,7 +67,7 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
       // The following "?" fields are guaranteed with the app
       toast.dismiss();
       const responseData: any = error?.response?.data;
-      if (responseData.error == INVALID_DATA_MSG){
+      if (responseData.error == __INVALID_DATA_MSG__){
         Object.keys(responseData.messages).forEach((key: string) => {
           formik.setFieldError(key as keyof EquipFormSchema, responseData.messages[key]);
         });

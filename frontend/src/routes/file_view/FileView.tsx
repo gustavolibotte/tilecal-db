@@ -13,7 +13,6 @@ import FileHistTable from '../../components/file_hist_table/FileHistTable';
 import FileForm from '../../components/file_form/FileForm';
 import { makeMutationFunction, getEndpoint } from '../../utils/DbClient';
 import { toast } from 'react-toastify';
-import { DEFAULT_ERROR_MSG } from '../../utils/constants';
 import { AxiosError } from 'axios';
 import { useUser } from '../../utils/user';
 import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
@@ -58,7 +57,7 @@ export default function FileView() {
     onError: (error: AxiosError) => {
       toast.dismiss();
       console.log(error);
-      toast.error(DEFAULT_ERROR_MSG);
+      toast.error(__DEFAULT_ERROR_MSG__);
     }
   });
 

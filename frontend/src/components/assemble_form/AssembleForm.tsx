@@ -4,7 +4,6 @@ import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import { AxiosError } from 'axios';
-import { DEFAULT_ERROR_MSG, INVALID_DATA_MSG } from '../../utils/constants';
 import { Button } from 'primereact/button';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
@@ -60,12 +59,12 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
       // The following "?" fields are guaranteed with the app
       toast.dismiss();
       const responseData: any = error?.response?.data;
-      if (responseData.error == INVALID_DATA_MSG) {
+      if (responseData.error == __INVALID_DATA_MSG__) {
         Object.keys(responseData.messages).forEach((key: string) => {
           formik.setFieldError(key as keyof AssembleFormSchema, responseData.messages[key]);
         });
       } else {
-        toast.error(DEFAULT_ERROR_MSG);
+        toast.error(__DEFAULT_ERROR_MSG__);
         console.log(error);
       }
     },
@@ -77,7 +76,7 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
   
   if (equipTypeQuery.isError){
     return <div className="card flex justify-content-center flex-column gap-2">
-      <h4>{DEFAULT_ERROR_MSG}</h4>
+      <h4>{__DEFAULT_ERROR_MSG__}</h4>
     </div>;
   } else if(equipTypeQuery.isPending){
     return <div className="card flex justify-content-center flex-column gap-2">
