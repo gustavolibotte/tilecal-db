@@ -29,8 +29,7 @@ class Files extends APIController
             'id' => [
                 'rules' => [
                     'required',
-                    'file_id_is_sanitized',
-                    'is_not_unique[files.id]'
+                    'file_id_is_sanitized'
                 ],
                 'errors' => []
             ]
@@ -39,10 +38,14 @@ class Files extends APIController
         if (!$res['valid']){
             return $this->failInvalidParams($res['errors']);
         }
-        $inputData = $res['inputData'];
+        $inputData = $res['data'];
 
         $fileModel = model('FileModel');
+        $this->parseDeletion($fileModel, false);
         $file = $fileModel->find($inputData['id']);
+        if (empty($file)){
+            return $this->failNotFound();
+        }
         return $this->getFileDownloadResponse($file);
     }
 
@@ -340,6 +343,9 @@ class Files extends APIController
         $inputData = $res['data'];
 
         $fileHistArray = model('HistModel')->getOlderFile($inputData['id']);
+        if (empty($fileHistArray)){
+            return $this->failNotFound();
+        }
         $fileHist = new \App\Entities\File($fileHistArray);
         return $this->getFileDownloadResponse($fileHist);
     }
