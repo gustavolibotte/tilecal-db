@@ -35,7 +35,7 @@ const ENDPOINT: EndpointType = {
   equipment_assemble: 'api/equipment/assemble',
   equipment_disassemble: 'api/equipment/disassemble',
   file_download: 'api/file/download',
-  file_download_hist: 'api/file/download_hist'
+  file_download_hist: 'api/file/download-hist'
 };
 
 export function getEndpoint(name: keyof EndpointType): string{
