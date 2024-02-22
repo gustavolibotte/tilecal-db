@@ -55,5 +55,5 @@ ADD . repo/
 # RUN echo $app_baseURL
 RUN cd repo/ \
 && bash build_app.sh \
-&& cp -r backend/* /var/www/html
-
+&& cp -r backend/* /var/www/html \
+&& chmod -R 777 /var/www/html
