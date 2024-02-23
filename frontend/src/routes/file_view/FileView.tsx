@@ -17,7 +17,6 @@ import { AxiosError } from 'axios';
 import { useUser } from '../../utils/user';
 import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
 import DownloadButton from '../../components/download_button/DownloadButton';
-import { concatenateUrlParams } from '../../utils/routes';
 
 export default function FileView() {
 

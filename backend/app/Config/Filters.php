@@ -26,7 +26,6 @@ class Filters extends BaseConfig
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
         'auth'          => Authentication::class,
-        'lasturl'       => LastURL::class,
         'request_time'  => RequestTime::class,
         'cors'          => Corsa::class
     ];
@@ -41,7 +40,6 @@ class Filters extends BaseConfig
             // 'honeypot',
             'csrf' => ['except' => 'api/*'],
             'request_time',
-            'lasturl' => ['except' => 'callback'],
             // 'invalidchars',
         ],
         'after' => [
