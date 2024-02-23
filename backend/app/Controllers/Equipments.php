@@ -99,7 +99,6 @@ class Equipments extends APIController
         if (empty($inputData['relatedEquipmentId'])){
             $data = $equipmentModel->fullQuery()->findAll();
         } else {
-            echo 'RELATED';
             $data = $equipmentModel->getRelatedEquipments($inputData['relatedEquipmentId']);
         }
         helper('app_array');

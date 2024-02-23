@@ -3,7 +3,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 function buildAPIResponse(
     int $status,
-    ?array $data = null,
+    mixed $data = null,
     string $message = '',
     array $metadata = []
 ): ResponseInterface {
@@ -22,4 +22,31 @@ function buildAPIResponse(
 function failForbidden(): ResponseInterface
 {
     return buildAPIResponse(403, message: 'Forbidden');
+}
+
+function failBadRequest(mixed $data = null, string $message = '', array $metadata = []): ResponseInterface
+{
+    return buildAPIResponse(
+        400,
+        $data,
+        empty($message)? 'Bad Request': $message,
+        $metadata
+    );
+}
+
+function failInternalError(Throwable $e)
+{
+    $environment = \Config\Services::environment();
+    if ($environment->isSafe()){
+        $data = [
+            'line' => $e->getLine(),
+            'file' => $e->getFile(),
+            'trace' => $e->getTrace()
+        ];
+        $message = $e->getMessage();
+    } else{
+        $data = null;
+        $message = '';
+    }
+    return buildAPIResponse(500, $data, $message);
 }

@@ -48,113 +48,104 @@ $routes->options('api(:any)', 'CORS::index',[
     'as' => 'api_cors_option'
 ]);
 
-// Equipment API
-$routes->get('api/equipment', 'Equipments::get', [
-    'filter' => 'auth:view',
-    'as' => 'api_equipment_get'
-]);
-$routes->get('api/equipment-hist', 'Equipments::getHist', [
-    'filter' => 'auth:view',
-    'as' => 'api_equipment_hist_get'
-]);
-$routes->post('api/equipment/batch-register', 'Equipments::batchCreate',[
-    'filter' => 'auth:register',
-    'as' => 'api_equipment_batch_register'
-]);
-$routes->post('api/equipment', 'Equipments::post', [
-    'filter' => 'auth:register',
-    'as' => 'api_equipment_post'
-]);
-$routes->put('api/equipment', 'Equipments::put', [
-    'filter' => 'auth:edit',
-    'as' => 'api_equipment_put'
-]);
-$routes->delete('api/equipment', 'Equipments::delete', [
-    'filter' => 'auth:delete',
-    'as' => 'api_equipment_delete'
-]);
-$routes->patch('api/equipment', 'Equipments::restore', [
-    'filter' => 'auth:delete',
-    'as' => 'api_equipment_restore'
-]);
-$routes->post('api/equipment/assemble', 'Equipments::assemble', [
-    'filter' => 'auth:edit',
-    'as' => 'api_equipment_assemble'
-]);
-$routes->post('api/equipment/disassemble', 'Equipments::disassemble', [
-    'filter' => 'auth:edit',
-    'as' => 'api_equipment_disassemble'
-]);
+$routes->group('api', ['filter' => 'api_auth'], static function ($routes){
 
-// EquipmentTypes API
-$routes->get('api/equipment-type', 'EquipmentType::get',[
-  'filter' => 'auth:view',
-  'as' => 'api_equip_type_get'
-]);
+    //Equipment API
+    $routes->get('equipment', 'Equipments::get', [
+        'as' => 'api_equipment_get'
+    ]);
+    $routes->get('equipment-hist', 'Equipments::getHist', [
+        'as' => 'api_equipment_hist_get'
+    ]);
+    $routes->post('equipment/batch-register', 'Equipments::batchCreate',[
+        'as' => 'api_equipment_batch_register'
+    ]);
+    $routes->post('equipment', 'Equipments::post', [
+        'as' => 'api_equipment_post'
+    ]);
+    $routes->put('equipment', 'Equipments::put', [
+        'as' => 'api_equipment_put'
+    ]);
+    $routes->delete('quipment', 'Equipments::delete', [
+        'as' => 'api_equipment_delete'
+    ]);
+    $routes->patch('equipment', 'Equipments::restore', [
+        'as' => 'api_equipment_restore'
+    ]);
+    $routes->post('api/equipment/assemble', 'Equipments::assemble', [
+        'as' => 'api_equipment_assemble'
+    ]);
+    $routes->post('api/equipment/disassemble', 'Equipments::disassemble', [
+        'as' => 'api_equipment_disassemble'
+    ]);
 
-// Location API
-$routes->get('api/location', 'Location::get', [
-    'filter' => 'auth:view',
-    'as' => 'api_location_get'
-]);
+    // EquipmentTypes API
+    $routes->get('equipment-type', 'EquipmentType::get',[
+        'as' => 'api_equip_type_get'
+    ]);
 
-// Institute API
-$routes->get('api/institute', 'Institute::get', [
-    'filter' => 'auth:view',
-    'as' => 'api_institute_get'
-]);
+    // Location API
+    $routes->get('location', 'Location::get', [
+        'as' => 'api_location_get'
+    ]);
 
-// Status API
-$routes->get('api/status', 'Status::get', [
-    'filter' => 'auth:view',
-    'as' => 'api_status_get'
-]);
+    // Institute API
+    $routes->get('institute', 'Institute::get', [
+        'as' => 'api_institute_get'
+    ]);
 
-// Detector Location API
-$routes->get('api/detector-location', 'DetectorLocation::get', [
-    'filter' => 'auth:view',
-    'as' => 'api_detector_location_get'
-]);
+    // Status API
+    $routes->get('status', 'Status::get', [
+        'as' => 'api_status_get'
+    ]);
 
-// File API
-$routes->get('api/file', 'Files::get', [
-    'filter' => 'auth:view',
-    'as' => 'api_file_get'
-]);
-$routes->get('api/file-hist', 'Files::getHist', [
-    'filter' => 'auth:view',
-    'as' => 'api_file_hist_get'
-]);
-$routes->post('api/file', 'Files::post', [
-    'filter' => 'auth:upload',
-    'as' => 'api_file_upload'
-]);
-$routes->post('api/file-put', 'Files::put', [
-    'filter' => 'auth:edit',
-    'as' => 'api_file_edit'
-]);
-$routes->delete('api/file', 'Files::delete', [
-  'filter' => 'auth:delete',
-  'as' => 'api_file_delete'
-]);
-$routes->patch('api/file', 'Files::restore', [
-  'filter' => 'auth:delete',
-  'as' => 'api_file_restore'
-]);
-$routes->get('api/file/download', 'Files::download', [
-    'filter' => 'auth:view',
-    'as' => 'api_file_download'
-]);
-$routes->get('api/file/download-hist', 'Files::downloadHist', [
-    'filter' => 'auth:view',
-    'as' => 'api_file_download_hist'
-]);
+    // Detector Location API
+    $routes->get('detector-location', 'DetectorLocation::get', [
+        'as' => 'api_detector_location_get'
+    ]);
 
-// User API
-$routes->get('api/user', 'User::get', [
-  'filter' => 'auth:view',
-  'as' => 'api_user_get'
-]);
+    // File API
+    $routes->get('file', 'Files::get', [
+        'as' => 'api_file_get'
+    ]);
+    $routes->get('file-hist', 'Files::getHist', [
+        'as' => 'api_file_hist_get'
+    ]);
+    $routes->post('file', 'Files::post', [
+        'as' => 'api_file_upload'
+    ]);
+    $routes->post('file-put', 'Files::put', [
+        'as' => 'api_file_edit'
+    ]);
+    $routes->delete('file', 'Files::delete', [
+        'as' => 'api_file_delete'
+        ]);
+    $routes->patch('file', 'Files::restore', [
+        'as' => 'api_file_restore'
+        ]);
+    $routes->get('file/download', 'Files::download', [
+        'as' => 'api_file_download'
+    ]);
+    $routes->get('file/download-hist', 'Files::downloadHist', [
+        'as' => 'api_file_download_hist'
+    ]);
+
+    // User API
+    $routes->get('user', 'User::get', [
+        'as' => 'api_user_get'
+    ]);
+    $env = Services::environment();
+    if (!$env->isSafe()){
+        return null;
+    }
+    $routes->group('test', static function ($routes){
+        $routes->get('headers', 'Dev::headers', [
+            'as' => 'api_test_headers'
+        ]);
+    });
+
+    return null;
+});
 
 /*
  * --------------------------------------------------------------------

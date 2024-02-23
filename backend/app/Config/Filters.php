@@ -9,9 +9,9 @@ use CodeIgniter\Filters\Honeypot;
 use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\Authentication;
-use App\Filters\LastURL;
 use App\Filters\RequestTime;
 use App\Filters\Corsa;
+use App\Filters\APIAuthentication;
 
 class Filters extends BaseConfig
 {
@@ -27,7 +27,8 @@ class Filters extends BaseConfig
         'secureheaders' => SecureHeaders::class,
         'auth'          => Authentication::class,
         'request_time'  => RequestTime::class,
-        'cors'          => Corsa::class
+        'cors'          => Corsa::class,
+        'api_auth' => APIAuthentication::class
     ];
 
     /**

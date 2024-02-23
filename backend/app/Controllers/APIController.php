@@ -25,17 +25,13 @@ class APIController extends BaseController
         );
     }
 
-    protected function fail(
+    protected function failbadRequest(
         ?array $data = null,
         string $message = '',
         array $metadata = []
     ): ResponseInterface {
-        return $this->buildAPIResponse(
-            400,
-            $data,
-            $message,
-            $metadata
-        );
+        helper('response');
+        return failBadRequest($data, $message, $metadata);
     }
 
     protected function respondWithId(array|int|string $id, string $message): ResponseInterface
@@ -167,19 +163,8 @@ class APIController extends BaseController
 
     protected function failInternalError(Throwable $e)
     {
-        $environment = \Config\Services::environment();
-        if ($environment->isSafe()){
-            $data = [
-                'line' => $e->getLine(),
-                'file' => $e->getFile(),
-                'trace' => $e->getTrace()
-            ];
-            $message = $e->getMessage();
-        } else{
-            $data = null;
-            $message = '';
-        }
-        return $this->buildAPIResponse(500, $data, $message);
+        helper('response');
+        return failInternalError($e);
     }
 
     protected function parseOrdering(string $varName, string $tableName, BaseBuilder|Model $queryBuilder): BaseBuilder|Model
