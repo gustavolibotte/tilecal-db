@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-class NotFound extends APIController
+class WebApp extends APIController
 {
     public function index()
     {
@@ -11,7 +11,7 @@ class NotFound extends APIController
             // Returns React app
             return view('index');
         } else{
-            return $this->failNotFound();
+            return $this->failBadRequest(message: 'Not an API endpoint');
         }
     }
 }

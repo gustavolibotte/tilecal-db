@@ -25,7 +25,7 @@ class APIController extends BaseController
         );
     }
 
-    protected function failbadRequest(
+    protected function failBadRequest(
         ?array $data = null,
         string $message = '',
         array $metadata = []
