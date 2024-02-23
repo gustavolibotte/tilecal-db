@@ -33,7 +33,7 @@ class AppLogger extends Logger
         if (array_key_exists('username', $context)){
             $username = $context['username'];
         } elseif($authenticator->requestIsAuthenticated()) {
-            $username = $authenticator->getUser()->username;
+            $username = \Config\Services::user()->getUsername();;
         } else {
             $username = null;
         }

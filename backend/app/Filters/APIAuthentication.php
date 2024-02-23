@@ -80,9 +80,9 @@ class APIAuthentication implements FilterInterface
         }
 
         $env = \Config\Services::environment();
+        $user = \Config\Services::user();
         if ($env->isLocal() && $request->hasHeader('TestUser')){
-            $username = 'anakin.skywalker';
-            $roles = ['admin', 'deleter', 'editor', 'viewer', 'sith_lord', 'the_chosen_one'];
+            $user->setSystemUser();
         } else{
             $accessToken = str_replace('Bearer ', '', $value);
             $requestClient = \Config\Services::curlrequest();
@@ -92,12 +92,9 @@ class APIAuthentication implements FilterInterface
             $jwks = json_decode($keySetResponse->getBody(), true);
             $keySet = JWK::parseKeySet($jwks);
             $decodedAccessToken = JWT::decode($accessToken, $keySet);
-            $username = $decodedAccessToken->azp;
-            $roles = $decodedAccessToken->cern_roles;
+            $user->setUsername($decodedAccessToken->azp);
+            $user->setRoles($decodedAccessToken->cern_roles);
         }
-        $user = \Config\Services::user();
-        $user->setUsername($username);
-        $user->setRoles($roles);
     }
 
     /**

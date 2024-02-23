@@ -39,24 +39,22 @@ class RemoveEquipTypeLabel extends BaseMigration
 
     protected function getUpQuery(): string
     {
-        $authenticator = \Config\Services::authenticator();
-        $user = $authenticator->getUser();
+        $user = \Config\Services::user();
 
         $updateQuery = sprintf(
             'UPDATE equipment_types SET user=%s, name=label',
-            $this->db->escape($user->username)
+            $this->db->escape($user->getUsername())
         );
         return $updateQuery;
     }
 
     protected function getDownQuery(): string
     {
-        $authenticator = \Config\Services::authenticator();
-        $user = $authenticator->getUser();
+        $user = \Config\Services::user();
 
         $updateQuery = sprintf(
             'UPDATE equipment_types SET user=%s, label=name',
-            $this->db->escape($user->username)
+            $this->db->escape($user->getUsername())
         );
         return $updateQuery;
     }

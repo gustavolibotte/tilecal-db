@@ -57,7 +57,6 @@ abstract class BaseController extends Controller
         parent::initController($request, $response, $logger);
 
         helper(['view', 'url']);
-        $this->user = service('authenticator')->getUser();
         $this->db = db_connect();
         log_message(
             'info',

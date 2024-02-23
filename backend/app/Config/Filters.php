@@ -2,13 +2,15 @@
 
 namespace Config;
 
+use App\Filters\ActionAuthorized;
+use App\Filters\APIRequireRole;
+use App\Filters\RequireRole;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Filters\CSRF;
 use CodeIgniter\Filters\DebugToolbar;
 use CodeIgniter\Filters\Honeypot;
 use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\SecureHeaders;
-use App\Filters\Authentication;
 use App\Filters\RequestTime;
 use App\Filters\Corsa;
 use App\Filters\APIAuthentication;
@@ -25,10 +27,10 @@ class Filters extends BaseConfig
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
-        'auth'          => Authentication::class,
         'request_time'  => RequestTime::class,
         'cors'          => Corsa::class,
-        'api_auth' => APIAuthentication::class
+        'api_auth' => APIAuthentication::class,
+        'action' => ActionAuthorized::class
     ];
 
     /**

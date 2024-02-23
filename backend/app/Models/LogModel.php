@@ -45,7 +45,7 @@ abstract class LogModel extends BaseModel{
         if ($data['purge']){
             return $data;
         }
-        $username = service('authenticator')->getUser()->username;
+        $username = \Config\Services::user()->getUsername();
         $builder = $this->builder();
         $builder->set('deleted_at', $this->opTimestamp)
                 ->set('updated_at', $this->opTimestamp)
@@ -57,7 +57,7 @@ abstract class LogModel extends BaseModel{
 
     protected function addUser(array $data): array
     {
-        $data['data']['user'] = service('authenticator')->getUser()->username;
+        $data['data']['user'] = \Config\Services::user()->getUsername();
         return $data;
     }
 
@@ -77,7 +77,7 @@ abstract class LogModel extends BaseModel{
         if (is_null($entry)){
             throw new DatabaseException('The entry is not deleted to be restored');
         }
-        $username = service('authenticator')->getUser()->username;
+        $username = \Config\Services::user()->getUsername();
         $builder = $this->builder();
         $builder->set('deleted_at', null)
                 ->set('updated_at', $this->opTimestamp)
