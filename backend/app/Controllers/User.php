@@ -22,12 +22,8 @@ class User extends APIController
 
     protected function __get__()
     {
-        $authenticator = \Config\Services::authenticator();
-        $user = $authenticator->getUser();
-        $data = [];
-        foreach ($this->returnFields as $fieldName){
-            $data[$fieldName] = $user->$fieldName;
-        }
-        return $this->respondQueryResults($data);
+        return $this->respondQueryResults(
+            \Config\Services::user()->asArray()
+        );
     }
 }

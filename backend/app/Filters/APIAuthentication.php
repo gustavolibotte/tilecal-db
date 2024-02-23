@@ -5,6 +5,8 @@ namespace App\Filters;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use Firebase\JWT\JWK;
+use Firebase\JWT\JWT;
 use Throwable;
 
 class APIAuthentication implements FilterInterface
@@ -43,17 +45,20 @@ class APIAuthentication implements FilterInterface
                 message: 'No Content-Type Header'
             );
         }
+
         if ($contentTypeHeader->getValue() !== 'application/json'){
             return failBadRequest(
                 message: 'Content-Type Header is not json'
             );
         }
+
         $requestedWithHeader = $request->header('X-Requested-With');
         if (empty($requestedWithHeader)){
             return failBadRequest(
                 message: 'No X-Requested-With Header'
             );
         }
+
         if ($requestedWithHeader->getValue() !== 'XMLHttpRequest'){
             return failBadRequest(
                 message: 'X-Requested-With Header is not XMLHttpRequest'
@@ -63,7 +68,7 @@ class APIAuthentication implements FilterInterface
         $authorizationHeader = $request->header('Authorization');
         if (empty($authorizationHeader)) {
             return failBadRequest(
-                message: 'No Aauthorization header'
+                message: 'No Authorization header'
             );
         }
 
@@ -73,7 +78,26 @@ class APIAuthentication implements FilterInterface
                 message: 'No Bearer token'
             );
         }
-        $token = str_replace('Bearer ', '', $value);
+
+        $env = \Config\Services::environment();
+        if ($env->isLocal() && $request->hasHeader('TestUser')){
+            $username = 'anakin.skywalker';
+            $roles = ['admin', 'deleter', 'editor', 'viewer', 'sith_lord', 'the_chosen_one'];
+        } else{
+            $accessToken = str_replace('Bearer ', '', $value);
+            $requestClient = \Config\Services::curlrequest();
+            $configReponse = $requestClient->get(getenv('SSO_PROVIDER') . '/.well-known/openid-configuration');
+            $config = json_decode($configReponse->getBody());
+            $keySetResponse = $requestClient->get($config->jwks_uri);
+            $jwks = json_decode($keySetResponse->getBody(), true);
+            $keySet = JWK::parseKeySet($jwks);
+            $decodedAccessToken = JWT::decode($accessToken, $keySet);
+            $username = $decodedAccessToken->azp;
+            $roles = $decodedAccessToken->cern_roles;
+        }
+        $user = \Config\Services::user();
+        $user->setUsername($username);
+        $user->setRoles($roles);
     }
 
     /**

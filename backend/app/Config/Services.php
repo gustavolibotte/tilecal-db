@@ -2,9 +2,10 @@
 
 namespace Config;
 
+use BadFunctionCallException;
 use CodeIgniter\Config\BaseService;
 use App\Library\Authenticator;
-use App\Library\Messenger;
+use App\Library\User;
 use App\Library\Time;
 use App\Library\AppLogger;
 use App\Library\Environment;
@@ -54,14 +55,6 @@ class Services extends BaseService
         return new Time();
     }
 
-    public static function messenger($getShared=true)
-    {
-        if($getShared){
-            return static::getSharedInstance('messenger');
-        }
-        return new Messenger();
-    }
-
     /**
      * Extension of the CodeIgniter Logger class with an extension of
      * the log method.
@@ -82,5 +75,13 @@ class Services extends BaseService
             return static::getSharedInstance('environment');
         }
         return new Environment();
+    }
+
+    public static function user($getShared=true): ?User
+    {   
+        if ($getShared){
+            return static::getSharedInstance('user');
+        }
+        return new User();
     }
 }
