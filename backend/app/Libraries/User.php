@@ -5,7 +5,7 @@ namespace App\Library;
 class User{
 
     protected string $username;
-    protected public array $roles;
+    protected array $roles;
 
     public function __construct(){}
 

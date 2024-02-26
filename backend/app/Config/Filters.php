@@ -40,7 +40,6 @@ class Filters extends BaseConfig
             // 'auth',
             // 'honeypot',
             'csrf' => ['except' => 'api/*'],
-            'auth',
             'request_time',
             // 'invalidchars',
         ],
