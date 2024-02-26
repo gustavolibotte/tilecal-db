@@ -54,18 +54,6 @@ interface SuccessResponseType {
   status: number;
 }
 
-const parseQueryKey = (queryKey: any[]) => {
-  let endpoint;
-  if (queryKey[0] == 'equipment_type'){
-    endpoint = `${__APP_BASEURL__}/api/equipment-type`;
-  } else{
-    endpoint = getEndpoint(queryKey[0] as keyof EndpointType);
-  }
-  const method = queryKey[1];
-  const queryParams = queryKey[2];
-  return {endpoint: endpoint, method: method, queryParams: queryParams};
-}
-
 export async function defaultQueryFunction({queryKey}: GetInputType): Promise<AppResponseType>{
   const {endpoint, method, queryParams} = parseQueryKey(queryKey);
   if (method == 'get'){
@@ -90,9 +78,35 @@ export function makeMutationFunction(method: string, endpoint: string, headers: 
           url: endpoint,
           method: method,
           data: data,
-          headers: headers
+          headers: getRequestHeaders(headers)
       }).then((res) => res.data);
       return response.data;
   }
   return mutationFunction;
+}
+
+function parseQueryKey(queryKey: any[]) {
+  let endpoint;
+  if (queryKey[0] == 'equipment_type'){
+    endpoint = `${__APP_BASEURL__}/api/equipment-type`;
+  } else{
+    endpoint = getEndpoint(queryKey[0] as keyof EndpointType);
+  }
+  const method = queryKey[1];
+  const queryParams = queryKey[2];
+  return {endpoint: endpoint, method: method, queryParams: queryParams};
+}
+
+function getRequestHeaders(extraHeaders: any) {
+  let baseHeaders: any = {
+    'X-Requested-With': 'XMLHttpRequest',
+    'Authorization': 'Bearer '
+  };
+  if (__ENV__ === 'local'){
+    baseHeaders['TestUser'] = '';
+  }
+  if (extraHeaders){
+    return {...baseHeaders, ...extraHeaders};
+  }
+  return baseHeaders;
 }
