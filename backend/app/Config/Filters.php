@@ -3,8 +3,7 @@
 namespace Config;
 
 use App\Filters\ActionAuthorized;
-use App\Filters\APIRequireRole;
-use App\Filters\RequireRole;
+use App\Filters\Authentication;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Filters\CSRF;
 use CodeIgniter\Filters\DebugToolbar;
@@ -13,7 +12,6 @@ use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\RequestTime;
 use App\Filters\Corsa;
-use App\Filters\APIAuthentication;
 
 class Filters extends BaseConfig
 {
@@ -29,7 +27,7 @@ class Filters extends BaseConfig
         'secureheaders' => SecureHeaders::class,
         'request_time'  => RequestTime::class,
         'cors'          => Corsa::class,
-        'api_auth' => APIAuthentication::class,
+        'auth' => Authentication::class,
         'action' => ActionAuthorized::class
     ];
 
@@ -42,6 +40,7 @@ class Filters extends BaseConfig
             // 'auth',
             // 'honeypot',
             'csrf' => ['except' => 'api/*'],
+            'auth',
             'request_time',
             // 'invalidchars',
         ],

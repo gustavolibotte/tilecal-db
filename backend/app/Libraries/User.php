@@ -115,4 +115,11 @@ class User{
         return $this->isViewer();
     }
 
+    public function isSet(){
+        return (
+            isset($this->username) &&
+            isset($this->roles)
+        );
+    }
+
 }

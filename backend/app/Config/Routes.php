@@ -32,11 +32,11 @@ $routes->setAutoRoute(false);
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('/','WebApp::index', [
-    'filter' => 'auth:view',
+    'filter' => 'action:view',
     'as' => 'home'
 ]);
 
-$routes->group('api', ['filter' => 'api_auth'], static function ($routes){
+$routes->group('api', static function ($routes){
 
     //Equipment API
     $routes->get('equipment', 'Equipments::get', [
