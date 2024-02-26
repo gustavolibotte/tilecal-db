@@ -67,16 +67,12 @@ class APIAuthentication implements FilterInterface
 
         $authorizationHeader = $request->header('Authorization');
         if (empty($authorizationHeader)) {
-            return failBadRequest(
-                message: 'No Authorization header'
-            );
+            return failUnauthorized();
         }
 
-        $value = $authorizationHeader->getValue();
-        if (!str_starts_with($value, 'Bearer ')) {
-            return failBadRequest(
-                message: 'No Bearer token'
-            );
+        $headerValue = $authorizationHeader->getValue();
+        if (!str_starts_with($headerValue, 'Bearer ')) {
+            return failUnauthorized();
         }
 
         $env = \Config\Services::environment();
@@ -84,17 +80,29 @@ class APIAuthentication implements FilterInterface
         if ($env->isLocal() && $request->hasHeader('TestUser')){
             $user->setSystemUser();
         } else{
-            $accessToken = str_replace('Bearer ', '', $value);
-            $requestClient = \Config\Services::curlrequest();
-            $configReponse = $requestClient->get(getenv('SSO_PROVIDER') . '/.well-known/openid-configuration');
-            $config = json_decode($configReponse->getBody());
-            $keySetResponse = $requestClient->get($config->jwks_uri);
-            $jwks = json_decode($keySetResponse->getBody(), true);
-            $keySet = JWK::parseKeySet($jwks);
-            $decodedAccessToken = JWT::decode($accessToken, $keySet);
+            try{
+                $decodedAccessToken = $this->decodeToken($headerValue);
+            }  catch (Throwable $e){
+                return failUnauthorized();
+            }
             $user->setUsername($decodedAccessToken->azp);
             $user->setRoles($decodedAccessToken->cern_roles);
         }
+    }
+
+    public function decodeToken($headerValue)
+    {
+        $accessToken = str_replace('Bearer ', '', $headerValue);
+        $requestClient = \Config\Services::curlrequest();
+        $configReponse = $requestClient->get(
+            getenv('SSO_PROVIDER') . '/.well-known/openid-configuration'
+        );
+        $config = json_decode($configReponse->getBody());
+        $keySetResponse = $requestClient->get($config->jwks_uri);
+        $jwks = json_decode($keySetResponse->getBody(), true);
+        $keySet = JWK::parseKeySet($jwks);
+        $decodedAccessToken = JWT::decode($accessToken, $keySet);
+        return $decodedAccessToken;
     }
 
     /**

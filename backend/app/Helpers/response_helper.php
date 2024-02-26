@@ -24,6 +24,14 @@ function failForbidden(): ResponseInterface
     return buildAPIResponse(403, message: 'Forbidden');
 }
 
+function failUnauthorized(): ResponseInterface
+{
+    return buildAPIResponse(
+        401,
+        message: 'Unauthorized'
+    );
+}
+
 function failBadRequest(mixed $data = null, string $message = '', array $metadata = []): ResponseInterface
 {
     return buildAPIResponse(

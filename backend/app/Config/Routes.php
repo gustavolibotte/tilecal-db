@@ -35,18 +35,6 @@ $routes->get('/','WebApp::index', [
     'filter' => 'auth:view',
     'as' => 'home'
 ]);
-$routes->get('callback', 'Callback::callback', [
-    'filter' => 'auth:view'
-]);
-
-// API routes
-// This first route was made to comply with the CORS protocol used
-//  by the browsers.
-// https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe
-$routes->options('api(:any)', 'CORS::index',[
-    'filter' => 'auth:view',
-    'as' => 'api_cors_option'
-]);
 
 $routes->group('api', ['filter' => 'api_auth'], static function ($routes){
 
@@ -167,6 +155,14 @@ $routes->group('api', ['filter' => 'api_auth'], static function ($routes){
             'as' => 'api_test_headers'
         ]);
     });
+
+    // This first route was made to comply with the CORS protocol used
+    //  by the browsers.
+    // https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe
+    $routes->options('(:any)', 'CORS::index',[
+        'filter' => 'action:view',
+        'as' => 'api_cors_option'
+    ]);
 
     return null;
 });
