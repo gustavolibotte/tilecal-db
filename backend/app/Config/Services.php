@@ -2,9 +2,7 @@
 
 namespace Config;
 
-use BadFunctionCallException;
 use CodeIgniter\Config\BaseService;
-use App\Library\Authenticator;
 use App\Library\User;
 use App\Library\Time;
 use App\Library\AppLogger;
@@ -35,17 +33,6 @@ class Services extends BaseService
      *     return new \CodeIgniter\Example();
      * }
      */
-
-    public static function authenticator($getShared=true): Authenticator
-    {   
-        // echo "Getting authenticator service\n";
-        if($getShared){
-            // echo "Got shared authenticator service\n";
-            return static::getSharedInstance('authenticator');
-        }
-        // echo "Got new authenticator service\n";
-        return new Authenticator();
-    }
 
     public static function time($getShared=true)
     {

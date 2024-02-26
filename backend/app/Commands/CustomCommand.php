@@ -56,7 +56,7 @@ class CustomCommand extends BaseCommand
     public function __construct(LoggerInterface $logger, Commands $commands)
     {
         parent::__construct($logger, $commands);
-        \Config\Services::authenticator()->setSystem();
+        \Config\Services::user()->setSystemUser();
         $this->logger = new CLILogger();
     }
 

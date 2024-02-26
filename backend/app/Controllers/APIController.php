@@ -209,7 +209,8 @@ class APIController extends BaseController
 
     public function parseDeletion(BaseBuilder|Model $queryBuilder, bool $onlyDeleted): BaseBuilder|Model
     {
-        if ($this->user->isAuthorized('delete')){
+        $user = \Config\Services::user();
+        if ($user->isAuthorized('delete')){
             if ($onlyDeleted){
                 $queryBuilder = $queryBuilder->onlyDeleted();
             } else{

@@ -41,7 +41,7 @@ class Authentication implements FilterInterface
     {
         $env = \Config\Services::environment();
         $user = \Config\Services::user();
-        $isSystemUser = $env->isLocal() && $request->hasHeader('TestUser');
+        $isSystemUser = $env->isLocal();
         $uri = $request->getUri();
         $isApiUri = str_starts_with($uri->getPath(), '/api');
         if ($isApiUri){
