@@ -40,95 +40,95 @@ $routes->group('api', static function ($routes){
 
     //Equipment API
     $routes->get('equipment', 'Equipments::get', [
-        'filter' => ['auth', 'action:view'],
+        'filter' => ['api_auth', 'action:view'],
         'as' => 'api_equipment_get'
     ]);
     $routes->get('equipment-hist', 'Equipments::getHist', [
-        'filter' =>['auth', 'action:view'],
+        'filter' =>['api_auth', 'action:view'],
         'as' => 'api_equipment_hist_get'
     ]);
     $routes->post('equipment/batch-register', 'Equipments::batchCreate', [
-        'filter' =>['auth', 'action:register'],
+        'filter' =>['api_auth', 'action:register'],
         'as' => 'api_equipment_batch_register'
     ]);
     $routes->post('equipment', 'Equipments::post', [
-        'filter' =>['auth', 'action:register'],
+        'filter' =>['api_auth', 'action:register'],
         'as' => 'api_equipment_post'
     ]);
     $routes->put('equipment', 'Equipments::put', [
-        'filter' =>['auth', 'action:edit'],
+        'filter' =>['api_auth', 'action:edit'],
         'as' => 'api_equipment_put'
     ]);
     $routes->delete('quipment', 'Equipments::delete', [
-        'filter' =>['auth', 'action:delete'],
+        'filter' =>['api_auth', 'action:delete'],
         'as' => 'api_equipment_delete'
     ]);
     $routes->patch('equipment', 'Equipments::restore', [
-        'filter' =>['auth', 'action:delete'],
+        'filter' =>['api_auth', 'action:delete'],
         'as' => 'api_equipment_restore'
     ]);
     $routes->post('api/equipment/assemble', 'Equipments::assemble', [
-        'filter' =>['auth', 'action:edit'],
+        'filter' =>['api_auth', 'action:edit'],
         'as' => 'api_equipment_assemble'
     ]);
     $routes->post('api/equipment/disassemble', 'Equipments::disassemble', [
-        'filter' =>['auth', 'action:edit'],
+        'filter' =>['api_auth', 'action:edit'],
         'as' => 'api_equipment_disassemble'
     ]);
 
     // EquipmentTypes API
     $routes->get('equipment-type', 'EquipmentType::get',[
-        'filter' =>['auth', 'action:view'],
+        'filter' =>['api_auth', 'action:view'],
         'as' => 'api_equip_type_get'
     ]);
 
     // Location API
     $routes->get('location', 'Location::get', [
-        'filter' =>['auth', 'action:view'],
+        'filter' =>['api_auth', 'action:view'],
         'as' => 'api_location_get'
     ]);
 
     // Institute API
     $routes->get('institute', 'Institute::get', [
-        'filter' =>['auth', 'action:view'],
+        'filter' =>['api_auth', 'action:view'],
         'as' => 'api_institute_get'
     ]);
 
     // Status API
     $routes->get('status', 'Status::get', [
-        'filter' =>['auth', 'action:view'],
+        'filter' =>['api_auth', 'action:view'],
         'as' => 'api_status_get'
     ]);
 
     // Detector Location API
     $routes->get('detector-location', 'DetectorLocation::get', [
-        'filter' =>['auth', 'action:view'],
+        'filter' =>['api_auth', 'action:view'],
         'as' => 'api_detector_location_get'
     ]);
 
     // File API
     $routes->get('file', 'Files::get', [
-        'filter' =>['auth', 'action:view'],
+        'filter' =>['api_auth', 'action:view'],
         'as' => 'api_file_get'
     ]);
     $routes->get('file-hist', 'Files::getHist', [
-        'filter' =>['auth', 'action:view'],
+        'filter' =>['api_auth', 'action:view'],
         'as' => 'api_file_hist_get'
     ]);
     $routes->post('file', 'Files::post', [
-        'filter' =>['auth', 'action:upload'],
+        'filter' =>['api_auth', 'action:upload'],
         'as' => 'api_file_upload'
     ]);
     $routes->post('file-put', 'Files::put', [
-        'filter' =>['auth', 'action:edit'],
+        'filter' =>['api_auth', 'action:edit'],
         'as' => 'api_file_edit'
     ]);
     $routes->delete('file', 'Files::delete', [
-        'filter' =>['auth', 'action:delete'],
+        'filter' =>['api_auth', 'action:delete'],
         'as' => 'api_file_delete'
         ]);
     $routes->patch('file', 'Files::restore', [
-        'filter' =>['auth', 'action:delete'],
+        'filter' =>['api_auth', 'action:delete'],
         'as' => 'api_file_restore'
         ]);
     $routes->get('file/download', 'Files::download', [
@@ -136,13 +136,13 @@ $routes->group('api', static function ($routes){
         'as' => 'api_file_download'
     ]);
     $routes->get('file/download-hist', 'Files::downloadHist', [
-        'filter' =>['auth', 'action:view'],
+        'filter' =>['api_auth', 'action:view'],
         'as' => 'api_file_download_hist'
     ]);
 
     // User API
     $routes->get('user', 'User::get', [
-        'filter' =>['auth', 'action:view'],
+        'filter' =>['api_auth', 'action:view'],
         'as' => 'api_user_get'
     ]);
     $env = Services::environment();
@@ -151,7 +151,7 @@ $routes->group('api', static function ($routes){
     }
     $routes->group('test', static function ($routes){
         $routes->get('headers', 'Dev::headers', [
-            'filter' =>['auth', 'action:all'],
+            'filter' =>['api_auth', 'action:delete'],
             'as' => 'api_test_headers'
         ]);
     });
@@ -160,7 +160,7 @@ $routes->group('api', static function ($routes){
     //  by the browsers.
     // https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe
     $routes->options('(:any)', 'CORS::index',[
-        'filter' =>['auth', 'action:view'],
+        'filter' =>['api_auth', 'action:view'],
         'as' => 'api_cors_option'
     ]);
 

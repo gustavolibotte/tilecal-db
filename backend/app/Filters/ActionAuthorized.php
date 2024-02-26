@@ -5,6 +5,7 @@ namespace App\Filters;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use Throwable;
 
 class ActionAuthorized implements FilterInterface
 {
@@ -25,15 +26,25 @@ class ActionAuthorized implements FilterInterface
      */
     public function before(RequestInterface $request, $arguments = null)
     {
+        helper('response');
+        try{
+            return $this->__before__($request, $arguments);
+        } catch (Throwable $e){
+            return failInternalError($e);
+        }
+    }
+
+    public function __before__(RequestInterface $request, $arguments = null)
+    {
         helper(['app_array', 'response']);
         $action = (is_null($arguments))? null: dot_search_with_default(0, $arguments);
-        $failType = (is_null($arguments))? 'api': dot_search_with_default(1, $arguments);
         $user = \Config\Services::user();
         if (!$user->isAuthorized($action)){
-            if ($failType === 'api'){
+            $uri = $request->getUri();
+            if (str_starts_with($uri->getPath(), 'api')){
                 return failForbidden();
             } else {
-                return redirect('forbidden');
+                return redirect()->to('forbidden');
             }
         }
     }

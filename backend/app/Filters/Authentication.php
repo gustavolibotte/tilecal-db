@@ -33,7 +33,12 @@ class Authentication implements FilterInterface
         try{
             return $this->__before__($request, $arguments);
         } catch (Throwable $e){
-            return failUnauthorized();
+            $env = \Config\Services::env();
+            if ($env->isLocal()){
+                return failInternalError($e);
+            } else {
+                return failUnauthorized();
+            }
         }
     }
 
@@ -41,30 +46,8 @@ class Authentication implements FilterInterface
     {
         $env = \Config\Services::environment();
         $user = \Config\Services::user();
-        $isSystemUser = $env->isLocal();
-        $uri = $request->getUri();
-        $isApiUri = str_starts_with($uri->getPath(), '/api');
-        if ($isApiUri){
-            $invalidResponse = $this->validAPIRequest($request);
-            if (!empty($invalidResponse)){
-                return $invalidResponse;
-            }
-            // Put here to go faster
-            if ($isSystemUser){
-                $user->setSystemUser();
-                return;
-            }
-            $unauthenticatedResponse = $this->apiAuthentication($request);
-            if (empty($unauthenticatedResponse)){
-                return;
-            }
-        }
-
-        // If the system was unable to check for the authentication token in the API
-        // Still tries to read the current session for a React app call if the
-        // session doesn't exist, it gives unauthorized for the api
         $session = \Config\Services::session();
-        if ($isSystemUser){
+        if ($env->isLocal()){
             $user->setSystemUser();
             return;
         } else if ($session->get('isLogged')){
@@ -72,9 +55,7 @@ class Authentication implements FilterInterface
             $user->setUsername($userInfo['username']);
             $user->setRoles($userInfo['roles']);
             log_message('info', 'User previously authenticated');
-        } else if ($isApiUri){
-            return failUnauthorized();
-        } else {
+        }else {
             log_message('info', 'User not authenticated');
             $userInfo = $this->queryUserForLogin();
             $session->set('isLogged', true);
@@ -84,35 +65,6 @@ class Authentication implements FilterInterface
             log_message('info', 'User authenticated');
         }
         return;
-    }
-
-    protected function validAPIRequest(RequestInterface $request)
-    {
-        $contentTypeHeader = $request->header('Content-Type');
-        if (empty($contentTypeHeader)){
-            return failBadRequest(
-                message: 'No Content-Type Header'
-            );
-        }
-
-        if ($contentTypeHeader->getValue() !== 'application/json'){
-            return failBadRequest(
-                message: 'Content-Type Header is not json'
-            );
-        }
-
-        $requestedWithHeader = $request->header('X-Requested-With');
-        if (empty($requestedWithHeader)){
-            return failBadRequest(
-                message: 'No X-Requested-With Header'
-            );
-        }
-
-        if ($requestedWithHeader->getValue() !== 'XMLHttpRequest'){
-            return failBadRequest(
-                message: 'X-Requested-With Header is not XMLHttpRequest'
-            );
-        }
     }
 
     protected function queryUserForLogin(): array
@@ -144,32 +96,6 @@ class Authentication implements FilterInterface
             'roles' => $decodedAccessToken->cern_roles,
         ];
         return $userInfo;
-    }
-
-    protected function apiAuthentication(RequestInterface $request)
-    {
-        $authorizationHeader = $request->header('Authorization');
-        if (empty($authorizationHeader)) {
-            return failUnauthorized();
-        }
-
-        $headerValue = $authorizationHeader->getValue();
-        if (!str_starts_with($headerValue, 'Bearer ')) {
-            return failUnauthorized();
-        }
-        $accessToken = str_replace('Bearer ', '', $headerValue);
-        $requestClient = \Config\Services::curlrequest();
-        $configReponse = $requestClient->get(
-            getenv('SSO_PROVIDER') . '/.well-known/openid-configuration'
-        );
-        $config = json_decode($configReponse->getBody());
-        $keySetResponse = $requestClient->get($config->jwks_uri);
-        $jwks = json_decode($keySetResponse->getBody(), true);
-        $keySet = JWK::parseKeySet($jwks);
-        $decodedAccessToken = JWT::decode($accessToken, $keySet);
-        $user = \Config\Services::user();
-        $user->setUsername($decodedAccessToken->azp);
-        $user->setRoles($decodedAccessToken->cern_roles);
     }
 
     /**

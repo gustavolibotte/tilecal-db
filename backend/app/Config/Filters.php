@@ -3,6 +3,7 @@
 namespace Config;
 
 use App\Filters\ActionAuthorized;
+use App\Filters\APIAuthentication;
 use App\Filters\Authentication;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Filters\CSRF;
@@ -28,7 +29,8 @@ class Filters extends BaseConfig
         'request_time'  => RequestTime::class,
         'cors'          => Corsa::class,
         'auth' => Authentication::class,
-        'action' => ActionAuthorized::class
+        'action' => ActionAuthorized::class,
+        'api_auth' => APIAuthentication::class
     ];
 
     /**
