@@ -87,14 +87,20 @@ class APIAuthentication implements FilterInterface
 
         $accessToken = str_replace('Bearer ', '', $headerValue);
         $requestClient = \Config\Services::curlrequest();
-        $configReponse = $requestClient->get(
-            getenv('SSO_PROVIDER') . '/.well-known/openid-configuration'
-        );
+        $ssoConfig = config('SSO');
+        $configReponse = $requestClient->get($ssoConfig->configUrl);
         $config = json_decode($configReponse->getBody());
         $keySetResponse = $requestClient->get($config->jwks_uri);
         $jwks = json_decode($keySetResponse->getBody(), true);
         $keySet = JWK::parseKeySet($jwks);
         $decodedAccessToken = JWT::decode($accessToken, $keySet);
+        // return buildAPIResponse(
+        //     200,
+        //     json_decode(json_encode($decodedAccessToken))
+        // );
+        if ($decodedAccessToken->aud !== $ssoConfig->clientId){
+            return failUnauthorized();
+        }
         $user = \Config\Services::user();
         $user->setUsername($decodedAccessToken->azp);
         $user->setRoles($decodedAccessToken->cern_roles);

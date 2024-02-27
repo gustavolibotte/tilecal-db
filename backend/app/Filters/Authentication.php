@@ -70,17 +70,18 @@ class Authentication implements FilterInterface
     protected function queryUserForLogin(): array
     {
         $requestClient = \Config\Services::curlrequest();
-        $response = $requestClient->get(getenv('SSO_PROVIDER') . '/.well-known/openid-configuration');
+        $ssoConfig = config('SSO');
+        $response = $requestClient->get($ssoConfig->configUrl);
         $config = json_decode($response->getBody());
 
         $oidc = new OpenIDConnectClient(
-            getenv('SSO_PROVIDER'),
-            getenv('SSO_CLIENT_ID'),
-            getenv('SSO_CLIENT_SECRET'),
-            getenv('SSO_ISSUER')
+            $ssoConfig->provider,
+            $ssoConfig->clientId,
+            $ssoConfig->clientSecret,
+            $ssoConfig->issuer
         );
-        if (getenv('SSO_REDIRECT_URL') != ''){
-            $oidc->setRedirectURL(getenv('SSO_REDIRECT_URL'));
+        if ($ssoConfig->redirectUrl != ''){
+            $oidc->setRedirectURL($ssoConfig->redirectUrl);
         }
         $oidc->addScope(['openid']);
         $oidc->setTimeout(5);
