@@ -60,14 +60,16 @@ export async function defaultQueryFunction({queryKey}: GetInputType): Promise<Ap
     const response = await axios({
       url: endpoint,
       method: method,
-      params: queryParams
+      params: queryParams,
+      headers: getRequestHeaders()
     }).then((res) => res.data);
     return response;
   }
   const response = await axios({
     url: endpoint,
     method: method,
-    data: queryParams
+    data: queryParams,
+    headers: getRequestHeaders()
   }).then((res) => res.data);
   return response;
 }
@@ -97,12 +99,13 @@ function parseQueryKey(queryKey: any[]) {
   return {endpoint: endpoint, method: method, queryParams: queryParams};
 }
 
-function getRequestHeaders(extraHeaders: any) {
+function getRequestHeaders(extraHeaders: any = {}) {
   let baseHeaders: any = {
     'X-Requested-With': 'XMLHttpRequest',
-    'Authorization': 'Bearer '
+    'Authorization': 'Session',
+    'Content-Type': 'application/json'
   };
-  if (__ENV__ === 'local'){
+  if (__ENV__ == 'local'){
     baseHeaders['TestUser'] = '';
   }
   if (extraHeaders){
