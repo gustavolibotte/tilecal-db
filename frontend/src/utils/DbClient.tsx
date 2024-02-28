@@ -101,9 +101,7 @@ function parseQueryKey(queryKey: any[]) {
 
 function getRequestHeaders(extraHeaders: any = {}) {
   let baseHeaders: any = {
-    'X-Requested-With': 'XMLHttpRequest',
-    'Authorization': 'Session',
-    'Content-Type': 'application/json'
+    'Authorization': 'Session'
   };
   if (__ENV__ == 'local'){
     baseHeaders['TestUser'] = '';

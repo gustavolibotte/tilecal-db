@@ -59,7 +59,7 @@ $routes->group('api', static function ($routes){
         'filter' =>['api_auth', 'action:edit'],
         'as' => 'api_equipment_put'
     ]);
-    $routes->delete('quipment', 'Equipments::delete', [
+    $routes->delete('equipment', 'Equipments::delete', [
         'filter' =>['api_auth', 'action:delete'],
         'as' => 'api_equipment_delete'
     ]);
