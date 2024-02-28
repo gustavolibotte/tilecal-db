@@ -4,7 +4,6 @@ set -e
 # Install backend dependencies
 cd backend
 composer update
-chmod -R 777 /var/www/html
 if [ $ENVIRONMENT = 'local' ]; then
     source setup_directories.sh
 fi

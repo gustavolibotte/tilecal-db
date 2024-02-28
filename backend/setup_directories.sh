@@ -1,8 +1,4 @@
 #!/bin/bash
-if [ $ENVIRONMENT = 'local' ]; then
-    echo 'Changing /var/www/html permissions' 
-    chmod -R 777 /var/www/html
-fi
 APP_EOS_DIR="/eos/user/t/tilep2db/${ENVIRONMENT}"
 APP_FILES_DIR="${APP_EOS_DIR}/files"
 APP_WRITABLE_DIR="${APP_EOS_DIR}/writable"
@@ -25,9 +21,4 @@ if [ ! -d "$APP_WRITABLE_DIR" ]; then
 
     # Custom paths
     mkdir -p "${APP_WRITABLE_DIR}/validation_logs"
-fi
-
-if [ $ENVIRONMENT = 'local' ]; then
-    echo "Changing ${APP_EOS_DIR} permissions" 
-    chmod -R 777 $APP_EOS_DIR
 fi

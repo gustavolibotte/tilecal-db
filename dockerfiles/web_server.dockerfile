@@ -59,4 +59,3 @@ RUN cd repo/ \
 && chmod -R 777 /var/www/html
 WORKDIR /var/www/html
 CMD php spark serve --host 0.0.0.0 --port 8080
-
