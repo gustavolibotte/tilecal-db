@@ -4,6 +4,9 @@ import { ColumnProps } from 'primereact/column';
 import { useNavigate } from 'react-router-dom';
 import { getFileViewRoute } from '../../utils/routes';
 import { DataTableSortMeta } from 'primereact/datatable';
+import './file_table.css';
+import DownloadButton from '../download_button/DownloadButton';
+import { getEndpoint } from '../../utils/DbClient';
 
 interface FileTableProps {
   queryKey: any[];
@@ -18,6 +21,12 @@ export default function FileTable(props: FileTableProps) {
       label={rowData.name}
       onClick={() => navigate(getFileViewRoute(rowData.id))}/>
       );
+  }
+
+  const getDownloadButton = (rowData: any) => {
+    return (
+      <DownloadButton downloadUrl={getEndpoint('file_download')} params={{id: rowData.id}}/>
+    );
   }
 
   const columns: ColumnProps[] = [
@@ -40,6 +49,10 @@ export default function FileTable(props: FileTableProps) {
       field: 'updated_at', header: 'Updated At',
       filter: true, sortable: true,
       filterPlaceholder: 'Search'
+    },
+    {
+      field: 'action', header: 'Action', body: getDownloadButton,
+      filter: false, sortable: false
     }
   ];
 

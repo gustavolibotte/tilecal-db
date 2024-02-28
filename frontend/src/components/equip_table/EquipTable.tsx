@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { getEquipviewRoute } from '../../utils/routes';
 import { DataTableSortMeta } from 'primereact/datatable';
 import { useQuery } from '@tanstack/react-query';
-import { DEFAULT_ERROR_MSG } from '../../utils/constants';
 import { snakeToSpaced } from '../../utils/string';
 
 interface EquipTableProps {
@@ -28,7 +27,7 @@ export default function EquipTable(props: EquipTableProps) {
     });
 
     if (equipTypeQuery.isError){
-      return <h4>{DEFAULT_ERROR_MSG}</h4>;
+      return <h4>{__DEFAULT_ERROR_MSG__}</h4>;
     } else if (equipTypeQuery.isPending){
       return <h4>Loading...</h4>;
     }

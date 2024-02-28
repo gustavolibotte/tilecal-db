@@ -13,10 +13,10 @@ import FileHistTable from '../../components/file_hist_table/FileHistTable';
 import FileForm from '../../components/file_form/FileForm';
 import { makeMutationFunction, getEndpoint } from '../../utils/DbClient';
 import { toast } from 'react-toastify';
-import { DEFAULT_ERROR_MSG } from '../../utils/constants';
 import { AxiosError } from 'axios';
 import { useUser } from '../../utils/user';
 import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
+import DownloadButton from '../../components/download_button/DownloadButton';
 
 export default function FileView() {
 
@@ -58,7 +58,7 @@ export default function FileView() {
     onError: (error: AxiosError) => {
       toast.dismiss();
       console.log(error);
-      toast.error(DEFAULT_ERROR_MSG);
+      toast.error(__DEFAULT_ERROR_MSG__);
     }
   });
 
@@ -130,16 +130,19 @@ export default function FileView() {
         </>
       );
     }
-    
+
     component = (
       <>
-      <h1>File: {fileData.name}</h1>
+      <h1>File:{fileData.name}</h1>
       <TabPage activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
         <TabPanel header="Info">
           <div className="m-0">
             <div className="grid">
               <div className="col-6">
-                <h2>File Info</h2>
+                <div className="flex flex-wrap align-items-center justify-content gap-3">
+                  <h2>File Info</h2>
+                  <DownloadButton downloadUrl={getEndpoint('file_download')} params={{id: fileId}}/>
+                </div>
               </div>
               <div className="col-6">
                 <div className="flex flex-row-reverse flex-wrap gap-2">

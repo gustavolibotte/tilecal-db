@@ -11,11 +11,11 @@ $routes = Services::routes();
  * --------------------------------------------------------------------
  */
 $routes->setDefaultNamespace('App\Controllers');
-$routes->setDefaultController('Home');
+$routes->setDefaultController('NotFound');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 // returns home on 404 to return the react app
-$routes->set404Override('\App\Controllers\Home::index');
+$routes->set404Override('\App\Controllers\WebApp::index');
 $routes->setAutoRoute(false);
 // The Auto Routing (Legacy) is very dangerous. It is easy to create vulnerable apps
 // where controller filters or CSRF protection are bypassed.
@@ -31,128 +31,147 @@ $routes->setAutoRoute(false);
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/','Home::index', [
-    'filter' => 'auth:view',
+$routes->get('/','WebApp::index', [
+    'filter' => ['auth', 'action:view'],
     'as' => 'home'
 ]);
-$routes->get('callback', 'Callback::callback', [
-    'filter' => 'auth:view'
-]);
 
-// API routes
-// This first route was made to comply with the CORS protocol used
-//  by the browsers.
-// https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe
-$routes->options('api(:any)', 'CORS::index',[
-    'filter' => 'auth:view',
-    'as' => 'api_cors_option'
-]);
+$routes->group('api', static function ($routes){
 
-// Equipment API
-$routes->get('api/equipment', 'Equipments::get', [
-    'filter' => 'auth:view',
-    'as' => 'api_equipment_get'
-]);
-$routes->get('api/equipment-hist', 'Equipments::getHist', [
-    'filter' => 'auth:view',
-    'as' => 'api_equipment_hist_get'
-]);
-$routes->post('api/equipment/batch-register', 'Equipments::batchCreate',[
-    'filter' => 'auth:register',
-    'as' => 'api_equipment_batch_register'
-]);
-$routes->post('api/equipment', 'Equipments::post', [
-    'filter' => 'auth:register',
-    'as' => 'api_equipment_post'
-]);
-$routes->put('api/equipment', 'Equipments::put', [
-    'filter' => 'auth:edit',
-    'as' => 'api_equipment_put'
-]);
-$routes->delete('api/equipment', 'Equipments::delete', [
-    'filter' => 'auth:delete',
-    'as' => 'api_equipment_delete'
-]);
-$routes->patch('api/equipment', 'Equipments::restore', [
-    'filter' => 'auth:delete',
-    'as' => 'api_equipment_restore'
-]);
-$routes->post('api/equipment/assemble', 'Equipments::assemble', [
-    'filter' => 'auth:edit',
-    'as' => 'api_equipment_assemble'
-]);
-$routes->post('api/equipment/disassemble', 'Equipments::disassemble', [
-    'filter' => 'auth:edit',
-    'as' => 'api_equipment_disassemble'
-]);
+    //Equipment API
+    $routes->get('equipment', 'Equipments::get', [
+        'filter' => ['api_auth', 'action:view'],
+        'as' => 'api_equipment_get'
+    ]);
+    $routes->get('equipment-hist', 'Equipments::getHist', [
+        'filter' =>['api_auth', 'action:view'],
+        'as' => 'api_equipment_hist_get'
+    ]);
+    $routes->post('equipment/batch-register', 'Equipments::batchCreate', [
+        'filter' =>['api_auth', 'action:register'],
+        'as' => 'api_equipment_batch_register'
+    ]);
+    $routes->post('equipment', 'Equipments::post', [
+        'filter' =>['api_auth', 'action:register'],
+        'as' => 'api_equipment_post'
+    ]);
+    $routes->put('equipment', 'Equipments::put', [
+        'filter' =>['api_auth', 'action:edit'],
+        'as' => 'api_equipment_put'
+    ]);
+    $routes->delete('equipment', 'Equipments::delete', [
+        'filter' =>['api_auth', 'action:delete'],
+        'as' => 'api_equipment_delete'
+    ]);
+    $routes->patch('equipment', 'Equipments::restore', [
+        'filter' =>['api_auth', 'action:delete'],
+        'as' => 'api_equipment_restore'
+    ]);
+    $routes->post('api/equipment/assemble', 'Equipments::assemble', [
+        'filter' =>['api_auth', 'action:edit'],
+        'as' => 'api_equipment_assemble'
+    ]);
+    $routes->post('api/equipment/disassemble', 'Equipments::disassemble', [
+        'filter' =>['api_auth', 'action:edit'],
+        'as' => 'api_equipment_disassemble'
+    ]);
 
-// EquipmentTypes API
-$routes->get('api/equipment-type', 'EquipmentType::get',[
-  'filter' => 'auth:view',
-  'as' => 'api_equip_type_get'
-]);
+    // EquipmentTypes API
+    $routes->get('equipment-type', 'EquipmentType::get',[
+        'filter' =>['api_auth', 'action:view'],
+        'as' => 'api_equip_type_get'
+    ]);
 
-// Location API
-$routes->get('api/location', 'Location::get', [
-    'filter' => 'auth:view',
-    'as' => 'api_location_get'
-]);
+    // Location API
+    $routes->get('location', 'Location::get', [
+        'filter' =>['api_auth', 'action:view'],
+        'as' => 'api_location_get'
+    ]);
 
-// Institute API
-$routes->get('api/institute', 'Institute::get', [
-    'filter' => 'auth:view',
-    'as' => 'api_institute_get'
-]);
+    // Institute API
+    $routes->get('institute', 'Institute::get', [
+        'filter' =>['api_auth', 'action:view'],
+        'as' => 'api_institute_get'
+    ]);
 
-// Status API
-$routes->get('api/status', 'Status::get', [
-    'filter' => 'auth:view',
-    'as' => 'api_status_get'
-]);
+    // Status API
+    $routes->get('status', 'Status::get', [
+        'filter' =>['api_auth', 'action:view'],
+        'as' => 'api_status_get'
+    ]);
 
-// Detector Location API
-$routes->get('api/detector-location', 'DetectorLocation::get', [
-    'filter' => 'auth:view',
-    'as' => 'api_detector_location_get'
-]);
+    // Detector Location API
+    $routes->get('detector-location', 'DetectorLocation::get', [
+        'filter' =>['api_auth', 'action:view'],
+        'as' => 'api_detector_location_get'
+    ]);
 
-// File API
-$routes->get('api/file', 'Files::get', [
-    'filter' => 'auth:view',
-    'as' => 'api_file_get'
-]);
-$routes->get('api/file-hist', 'Files::getHist', [
-    'filter' => 'auth:view',
-    'as' => 'api_file_hist_get'
-]);
-$routes->post('api/file', 'Files::post', [
-    'filter' => 'auth:upload',
-    'as' => 'api_file_upload'
-]);
-$routes->post('api/file-put', 'Files::put', [
-    'filter' => 'auth:edit',
-    'as' => 'api_file_edit'
-]);
-$routes->delete('api/file', 'Files::delete', [
-  'filter' => 'auth:delete',
-  'as' => 'api_file_delete'
-]);
-$routes->patch('api/file', 'Files::restore', [
-  'filter' => 'auth:delete',
-  'as' => 'api_file_restore'
-]);
+    // File API
+    $routes->get('file', 'Files::get', [
+        'filter' =>['api_auth', 'action:view'],
+        'as' => 'api_file_get'
+    ]);
+    $routes->get('file-hist', 'Files::getHist', [
+        'filter' =>['api_auth', 'action:view'],
+        'as' => 'api_file_hist_get'
+    ]);
+    $routes->post('file', 'Files::post', [
+        'filter' =>['api_auth', 'action:upload'],
+        'as' => 'api_file_upload'
+    ]);
+    $routes->post('file-put', 'Files::put', [
+        'filter' =>['api_auth', 'action:edit'],
+        'as' => 'api_file_edit'
+    ]);
+    $routes->delete('file', 'Files::delete', [
+        'filter' =>['api_auth', 'action:delete'],
+        'as' => 'api_file_delete'
+        ]);
+    $routes->patch('file', 'Files::restore', [
+        'filter' =>['api_auth', 'action:delete'],
+        'as' => 'api_file_restore'
+        ]);
+    $routes->get('file/download', 'Files::download', [
+        'filter' => 'action:download',
+        'as' => 'api_file_download'
+    ]);
+    $routes->get('file/download-hist', 'Files::downloadHist', [
+        'filter' =>['api_auth', 'action:view'],
+        'as' => 'api_file_download_hist'
+    ]);
 
-// User API
-$routes->get('api/user', 'User::get', [
-  'filter' => 'auth:view',
-  'as' => 'api_user_get'
-]);
+    // User API
+    $routes->get('user', 'User::get', [
+        'filter' =>['api_auth', 'action:view'],
+        'as' => 'api_user_get'
+    ]);
+    $env = Services::environment();
+    if (!$env->isSafe()){
+        return null;
+    }
+    $routes->group('test', static function ($routes){
+        $routes->get('headers', 'Dev::headers', [
+            'filter' =>['api_auth', 'action:delete'],
+            'as' => 'api_test_headers'
+        ]);
+    });
 
-// Adds any route to return the react app in any case
-// $routes->get('(:any)', 'Home::index', [
-//     'filter' => 'auth:view',
-//     'as' => 'any'
-// ]);
+    // This first route was made to comply with the CORS protocol used
+    //  by the browsers.
+    // https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe
+    $routes->options('(:any)', 'CORS::index',[
+        'filter' =>[],
+        'as' => 'api_cors_option'
+    ]);
+
+    return null;
+});
+
+// Force React App return
+$routes->get('(:any)','WebApp::index', [
+    'filter' => ['auth', 'action:view'],
+    'as' => 'any'
+]);
 
 /*
  * --------------------------------------------------------------------

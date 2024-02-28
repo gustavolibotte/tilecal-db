@@ -15,6 +15,8 @@ interface EndpointType {
   equipment_batch: string;
   equipment_assemble: string;
   equipment_disassemble: string;
+  file_download: string;
+  file_download_hist: string;
 }
 
 const ENDPOINT: EndpointType = {
@@ -31,7 +33,9 @@ const ENDPOINT: EndpointType = {
   equipment_type: 'api/equipment-type',
   equipment_batch: 'api/equipment/batch-register',
   equipment_assemble: 'api/equipment/assemble',
-  equipment_disassemble: 'api/equipment/disassemble'
+  equipment_disassemble: 'api/equipment/disassemble',
+  file_download: 'api/file/download',
+  file_download_hist: 'api/file/download-hist'
 };
 
 export function getEndpoint(name: keyof EndpointType): string{
@@ -50,7 +54,40 @@ interface SuccessResponseType {
   status: number;
 }
 
-const parseQueryKey = (queryKey: any[]) => {
+export async function defaultQueryFunction({queryKey}: GetInputType): Promise<AppResponseType>{
+  const {endpoint, method, queryParams} = parseQueryKey(queryKey);
+  if (method == 'get'){
+    const response = await axios({
+      url: endpoint,
+      method: method,
+      params: queryParams,
+      headers: getRequestHeaders()
+    }).then((res) => res.data);
+    return response;
+  }
+  const response = await axios({
+    url: endpoint,
+    method: method,
+    data: queryParams,
+    headers: getRequestHeaders()
+  }).then((res) => res.data);
+  return response;
+}
+
+export function makeMutationFunction(method: string, endpoint: string, headers: any = null){
+  async function mutationFunction(data: any){
+      const response = await axios({
+          url: endpoint,
+          method: method,
+          data: data,
+          headers: getRequestHeaders(headers)
+      }).then((res) => res.data);
+      return response.data;
+  }
+  return mutationFunction;
+}
+
+function parseQueryKey(queryKey: any[]) {
   let endpoint;
   if (queryKey[0] == 'equipment_type'){
     endpoint = `${__APP_BASEURL__}/api/equipment-type`;
@@ -62,33 +99,15 @@ const parseQueryKey = (queryKey: any[]) => {
   return {endpoint: endpoint, method: method, queryParams: queryParams};
 }
 
-export async function defaultQueryFunction({queryKey}: GetInputType): Promise<AppResponseType>{
-  const {endpoint, method, queryParams} = parseQueryKey(queryKey);
-  if (method == 'get'){
-    const response = await axios({
-      url: endpoint,
-      method: method,
-      params: queryParams
-    }).then((res) => res.data);
-    return response;
+function getRequestHeaders(extraHeaders: any = {}) {
+  let baseHeaders: any = {
+    'Authorization': 'Session'
+  };
+  if (__ENV__ == 'local'){
+    baseHeaders['TestUser'] = '';
   }
-  const response = await axios({
-    url: endpoint,
-    method: method,
-    data: queryParams
-  }).then((res) => res.data);
-  return response;
-}
-
-export function makeMutationFunction(method: string, endpoint: string, headers: any = null){
-  async function mutationFunction(data: any){
-      const response = await axios({
-          url: endpoint,
-          method: method,
-          data: data,
-          headers: headers
-      }).then((res) => res.data);
-      return response.data;
+  if (extraHeaders){
+    return {...baseHeaders, ...extraHeaders};
   }
-  return mutationFunction;
+  return baseHeaders;
 }

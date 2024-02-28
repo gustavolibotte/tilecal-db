@@ -1,6 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import './equip_batch_form.css';
-import { DEFAULT_ERROR_MSG, INVALID_DATA_MSG } from '../../utils/constants';
 import { useFormik } from 'formik';
 import FormDropdown from '../form_dropdown/FormDropdown';
 import FormFile from '../form_file/FormFile';
@@ -52,7 +51,7 @@ export default function EquipBatchForm() {
       // The following "?" fields are guaranteed with the app
       toast.dismiss();
       const responseData: any = error?.response?.data;
-      if (responseData.error == INVALID_DATA_MSG){
+      if (responseData.error == __INVALID_DATA_MSG__){
         Object.keys(responseData.messages).forEach((key: string) => {
           formik.setFieldError(key as keyof EquipBatchFormSchema, responseData.messages[key]);
         });
@@ -60,7 +59,7 @@ export default function EquipBatchForm() {
         setEquipFieldErrors(responseData.messages);
         setErrorMessage(responseData.error);
       } else{
-        toast.error(DEFAULT_ERROR_MSG);
+        toast.error(__DEFAULT_ERROR_MSG__);
         console.log(error);
       }
     },
@@ -79,7 +78,7 @@ export default function EquipBatchForm() {
   });
 
   if (equipTypesQuery.isError){
-    return DEFAULT_ERROR_MSG;
+    return __DEFAULT_ERROR_MSG__;
   } else if (equipTypesQuery.isPending){
     return 'Loading';
   }

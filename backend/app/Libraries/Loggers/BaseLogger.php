@@ -10,9 +10,9 @@ abstract class BaseLogger implements LoggerInterface
 
     protected function getBaseContext()
     {
-        $user = \Config\Services::authenticator()->getUser();
+        $user = \Config\Services::user();
         return [
-            'username' => $user->username
+            'username' => $user->getUsername()
         ];
     }
 

@@ -43,8 +43,8 @@ abstract class BaseMigration extends Migration{
     public function __construct(?Forge $forge = null)
     {
         parent::__construct($forge);
-        $authenticator = \Config\Services::authenticator();
-        $authenticator->setSystem();
+        $user = \Config\Services::user();
+        $user->setSystemUser();
         $this->dbconnect = db_connect();
     }
 

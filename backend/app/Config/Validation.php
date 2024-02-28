@@ -28,7 +28,13 @@ class Validation extends BaseConfig
         \App\Validation\StringRules::class,
         \App\Validation\TypeSlotRules::class,
         \App\Validation\AppFileRules::class,
-        \App\Validation\DatabaseRules::class
+        \App\Validation\DatabaseRules::class,
+        \App\Validation\EquipmentTypeRules::class,
+        \App\Validation\InstituteRules::class,
+        \App\Validation\DetectorLocationRules::class,
+        \App\Validation\StatusRules::class,
+        \App\Validation\LocationRules::class,
+        \App\Validation\HistRules::class
     ];
 
     /**
@@ -63,7 +69,7 @@ class Validation extends BaseConfig
             'errors' => [
                 'required' => 'Filepath is required',
                 'string_ends_with' => 'The file must be a csv. (File name did not end in .csv)',
-                'local_file_exists' => 'The given file doesn\'exist',
+                'local_file_exists' => 'The given file doesn\'t exist',
                 'local_mime_in' => 'The file must be a csv. (File structure not identified as a csv)'
             ]
         ],

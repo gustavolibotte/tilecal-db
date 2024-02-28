@@ -3,7 +3,7 @@
 namespace App\Validation\Validators;
 use App\Entities\AtlasId;
 use App\Entities\EquipmentType;
-use App\Validation\AtlasIdRules;
+use App\Validation\EquipmentRules;
 use CodeIgniter\Database\Exceptions\DataException;
 use App\Entities\Equipment;
 use Error;
@@ -11,8 +11,6 @@ use Error;
 class EquipmentValidator extends EntryValidator
 {
     public EquipmentType $equipmentType;
-    public static int $serialMaxSize = 36;
-    public static int $maxCommentsSize = 65535; //MySQL max text size
 
     public array $fieldRename = [
         'detector_location' => 'detector_location_name',
@@ -48,14 +46,11 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['id'] = [
             "rules" => [
                 "required",
-                sprintf("exact_length[%s]", AtlasIdRules::$sequentialNumberLength),
-                sprintf("regex_match[%s]", $this->equipmentType->id_regex),
+                "equipment_id_is_sanitized",
                 "is_unique[equipments.id]"
             ],
             "errors" => [
                 "required" => "You must supply an id for the equipment.",
-                "exact_length" => "The ID sequential number must have {param} characters. Value given: {value}",
-                "regex_match" => "The ID doesn't follow this equipment ID rules. Value given: {value}",
                 "is_unique" => "ID {value} already exists."
             ]
         ];
@@ -63,6 +58,7 @@ class EquipmentValidator extends EntryValidator
         $this->updateRules['id'] = [
             "rules" => [
                 "required",
+                "equipment_id_is_sanitized",
                 "is_not_unique[equipments.id]"
             ],
             'errors' => [
@@ -74,6 +70,7 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['owner_id'] = [
             "rules" => [
                 "permit_empty",
+                'institute_id_is_sanitized',
                 "is_not_unique[institutes.id]"
             ],
             "errors" => [
@@ -87,6 +84,7 @@ class EquipmentValidator extends EntryValidator
             "rules" => [
                 "required_without[owner_id]",
                 "permit_empty",
+                'institute_name_is_sanitized',
                 "is_not_unique[institutes.mne]"
             ],
             "errors" => [
@@ -102,6 +100,7 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['detector_location_id'] = [
             "rules" => [
                 "permit_empty",
+                "detector_location_id_is_sanitized",
                 "is_not_unique[detector_locations.id]"
             ],
             "errors" => [
@@ -114,6 +113,7 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['detector_location_name'] = [
             "rules" => [
                 "permit_empty",
+                "detector_location_name_is_sanitized",
                 "is_not_unique[detector_locations.name]"
             ],
             "errors" => [
@@ -126,6 +126,7 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['location_id'] = [
             "rules" => [
                 "permit_empty",
+                "location_id_is_sanitized",
                 "is_not_unique[locations.id]"
             ],
             "errors" => [
@@ -139,6 +140,7 @@ class EquipmentValidator extends EntryValidator
             "rules" => [
                 "required_without[location_id]",
                 "permit_empty",
+                "location_name_is_sanitized",
                 "is_not_unique[locations.name]"
             ],
             "errors" => [
@@ -154,6 +156,7 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['status_id'] = [
             "rules" => [
                 "permit_empty",
+                "status_id_is_sanitized",
                 "is_not_unique[statuses.id]"
             ],
             "errors" => [
@@ -167,6 +170,7 @@ class EquipmentValidator extends EntryValidator
             "rules" => [
                 "required_without[status_id]",
                 "permit_empty",
+                "status_name_is_sanitized",
                 "is_not_unique[statuses.name]"
             ],
             "errors" => [
@@ -182,11 +186,11 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['serial'] = [
             "rules" => [
                 "permit_empty",
-                sprintf("max_length[%d]", self::$serialMaxSize),
+                'equipment_serial_is_sanitized',
+                sprintf("max_length[%d]", EquipmentRules::$serialMaxSize),
                 sprintf("is_type_unique[serial,%d]", $this->equipmentType->id)
             ],
             "errors" => [
-                "max_length" => "Serial max size is {param} characters.",
                 "is_type_unique" => "Serial Number {value} already exists."
             ]
         ];
@@ -196,11 +200,9 @@ class EquipmentValidator extends EntryValidator
         $this->validationRules['comments'] = [
             "rules" => [
                 "permit_empty",
-                sprintf("max_length[%s]", Self::$maxCommentsSize)
+                "equipment_comments_is_sanitized"
             ],
-            "errors" => [
-                "max_length" => "Comments max size is {param} characters.",
-            ]
+            "errors" => []
         ];
 
         $this->updateRules['comments'] = $this->validationRules['comments'];

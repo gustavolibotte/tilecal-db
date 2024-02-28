@@ -6,7 +6,7 @@ use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 
-class LastURL implements FilterInterface
+class RequireRole implements FilterInterface
 {
     /**
      * Do whatever processing this filter needs to do.
@@ -25,9 +25,12 @@ class LastURL implements FilterInterface
      */
     public function before(RequestInterface $request, $arguments = null)
     {
-        $thisUrl = current_url();
-        $session = \Config\Services::session();
-        $session->set('lastURL', $thisUrl);
+        helper(['app_array', 'response']);
+        $role = (is_null($arguments))? null: dot_search_with_default(0, $arguments);
+        $user = \Config\Services::user();
+        if (!$user->is($role)){
+            redirect('forbidden');
+        }
     }
 
     /**

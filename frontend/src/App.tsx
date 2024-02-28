@@ -19,7 +19,8 @@ import EquipBatchRegister from './routes/equip_batch_register/EquipBatchRegister
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: defaultQueryFunction
+      queryFn: defaultQueryFunction,
+      staleTime: 1*60*1000  // 1 minute in ms
     }
   }
 });
@@ -76,8 +77,8 @@ export default function App(){
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <PageLayout />,
-      errorElement: <NotFound />,
+      element: <PageLayout useOutlet/>,
+      errorElement: <NotFound useLayout/>,
       children: children,
     },
   ]);

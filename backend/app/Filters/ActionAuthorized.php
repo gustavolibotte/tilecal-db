@@ -5,8 +5,9 @@ namespace App\Filters;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use Throwable;
 
-class DumpMessages implements FilterInterface
+class ActionAuthorized implements FilterInterface
 {
     /**
      * Do whatever processing this filter needs to do.
@@ -25,7 +26,27 @@ class DumpMessages implements FilterInterface
      */
     public function before(RequestInterface $request, $arguments = null)
     {
-        //
+        helper('response');
+        try{
+            return $this->__before__($request, $arguments);
+        } catch (Throwable $e){
+            return failInternalError($e);
+        }
+    }
+
+    public function __before__(RequestInterface $request, $arguments = null)
+    {
+        helper(['app_array', 'response']);
+        $action = (is_null($arguments))? null: dot_search_with_default(0, $arguments);
+        $user = \Config\Services::user();
+        if (!$user->isAuthorized($action)){
+            $uri = $request->getUri();
+            if (str_starts_with($uri->getPath(), 'api')){
+                return failForbidden();
+            } else {
+                return redirect()->to('forbidden');
+            }
+        }
     }
 
     /**
@@ -42,6 +63,6 @@ class DumpMessages implements FilterInterface
      */
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
-        service('messenger')->dumpMessages();
+        //
     }
 }

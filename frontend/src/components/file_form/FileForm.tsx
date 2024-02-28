@@ -1,6 +1,5 @@
 import { useFormik } from 'formik';
 import { toast } from 'react-toastify';
-import { DEFAULT_ERROR_MSG, INVALID_DATA_MSG } from '../../utils/constants';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import FormText from '../form_text/FormText';
@@ -59,12 +58,12 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
       // The following "?" fields are guaranteed with the app
       toast.dismiss();
       const responseData: any = error?.response?.data;
-      if (responseData.error == INVALID_DATA_MSG) {
+      if (responseData.error == __INVALID_DATA_MSG__) {
         Object.keys(responseData.messages).forEach((key: string) => {
           formik.setFieldError(key as keyof FileFormSchema, responseData.messages[key]);
         });
       } else {
-        toast.error(DEFAULT_ERROR_MSG);
+        toast.error(__DEFAULT_ERROR_MSG__);
         console.log(error);
       }
     },

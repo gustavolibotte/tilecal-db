@@ -12,7 +12,7 @@ class Location extends APIController
         try{
             return $this->__get__();
         } catch (Throwable $e){
-            return $this->fail($e->getMessage(), 500);
+            return $this->failInternalError($e);
         }
     }
 
@@ -22,6 +22,6 @@ class Location extends APIController
             ->select('name')
             ->select('description')
             ->findAll();
-        return $this->buildAPIResponse(200, empty($data)? []: $data);
+        return $this->respondQueryResults($data);
     }
 }

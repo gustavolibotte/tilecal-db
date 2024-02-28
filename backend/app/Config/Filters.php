@@ -2,14 +2,15 @@
 
 namespace Config;
 
+use App\Filters\ActionAuthorized;
+use App\Filters\APIAuthentication;
+use App\Filters\Authentication;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Filters\CSRF;
 use CodeIgniter\Filters\DebugToolbar;
 use CodeIgniter\Filters\Honeypot;
 use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\SecureHeaders;
-use App\Filters\Authentication;
-use App\Filters\LastURL;
 use App\Filters\RequestTime;
 use App\Filters\Corsa;
 
@@ -25,10 +26,11 @@ class Filters extends BaseConfig
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
-        'auth'          => Authentication::class,
-        'lasturl'       => LastURL::class,
         'request_time'  => RequestTime::class,
-        'cors'          => Corsa::class
+        'cors'          => Corsa::class,
+        'auth' => Authentication::class,
+        'action' => ActionAuthorized::class,
+        'api_auth' => APIAuthentication::class
     ];
 
     /**
@@ -41,11 +43,11 @@ class Filters extends BaseConfig
             // 'honeypot',
             'csrf' => ['except' => 'api/*'],
             'request_time',
-            'lasturl' => ['except' => 'callback'],
             // 'invalidchars',
         ],
         'after' => [
-            'toolbar'
+            'toolbar' => ['except' => 'api/*'],
+            'cors'
             // 'honeypot',
             // 'secureheaders',
         ],
@@ -71,10 +73,5 @@ class Filters extends BaseConfig
      * Example:
      * 'isLoggedIn' => ['before' => ['account/*', 'profiles/*']]
      */
-    public array $filters = [
-        'cors' => [
-            'before' => ['api*'],
-            'after' => ['api*']
-        ]
-    ];
+    public array $filters = [];
 }

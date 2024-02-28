@@ -97,3 +97,10 @@ define('EVENT_PRIORITY_HIGH', 10);
  * @var string FORM_SELECT_NULL_OPTION value for when a "select an option" is active in a select component inside a form
  */
 define('FORM_SELECT_NULL_OPTION', 'null_option');
+
+/**
+ * @var array ENV constants Some places call dev others development this avoids confusion
+ */
+defined('PROD_ENV') || define('PROD_ENV','production');
+defined('DEV_ENV') || define('DEV_ENV','development');
+defined('LOCAL_ENV') || define('LOCAL_ENV','local');
