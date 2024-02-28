@@ -8,6 +8,8 @@ services:
       args:
         - app_baseURL=${app_baseURL}
         - app_indexPage=${app_indexPage}
+        - sso_auth=${sso_auth}
+        - frontend_clientId=${frontend_clientId}
         - ENVIRONMENT=${ENVIRONMENT}
     image: tilecal-db:${TILECAL_DB_VERSION}
     container_name: tilecal-db-web-server

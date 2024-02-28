@@ -3,6 +3,7 @@
 namespace App\Filters;
 
 use CodeIgniter\Filters\FilterInterface;
+use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Firebase\JWT\JWK;
@@ -27,15 +28,18 @@ class APIAuthentication implements FilterInterface
      */
     public function before(RequestInterface $request, $arguments = null)
     {
-        helper('response');
+        helper(['response', 'authentication']);
         try{
-            return $this->__before__($request, $arguments);
+            $res = $this->__before__($request, $arguments);
+            if (!empty($res)){
+                return addCorsHeaders($res);
+            }
         } catch (\Throwable $e){
             $env = \Config\Services::environment();
             if ($env->isLocal()){
-                return failInternalError($e);
+                return addCorsHeaders(failInternalError($e));
             } else {
-                return failUnauthorized();
+                return addCorsHeaders(failUnauthorized());
             }
         }
     }
@@ -48,7 +52,29 @@ class APIAuthentication implements FilterInterface
             $user->setSystemUser();
             return;
         }
+        // if ($request->getMethod() !== 'options'){
+        //     $invalidResponse = $this->validAPIDataCall($request);
+        //     if (!empty($invalidResponse)){
+        //         return $invalidResponse;
+        //     }
+        // }        $headers = [];
 
+        $authorizationHeader = $request->header('Authorization');
+        if (empty($authorizationHeader)) {
+            return failUnauthorized();
+        }
+
+        $headerValue = $authorizationHeader->getValue();
+        if ($headerValue === 'Session'){
+            return sessionAuthentication($request, $arguments);
+        }else if (str_starts_with($headerValue, 'Bearer ')) {
+            return tokenAuthorization($request, $arguments);
+        }
+        return failUnauthorized();
+    }
+
+    protected function validAPIDataCall(RequestInterface $request)
+    {
         $contentTypeHeader = $request->header('Content-Type');
         if (empty($contentTypeHeader)){
             return failBadRequest(
@@ -74,36 +100,6 @@ class APIAuthentication implements FilterInterface
                 message: 'X-Requested-With Header is not XMLHttpRequest'
             );
         }
-
-        $authorizationHeader = $request->header('Authorization');
-        if (empty($authorizationHeader)) {
-            return failUnauthorized();
-        }
-
-        $headerValue = $authorizationHeader->getValue();
-        if (!str_starts_with($headerValue, 'Bearer ')) {
-            return failUnauthorized();
-        }
-
-        $accessToken = str_replace('Bearer ', '', $headerValue);
-        $requestClient = \Config\Services::curlrequest();
-        $ssoConfig = config('SSO');
-        $configReponse = $requestClient->get($ssoConfig->configUrl);
-        $config = json_decode($configReponse->getBody());
-        $keySetResponse = $requestClient->get($config->jwks_uri);
-        $jwks = json_decode($keySetResponse->getBody(), true);
-        $keySet = JWK::parseKeySet($jwks);
-        $decodedAccessToken = JWT::decode($accessToken, $keySet);
-        // return buildAPIResponse(
-        //     200,
-        //     json_decode(json_encode($decodedAccessToken))
-        // );
-        if ($decodedAccessToken->aud !== $ssoConfig->clientId){
-            return failUnauthorized();
-        }
-        $user = \Config\Services::user();
-        $user->setUsername($decodedAccessToken->azp);
-        $user->setRoles($decodedAccessToken->cern_roles);
     }
 
     /**

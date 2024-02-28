@@ -19,6 +19,11 @@ class SSO extends BaseConfig
     public string $clientSecret;
 
     /**
+     * Auth server URL
+     */
+    public string $auth;
+
+    /**
      * OIDC SSO Provider URL
      * @var string
      */
@@ -45,8 +50,9 @@ class SSO extends BaseConfig
     {
         $this->clientId = getenv('sso_clientId');
         $this->clientSecret = getenv('sso_clientSecret');
-        $this->provider = getenv('sso_provider');
-        $this->issuer = getenv('sso_isuer');
+        $this->auth = getenv('sso_auth');
+        $this->provider = $this->auth . '/realms/cern';
+        $this->issuer = $this->provider;
         $this->redirectUrl = getenv('sso_redirectUrl');
         $this->configUrl = $this->provider . '/.well-known/openid-configuration';
     }

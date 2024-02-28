@@ -58,3 +58,28 @@ function failInternalError(Throwable $e)
     }
     return buildAPIResponse(500, $data, $message);
 }
+
+function addCorsHeaders(ResponseInterface $response): ResponseInterface
+{
+    $response->setHeader(
+        'Access-Control-Allow-Origin',
+        '*'
+    );
+    $response->setHeader(
+        'Access-Control-Allow-Methods',
+        'GET, POST, OPTIONS, PUT, DELETE, PATCH'
+    );
+    $response->setHeader(
+        'Access-Control-Allow-Headers',
+        '*'
+    );
+    $response->setHeader(
+        'Access-Control-Allow-Credentials',
+        'true'
+    );
+    $response->setHeader(
+        'Access-Control-Expose-Headers',
+        '*'
+    );
+    return $response;
+}

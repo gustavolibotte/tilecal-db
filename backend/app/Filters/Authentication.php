@@ -5,6 +5,7 @@ namespace App\Filters;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use Exception;
 use Jumbojett\OpenIDConnectClient;
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
@@ -29,74 +30,20 @@ class Authentication implements FilterInterface
      */
     public function before(RequestInterface $request, $arguments = null)
     {
-        helper('response');
+        helper(['response', 'authentication']);
         try{
-            return $this->__before__($request, $arguments);
+            $res = sessionAuthentication($request, $arguments);
+            if (!empty($res)){
+                return addCorsHeaders($res);
+            }
         } catch (Throwable $e){
             $env = \Config\Services::env();
             if ($env->isLocal()){
-                return failInternalError($e);
+                return addCorsHeaders(failInternalError($e));
             } else {
-                return failUnauthorized();
+                return addCorsHeaders(failUnauthorized());
             }
         }
-    }
-
-    protected function __before__(RequestInterface $request, $arguments = null)
-    {
-        $env = \Config\Services::environment();
-        $user = \Config\Services::user();
-        $session = \Config\Services::session();
-        if ($env->isLocal()){
-            $user->setSystemUser();
-            return;
-        } else if ($session->get('isLogged')){
-            $userInfo = $session->get('userInfo');
-            $user->setUsername($userInfo['username']);
-            $user->setRoles($userInfo['roles']);
-            log_message('info', 'User previously authenticated');
-        }else {
-            log_message('info', 'User not authenticated');
-            $userInfo = $this->queryUserForLogin();
-            $session->set('isLogged', true);
-            $session->set('userInfo', $userInfo);
-            $user->setUsername($userInfo['username']);
-            $user->setRoles($userInfo['roles']);
-            log_message('info', 'User authenticated');
-        }
-        return;
-    }
-
-    protected function queryUserForLogin(): array
-    {
-        $requestClient = \Config\Services::curlrequest();
-        $ssoConfig = config('SSO');
-        $response = $requestClient->get($ssoConfig->configUrl);
-        $config = json_decode($response->getBody());
-
-        $oidc = new OpenIDConnectClient(
-            $ssoConfig->provider,
-            $ssoConfig->clientId,
-            $ssoConfig->clientSecret,
-            $ssoConfig->issuer
-        );
-        if ($ssoConfig->redirectUrl != ''){
-            $oidc->setRedirectURL($ssoConfig->redirectUrl);
-        }
-        $oidc->addScope(['openid']);
-        $oidc->setTimeout(5);
-        $oidc->setAllowImplicitFlow(true);
-        $oidc->authenticate();
-
-        $response = $requestClient->get($config->jwks_uri);
-        $jwks = json_decode($response->getBody(), true);
-        $keySet = JWK::parseKeySet($jwks);
-        $decodedAccessToken = JWT::decode($oidc->getAccessToken(), $keySet);
-        $userInfo = [
-            'username' => $decodedAccessToken->cern_upn,
-            'roles' => $decodedAccessToken->cern_roles,
-        ];
-        return $userInfo;
     }
 
     /**
