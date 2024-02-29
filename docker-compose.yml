@@ -42,5 +42,20 @@ services:
     image: gitlab-registry.cern.ch/paas-tools/openshift-client
     container_name: openshift-client
     tty: true
+  python:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/testing.dockerfile
+    image: tilecal-db-testing
+    container_name: tilecal-db-testing
+    tty: true
+    ports:
+      - "8089:8089"
+    volumes:
+      - type: bind
+        source : .
+        target: /root/tilecal-db
+    env_file:
+      - .env
 volumes:
   mysqldata:

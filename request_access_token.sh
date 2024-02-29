@@ -7,4 +7,4 @@ curl --location --request POST "https://auth.cern.ch/auth/realms/cern/api-access
 --data-urlencode "client_id=$tester_clientId" \
 --data-urlencode "client_secret=$tester_clientSecret" \
 --data-urlencode "audience=$sso_clientId" \
->> access_token.json
+> access_token.json

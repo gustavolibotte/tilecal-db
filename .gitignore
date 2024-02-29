@@ -126,12 +126,13 @@ nb-configuration.xml
 /phpunit*.xml
 /.phpunit.*.cache
 
+#-------------------------
+# Project specific files
+#-------------------------
+
 # DBeaver files
 .dbeaver/*
 .project
-
-# macOS
-.DS_Store
 
 # Directory to throw everything that isn't useful
 ignore/*
@@ -182,4 +183,8 @@ dist-ssr
 
 # Sensitive data
 access_token.json
+
+# Testing reports
+testing/*.json
+testing/*.html
 
