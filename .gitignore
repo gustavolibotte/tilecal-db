@@ -185,6 +185,5 @@ dist-ssr
 access_token.json
 
 # Testing reports
-testing/*.json
-testing/*.html
+testing/reports
 
