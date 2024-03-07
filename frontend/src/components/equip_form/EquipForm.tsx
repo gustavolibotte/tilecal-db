@@ -157,7 +157,7 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
 
   return (
     <div className="card flex justify-content-center flex-column gap-2">
-        <form onSubmit={formik.handleSubmit}>
+        <form onSubmit={formik.handleSubmit} onKeyDown={preventEnterDefault}>
           {!equipId && 
           <div className='mt-3'>
             <FormText
