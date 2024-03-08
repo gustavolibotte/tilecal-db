@@ -416,4 +416,21 @@ class EquipmentModel extends LogModel
             $res = $builder->get()->getResult();
         return empty($res);
     }
+
+    public function getChildrenIDs(string $id): array
+    {
+        $db = db_connect();
+        $children = $db->table('parent_child_equips pce')
+            ->select('child_equip_id as id')
+            ->where('parent_equip_id', $id)
+            ->get()->getResult('array');
+        $res = [];
+        // If there are no children, the method returns an empty array
+        //If there are children, checks if the children have children
+        foreach ($children as $child){
+            $res[] = $child['id'];
+            $res = array_merge($res, $this->getChildrenIds($child['id']));
+        }
+        return $res;
+    }
 }

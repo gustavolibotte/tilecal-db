@@ -430,4 +430,43 @@ class Equipments extends APIController
         );
         return $this->buildAPIResponse(200, message:'Assembled');
     }
+
+    public function getChildren()
+    {
+        try{
+            return $this->__getChildren__();
+        } catch (Throwable $e){
+            return $this->failInternalError($e);
+        }
+    }
+
+    protected function __getChildren__()
+    {
+        $feature = model('FeatureModel')->findName('parent_relation');
+        if (!$feature->isActive()){
+            return $this->failServiceUnavailable();
+        }
+
+        $inputRules = [
+            'id' => [
+                "rules" => [
+                    "required",
+                    "equipment_id_is_sanitized",
+                    "is_not_unique[equipments.id]"
+                ],
+                "errors" => []
+            ],
+        ];
+        $res = $this->getValidatedData($inputRules);
+
+        if (!$res['valid']){
+            return $this->failValidationErrors($res['errors']);
+        }
+        $data = $res['data'];
+        $children = model('EquipmentModel')->getChildrenIDs($data['id']);
+        return $this->buildAPIResponse(
+            200,
+            $children
+        );
+    }
 }

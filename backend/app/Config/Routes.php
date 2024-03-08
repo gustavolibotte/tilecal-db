@@ -75,6 +75,10 @@ $routes->group('api', static function ($routes){
         'filter' =>['api_auth', 'action:edit'],
         'as' => 'api_equipment_disassemble'
     ]);
+    $routes->get('equipment/children', 'Equipments::getChildren', [
+        'filter' =>['api_auth', 'action:view'],
+        'as' => 'api_equipment_children'
+    ]);
 
     // EquipmentTypes API
     $routes->get('equipment-type', 'EquipmentType::get',[
