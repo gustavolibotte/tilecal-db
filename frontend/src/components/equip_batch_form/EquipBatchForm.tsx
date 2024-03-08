@@ -5,12 +5,13 @@ import FormDropdown from '../form_dropdown/FormDropdown';
 import FormFile from '../form_file/FormFile';
 import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
 import { AxiosError } from 'axios';
-import { ReactNode, useState } from 'react';
-import { toast } from 'react-toastify';
+import { ReactNode, useRef, useState } from 'react';
+import { Id, toast } from 'react-toastify';
 import { snakeToSpaced } from '../../utils/string';
 import { DataInfo, DataInfoFieldMeta } from '../data_info/DataInfo';
 import { Button } from 'primereact/button';
 import { isObjEmpty } from '../../utils/objects';
+import { midTransactionToastConfig } from '../../utils/toast';
 
 interface EquipBatchFormSchema {
   type_name: string;
@@ -30,6 +31,8 @@ export default function EquipBatchForm() {
     type_name: '', file: ''
   };
 
+  const toastId = useRef<Id>('');
+
   const batchMutation = useMutation({
     mutationFn: makeMutationFunction(
       'post', 
@@ -37,19 +40,16 @@ export default function EquipBatchForm() {
     onMutate: () => {
       setEquipFieldErrors({});
       setErrorMessage('');
-      toast.info('Submitting data', {
-        autoClose: false,
-        hideProgressBar:true
-      });
+      toastId.current = toast.info('Submitting data', midTransactionToastConfig);
     },
     onSuccess: () => {
-      toast.dismiss();
+      toast.dismiss(toastId.current);
       toast.success('Equipment registered with success');
       formik.resetForm();
     },
     onError: (error: AxiosError) => {
       // The following "?" fields are guaranteed with the app
-      toast.dismiss();
+      toast.dismiss(toastId.current);
       const responseData: any = error?.response?.data;
       if (responseData.error == __INVALID_DATA_MSG__){
         Object.keys(responseData.messages).forEach((key: string) => {

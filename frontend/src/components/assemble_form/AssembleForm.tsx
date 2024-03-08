@@ -1,13 +1,15 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import './assemble_form.css';
 import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
-import { toast } from 'react-toastify';
+import { toast, Id } from 'react-toastify';
 import { useFormik } from 'formik';
 import { AxiosError } from 'axios';
 import { Button } from 'primereact/button';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
 import { snakeToSpaced } from '../../utils/string';
+import { useRef } from 'react';
+import { midTransactionToastConfig } from '../../utils/toast';
 
 interface AssembleFormSchema{
     child_id: string;
@@ -40,24 +42,23 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
     onSubmit: submitData
   });
 
+  const toastId = useRef<Id>('');
+
   const assembleMutation = useMutation({
     mutationFn: makeMutationFunction(
       'post',
       getEndpoint('equipment_assemble')),
     onMutate: () => {
-      toast.info('Assembling equipment.', {
-        autoClose: false,
-        hideProgressBar:true
-      });
+      toastId.current = toast.info('Assembling equipment.', midTransactionToastConfig);
     },
     onSuccess: () => {
-      toast.dismiss();
+      toast.dismiss(toastId.current)
       toast.success('Equipment assembled with success');
       formik.resetForm();
     },
     onError: (error: AxiosError) => {
       // The following "?" fields are guaranteed with the app
-      toast.dismiss();
+      toast.dismiss(toastId.current)
       const responseData: any = error?.response?.data;
       if (responseData.error == __INVALID_DATA_MSG__) {
         Object.keys(responseData.messages).forEach((key: string) => {

@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import TabPage from '../../components/tab_page/TabPage';
 import { TabPanel } from 'primereact/tabview';
@@ -14,11 +14,12 @@ import RelatedEquipTable from '../../components/related_equip_table/RelatedEquip
 import EquipHistTable from '../../components/equip_hist/EquipHistTable';
 import './equip_view.css';
 import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
-import { toast } from 'react-toastify';
+import { Id, toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
 import { useUser } from '../../utils/user';
 import AssembleButton from '../../components/assemble_component/AssembleComponent';
+import { midTransactionToastConfig } from '../../utils/toast';
 
 
 export default function EquipView() {
@@ -36,38 +37,50 @@ export default function EquipView() {
 
   const queryClient = useQueryClient();
 
+  const deleteToastId = useRef<Id>();
+
   const deleteMutation = useMutation({
     mutationFn: makeMutationFunction(
       'delete',
       getEndpoint('equipment')
     ),
+    onMutate: () => {
+      deleteToastId.current = toast.info('Deleting equipment', midTransactionToastConfig);
+    },
     onSuccess: () => {
+      toast.dismiss(deleteToastId.current);
       toast.success('Equipment deleted with success.');
       queryClient.invalidateQueries({
         queryKey: queryKey
       })
     },
     onError: (error: AxiosError) => {
-      toast.dismiss();
+      toast.dismiss(deleteToastId.current);
       console.log(error);
       toast.error('An error has occured.');
     }
   });
+
+  const restoreToastId = useRef<Id>();
 
   const restoreMutation = useMutation({
     mutationFn: makeMutationFunction(
       'patch',
       getEndpoint('equipment')
     ),
+    onMutate: () => {
+      restoreToastId.current = toast.info('Restore equipment', midTransactionToastConfig);
+    },
     onSuccess: () => {
+      toast.dismiss(restoreToastId.current);
       toast.success('Equipment restored with success.');
       queryClient.invalidateQueries({
         queryKey: queryKey
       })
     },
     onError: (error: AxiosError) => {
-      toast.dismiss();
       console.log(error);
+      toast.dismiss(restoreToastId.current);
       toast.error('An error has occured.');
     }
   });

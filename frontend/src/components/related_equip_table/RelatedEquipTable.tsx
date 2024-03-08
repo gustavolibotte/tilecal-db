@@ -7,9 +7,11 @@ import { DataTableSortMeta } from 'primereact/datatable';
 import './related_equip_table.css';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
-import { toast } from 'react-toastify';
+import { Id, toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import ButtonConfirmation from '../button_confirmation/ButtonConfirmation';
+import { midTransactionToastConfig } from '../../utils/toast';
+import { useRef } from 'react';
 
 interface RelatedEquipTableProps {
     equipmentId: string | undefined;
@@ -34,27 +36,26 @@ export default function RelatedEquipTable(props: RelatedEquipTableProps) {
 
   const queryClient = useQueryClient();
 
+  const toastId = useRef<Id>();
+
   const rmRelationMutation = useMutation({
     mutationFn: makeMutationFunction(
       'post',
       getEndpoint('equipment_disassemble')
     ),
     onMutate: () => {
-      toast.info('Removing relation.', {
-        autoClose: false,
-        hideProgressBar:true
-      });
+      toastId.current = toast.info('Removing relation.', midTransactionToastConfig);
     },
     onSuccess: () => {
-      toast.dismiss();
+      toast.dismiss(toastId.current);
       toast.success('Relation removed with success.');
       queryClient.invalidateQueries({
         queryKey: queryKey
       })
     },
     onError: (error: AxiosError) => {
-      toast.dismiss();
       console.log(error);
+      toast.dismiss(toastId.current);
       toast.error('An error has occured.');
     }
   });

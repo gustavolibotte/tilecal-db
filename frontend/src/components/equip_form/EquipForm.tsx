@@ -1,7 +1,7 @@
 
 import { useFormik } from 'formik';
 import { Button } from 'primereact/button';
-import { toast } from 'react-toastify';
+import { Id, toast } from 'react-toastify';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -10,6 +10,8 @@ import {
   getEndpoint,
   makeMutationFunction
 } from '../../utils/DbClient';
+import { useRef } from 'react';
+import { midTransactionToastConfig } from '../../utils/toast';
 
 interface EquipFormSchema {
   id: string;
@@ -39,6 +41,7 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
     comments: '',
     detector_location: ''
   };
+  const toastId = useRef<Id>();
 
   const equipMutation = useMutation({
     mutationFn: makeMutationFunction(
@@ -46,13 +49,13 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
       getEndpoint('equipment')),
     onMutate: () => {
       if (equipId){
-        toast.info('Editing equipment.');
+        toastId.current = toast.info('Editing equipment.', midTransactionToastConfig);
       } else{
-        toast.info('Registering equipment.');
+        toastId.current = toast.info('Registering equipment.', midTransactionToastConfig);
       }
     },
     onSuccess: () => {
-      toast.dismiss();
+      toast.dismiss(toastId.current);
       if (equipId){
         toast.success('Equipment edited with success');
       } else{
@@ -64,14 +67,15 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
       formik.resetForm();
     },
     onError: (error: AxiosError) => {
+      toast.dismiss(toastId.current);
       // The following "?" fields are guaranteed with the app
-      toast.dismiss();
       const responseData: any = error?.response?.data;
       if (responseData.error == __INVALID_DATA_MSG__){
         Object.keys(responseData.messages).forEach((key: string) => {
           formik.setFieldError(key as keyof EquipFormSchema, responseData.messages[key]);
         });
       } else{
+        console.log(error);
         toast.error('An error has occured.');
       }
     },

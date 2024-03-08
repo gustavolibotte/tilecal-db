@@ -1,4 +1,4 @@
-import { useState, ReactNode } from 'react';
+import { useState, ReactNode, useRef } from 'react';
 import { useParams } from 'react-router-dom'
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import { Button } from 'primereact/button';
@@ -12,11 +12,12 @@ import EquipTable from '../../components/equip_table/EquipTable';
 import FileHistTable from '../../components/file_hist_table/FileHistTable';
 import FileForm from '../../components/file_form/FileForm';
 import { makeMutationFunction, getEndpoint } from '../../utils/DbClient';
-import { toast } from 'react-toastify';
+import { Id, toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import { useUser } from '../../utils/user';
 import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
 import DownloadButton from '../../components/download_button/DownloadButton';
+import { midTransactionToastConfig } from '../../utils/toast';
 
 export default function FileView() {
 
@@ -42,25 +43,29 @@ export default function FileView() {
     })
   }
 
+  const deleteToastId = useRef<Id>();
+
   const deleteMutation = useMutation({
     mutationFn: makeMutationFunction(
       'delete',
       getEndpoint('file')
     ),
     onMutate: () => {
-      toast.info('Deleting');
+      deleteToastId.current = toast.info('Deleting file', midTransactionToastConfig);
     },
     onSuccess: () => {
-      toast.dismiss();
+      toast.dismiss(deleteToastId.current);
       toast.success('File deleted with success.');
       invalidateQueries();
     },
     onError: (error: AxiosError) => {
-      toast.dismiss();
+      toast.dismiss(deleteToastId.current);
       console.log(error);
       toast.error(__DEFAULT_ERROR_MSG__);
     }
   });
+
+  const restoreToastId = useRef<Id>();
 
   const restoreMutation = useMutation({
     mutationFn: makeMutationFunction(
@@ -68,15 +73,15 @@ export default function FileView() {
       getEndpoint('file')
     ),
     onMutate: () => {
-      toast.info('Restoring');
+      restoreToastId.current = toast.info('Restoring file', midTransactionToastConfig);
     },
     onSuccess: () => {
-      toast.dismiss();
+      toast.dismiss(restoreToastId.current);
       toast.success('File restored with success.');
       invalidateQueries();
     },
     onError: (error: AxiosError) => {
-      toast.dismiss();
+      toast.dismiss(restoreToastId.current);
       console.log(error);
       toast.error('An error has occured.');
     }

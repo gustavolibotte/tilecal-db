@@ -1,5 +1,5 @@
 import { useFormik } from 'formik';
-import { toast } from 'react-toastify';
+import { Id, toast } from 'react-toastify';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import FormText from '../form_text/FormText';
@@ -9,6 +9,8 @@ import { Button } from 'primereact/button';
 
 import './file_form.css';
 import FormFile from '../form_file/FormFile';
+import { useRef } from 'react';
+import { midTransactionToastConfig } from '../../utils/toast';
 
 interface FileFormSchema {
   name: string;
@@ -31,19 +33,18 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
     'Content-Type': 'multipart/form-data'
   };
 
+  const toastId = useRef<Id>();
+
   const fileMutation = useMutation({
     mutationFn: makeMutationFunction(
       'post',
       fileId? getEndpoint('file_put'): getEndpoint('file'),
       headers),
     onMutate: () => {
-      toast.info('Uploading file.', {
-        autoClose: false,
-        hideProgressBar:true
-      });
+      toastId.current = toast.info('Uploading file.', midTransactionToastConfig);
     },
     onSuccess: () => {
-      toast.dismiss();
+      toast.dismiss(toastId.current);
       if (fileId){
         toast.success('File edited with success');
       } else{
@@ -55,8 +56,8 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
       formik.resetForm();
     },
     onError: (error: AxiosError) => {
+      toast.dismiss(toastId.current);
       // The following "?" fields are guaranteed with the app
-      toast.dismiss();
       const responseData: any = error?.response?.data;
       if (responseData.error == __INVALID_DATA_MSG__) {
         Object.keys(responseData.messages).forEach((key: string) => {
