@@ -21,11 +21,11 @@ export default function RelatedEquipTable(props: RelatedEquipTableProps) {
   const navigate = useNavigate();
 
   const relationTypeTemplate = (rowData: any) => {
-    return <p>{snakeToSpaced(rowData.relation_type)}</p>;
+    return <p>{snakeToSpaced(rowData.relation_type? rowData.relation_type: '')}</p>;
   }
 
   const slotTemplate = (rowData: any) => {
-    return <p>{snakeToSpaced(rowData.slot_name)}</p>;
+    return <p>{snakeToSpaced(rowData.slot_name? rowData.slot_name: '')}</p>;
   }
 
   const queryKey = [

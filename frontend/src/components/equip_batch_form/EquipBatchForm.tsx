@@ -100,7 +100,7 @@ export default function EquipBatchForm() {
     }
     const fieldConfig: DataInfoFieldMeta[] = [];
     Object.keys(equipFieldErrors).forEach((key: string) => {
-      fieldConfig.push({name: snakeToSpaced(key), field: key});
+      fieldConfig.push({name: snakeToSpaced(key? key: ''), field: key});
     })
     return (
       <div className='mt-3 text-red-500'>

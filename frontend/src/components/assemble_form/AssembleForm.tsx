@@ -99,7 +99,7 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
   if (equipTypeData.slot_names){
     equipSlotOptions = equipTypeData.slot_names.map((slotName: string) => {
       return {
-        name: snakeToSpaced(slotName),
+        name: snakeToSpaced(slotName? slotName: ''),
         value: slotName
       }});
   } else{
