@@ -18,7 +18,7 @@ import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
 import { useUser } from '../../utils/user';
-import AssembleForm from '../../components/assemble_form/AssembleForm';
+import AssembleButton from '../../components/assemble_component/AssembleComponent';
 
 
 export default function EquipView() {
@@ -26,7 +26,6 @@ export default function EquipView() {
   const { equipId } = useParams();
   const [activeIndex, setActiveIndex] = useState(0);
   const [visibleEditForm, setVisibleEditForm] = useState(false);
-  const [visibleAssembleForm, setvisibleAssembleForm] = useState(false);
 
   const user = useUser();
 
@@ -128,23 +127,6 @@ export default function EquipView() {
         </>
       );
     }
-
-    let assembleButton: ReactNode = <></>;
-    if(user.canEdit() && (!equipData.deleted_at)){
-      assembleButton = (
-      <>
-        <Button type='button' label='Assemble equipment'
-          onClick={() => setvisibleAssembleForm(true)}/>
-        <Dialog header='Assemble Equipment' visible={visibleAssembleForm}
-          style={{ width: '50vw' }}
-          onHide={() => setvisibleAssembleForm(false)}>
-          <AssembleForm 
-            parentId={equipId? equipId: ''}
-            parentTypeName={equipData.type_name}/>
-        </Dialog>
-      </>
-      );
-    }
     
     component = (
       <>
@@ -170,7 +152,10 @@ export default function EquipView() {
               </div>
               <div className="col-6">
                 <div className="flex flex-row-reverse flex-wrap gap-2">
-                  {assembleButton}
+                  <AssembleButton
+                  disable={equipData.deleted_at}
+                  equipId={equipId? equipId: ''}
+                  typeName={equipData.type_name}/>
                 </div>
               </div>
             </div>

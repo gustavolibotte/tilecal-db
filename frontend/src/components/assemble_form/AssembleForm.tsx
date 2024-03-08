@@ -104,7 +104,7 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
       <div className='mt-3'>
         <FormText
           id='child_id'
-          name='ID to be assemble'
+          name='Equipment to be assembled'
           value={formik.values.child_id}
           help='File name'
           required
