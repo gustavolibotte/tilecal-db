@@ -48,7 +48,7 @@ class EquipmentTypeRules{
         helper('string_validation');
         $fieldName = 'Equipment type slot name';
         return (
-            regex_match($value, '/^[A-Za-z0-9 ]+$/', $fieldName, $error)
+            regex_match($value, '/^[A-Za-z0-9_]+$/', $fieldName, $error)
         );
     }
 }
