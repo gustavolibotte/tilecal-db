@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Validation\Validators\BatchRegisterValidator;
-use App\Validation\Validators\EquipmentAssembleValidator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
 use Throwable;
@@ -379,16 +378,56 @@ class Equipments extends APIController
         if (!$feature->isActive()){
             return $this->failServiceUnavailable();
         }
-        $validator = (new EquipmentAssembleValidator())->addRequest($this->request);
-        if ($validator->validate()){
-            $validatedData = $validator->getValidatedData();
-            model('EquipmentModel')->updateParent(
-                $validatedData['child_id'],
-                $validatedData['parent_id'],
-                $validatedData['slot_id']
-            );
-            return $this->buildAPIResponse(200, message:'Assembled');
+
+        $inputRules = [
+            'parent_id' => [
+                "rules" => [
+                    "required",
+                    "equipment_id_is_sanitized",
+                    "is_not_unique[equipments.id]"
+                ],
+                "errors" => [
+                    "required" => "You must supply an id for the main equipment.",
+                    "is_not_unique" => "ID {value} doesn't exist."
+                ]
+            ],
+            'child_id' => [
+                "rules" => [
+                    "required",
+                    "equipment_id_is_sanitized",
+                    "is_not_unique[equipments.id]",
+                    "equip_is_not_assembled_into"
+                ],
+                "errors" => [
+                    "required" => "You must supply an id for the external equipment.",
+                    "is_not_unique" => "Equipment with ID {value} doesn't exist."
+                ]
+            ],
+            'slot_name' => [
+                "rules" => [
+                    'required',
+                    'equipment_type_slot_name_is_sanitized',
+                    "slot_is_available[{parent_id},{child_id},name]",
+                ],
+                'errors' => [
+                    'required_without' => 'A slot is required for the assembly.'
+                ]
+            ]
+        ];
+        $res = $this->getValidatedData($inputRules);
+
+        if (!$res['valid']){
+            return $this->failValidationErrors($res['errors']);
         }
-        return $this->failValidationErrors($validator->getErrors());
+        $data = $res['data'];
+        $data['slot_id'] = model('TypeSlotModel')
+            ->where('name', $data['slot_name'])
+            ->first()->id;
+        model('EquipmentModel')->updateParent(
+            $data['child_id'],
+            $data['parent_id'],
+            $data['slot_id']
+        );
+        return $this->buildAPIResponse(200, message:'Assembled');
     }
 }
