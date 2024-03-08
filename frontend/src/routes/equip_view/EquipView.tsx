@@ -18,7 +18,7 @@ import { Id, toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
 import { useUser } from '../../utils/user';
-import AssembleButton from '../../components/assemble_component/AssembleComponent';
+import AssembleComponent from '../../components/assemble_component/AssembleComponent';
 import { midTransactionToastConfig } from '../../utils/toast';
 
 
@@ -165,7 +165,7 @@ export default function EquipView() {
               </div>
               <div className="col-6">
                 <div className="flex flex-row-reverse flex-wrap gap-2">
-                  <AssembleButton
+                  <AssembleComponent
                   disable={equipData.deleted_at}
                   equipId={equipId? equipId: ''}
                   typeName={equipData.type_name}/>
