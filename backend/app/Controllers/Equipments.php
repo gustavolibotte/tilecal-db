@@ -361,7 +361,7 @@ class Equipments extends APIController
             );
             return $this->buildAPIResponse(200, message: 'Disassembled');
         }
-        return $this->failValidationErrors($res['errors']->getErrors());
+        return $this->failValidationErrors($res['errors']);
     }
 
     public function assemble()

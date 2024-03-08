@@ -33,7 +33,7 @@ export function HistAction(props: HistData): ReactNode {
   } else if (histType == 'parent_rel' && action == 'delete') {
     return (
       <p>
-        Disassembles <Link to={getEquipviewRoute(props.child_equip_id)}>{props.child_equip_id}</Link> into <Link to={getEquipviewRoute(props.parent_equip_id)}> {props.parent_equip_id} </Link>
+        Disassembles <Link to={getEquipviewRoute(props.child_equip_id)}>{props.child_equip_id}</Link> from <Link to={getEquipviewRoute(props.parent_equip_id)}> {props.parent_equip_id} </Link>
       </p>
     );
   } else {

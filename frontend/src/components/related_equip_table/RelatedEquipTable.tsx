@@ -85,7 +85,7 @@ export default function RelatedEquipTable(props: RelatedEquipTableProps) {
           actionIcon='pi pi-trash'
           actionSeverity='danger'
           cancelSeverity='danger'
-          dialogHeader="Can't remove the relation, click confirm to exit without submitting action."
+          dialogHeader="Can't remove the relation, click on any button to exit."
           onConfirmation={()=>{}}
         />);
     }
