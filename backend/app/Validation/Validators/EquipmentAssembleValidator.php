@@ -31,7 +31,7 @@ class EquipmentAssembleValidator extends EntryValidator
             "errors" => [
                 "required" => "You must supply an id for the external equipment.",
                 "exact_length" => "The ID sequential number must have {param} characters. Value given: {value}",
-                "is_not_unique" => "ID {value} doesn't exist."
+                "is_not_unique" => "Equipment with ID {value} doesn't exist."
             ]
         ];
 

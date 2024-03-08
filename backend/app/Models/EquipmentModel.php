@@ -27,26 +27,10 @@ class EquipmentModel extends LogModel
         'detector_location_id'
     ];
 
-    // Custom
-    protected $selectSideTable = '';
-
     public function initialize(){
         parent::initialize();
         helper(['app_array']);
-        $this->selectSideTable .= 'equipments.id, ';
-        $this->selectSideTable .= 'equipment_types.name as type_name ';
         $this->afterDelete[] = 'deleteRelations';
-    }
-
-    public function minQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
-    {
-        if (is_null($queryBuilder)){
-            $queryBuilder = $this;
-        }
-        $queryBuilder->select('equipments.id as id');
-        $queryBuilder->select('equipment_types.name as type_name');
-        $queryBuilder->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left');
-        return $queryBuilder;
     }
 
     public function fullQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
@@ -55,9 +39,7 @@ class EquipmentModel extends LogModel
             $queryBuilder = $this;
         }
         $queryBuilder->select('equipments.id as id');
-        $queryBuilder->select('equipment_types.id as type_id');
         $queryBuilder->select('equipment_types.name as type_name');
-        $queryBuilder->select('equipments.location_id as location_id');
         $queryBuilder->select('locations.name as location_name');
         $queryBuilder->select('locations.description as location_description');
         $queryBuilder->select('statuses.name as status_name');
@@ -72,7 +54,6 @@ class EquipmentModel extends LogModel
         $queryBuilder->select('equipments.created_at');
         $queryBuilder->select('equipments.deleted_at');
         $queryBuilder->select('detector_locations.name as detector_location_name');
-        $queryBuilder->select('detector_locations.id as detector_location_id');
 
         $queryBuilder = $queryBuilder
             ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
@@ -80,16 +61,6 @@ class EquipmentModel extends LogModel
             ->join('statuses', 'equipments.status_id = statuses.id', 'left')
             ->join('institutes', 'equipments.owner_id = institutes.id', 'left')
             ->join('detector_locations', 'equipments.detector_location_id=detector_locations.id', 'left');
-
-        return $queryBuilder;
-    }
-
-    public function fullQueryRelated(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
-    {
-        if (is_null($queryBuilder)){
-            $queryBuilder = $this;
-        }
-        $queryBuilder->fullQuery();
 
         return $queryBuilder;
     }
@@ -103,25 +74,6 @@ class EquipmentModel extends LogModel
             ->join('equipments_to_files', 'equipments.id = equipments_to_files.equipment_id', 'left');
         
         return $queryBuilder;
-    }
-
-    /**
-     * Returns an array with all the related equipments to a specific file given its id
-     *
-     * @param string|int $id file id to get related equipments from
-     * 
-     * @param array array with related equipment entities
-     */
-    public function getFileRelated(string|int $id): array
-    {
-        $query = $this->fullQuery()
-                      ->join('equipments_to_files', 'equipments.id = equipments_to_files.equipment_id', 'left')
-                      ->where('equipments_to_files.file_id', $id);
-        if ($this->tempUseSoftDeletes){    // If withDeleted was called this evaluates to false
-            $query = $query->where('equipments_to_files.deleted_at IS NULL');
-        }
-        $result = $query->findAll();
-        return $result;
     }
 
     /**
