@@ -1,3 +1,3 @@
-function preventEnterDefault(e: any){
+export function preventEnterDefault(e: any){
     e.key === 'Enter' && e.preventDefault();
 }

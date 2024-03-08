@@ -12,6 +12,7 @@ import {
 } from '../../utils/DbClient';
 import { useRef } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
+import { preventEnterDefault } from '../../utils/event';
 
 interface EquipFormSchema {
   id: string;
