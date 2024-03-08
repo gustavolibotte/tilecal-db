@@ -2,6 +2,7 @@ import { getEquipviewRoute, getFileViewRoute } from '../../utils/routes';
 import { Link } from 'react-router-dom';
 import { capitalize } from '../../utils/string';
 import { ReactNode } from 'react';
+import './hist_action.css';
 
 export interface HistData {
   hist_type: string
