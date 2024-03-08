@@ -209,13 +209,13 @@ class Equipments extends APIController
         $validator = EquipmentValidator::getFromTypeName($equipment['type_name'])
             ->addRequest($this->request)
             ->asEdit();
-        if ($validator->validate()){
-            $updatedEquipment = $validator->getValidatedData();
-            $equipmentModel->update($data['id'], $updatedEquipment);
-            return $this->respondUpdated($data['id']);
+        if (!$validator->validate()){
+            $errors = $validator->getErrors();
+            return $this->failValidationErrors($errors);
         }
-        $errors = $validator->getErrors();
-        return $this->failValidationErrors($errors);
+        $updatedEquipment = $validator->getValidatedData();
+        $equipmentModel->update($data['id'], $updatedEquipment);
+        return $this->respondUpdated($data['id']);
     }
 
     public function delete(): ResponseInterface

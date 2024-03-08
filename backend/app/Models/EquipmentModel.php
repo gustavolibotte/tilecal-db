@@ -181,6 +181,13 @@ class EquipmentModel extends LogModel
             $slotId = remove_value('slot_id', $data);
         }
         $res = parent::update($id, $data);
+        if (!empty($data['location_id'])){
+            $equipment = $this->select('location_id')->find($id);
+            $children = $this->getChildrenIDs($id);
+            $this->builder()->set('location_id', $equipment->location_id)
+                ->whereIn('id', $children)
+                ->update();
+        }
         if(isset($parentId) && isset($slotId)){
             $this->deleteParent($id);
             $this->addParent($id, $parentId, $slotId);
@@ -266,6 +273,12 @@ class EquipmentModel extends LogModel
         $this->db->transException(true)->transBegin();
         $this->deleteParent($childId);
         $this->addParent($childId, $parentId, $slotId);
+        $parent = $this->select('location_id')->find($parentId);
+        $child = new Equipment([
+            'id' => $childId,
+            'location_id' => $parent->location_id
+        ]);
+        $this->update($childId, $child);
         $this->db->transCommit();
         return true;
     }
