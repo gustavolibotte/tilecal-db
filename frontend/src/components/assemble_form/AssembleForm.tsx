@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import './assemble_form.css';
 import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
 import { toast, Id } from 'react-toastify';
@@ -42,6 +42,8 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
     onSubmit: submitData
   });
 
+  const queryClient = useQueryClient();
+
   const toastId = useRef<Id>('');
 
   const assembleMutation = useMutation({
@@ -55,6 +57,13 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
       toast.dismiss(toastId.current)
       toast.success('Equipment assembled with success');
       formik.resetForm();
+      queryClient.invalidateQueries({
+        queryKey: [
+          'equipment',
+          'get',
+          {relatedEquipmentId: parentId}
+        ]
+      });
     },
     onError: (error: AxiosError) => {
       // The following "?" fields are guaranteed with the app

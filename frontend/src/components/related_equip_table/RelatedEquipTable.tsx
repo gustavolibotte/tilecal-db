@@ -78,7 +78,7 @@ export default function RelatedEquipTable(props: RelatedEquipTableProps) {
           child_id: rowData.id,
           parent_id: props.equipmentId
         }
-      break;
+        break;
       default:
         return (
         <ButtonConfirmation
