@@ -130,7 +130,7 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
           options={equipSlotOptions}
           required
           value={formik.values.slot_name}
-          help='Slot to fir the equipment'
+          help='Slot to install the equipment'
           onChange={(e) => {
             formik.setFieldValue('slot_name', e.value);
           }}
