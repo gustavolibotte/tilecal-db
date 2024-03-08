@@ -15,6 +15,7 @@ import 'primeicons/primeicons.css';
 import "primereact/resources/themes/md-light-indigo/theme.css";
 import FileUpload from './routes/file_upload/FileUpload.tsx';
 import EquipBatchRegister from './routes/equip_batch_register/EquipBatchRegister.tsx';
+import EquipAssemble from './routes/assemble/EquipAssemble.tsx';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,6 +61,10 @@ export default function App(){
     {
       path: 'equipment/:equipId',
       element: <EquipView/>,
+    },
+    {
+      path: 'equipment/assemble',
+      element: <EquipAssemble/>
     },
     {
       path: 'file/upload',

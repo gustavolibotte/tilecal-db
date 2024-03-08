@@ -1,10 +1,10 @@
 import { Menubar } from 'primereact/menubar';
-import MenuLink from '../menu_link/MenuLink';
 import { getEquipRegisterRoute, getSpecEquipRoute } from '../../utils/routes';
 import { useUser } from '../../utils/user';
 import { useQuery } from '@tanstack/react-query';
 import './header.css'
 import HomeButton from '../home_button/HomeButton';
+import { useNavigate } from 'react-router-dom';
 
 interface EquipType {
   name: string;
@@ -14,6 +14,8 @@ export default function Header() {
   const equipTypeQuery: any = useQuery({
     queryKey: ['equipment_type', 'get', {}]
   });
+
+  const navigate = useNavigate();
 
   const user: any = useUser();
 
@@ -28,39 +30,59 @@ export default function Header() {
     equipTypes = [];
   }
 
-  const equipItems: any = [{ template: <MenuLink route='equipment' label='Index' /> }];
-  if (user.canDelete()) {
-    equipItems.push({ template: <MenuLink route='deleted-equipment' label='Deleted' /> });
-  }
+  const equipItems: any = [{
+    label: 'Index',
+    command: () => {
+      navigate('equipment')
+    }
+  }];
   equipItems.push({ separator: true });
   equipTypes.forEach(
     (et: EquipType) => {
       // return {label: et.label, url: getSpecEquipRoute(et.label)};
-      equipItems.push({ template: <MenuLink route={getSpecEquipRoute(et.name)} label={et.name} /> });
+      equipItems.push({
+        label: et.name,
+        command: () => {
+          navigate(getSpecEquipRoute(et.name))
+        }
+      });
     }
   );
 
   const registerItems = [];
   if (user.canRegister()) {
-    registerItems.push(
-      { template: <MenuLink route='equipment/batch-register' label='Batch Register' /> }
-    );
+    registerItems.push({
+      label: 'Batch Register',
+      command: () => {
+        navigate('equipment/batch-register')
+      }
+    });
     registerItems.push({ separator: true });
     equipTypes.forEach(
       (et: EquipType) => {
-        registerItems.push(
-          { template: <MenuLink route={getEquipRegisterRoute(et.name)} label={et.name} /> }
-        );
+        registerItems.push({
+          label: et.name,
+          command: () => {
+            navigate(getEquipRegisterRoute(et.name))
+          }
+        });
       }
     );
   }
 
-  const fileItems = [{ template: <MenuLink route='file' label='Index' /> }];
+  const fileItems = [{
+    label: 'Index',
+    command: () => {
+      navigate('file')
+    }
+  }];
   if (user.canUpload()) {
-    fileItems.push({ template: <MenuLink route='file/upload' label='Upload' /> });
-  }
-  if (user.canDelete()) {
-    fileItems.push({ template: <MenuLink route='deleted-files' label='Deleted' /> });
+    fileItems.push({
+      label: 'Upload',
+      command: () => {
+        navigate('file/upload')
+      }
+    });
   }
 
   const items = [
@@ -75,6 +97,12 @@ export default function Header() {
     {
       label: 'Files',
       items: fileItems
+    },
+    {
+      label: 'Assemble',
+      command: () => {
+        navigate('equipment/assemble')
+      }
     }
   ]
 
