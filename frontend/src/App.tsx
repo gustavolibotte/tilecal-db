@@ -1,7 +1,6 @@
 import { createBrowserRouter, RouteObject, RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Home from './routes/home/Home.tsx';
-import NotFound from './components/not_found/NotFound.tsx';
 import PageLayout from './components/page_layout/PageLayout.tsx';
 import EquipIndex from './routes/equip_index/EquipIndex.tsx';
 import FileIndex from './routes/file_index/FileIndex.tsx';
