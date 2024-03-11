@@ -1,13 +1,15 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import './assemble_form.css';
 import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
-import { toast } from 'react-toastify';
+import { toast, Id } from 'react-toastify';
 import { useFormik } from 'formik';
 import { AxiosError } from 'axios';
 import { Button } from 'primereact/button';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
 import { snakeToSpaced } from '../../utils/string';
+import { useRef } from 'react';
+import { midTransactionToastConfig } from '../../utils/toast';
 
 interface AssembleFormSchema{
     child_id: string;
@@ -40,24 +42,32 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
     onSubmit: submitData
   });
 
+  const queryClient = useQueryClient();
+
+  const toastId = useRef<Id>('');
+
   const assembleMutation = useMutation({
     mutationFn: makeMutationFunction(
       'post',
       getEndpoint('equipment_assemble')),
     onMutate: () => {
-      toast.info('Assembling equipment.', {
-        autoClose: false,
-        hideProgressBar:true
-      });
+      toastId.current = toast.info('Assembling equipment.', midTransactionToastConfig);
     },
     onSuccess: () => {
-      toast.dismiss();
+      toast.dismiss(toastId.current)
       toast.success('Equipment assembled with success');
       formik.resetForm();
+      queryClient.invalidateQueries({
+        queryKey: [
+          'equipment',
+          'get',
+          {relatedEquipmentId: parentId}
+        ]
+      });
     },
     onError: (error: AxiosError) => {
       // The following "?" fields are guaranteed with the app
-      toast.dismiss();
+      toast.dismiss(toastId.current)
       const responseData: any = error?.response?.data;
       if (responseData.error == __INVALID_DATA_MSG__) {
         Object.keys(responseData.messages).forEach((key: string) => {
@@ -89,7 +99,7 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
   if (equipTypeData.slot_names){
     equipSlotOptions = equipTypeData.slot_names.map((slotName: string) => {
       return {
-        name: snakeToSpaced(slotName),
+        name: snakeToSpaced(slotName? slotName: ''),
         value: slotName
       }});
   } else{
@@ -104,7 +114,7 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
       <div className='mt-3'>
         <FormText
           id='child_id'
-          name='ID to be assemble'
+          name='Equipment to be assembled'
           value={formik.values.child_id}
           help='File name'
           required
@@ -120,7 +130,7 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
           options={equipSlotOptions}
           required
           value={formik.values.slot_name}
-          help='Slot to fir the equipment'
+          help='Slot to install the equipment'
           onChange={(e) => {
             formik.setFieldValue('slot_name', e.value);
           }}

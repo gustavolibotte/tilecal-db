@@ -2,7 +2,7 @@ import { useState, ReactNode } from 'react';
 import './file_hist_table.css';
 import { ExpandRowType, BaseTable, ColumnMeta } from '../base_table/BaseTable';
 import FileInfo from '../file_info/FileInfo';
-import { HistData, HistAction } from '../hist/Hist';
+import { HistData, HistAction } from '../hist/HistAction';
 import { DataTableSortMeta } from 'primereact/datatable';
 import DownloadButton from '../download_button/DownloadButton';
 import { getEndpoint } from '../../utils/DbClient';

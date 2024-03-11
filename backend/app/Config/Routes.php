@@ -67,13 +67,17 @@ $routes->group('api', static function ($routes){
         'filter' =>['api_auth', 'action:delete'],
         'as' => 'api_equipment_restore'
     ]);
-    $routes->post('api/equipment/assemble', 'Equipments::assemble', [
+    $routes->post('equipment/assemble', 'Equipments::assemble', [
         'filter' =>['api_auth', 'action:edit'],
         'as' => 'api_equipment_assemble'
     ]);
-    $routes->post('api/equipment/disassemble', 'Equipments::disassemble', [
+    $routes->post('equipment/disassemble', 'Equipments::disassemble', [
         'filter' =>['api_auth', 'action:edit'],
         'as' => 'api_equipment_disassemble'
+    ]);
+    $routes->get('equipment/children', 'Equipments::getChildren', [
+        'filter' =>['api_auth', 'action:view'],
+        'as' => 'api_equipment_children'
     ]);
 
     // EquipmentTypes API

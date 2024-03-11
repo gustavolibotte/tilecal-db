@@ -28,7 +28,7 @@ export default function EquipInfo(props: EquipInfoProps) {
   fieldConfig = fieldConfig.concat(
     Object.keys(props.equipData.type_params).map((key: string): any => {
       return {
-        name: snakeToSpaced(key),
+        name: snakeToSpaced(key? key: ''),
         field: `type_params.${key}`,
         template: (data: any) => data.type_params[key]};
     })

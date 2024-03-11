@@ -3,7 +3,7 @@ import { useState, ReactNode } from 'react';
 import EquipInfo from '../equip_info/EquipInfo';
 import './equip_hist_table.css';
 import { DataTableSortMeta } from 'primereact/datatable';
-import { HistAction, HistData } from '../hist/Hist';
+import { HistAction, HistData } from '../hist/HistAction';
 
 interface EquipHistTableProps {
   equipmentId: string;
