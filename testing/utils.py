@@ -22,7 +22,8 @@ ENDPOINTS = {
 
 
 def get_bearer_token():
-    with open(os.path.join('/root/tilecal-db/access_token.json')) as json_file:
+    jsonpath = '/root/tilecal-db/testing/access_token.json'
+    with open(os.path.join(jsonpath)) as json_file:
         response_json = json.load(json_file)
     return response_json['access_token']
 

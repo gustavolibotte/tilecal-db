@@ -6,6 +6,7 @@ if [ ! -d "$report_dir" ]; then
 fi
 html_report_path="${report_dir}/${current_timestamp}_dev_test_report.html"
 json_report_path="${report_dir}/${current_timestamp}_dev_test_report.json"
+source request_access_token.sh && \
 locust \
 -H "https://tilecal-db-dev.app.cern.ch/" \
 -t "10m" \
