@@ -1,7 +1,7 @@
 import './download_button.css';
 import { concatenateUrlParams } from '../../utils/routes';
 import { Button } from 'primereact/button';
-import { useState } from 'react';import axios from 'axios';
+import axios from 'axios';
 import { toast } from 'react-toastify';
 import { midTransactionToastConfig } from '../../utils/toast';
 
