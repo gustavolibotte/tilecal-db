@@ -136,9 +136,16 @@ export default function FileView() {
       );
     }
 
+    let title;
+    if (fileData.deleted_at){
+      title = <h1 className='text-red-500'>DELETED File:{fileData.name}</h1>;
+    } else {
+      title = <h1>File:{fileData.name}</h1>;
+    }
+
     component = (
       <>
-      <h1>File:{fileData.name}</h1>
+      {title}
       <TabPage activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
         <TabPanel header="Info">
           <div className="m-0">

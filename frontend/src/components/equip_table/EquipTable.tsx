@@ -15,7 +15,11 @@ export default function EquipTable(props: EquipTableProps) {
   const navigate = useNavigate();
 
   const getButton = (rowData: any) => {
-    return <Button label={rowData.id} onClick={() => navigate(getEquipviewRoute(rowData.id))}/>;
+    const severity = rowData.deleted_at? 'danger': undefined
+    return <Button
+      label={rowData.id}
+      severity={severity}
+      onClick={() => navigate(getEquipviewRoute(rowData.id))}/>;
   }
 
   const extraColumns: ColumnMeta[] = [];

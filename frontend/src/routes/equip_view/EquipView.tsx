@@ -140,10 +140,15 @@ export default function EquipView() {
         </>
       );
     }
-    
+    let title;
+    if (equipData.deleted_at){
+      title = <h1 className='text-red-500'>DELETED {typeName}: {equipId}</h1>
+    } else{
+      title = <h1>{typeName}: {equipId}</h1>
+    }
     component = (
       <>
-      <h1>{typeName}: {equipId}</h1>
+      {title}
       <TabPage activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
         <TabPanel header="Info">
           <div className="m-0">

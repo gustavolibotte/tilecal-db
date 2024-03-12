@@ -16,9 +16,11 @@ export default function FileTable(props: FileTableProps) {
   const navigate = useNavigate();
 
   const getButton = (rowData: any) => {
+    const severity = rowData.deleted_at? 'danger': undefined;
     return (
     <Button
       label={rowData.name}
+      severity={severity}
       onClick={() => navigate(getFileViewRoute(rowData.id))}/>
       );
   }
