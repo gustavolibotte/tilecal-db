@@ -1,12 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { json } from 'stream/consumers';
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   return {
-    plugins: [
-      react(),
-    ],
+    plugins: [react()],
     build: {
       outDir: '../backend/public/dist'
     },

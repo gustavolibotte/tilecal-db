@@ -173,7 +173,7 @@ $routes->group('api', static function ($routes){
 
 // Force React App return
 $routes->get('(:any)','WebApp::index', [
-    'filter' => ['auth', 'action:view', 'app_headers'],
+    'filter' => ['auth', 'action:view'],
     'as' => 'any'
 ]);
 

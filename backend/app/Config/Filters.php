@@ -4,7 +4,6 @@ namespace Config;
 
 use App\Filters\ActionAuthorized;
 use App\Filters\APIAuthentication;
-use App\Filters\AppHeaders;
 use App\Filters\Authentication;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Filters\CSRF;
@@ -31,8 +30,7 @@ class Filters extends BaseConfig
         'cors'          => Corsa::class,
         'auth' => Authentication::class,
         'action' => ActionAuthorized::class,
-        'api_auth' => APIAuthentication::class,
-        'app_headers' => AppHeaders::class
+        'api_auth' => APIAuthentication::class
     ];
 
     /**
