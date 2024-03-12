@@ -97,7 +97,6 @@ class FileModel extends LogModel
         if (!($fileObj instanceof File)){
             return $data;
         }
-        // $data = $this->checkExtension($data, $fileObj);
         $appPaths = config('Paths');
         $newName = $fileObj->getRandomName();
         $newPath = joinPaths([

@@ -5,6 +5,7 @@ import { useFormik } from "formik";
 import FormText from "../../components/form_text/FormText";
 import * as Yup from 'yup';
 import EquipAssembleComponents from "../../components/equip_assemble_components/EquipAssembleComponents";
+import { preventEnterDefault } from "../../utils/event";
 
 interface SearchFormSchema{
   parent_id: string
@@ -39,7 +40,7 @@ export default function EquipAssemble() {
   return (
     <div className="col-12">`
       <h1>Assemble Equipment:</h1>
-        <form onSubmit={formik.handleSubmit}>
+        <form onSubmit={formik.handleSubmit} onKeyDown={preventEnterDefault}>
         <div className="flex flex-wrap align-items-center justify-content gap-2">
           <FormText
             id='parent_id'
