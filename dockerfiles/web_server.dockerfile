@@ -57,7 +57,6 @@ RUN cd repo/ \
 && bash build_app.sh \
 && cp -r backend/* /var/www/html \
 && chmod -R 777 /var/www/html \
-&& cd /var/www/html \
-&& bash setup_directories.sh
+&& cd /var/www/html
 # WORKDIR /var/www/html
 # CMD php spark serve --host 0.0.0.0 --port 8080
