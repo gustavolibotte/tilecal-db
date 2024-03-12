@@ -52,12 +52,6 @@ class APIAuthentication implements FilterInterface
             $user->setSystemUser();
             return;
         }
-        // if ($request->getMethod() !== 'options'){
-        //     $invalidResponse = $this->validAPIDataCall($request);
-        //     if (!empty($invalidResponse)){
-        //         return $invalidResponse;
-        //     }
-        // }        $headers = [];
 
         $authorizationHeader = $request->header('Authorization');
         if (empty($authorizationHeader)) {
