@@ -184,9 +184,11 @@ class EquipmentModel extends LogModel
         if (!empty($data['location_id'])){
             $equipment = $this->select('location_id')->find($id);
             $children = $this->getChildrenIDs($id);
-            $this->builder()->set('location_id', $equipment->location_id)
+            if (!empty($children)){
+                $this->builder()->set('location_id', $equipment->location_id)
                 ->whereIn('id', $children)
                 ->update();
+            }
         }
         if(isset($parentId) && isset($slotId)){
             $this->deleteParent($id);
