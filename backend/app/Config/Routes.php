@@ -136,7 +136,7 @@ $routes->group('api', static function ($routes){
         'as' => 'api_file_restore'
         ]);
     $routes->get('file/download', 'Files::download', [
-        'filter' => 'action:download',
+        'filter' => ['api_auth', 'action:download'],
         'as' => 'api_file_download'
     ]);
     $routes->get('file/download-hist', 'Files::downloadHist', [

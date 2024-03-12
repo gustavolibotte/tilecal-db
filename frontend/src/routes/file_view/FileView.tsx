@@ -153,7 +153,10 @@ export default function FileView() {
               <div className="col-6">
                 <div className="flex flex-wrap align-items-center justify-content gap-3">
                   <h2>File Info</h2>
-                  <DownloadButton downloadUrl={getEndpoint('file_download')} params={{id: fileId}}/>
+                  <DownloadButton
+                  downloadUrl={getEndpoint('file_download')}
+                  params={{id: fileId}}
+                  filename={fileData.name}/>
                 </div>
               </div>
               <div className="col-6">

@@ -27,7 +27,10 @@ export default function FileTable(props: FileTableProps) {
 
   const getDownloadButton = (rowData: any) => {
     return (
-      <DownloadButton downloadUrl={getEndpoint('file_download')} params={{id: rowData.id}}/>
+      <DownloadButton
+      downloadUrl={getEndpoint('file_download')}
+      params={{id: rowData.id}}
+      filename={rowData.name}/>
     );
   }
 

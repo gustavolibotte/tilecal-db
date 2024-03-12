@@ -36,7 +36,8 @@ export default function FileHistTable(props: FileHistTableProps) {
       return (
         <DownloadButton
           downloadUrl={getEndpoint('file_download_hist')}
-          params={{id: rowData.id}}/>
+          params={{id: rowData.id}}
+          filename={rowData.name}/>
       );
     }
     return '';

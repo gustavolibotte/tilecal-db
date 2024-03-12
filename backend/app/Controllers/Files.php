@@ -9,7 +9,7 @@ use Throwable;
 class Files extends APIController
 {
 
-    public function download(): ResponseInterface
+    public function download()
     {
         try{
             return $this->__download__();
