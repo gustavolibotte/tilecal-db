@@ -1,5 +1,5 @@
 # Use the official PHP 8.2.7
-FROM php:8.2.7-apache
+FROM php:8.2.7
 EXPOSE 8080
 
 LABEL maintainer="Lucas Nunes"
@@ -40,13 +40,14 @@ COPY --from=node:20.11.0 /usr/local/lib /usr/local/lib
 COPY --from=node:20.11.0 /opt /opt
 
 # Configs
-COPY configs/php.ini /usr/local/etc/php/
-COPY configs/ports.conf /etc/apache2/
-COPY configs/httpd.conf /etc/apache2/sites-available
-COPY configs/hosts /etc/
-RUN a2enmod rewrite \
-&& a2enmod vhost_alias \
-&& a2ensite httpd
+# COPY configs/php.ini /usr/local/etc/php/
+# COPY configs/ports.conf /etc/apache2/
+# # COPY configs/custom.conf /etc/apache2/conf-available
+# COPY configs/httpd.conf /etc/apache2/sites-available
+# COPY configs/hosts /etc/
+# RUN a2enmod rewrite \
+# && a2enmod vhost_alias \
+# && a2ensite httpd
 
 # Set the working directory to your CodeIgniter app folder
 ADD . repo/
@@ -56,3 +57,5 @@ RUN cd repo/ \
 && bash build_app.sh \
 && cp -r backend/* /var/www/html \
 && chmod -R 777 /var/www/html
+WORKDIR /var/www/html
+CMD php spark serve --host 0.0.0.0 --port 8080
