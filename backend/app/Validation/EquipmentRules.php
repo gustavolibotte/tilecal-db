@@ -60,15 +60,17 @@ class EquipmentRules{
     {
         helper('string_validation');
         $fieldName = 'Equipment id';
-        if (strlen($value) != Self::$atlasIdLength){
-            return(
-                exact_length($value, Self::$sequentialNumberLength, $fieldName, $error) &&
-                regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error)
-            );
+        if (strlen($value) === Self::$sequentialNumberLength){
+            return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
+        } else if (strlen($value) === Self::$atlasIdLength){
+            $atlasId = new AtlasId(['id' => $value]);
+            $value = $atlasId->sequential;
+            return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
+        } else {
+            $error = "The equipment id must be a 14 character ATLAS ID or a 7 character ATLAS sequential number";
+            return false;
         }
-        $atlasId = new AtlasId(['id' => $value]);
-        $value = $atlasId->sequential;
-        return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
+
     }
 
     /**
