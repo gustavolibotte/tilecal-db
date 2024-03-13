@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Validation;
+use App\Entities\AtlasId;
 use App\Models\EquipmentModel;
 
 class EquipmentRules{
@@ -10,20 +11,64 @@ class EquipmentRules{
     public static string $serialRegex = '/^[A-Za-z0-9 -_]*$/';
     public static int $commentsMaxSize = 65535; //MySQL max text size
     public static string $commentsRegex = '/^.*$/';
+    public static int $atlasIdLength = 14;
+    /**
+     * Key value pairs for valid systems for the tilecal according to the ATLAS ID rules
+     * Keys are abbreviations and values which system they represent
+     * @var array $validSystems
+     */
+    public static array $validSystems = [
+        'LB' => 'Barrel',
+        'LE' => 'Extended',
+        'LL' => 'Electronics',
+        'LO' => 'Optics',
+        'LC' => 'Control'
+    ];
+
+        /**
+     * Key value pairs for valid projects for the database according to the ATLAS ID rules
+     * Keys are abbreviations and values which system they represent
+     * Since Tilecal is ALTAS, only the ATLAS detetctor code is valid
+     * @var array $validProjects
+     */
+    public static array $validProjects = [
+        '20' => 'ATLAS Detector'
+    ];
+    
+    /**
+     * Regex rule for the id sequential number part
+     * @var string $sequentialNumberRegex
+     */
+    public static string $sequentialNumberRegex = '/^[A-Z0-9]+$/';
+
+    /**
+     * Sequential number length
+     * @var string $sequentialNumberLength
+     */
+    public static int $sequentialNumberLength = 7;
 
     /**
      * Checks if the id value is sanitized
+     * If the id is a 14 character code,
+     * it is considered an AtlasId and the sequential number is extracted
+     * The value is changed to the sequential number inplace.
+     * Otherwise, supposes that the value is the sequential number
      * @param $value  Value given by CodeIgniter validator
      * @param ?string &$error Ignored
      */
-    public function equipment_id_is_sanitized($value, ?string &$error): bool
+    public function equipment_id_is_sanitized(&$value, ?string &$error): bool
     {
         helper('string_validation');
         $fieldName = 'Equipment id';
-        return (
-            exact_length($value, AtlasIdRules::$sequentialNumberLength, $fieldName, $error) &&
-            regex_match($value, AtlasIdRules::$sequentialNumberRegex, $fieldName, $error)
-        );
+        if (strlen($value) != Self::$atlasIdLength){
+            return(
+                exact_length($value, Self::$sequentialNumberLength, $fieldName, $error) &&
+                regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error)
+            );
+        }
+        $atlasId = new AtlasId(['id' => $value]);
+        $value = $atlasId->sequential;
+        return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
     }
 
     /**
