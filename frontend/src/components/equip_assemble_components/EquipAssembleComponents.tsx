@@ -18,12 +18,13 @@ export default function EquipAssembleComponents({parentId}: EquipAssembleCompone
     return <h2>An error has occured</h2>;
   } else{
     if (response.data.length){
+      const equipData = response.data[0];
       return (
         <>
           <h2>Assemble new equipment into {parentId}</h2>
-          <AssembleForm parentId={parentId} parentTypeName="PMT Block"/>
+          <AssembleForm parentId={parentId} parentTypeName={equipData.type_name}/>
           <hr/>
-          <h2>Already Assembled into {parentId}</h2>
+          <h2>Related to {parentId}</h2>
           <RelatedEquipTable equipmentId={parentId}/>
         </>);
     } else {

@@ -21,7 +21,13 @@ export default function RelatedEquipTable(props: RelatedEquipTableProps) {
   const navigate = useNavigate();
 
   const relationTypeTemplate = (rowData: any) => {
-    return <p>{snakeToSpaced(rowData.relation_type? rowData.relation_type: '')}</p>;
+    if (rowData.relation_type == 'parent'){
+      return <p>Assembled into</p>;
+    } else if (rowData.relation_type == 'child') {
+      return <p> Assembled</p>;
+    } else {
+      return <p>{snakeToSpaced(rowData.relation_type? rowData.relation_type: '')}</p>;
+    }
   }
 
   const slotTemplate = (rowData: any) => {
