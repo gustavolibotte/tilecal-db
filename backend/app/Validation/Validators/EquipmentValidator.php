@@ -303,7 +303,7 @@ class EquipmentValidator extends EntryValidator
             return $id;
         }
         $id = new AtlasId(['id' => $id]);
-        return $id->getSequential;
+        return $id->sequential;
     }
 
     public function substituteFKs(array $fieldValues)

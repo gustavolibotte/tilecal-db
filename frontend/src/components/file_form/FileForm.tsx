@@ -59,8 +59,8 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
       toast.dismiss(toastId.current);
       // The following "?" fields are guaranteed with the app
       const responseData: any = error?.response?.data;
-      if (responseData.error == __INVALID_DATA_MSG__) {
-        Object.keys(responseData.messages).forEach((key: string) => {
+      if (responseData.message == __INVALID_DATA_MSG__) {
+        Object.keys(responseData.data).forEach((key: string) => {
           formik.setFieldError(key as keyof FileFormSchema, responseData.messages[key]);
         });
       } else {

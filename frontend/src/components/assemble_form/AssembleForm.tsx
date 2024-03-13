@@ -69,8 +69,8 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
       // The following "?" fields are guaranteed with the app
       toast.dismiss(toastId.current)
       const responseData: any = error?.response?.data;
-      if (responseData.error == __INVALID_DATA_MSG__) {
-        Object.keys(responseData.messages).forEach((key: string) => {
+      if (responseData.message == __INVALID_DATA_MSG__) {
+        Object.keys(responseData.data).forEach((key: string) => {
           formik.setFieldError(key as keyof AssembleFormSchema, responseData.messages[key]);
         });
       } else {
