@@ -56,13 +56,14 @@ class EquipmentRules{
      * @param $value  Value given by CodeIgniter validator
      * @param ?string &$error Ignored
      */
-    public function equipment_id_is_sanitized(&$value, ?string &$error): bool
+    public function equipment_id_is_sanitized($value, ?string &$error): bool
     {
         helper('string_validation');
         $fieldName = 'Equipment id';
-        if (strlen($value) === Self::$sequentialNumberLength){
+        $strLength = strlen($value);
+        if ($strLength === Self::$sequentialNumberLength){
             return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
-        } else if (strlen($value) === Self::$atlasIdLength){
+        } else if ($strLength === Self::$atlasIdLength){
             $atlasId = new AtlasId(['id' => $value]);
             $value = $atlasId->sequential;
             return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);

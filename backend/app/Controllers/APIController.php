@@ -191,11 +191,7 @@ class APIController extends BaseController
 
     protected function getValidatedData(array $rules): array
     {
-        $data = [];
-        foreach (array_keys($rules) as $fieldName){
-            $var = $this->request->getVar($fieldName);
-            $data[$fieldName] = empty($var)? '': $var;
-        }
+        $data = $this->getRequestValuesFromRules($rules);
         $res = [
             'valid' => $this->validateData($data, $rules),
             'data' => $data
@@ -205,6 +201,15 @@ class APIController extends BaseController
         }
         $res['errors'] = $this->validator->getErrors();
         return $res;
+    }
+
+    protected function getRequestValuesFromRules(array $rules): array
+    {
+        $values = [];
+        foreach (array_keys($rules) as $fieldName){
+            $values[$fieldName] = $this->request->getVar($fieldName);
+        }
+        return $values;
     }
 
     public function parseDeletion(BaseBuilder|Model $queryBuilder, bool $onlyDeleted): BaseBuilder|Model
