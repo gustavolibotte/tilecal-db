@@ -61,7 +61,7 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
       const responseData: any = error?.response?.data;
       if (responseData.message == __INVALID_DATA_MSG__) {
         Object.keys(responseData.data).forEach((key: string) => {
-          formik.setFieldError(key as keyof FileFormSchema, responseData.messages[key]);
+          formik.setFieldError(key as keyof FileFormSchema, responseData.data[key]);
         });
       } else {
         toast.error(__DEFAULT_ERROR_MSG__);

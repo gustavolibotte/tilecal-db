@@ -22,7 +22,7 @@ export default function EquipAssembleComponents({parentId}: EquipAssembleCompone
       return (
         <>
           <h2>Assemble new equipment into {parentId}</h2>
-          <AssembleForm parentId={parentId} parentTypeName={equipData.type_name}/>
+          <AssembleForm parentId={parentId} parentTypeName={equipData.type_name} barcodeReaderSafe/>
           <hr/>
           <h2>Related to {parentId}</h2>
           <RelatedEquipTable equipmentId={parentId}/>

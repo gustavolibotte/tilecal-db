@@ -101,7 +101,7 @@ export default function PmtForm({ equipId, onSuccess }: PmtFormProps) {
       const responseData: any = error?.response?.data;
       if (responseData.message == __INVALID_DATA_MSG__) {
         Object.keys(responseData.data).forEach((key: string) => {
-          formik.setFieldError(key as keyof EquipFormSchema, responseData.messages[key]);
+          formik.setFieldError(key as keyof EquipFormSchema, responseData.data[key]);
         });
       } else {
         console.log(error);

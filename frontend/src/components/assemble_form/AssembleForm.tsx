@@ -10,6 +10,7 @@ import FormDropdown from '../form_dropdown/FormDropdown';
 import { snakeToSpaced } from '../../utils/string';
 import { useRef } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
+import { preventEnterDefault } from '../../utils/event';
 
 interface AssembleFormSchema{
     child_id: string;
@@ -20,9 +21,10 @@ interface AssembleFormSchema{
 interface AssembleFormProps{
   parentId: string;
   parentTypeName: string;
+  barcodeReaderSafe?: boolean;
 }
 
-export default function AssembleForm({ parentId, parentTypeName }: AssembleFormProps) {
+export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSafe }: AssembleFormProps) {
 
   const initialValues: AssembleFormSchema = {
     child_id: '', slot_name: ''
@@ -67,11 +69,13 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
     },
     onError: (error: AxiosError) => {
       // The following "?" fields are guaranteed with the app
+      console.log(error)
       toast.dismiss(toastId.current)
       const responseData: any = error?.response?.data;
+      console.log(responseData);
       if (responseData.message == __INVALID_DATA_MSG__) {
         Object.keys(responseData.data).forEach((key: string) => {
-          formik.setFieldError(key as keyof AssembleFormSchema, responseData.messages[key]);
+          formik.setFieldError(key as keyof AssembleFormSchema, responseData.data[key]);
         });
       } else {
         toast.error(__DEFAULT_ERROR_MSG__);
@@ -108,15 +112,16 @@ export default function AssembleForm({ parentId, parentTypeName }: AssembleFormP
     </div>;
   }
 
+  const onKeyDown = barcodeReaderSafe? preventEnterDefault: undefined;
   return (
     <div className="card flex justify-content-center flex-column gap-2">
-    <form onSubmit={formik.handleSubmit}>
+    <form onSubmit={formik.handleSubmit} onKeyDown={onKeyDown}>
       <div className='mt-3'>
         <FormText
           id='child_id'
           name='Equipment to be assembled'
           value={formik.values.child_id}
-          help='File name'
+          help='Equipment to be assembled into the selected one. Example: AB1234'
           required
           onChange={(e) => {
             formik.setFieldValue('child_id', e.target.value);

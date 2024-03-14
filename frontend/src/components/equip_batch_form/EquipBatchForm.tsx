@@ -52,8 +52,8 @@ export default function EquipBatchForm() {
       toast.dismiss(toastId.current);
       const responseData: any = error?.response?.data;
       if (responseData.error == __INVALID_DATA_MSG__){
-        Object.keys(responseData.messages).forEach((key: string) => {
-          formik.setFieldError(key as keyof EquipBatchFormSchema, responseData.messages[key]);
+        Object.keys(responseData.data).forEach((key: string) => {
+          formik.setFieldError(key as keyof EquipBatchFormSchema, responseData.data[key]);
         });
       } else if (responseData.error.includes('entry')){
         setEquipFieldErrors(responseData.messages);
