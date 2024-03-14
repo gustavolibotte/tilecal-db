@@ -6,7 +6,7 @@ class LocationRules{
 
     public static $idRegex = '/^[0-9]+$/';
     public static $maxNameLength = 100;
-    public static $nameRegex = '/^[A-Za-z0-9]+$/';
+    public static $nameRegex = '/^[A-Za-z0-9 ]+$/';
 
     /**
      * Checks if the id value is sanitized
