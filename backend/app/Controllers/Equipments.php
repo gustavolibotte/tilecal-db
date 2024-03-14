@@ -78,6 +78,7 @@ class Equipments extends APIController
 
         $inputData = $this->getRequestValuesFromRules($inputRules);
         $inputData['id'] = $this->preprocessEquipmentId($inputData['id']);
+        $inputData['relatedEquipmentId'] = $this->preprocessEquipmentId($inputData['relatedEquipmentId']);
     
         if (!$this->validateData($inputData, $inputRules)){
             return $this->failInvalidParams($this->validator->getErrors());
