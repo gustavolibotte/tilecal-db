@@ -21,10 +21,10 @@ export default function EquipAssembleComponents({parentId}: EquipAssembleCompone
       const equipData = response.data[0];
       return (
         <>
-          <h2>Assemble new equipment into {parentId}</h2>
+          <h2>Assemble new equipment into {equipData.type_name} "{parentId}"</h2>
           <AssembleForm parentId={parentId} parentTypeName={equipData.type_name} barcodeReaderSafe/>
           <hr/>
-          <h2>Related to {parentId}</h2>
+          <h2>Related to {equipData.type_name} "{parentId}"</h2>
           <RelatedEquipTable equipmentId={parentId}/>
         </>);
     } else {
