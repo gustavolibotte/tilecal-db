@@ -20,6 +20,7 @@ export default function EquipInfo(props: EquipInfoProps) {
     { name: 'ID', field: 'id' },
     { name: 'Type', field: 'type_name' },
     { name: "Location", field: 'location_name', template: getDetectorLocation },
+    { name: 'Detector Location', field: 'detector_location_name'},
     { name: 'Status', field: 'status_name' },
     { name: 'Owner', field: 'owner_name' },
     { name: 'Serial', field: 'serial' }
