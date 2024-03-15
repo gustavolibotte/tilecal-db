@@ -29,7 +29,7 @@ class EquipmentType extends APIController
         ];
         $res = $this->getValidatedData($inputRules);
         if (!$res['valid']){
-            return $this->failInvalidParams($res['errors']);
+            return $this->failValidationErrors($res['errors']);
         }
         $inputData = $res['data'];
 

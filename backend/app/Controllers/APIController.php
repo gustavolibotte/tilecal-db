@@ -123,11 +123,6 @@ class APIController extends BaseController
         return $this->buildAPIResponse(503, message:'Service Unavailable');
     }
 
-    protected function failInvalidParams(array $validationErrors): ResponseInterface
-    {
-        return $this->failValidationErrors($validationErrors, 'Invalid Params');
-    }
-
     protected function failValidationError(string $message): ResponseInterface
     {
         return $this->buildAPIResponse(

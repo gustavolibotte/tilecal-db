@@ -36,7 +36,7 @@ class Files extends APIController
         ];
         $res = $this->getValidatedData($inputRules);
         if (!$res['valid']){
-            return $this->failInvalidParams($res['errors']);
+            return $this->failValidationErrors($res['errors']);
         }
         $inputData = $res['data'];
 
@@ -103,7 +103,7 @@ class Files extends APIController
 
         $res = $this->getValidatedData($inputRules);
         if (!$res['valid']){
-            return $this->failInvalidParams($res['errors']);
+            return $this->failValidationErrors($res['errors']);
         }
         $inputData = $res['data'];
 
@@ -154,7 +154,7 @@ class Files extends APIController
         ];
         $res = $this->getValidatedData($inputRules);
         if (!$res['valid']){
-            return $this->failInvalidParams($res['errors']);
+            return $this->failValidationErrors($res['errors']);
         }
         $inputData = $res['data'];
         $history = model('HistModel')
@@ -220,7 +220,7 @@ class Files extends APIController
         ];
         $res = $this->getValidatedData($inputRules);
         if (!$res['valid']){
-            return $this->failInvalidParams($res['errors']);
+            return $this->failValidationErrors($res['errors']);
         }
         $inputData = $res['data'];
         
@@ -266,7 +266,7 @@ class Files extends APIController
         $res = $this->getValidatedData($inputRules);
 
         if (!$res['valid']){
-            return $this->failInvalidParams($res['errors']);
+            return $this->failValidationErrors($res['errors']);
         }
 
         model('FileModel')->delete($res['data']['id']);
@@ -305,7 +305,7 @@ class Files extends APIController
         $res = $this->getValidatedData($inputRules);
 
         if (!$res['valid']){
-            return $this->failInvalidParams($res['errors']);
+            return $this->failValidationErrors($res['errors']);
         }
 
         model('FileModel')->restore($res['data']['id']);
@@ -338,7 +338,7 @@ class Files extends APIController
         ];
         $res = $this->getValidatedData($inputRules);
         if (!$res['valid']){
-            return $this->failInvalidParams($res['errors']);
+            return $this->failValidationErrors($res['errors']);
         }
         $inputData = $res['data'];
 

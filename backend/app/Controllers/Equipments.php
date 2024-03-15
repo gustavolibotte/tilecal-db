@@ -81,7 +81,7 @@ class Equipments extends APIController
         $inputData['relatedEquipmentId'] = $this->preprocessEquipmentId($inputData['relatedEquipmentId']);
     
         if (!$this->validateData($inputData, $inputRules)){
-            return $this->failInvalidParams($this->validator->getErrors());
+            return $this->failValidationErrors($this->validator->getErrors());
         }
 
         $equipmentModel = model('EquipmentModel')->asArray();
@@ -149,7 +149,7 @@ class Equipments extends APIController
 
         if (!$this->validateData($data, $rules)){
             $errors = $this->validator->getErrors();
-            return $this->failInvalidParams($errors);
+            return $this->failValidationErrors($errors);
         }
 
         $validator = EquipmentValidator::getFromTypeName($data['type_name']);
@@ -187,7 +187,7 @@ class Equipments extends APIController
         $inputData = $this->getRequestValuesFromRules($sanitationRules);
         $inputData['id'] = $this->preprocessEquipmentId($inputData['id']);
         if (!$this->validateData($inputData, $sanitationRules)){
-            return $this->failInvalidParams($this->validator->getErrors());
+            return $this->failValidationErrors($this->validator->getErrors());
         }
         $history = model('HistModel')
             ->getEquipmentHist($inputData['id']);
@@ -211,7 +211,7 @@ class Equipments extends APIController
         }
         $res = $this->getValidatedData($this->existingIdRule);
         if (!$res['valid']){
-            return $this->failInvalidParams($res['errors']);
+            return $this->failValidationErrors($res['errors']);
         }
         $data = $res['data'];
         $equipmentModel = model('EquipmentModel');
@@ -250,7 +250,7 @@ class Equipments extends APIController
         $res = $this->getValidatedData($this->existingIdRule);
 
         if (!$res['valid']){
-            return $this->failInvalidParams($res['errors']);
+            return $this->failValidationErrors($res['errors']);
         }
         $data = $res['data'];
         model('EquipmentModel')->delete($data['id']);
@@ -276,7 +276,7 @@ class Equipments extends APIController
         $res = $this->getValidatedData($this->existingIdRule);
 
         if (!$res['valid']){
-            return $this->failInvalidParams($res['errors']);
+            return $this->failValidationErrors($res['errors']);
         }
         $data = $res['data'];
 
