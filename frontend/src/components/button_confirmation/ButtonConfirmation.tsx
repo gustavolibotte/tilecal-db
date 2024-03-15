@@ -15,6 +15,7 @@ interface ButtonConfirmationProps{
   dialogStyle?: any;
   cancelSeverity?: Severity;
   confirmSeverity?: Severity;
+  buttonType?: "button" | "submit";
 }
 
 
@@ -28,7 +29,8 @@ export default function ButtonConfirmation(props: ButtonConfirmationProps) {
 
   return (
     <>
-      <Button type="button" label={props.actionLabel} severity={props.actionSeverity}
+      <Button type={props.buttonType? props.buttonType: 'button'}
+        label={props.actionLabel} severity={props.actionSeverity}
         onClick={() => setVisibleDialog(true)} icon={props.actionIcon}/>
       <Dialog header={props.dialogHeader? props.dialogHeader: 'Confirm operation'}
         visible={visibleDialog}  style={props.dialogStyle}

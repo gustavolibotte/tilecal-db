@@ -3,9 +3,9 @@ import { Button } from "primereact/button";
 import ButtonConfirmation from "../../components/button_confirmation/ButtonConfirmation";
 import { useFormik } from "formik";
 import FormText from "../../components/form_text/FormText";
-import * as Yup from 'yup';
 import EquipAssembleComponents from "../../components/equip_assemble_components/EquipAssembleComponents";
 import { preventEnterDefault } from "../../utils/event";
+import { equipIdRules } from "../../utils/validation_rules";
 
 interface SearchFormSchema{
   parent_id: string
@@ -19,12 +19,7 @@ export default function EquipAssemble() {
   const formik = useFormik({
     initialValues: {parent_id: ''},
     onSubmit: submitAction,
-    validationSchema: Yup.object({
-      parent_id: Yup.string().matches(
-        /^[A-Z0-9]+$/,
-        "Equipment Id can only contain upper case letters and numbers"
-      )
-    })
+    validationSchema: equipIdRules
   });
   const [showAssemblyStatus, setShowAssemblyStatus] = useState(false);
   const getFormErrorMessage = (name: keyof SearchFormSchema): string | null => {
@@ -46,14 +41,14 @@ export default function EquipAssemble() {
             id='parent_id'
             name='Search for an Equipment to assemble parts'
             value={formik.values.parent_id}
-            help='Example: AB1234'
+            help='Example: ABC1234'
             required
             onChange={(e) => {
               setShowAssemblyStatus(false);
               formik.setFieldValue('parent_id', e.target.value);
             }}
             errorText={getFormErrorMessage('parent_id')} />
-          <Button label="Submit" onClick={submitAction} type="submit"/>
+          <Button label="Submit" type="submit"/>
           <ButtonConfirmation 
           actionLabel="Clear"
           actionSeverity="danger"
