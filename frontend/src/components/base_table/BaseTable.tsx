@@ -58,21 +58,21 @@ export function BaseTable(props: TableProps){
     });
   }
 
-  const exportPdf = (): void => {
-    const exportColumns = visibleColumns.map(
-      (col: ColumnProps) => ({ title: col.header, dataKey: col.field })
-    );
-    import('jspdf').then((jsPDF) => {
-      import('jspdf-autotable').then(() => {
-          const doc = new jsPDF.default('landscape');
-          // I don't now why but ts can't find the function autoTable but it exists
-          // The flag exists only to force it to compile otherwise it would raise errors
-          // @ts-ignore
-          doc.autoTable(exportColumns, response.data);
-          doc.save(`${props.fileName}.pdf`);
-      });
-    });
-  }
+  // const exportPdf = (): void => {
+  //   const exportColumns = visibleColumns.map(
+  //     (col: ColumnProps) => ({ title: col.header, dataKey: col.field })
+  //   );
+  //   import('jspdf').then((jsPDF) => {
+  //     import('jspdf-autotable').then(() => {
+  //         const doc = new jsPDF.default('landscape');
+  //         // I don't now why but ts can't find the function autoTable but it exists
+  //         // The flag exists only to force it to compile otherwise it would raise errors
+  //         // @ts-ignore
+  //         doc.autoTable(exportColumns, response.data);
+  //         doc.save(`${props.fileName}.pdf`);
+  //     });
+  //   });
+  // }
 
   const getHeader = (): ReactNode =>{
     return (
@@ -80,7 +80,7 @@ export function BaseTable(props: TableProps){
         <span>Select Columns:</span>
         <MultiSelect value={visibleColumns} options={props.columns} optionLabel="header" onChange={onColumnToggle} className="w-full sm:w-20rem" display="chip" />
         <Button type="button" icon="pi pi-filter-slash" label="Clear Filters" outlined onClick={clearFilter} />
-        <Button type="button" icon="pi pi-file-pdf" label="PDF" onClick={exportPdf} data-pr-tooltip="PDF" />
+        {/* <Button type="button" icon="pi pi-file-pdf" label="PDF" onClick={exportPdf} data-pr-tooltip="PDF" /> */}
         <Button type="button" icon="pi pi-file" label="CSV" onClick={() => exportCSV(false)} data-pr-tooltip="CSV" />
         <Button type="button" icon="pi pi-refresh" onClick={invalidateQuery} data-pr-tooltip="Refresh" />
       </div>);
