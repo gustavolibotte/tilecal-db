@@ -84,7 +84,6 @@ phpunit
 # Composer
 #-------------------------
 vendor/
-composer*
 
 #-------------------------
 # IDE / Development Files
@@ -127,12 +126,13 @@ nb-configuration.xml
 /phpunit*.xml
 /.phpunit.*.cache
 
+#-------------------------
+# Project specific files
+#-------------------------
+
 # DBeaver files
 .dbeaver/*
 .project
-
-# macOS
-.DS_Store
 
 # Directory to throw everything that isn't useful
 ignore/*
@@ -149,3 +149,41 @@ output/
 
 # Python
 __pycache__/
+
+# Ignore build generated files
+backend/app/Views/index.html
+backend/app/Views/index.php
+backend/public/assets
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vite
+
+# Sensitive data
+access_token.json
+
+# Testing reports
+testing/reports
+

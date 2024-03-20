@@ -1,0 +1,9 @@
+{
+    "require": {
+        "codeigniter4/framework": "4.3.6",
+        "jumbojett/openid-connect-php": "1.0.0",
+        "firebase/php-jwt": "6.10.0",
+        "fakerphp/faker": "^1.23",
+        "phpseclib/phpseclib": "3.0.34"
+    }
+}
