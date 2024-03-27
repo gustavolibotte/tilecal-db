@@ -182,7 +182,8 @@ export default function PmtForm({ equipId, onSuccess }: PmtFormProps) {
     'R7787',
     'R11187-SEL',
     'R11187-A1',
-    'R7600-20'
+    'R7600-20',
+    'R5900MOD'
   ].map((i: string) => {
     return { name: i, value: i };
   });;

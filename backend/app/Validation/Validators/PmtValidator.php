@@ -10,7 +10,8 @@ class PmtValidator extends EquipmentValidator
         'R7787',
         'R11187-SEL',
         'R11187-A1',
-        'R7600-20'
+        'R7600-20',
+        'R5900MOD'
     ];
     public static string $validSerialRegex = '/^[A-Z0-9]{4}/';
     public static int $serialMaxSize = 6;
