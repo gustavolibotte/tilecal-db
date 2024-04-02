@@ -6,11 +6,11 @@ import { useFormik } from 'formik';
 import { AxiosError } from 'axios';
 import { Button } from 'primereact/button';
 import FormText from '../form_text/FormText';
-import FormDropdown from '../form_dropdown/FormDropdown';
 import { snakeToSpaced } from '../../utils/string';
 import { useRef } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
 import { preventEnterDefault } from '../../utils/event';
+import { extractSequentialNumber } from '../../utils/validation_rules';
 
 interface AssembleFormSchema{
   [x: string | number | symbol]: string;
@@ -32,15 +32,15 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
 
   const submitData = (data: AssembleFormSchema) => {
     const mutationData: any = {
-      id: parentId,
+      id: extractSequentialNumber(parentId),
       slots: []
     };
     //Adds slots from the form
-    Object.entries(data).forEach(([key, value]) => {
-      if (value.length){
+    Object.entries(data).forEach(([name, id]) => {
+      if (id.length){
         mutationData.slots.push({
-          name: key,
-          equpment_id: value
+          name: name,
+          equpment_id: extractSequentialNumber(id)
         });
       }
     })
@@ -49,7 +49,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
 
   const formik = useFormik({
     initialValues: initialValues,
-    onSubmit: submitData
+    onSubmit: submitData,
   });
 
   const queryClient = useQueryClient();
@@ -113,9 +113,10 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       <h4>This equipment doesn't have slots to assemble.</h4>
     </div>;
   }
-  const equipSlotFields = equipTypeData.slot_names.map((slotName: string) => {
+  const equipSlotFields: Array<any> = [];
+  equipTypeData.slot_names.forEach((slotName: string) => {
     const spacedName = snakeToSpaced(slotName);
-    return (
+    const field =  (
       <div className='mt-3'>
         <FormText
           id={slotName}
@@ -127,7 +128,9 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
             formik.setFieldValue(slotName, e.target.value);
           }}
           errorText={getFormErrorMessage(slotName)} />
-      </div>)});
+      </div>);
+    equipSlotFields.push(field)
+    });
   const onKeyDown = barcodeReaderSafe? preventEnterDefault: undefined;
   return (
     <div className="card flex justify-content-center flex-column gap-2">
