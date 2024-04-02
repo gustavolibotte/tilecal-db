@@ -6,6 +6,7 @@ import FormText from "../../components/form_text/FormText";
 import EquipAssembleComponents from "../../components/equip_assemble_components/EquipAssembleComponents";
 import { preventEnterDefault } from "../../utils/event";
 import { equipIdRules } from "../../utils/validation_rules";
+import * as Yup from 'yup';
 
 interface SearchFormSchema{
   parent_id: string
@@ -19,7 +20,9 @@ export default function EquipAssemble() {
   const formik = useFormik({
     initialValues: {parent_id: ''},
     onSubmit: submitAction,
-    validationSchema: equipIdRules
+    validationSchema: Yup.object({
+      parent_id: equipIdRules.required(__FIELD_REQUIRED_MSG__ )
+    })
   });
   const [showAssemblyStatus, setShowAssemblyStatus] = useState(false);
   const getFormErrorMessage = (name: keyof SearchFormSchema): string | null => {
