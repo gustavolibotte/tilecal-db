@@ -408,20 +408,28 @@ class Equipments extends APIController
                 ]
         ];
         $inputData = $this->getRequestValuesFromRules($inputRules);
-        $inputData['child_id'] = $this->preprocessEquipmentId($inputData['child_id']);
-        $inputData['parent_id'] = $this->preprocessEquipmentId($inputData['parent_id']);
+        // $inputData['child_id'] = $this->preprocessEquipmentId($inputData['child_id']);
+        // $inputData['parent_id'] = $this->preprocessEquipmentId($inputData['parent_id']);
 
         if (!$this->validateData($inputData, $inputRules)){
             return $this->failValidationErrors($this->validator->getErrors());
         }
-        $inputData['slot_id'] = model('TypeSlotModel')
-            ->where('name', $inputData['slot_name'])
-            ->first()->id;
-        model('EquipmentModel')->updateParent(
-            $inputData['child_id'],
-            $inputData['parent_id'],
-            $inputData['slot_id']
-        );
+        $db = db_connect();
+        $equipmentModel = model('EquipmentModel');
+        $typeSlotModel = model('TypeSlotModel');
+        $db->transException(true)->transBegin();
+        foreach ($inputData['slots.*'] as $slotInfo){
+            $slotId = $typeSlotModel
+                ->select('id')
+                ->where('name', $slotInfo->name)
+                ->first()->id;
+            $equipmentModel->updateParent(
+                $slotInfo->equipment_id,
+                $inputData['id'],
+                $slotId
+            );
+        }
+        $db->transCommit();
         return $this->buildAPIResponse(200, message:'Assembled');
     }
 
@@ -477,11 +485,11 @@ class Equipments extends APIController
         if (empty($id)){
             return '';
         }
-        if (strlen($id) == 14){
-            $atlasId = new AtlasId(['id' => $id]);
-            $id = $atlasId->sequential;
-            return $id;
-        }
+        // if (strlen($id) == 14){
+        //     $atlasId = new AtlasId(['id' => $id]);
+        //     $id = $atlasId->sequential;
+        //     return $id;
+        // }
         return $id;
     }
 }

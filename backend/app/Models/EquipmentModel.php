@@ -400,7 +400,7 @@ class EquipmentModel extends LogModel
         $res = $this->builder('equipments e')
             ->select('1')
             ->join('type_slots ts', 'e.type_id=ts.parent_type_id', 'right')
-            ->where('equipments.id', $id)
+            ->where('e.id', $id)
             ->where('ts.name', $slotName)
             ->get()->getResult('array');
         return !empty($res);
@@ -445,7 +445,8 @@ class EquipmentModel extends LogModel
 
     public function equipIsAssembledInto(string $id): bool
     {
-        $res = $this->table('parent_child_equips pce')
+        $db = db_connect();
+        $res = $this->builder('parent_child_equips pce')
             ->select('1')
             ->where('child_equip_id', $id)
             ->get()->getResult('array');

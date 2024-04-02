@@ -40,7 +40,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       if (id.length){
         mutationData.slots.push({
           name: name,
-          equpment_id: extractSequentialNumber(id)
+          equipment_id: extractSequentialNumber(id)
         });
       }
     })

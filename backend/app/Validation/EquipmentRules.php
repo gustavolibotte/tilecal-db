@@ -196,16 +196,16 @@ class EquipmentRules{
 
     public function is_valid_slot_for_assembly($value, string $params, array $data, ?string &$error): bool
     {
-        if (!array_key_exists('name', $value)){
+        if (!property_exists($value, 'name')){
             $error = 'Missing slot name.';
             return false;
         }
-        if (!array_key_exists('equipment_id', $value)){
+        if (!property_exists($value, 'equipment_id')){
             $error = 'Missing slot equipment id to assemble.';
             return false;
         }
-        $slotName = $value['name'];
-        $childId = $value['equipment_id'];
+        $slotName = $value->name;
+        $childId = $value->equipment_id;
         $parentId = $params;
         $equipmentModel = model('EquipmentModel');
 
