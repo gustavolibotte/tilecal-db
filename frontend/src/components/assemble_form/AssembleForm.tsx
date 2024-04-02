@@ -13,9 +13,7 @@ import { midTransactionToastConfig } from '../../utils/toast';
 import { preventEnterDefault } from '../../utils/event';
 
 interface AssembleFormSchema{
-    child_id: string;
-    slot_name: string;
-    parent_id?: string;
+  [x: string | number | symbol]: string;
 }
 
 interface AssembleFormProps{
@@ -26,17 +24,27 @@ interface AssembleFormProps{
 
 export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSafe }: AssembleFormProps) {
 
-  const initialValues: AssembleFormSchema = {
-    child_id: '', slot_name: ''
-  };
+  const initialValues: any = {};
 
   const equipTypeQuery: any = useQuery({
     queryKey: ['equipment_type', 'get', {type_name: parentTypeName}]
   });
 
   const submitData = (data: AssembleFormSchema) => {
-    data.parent_id = parentId;
-    assembleMutation.mutate(data);
+    const mutationData: any = {
+      id: parentId,
+      slots: []
+    };
+    //Adds slots from the form
+    Object.entries(data).forEach(([key, value]) => {
+      if (value.length){
+        mutationData.slots.push({
+          name: key,
+          equpment_id: value
+        });
+      }
+    })
+    assembleMutation.mutate(mutationData);
   }
 
   const formik = useFormik({
@@ -68,14 +76,15 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       });
     },
     onError: (error: AxiosError) => {
-      // The following "?" fields are guaranteed with the app
+      // The following "?" field types are guaranteed with the app architecture
       console.log(error)
       toast.dismiss(toastId.current)
       const responseData: any = error?.response?.data;
       console.log(responseData);
       if (responseData.message == __INVALID_DATA_MSG__) {
+        toast.error(__INVALID_DATA_MSG__)
         Object.keys(responseData.data).forEach((key: string) => {
-          formik.setFieldError(key as keyof AssembleFormSchema, responseData.data[key]);
+          formik.setFieldError(key, responseData.data[key]);
         });
       } else {
         toast.error(__DEFAULT_ERROR_MSG__);
@@ -99,48 +108,31 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   }
 
   const equipTypeData = equipTypeQuery.data.data[0];
-  let equipSlotOptions;
-  if (equipTypeData.slot_names){
-    equipSlotOptions = equipTypeData.slot_names.map((slotName: string) => {
-      return {
-        name: snakeToSpaced(slotName? slotName: ''),
-        value: slotName
-      }});
-  } else{
+  if (!equipTypeData.slot_names){
     return <div className="card flex justify-content-center flex-column gap-2">
       <h4>This equipment doesn't have slots to assemble.</h4>
     </div>;
   }
-
+  const equipSlotFields = equipTypeData.slot_names.map((slotName: string) => {
+    const spacedName = snakeToSpaced(slotName);
+    return (
+      <div className='mt-3'>
+        <FormText
+          id={slotName}
+          name={spacedName}
+          value={formik.values[slotName]}
+          help={`Equipment to be assembled into ${spacedName}`}
+          required
+          onChange={(e) => {
+            formik.setFieldValue(slotName, e.target.value);
+          }}
+          errorText={getFormErrorMessage(slotName)} />
+      </div>)});
   const onKeyDown = barcodeReaderSafe? preventEnterDefault: undefined;
   return (
     <div className="card flex justify-content-center flex-column gap-2">
     <form onSubmit={formik.handleSubmit} onKeyDown={onKeyDown}>
-      <div className='mt-3'>
-        <FormText
-          id='child_id'
-          name='Equipment to be assembled'
-          value={formik.values.child_id}
-          help='Equipment to be assembled into the selected one. Example: AB1234'
-          required
-          onChange={(e) => {
-            formik.setFieldValue('child_id', e.target.value);
-          }}
-          errorText={getFormErrorMessage('child_id')} />
-      </div>
-      <div className='mt-3'>
-        <FormDropdown
-          id='slot_name'
-          name='Slot'
-          options={equipSlotOptions}
-          required
-          value={formik.values.slot_name}
-          help='Slot to install the equipment'
-          onChange={(e) => {
-            formik.setFieldValue('slot_name', e.value);
-          }}
-          errorText={getFormErrorMessage('slot_name')}/>
-      </div>
+      {equipSlotFields}
       <div className='mt-3'><Button type="submit" label="Assemble"/></div>
     </form>
   </div>
