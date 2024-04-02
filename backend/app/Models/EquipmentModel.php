@@ -388,47 +388,41 @@ class EquipmentModel extends LogModel
     }
 
     /**
-     * Returns true if an equipment has slots
-     * if $slotId is given, evaluates for a specific slotId
+     * Returns true if the equipment has a given slot.
      *
      * @param string $id  Id of the equipment to check for slot
-     * @param ?string $slotId Id of the slot to check
+     * @param string $slotName Name of the slot to check
      * 
      * @return bool true if equipment has the specified slot
      */
-    public function equipHasSlot(string $id, ?string $slotId=null): bool
+    public function equipHasSlot(string $id, string $slotName): bool
     {
-        $query = $this->select('1')
-            ->join('type_slots ts', 'equipments.type_id=ts.parent_type_id', 'right')
-            ->where('equipments.id', $id);
-        if (!is_null($slotId)){
-            $query = $query->where('ts.id', $slotId);
-        }
-        $equipHasSlot = $query->first();
-        return !empty($equipHasSlot);
+        $res = $this->builder('equipments e')
+            ->select('1')
+            ->join('type_slots ts', 'e.type_id=ts.parent_type_id', 'right')
+            ->where('equipments.id', $id)
+            ->where('ts.name', $slotName)
+            ->get()->getResult('array');
+        return !empty($res);
     }
 
     /**
-     * Returns true if the equipment slot is empty
-     * Doesn't check if the equipment can actually have the slot
+     * Returns true if the equipment slot is empty.
+     * Doesn't check if the equipment can actually have the slot.
      *
      * @param string $id  Id of the equipment to check for slot
-     * @param string $slotId Id of the slot to check
-     * @param ?string $childId Child Id to disconsider
+     * @param string $slotName Id of the slot to check
      * 
-     * @return bool true if equipment has the specified slot
+     * @return bool true if equipment has the specified slot empty
      */
-    public function equipSlotIsEmpty(string $id, string $slotId, ?string $childId=null): bool
+    public function equipSlotIsEmpty(string $id, string $slotName): bool
     {
-        $builder = $this->builder('parent_child_equips pce')
+        $res = $this->builder('parent_child_equips pce')
             ->select('1')
             ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
             ->where('pce.parent_equip_id', $id)
-            ->where('ts.id', $slotId);
-        if(!empty($childId)){
-            $builder = $builder->where('pce.child_equip_id !=', $childId);
-        }
-            $res = $builder->get()->getResult();
+            ->where('ts.name', $slotName)
+            ->get()->getResult('array');
         return empty($res);
     }
 
@@ -447,5 +441,14 @@ class EquipmentModel extends LogModel
             $res = array_merge($res, $this->getChildrenIds($child['id']));
         }
         return $res;
+    }
+
+    public function equipIsAssembledInto(string $id): bool
+    {
+        $res = $this->table('parent_child_equips pce')
+            ->select('1')
+            ->where('child_equip_id', $id)
+            ->get()->getResult('array');
+        return !empty($res);
     }
 }

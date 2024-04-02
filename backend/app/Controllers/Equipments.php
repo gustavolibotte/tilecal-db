@@ -395,39 +395,17 @@ class Equipments extends APIController
         }
 
         $inputRules = [
-            'parent_id' => [
+            'id' => [
                 "rules" => [
                     "required",
                     "equipment_id_is_sanitized",
                     "is_not_unique[equipments.id]"
-                ],
-                "errors" => [
-                    "required" => "You must supply an id for the main equipment.",
-                    "is_not_unique" => "ID {value} doesn't exist."
                 ]
-            ],
-            'child_id' => [
-                "rules" => [
-                    "required",
-                    "equipment_id_is_sanitized",
-                    "is_not_unique[equipments.id]",
-                    "equip_is_not_assembled_into"
                 ],
-                "errors" => [
-                    "required" => "You must supply an id for the external equipment.",
-                    "is_not_unique" => "Equipment with ID {value} doesn't exist."
-                ]
-            ],
-            'slot_name' => [
-                "rules" => [
+                'slots.*' => [
                     'required',
-                    'equipment_type_slot_name_is_sanitized',
-                    "slot_is_available[{parent_id},{child_id},name]",
-                ],
-                'errors' => [
-                    'required_without' => 'A slot is required for the assembly.'
+                    'is_valid_slot_for_assembly[{id}]'
                 ]
-            ]
         ];
         $inputData = $this->getRequestValuesFromRules($inputRules);
         $inputData['child_id'] = $this->preprocessEquipmentId($inputData['child_id']);
