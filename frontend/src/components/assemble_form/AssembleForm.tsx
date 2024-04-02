@@ -108,6 +108,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   }
 
   const equipTypeData = equipTypeQuery.data.data[0];
+  equipTypeData.slot_names.sort();
   if (!equipTypeData.slot_names){
     return <div className="card flex justify-content-center flex-column gap-2">
       <h4>This equipment doesn't have slots to assemble.</h4>
