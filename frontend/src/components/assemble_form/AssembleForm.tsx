@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 import { Button } from 'primereact/button';
 import FormText from '../form_text/FormText';
 import { snakeToSpaced } from '../../utils/string';
-import { useRef } from 'react';
+import { ReactNode, useRef, useState } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
 import { preventEnterDefault } from '../../utils/event';
 import { extractSequentialNumber } from '../../utils/validation_rules';
@@ -24,6 +24,7 @@ interface AssembleFormProps{
 
 export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSafe }: AssembleFormProps) {
 
+  const [equipSlotErrors, setEquipSlotErrors] = useState<Array<ReactNode>>([]);
   const initialValues: any = {};
 
   const equipTypeQuery: any = useQuery({
@@ -83,19 +84,19 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       console.log(responseData);
       if (responseData.message == __INVALID_DATA_MSG__) {
         toast.error(__INVALID_DATA_MSG__)
-        Object.keys(responseData.data).forEach((key: string) => {
-          formik.setFieldError(key, responseData.data[key]);
+        let errorTexts: Array<ReactNode> = [];
+        Object.values(responseData.data).forEach((value: any) => {
+          errorTexts.push(
+            <p>{value}</p>
+          );
         });
+        setEquipSlotErrors(errorTexts);
       } else {
         toast.error(__DEFAULT_ERROR_MSG__);
         console.log(error);
       }
     },
   });
-
-  const getFormErrorMessage = (name: keyof AssembleFormSchema): string | null => {
-    return !!(formik.touched[name] && formik.errors[name]) ? String(formik.errors[name]) : null;
-  };
   
   if (equipTypeQuery.isError){
     return <div className="card flex justify-content-center flex-column gap-2">
@@ -128,13 +129,16 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
           onChange={(e) => {
             formik.setFieldValue(slotName, e.target.value);
           }}
-          errorText={getFormErrorMessage(slotName)} />
+          errorText='' />
       </div>);
     equipSlotFields.push(field)
     });
   const onKeyDown = barcodeReaderSafe? preventEnterDefault: undefined;
   return (
     <div className="card flex justify-content-center flex-column gap-2">
+      {equipSlotErrors && <div className='text-red-500'>
+        {equipSlotErrors}
+      </div>}
     <form onSubmit={formik.handleSubmit} onKeyDown={onKeyDown}>
       {equipSlotFields}
       <div className='mt-3'><Button type="submit" label="Assemble"/></div>
