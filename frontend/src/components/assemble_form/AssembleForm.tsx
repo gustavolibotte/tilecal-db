@@ -126,7 +126,6 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
           name={spacedName}
           value={formik.values[slotName]}
           help={`Equipment to be assembled into ${spacedName}`}
-          required
           onChange={(e) => {
             formik.setFieldValue(slotName, e.target.value);
           }}
