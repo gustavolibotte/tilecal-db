@@ -13,6 +13,13 @@ import {
 import { useRef } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
 import { preventEnterDefault } from '../../utils/event';
+import * as Yup from 'yup';
+import { 
+  commentsRules,
+  equipIdRules,
+  extractSequentialNumber,
+  serialRules,
+} from '../../utils/validation_rules';
 
 interface EquipFormSchema {
   id: string;
@@ -85,14 +92,22 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
   const submitData = async (data: EquipFormSchema) =>{
     data['type_name'] = typeName;
     if (equipId){
-      data['id'] = equipId;
+      data['id'] = extractSequentialNumber(equipId);
     }
     equipMutation.mutate(data);
   }
 
   const formik = useFormik({
       initialValues: initialValues,
-      onSubmit: submitData
+      onSubmit: submitData,
+      validationSchema: Yup.object({
+        id: equipIdRules.required(__FIELD_REQUIRED_MSG__),
+        owner_mne: Yup.string().required(__FIELD_REQUIRED_MSG__),
+        location_name: Yup.string().required(__FIELD_REQUIRED_MSG__),
+        status_name: Yup.string().required(__FIELD_REQUIRED_MSG__),
+        serial: serialRules,
+        comments: commentsRules
+      })
   });
   
   const getFormErrorMessage = (name: keyof EquipFormSchema): string | null => {

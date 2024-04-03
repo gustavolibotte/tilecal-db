@@ -395,55 +395,41 @@ class Equipments extends APIController
         }
 
         $inputRules = [
-            'parent_id' => [
+            'id' => [
                 "rules" => [
                     "required",
                     "equipment_id_is_sanitized",
                     "is_not_unique[equipments.id]"
-                ],
-                "errors" => [
-                    "required" => "You must supply an id for the main equipment.",
-                    "is_not_unique" => "ID {value} doesn't exist."
                 ]
-            ],
-            'child_id' => [
-                "rules" => [
-                    "required",
-                    "equipment_id_is_sanitized",
-                    "is_not_unique[equipments.id]",
-                    "equip_is_not_assembled_into"
                 ],
-                "errors" => [
-                    "required" => "You must supply an id for the external equipment.",
-                    "is_not_unique" => "Equipment with ID {value} doesn't exist."
-                ]
-            ],
-            'slot_name' => [
-                "rules" => [
+                'slots.*' => [
                     'required',
-                    'equipment_type_slot_name_is_sanitized',
-                    "slot_is_available[{parent_id},{child_id},name]",
-                ],
-                'errors' => [
-                    'required_without' => 'A slot is required for the assembly.'
+                    'is_valid_slot_for_assembly[{id}]'
                 ]
-            ]
         ];
         $inputData = $this->getRequestValuesFromRules($inputRules);
-        $inputData['child_id'] = $this->preprocessEquipmentId($inputData['child_id']);
-        $inputData['parent_id'] = $this->preprocessEquipmentId($inputData['parent_id']);
+        // $inputData['child_id'] = $this->preprocessEquipmentId($inputData['child_id']);
+        // $inputData['parent_id'] = $this->preprocessEquipmentId($inputData['parent_id']);
 
         if (!$this->validateData($inputData, $inputRules)){
             return $this->failValidationErrors($this->validator->getErrors());
         }
-        $inputData['slot_id'] = model('TypeSlotModel')
-            ->where('name', $inputData['slot_name'])
-            ->first()->id;
-        model('EquipmentModel')->updateParent(
-            $inputData['child_id'],
-            $inputData['parent_id'],
-            $inputData['slot_id']
-        );
+        $db = db_connect();
+        $equipmentModel = model('EquipmentModel');
+        $typeSlotModel = model('TypeSlotModel');
+        $db->transException(true)->transBegin();
+        foreach ($inputData['slots.*'] as $slotInfo){
+            $slotId = $typeSlotModel
+                ->select('id')
+                ->where('name', $slotInfo->name)
+                ->first()->id;
+            $equipmentModel->updateParent(
+                $slotInfo->equipment_id,
+                $inputData['id'],
+                $slotId
+            );
+        }
+        $db->transCommit();
         return $this->buildAPIResponse(200, message:'Assembled');
     }
 
@@ -499,11 +485,11 @@ class Equipments extends APIController
         if (empty($id)){
             return '';
         }
-        if (strlen($id) == 14){
-            $atlasId = new AtlasId(['id' => $id]);
-            $id = $atlasId->sequential;
-            return $id;
-        }
+        // if (strlen($id) == 14){
+        //     $atlasId = new AtlasId(['id' => $id]);
+        //     $id = $atlasId->sequential;
+        //     return $id;
+        // }
         return $id;
     }
 }

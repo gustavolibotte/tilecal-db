@@ -1,14 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import AssembleForm from "../assemble_form/AssembleForm";
 import RelatedEquipTable from "../related_equip_table/RelatedEquipTable";
+import { extractSequentialNumber } from '../../utils/validation_rules';
 
 interface EquipAssembleComponentsProps{
   parentId: string;
 }
 
 export default function EquipAssembleComponents({parentId}: EquipAssembleComponentsProps) {
+  const cleanParentId = extractSequentialNumber(parentId);
   const {isError, isPending, data: response, error}: any = useQuery({
-    queryKey: ['equipment', 'get', {id: parentId}]
+    queryKey: ['equipment', 'get', {id: cleanParentId}]
   });
   if (isPending){
     return <h2>Loading...</h2>;
@@ -22,10 +24,10 @@ export default function EquipAssembleComponents({parentId}: EquipAssembleCompone
       return (
         <>
           <h2>Assemble new equipment into {equipData.type_name} "{parentId}"</h2>
-          <AssembleForm parentId={parentId} parentTypeName={equipData.type_name} barcodeReaderSafe/>
+          <AssembleForm parentId={cleanParentId} parentTypeName={equipData.type_name} barcodeReaderSafe/>
           <hr/>
           <h2>Related to {equipData.type_name} "{parentId}"</h2>
-          <RelatedEquipTable equipmentId={parentId}/>
+          <RelatedEquipTable equipmentId={cleanParentId}/>
         </>);
     } else {
       return <h2>The equipment {parentId} was not found.</h2>;

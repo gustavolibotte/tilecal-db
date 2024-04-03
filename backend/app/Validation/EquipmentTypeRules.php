@@ -24,26 +24,11 @@ class EquipmentTypeRules{
     }
 
     /**
-     * Checks if the type_slot value is sanitized
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
-     */
-    public function equipment_type_slot_id_is_sanitized($value, ?string &$error): bool
-    {
-
-        helper('string_validation');
-        $fieldName = 'Equipment type slot id';
-        return (
-            regex_match($value, Self::$typeSlotId, $fieldName, $error)
-        );
-    }
-
-    /**
      * Checks if the type_slot_name value is sanitized
      * @param $value  Value given by CodeIgniter validator
      * @param ?string &$error Ignored
      */
-    public function equipment_type_slot_name_is_sanitized($value, ?string &$error): bool
+    public static function equipment_type_slot_name_is_sanitized($value, ?string &$error): bool
     {
         helper('string_validation');
         $fieldName = 'Equipment type slot name';

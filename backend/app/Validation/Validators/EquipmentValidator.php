@@ -84,7 +84,7 @@ class EquipmentValidator extends EntryValidator
             "rules" => [
                 "required_without[owner_id]",
                 "permit_empty",
-                'institute_name_is_sanitized',
+                'institute_mne_is_sanitized',
                 "is_not_unique[institutes.mne]"
             ],
             "errors" => [
