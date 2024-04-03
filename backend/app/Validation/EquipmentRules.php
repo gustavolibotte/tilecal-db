@@ -56,7 +56,7 @@ class EquipmentRules{
      * @param $value  Value given by CodeIgniter validator
      * @param ?string &$error Ignored
      */
-    public function equipment_id_is_sanitized($value, ?string &$error): bool
+    public static function equipment_id_is_sanitized($value, ?string &$error): bool
     {
         helper('string_validation');
         $fieldName = 'Equipment id';
@@ -191,6 +191,64 @@ class EquipmentRules{
             );
             return false;
         }
+        return true;
+    }
+
+    public function is_valid_slot_for_assembly($value, string $params, array $data, ?string &$error): bool
+    {
+        if (!property_exists($value, 'name')){
+            $error = 'Missing slot name.';
+            return false;
+        }
+        if (!property_exists($value, 'equipment_id')){
+            $error = 'Missing slot equipment id to assemble.';
+            return false;
+        }
+        $slotName = $value->name;
+        $childId = $value->equipment_id;
+        $parentId = $params;
+        $equipmentModel = model('EquipmentModel');
+
+        if (!Self::equipment_id_is_sanitized($childId, $error)){
+            return false;
+        }
+
+        if (!EquipmentTypeRules::equipment_type_slot_name_is_sanitized($slotName, $error)){
+            return false;
+        }
+
+        if ($equipmentModel->equipIsAssembledInto($childId)){
+            $error = sprintf(
+                'The equipment %s is already assembled into another one.',
+                $childId
+            );
+            return false;
+        }
+
+        if (!$equipmentModel->equipHasSlot($parentId, $slotName)){
+            $error = sprintf(
+                'Equipment %s doesn\'t have the selected slot',
+                $parentId
+            );
+            return false;
+        }
+
+        if (!$equipmentModel->equipSlotIsEmpty($parentId, $slotName)){
+            $error = sprintf(
+                'Selected slot from equipment %s is in use.',
+                $parentId
+            );
+            return false;
+        }
+
+        if (!model('EquipmentTypeModel')->slotAllowsEquip($slotName, $childId)){
+            $error = sprintf(
+                'Slot is available but does not allow insertion of equipment %s.',
+                $childId
+            );
+            return false;
+        }
+
         return true;
     }
 }

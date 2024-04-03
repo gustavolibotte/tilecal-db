@@ -99,4 +99,24 @@ class EquipmentTypeModel extends LogModel
         );
         return $queryBuilder;
     }
+    
+    /**
+     * Returns true if the slot allows insertion of an equipment.
+     *
+     * @param string $slotName Name of the slot to check
+     * @param string $id Id of the equipment to check
+     * 
+     * @return bool true if equipment is allowed in the slot
+     */
+    public function slotAllowsEquip(string $slotName, string $equipmentId): bool
+    {
+        $res = $this->builder('type_slots ts')
+            ->select('1')
+            ->join('allowed_type_slots ats', 'ts.id=ats.slot_id', 'left')
+            ->join('equipments e', 'ats.allowed_type_id=e.type_id')
+            ->where('e.id', $equipmentId)
+            ->where('ts.name', $slotName)
+            ->get()->getFirstRow('array');
+        return isset($res);
+    }
 }
