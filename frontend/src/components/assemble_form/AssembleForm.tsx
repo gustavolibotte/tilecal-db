@@ -75,6 +75,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
           {relatedEquipmentId: parentId}
         ]
       });
+      setEquipSlotErrors([]);
     },
     onError: (error: AxiosError) => {
       // The following "?" field types are guaranteed with the app architecture
