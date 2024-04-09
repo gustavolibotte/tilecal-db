@@ -180,7 +180,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
 
   const statusNameOptions = statusQuery.data.data.map((status: any) => {
     return {
-      name: status.name,
+      name: `${status.name} - ${status.description}`,
       value: status.name
     };
   });
