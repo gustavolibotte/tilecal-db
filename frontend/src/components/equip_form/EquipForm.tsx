@@ -161,7 +161,7 @@ export default function EquipForm({typeName, equipId, onSuccess, isEdit}: EquipF
 
   const ownerMneOptions = instituteQuery.data.data.map((institute: any) => {
     return {
-      name: institute.name,
+      name: `${institute.mne} - ${institute.name}`,
       value: institute.mne
     };
   });
