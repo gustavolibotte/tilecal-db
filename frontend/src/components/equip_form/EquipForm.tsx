@@ -28,17 +28,18 @@ interface EquipFormSchema {
   status_name: string;
   serial: string;
   comments: string;
-  detector_location: string;
+  detector_location_name: string;
   type_name?: string;
 }
 
 interface EquipFormProps {
   typeName: string;
-  equipId?: string
-  onSuccess?: () => void 
+  equipId?: string;
+  onSuccess?: () => void ;
+  isEdit?: boolean;
 }
 
-export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps) {
+export default function EquipForm({typeName, equipId, onSuccess, isEdit}: EquipFormProps) {
 
   let initialValues: EquipFormSchema = {
     id: '',
@@ -47,7 +48,7 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
     status_name: '',
     serial: '',
     comments: '',
-    detector_location: ''
+    detector_location_name: ''
   };
   const toastId = useRef<Id>();
 
@@ -96,18 +97,22 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
     }
     equipMutation.mutate(data);
   }
+  const validationSchema: any = {
+    id: equipIdRules,
+    serial: serialRules,
+    comments: commentsRules
+  }
+  if (!isEdit){
+    validationSchema.id = validationSchema.id.required(__FIELD_REQUIRED_MSG__);
+    validationSchema['owner_mne'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
+    validationSchema['location_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
+    validationSchema['status_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
+  }
 
   const formik = useFormik({
       initialValues: initialValues,
       onSubmit: submitData,
-      validationSchema: Yup.object({
-        id: equipIdRules.required(__FIELD_REQUIRED_MSG__),
-        owner_mne: Yup.string().required(__FIELD_REQUIRED_MSG__),
-        location_name: Yup.string().required(__FIELD_REQUIRED_MSG__),
-        status_name: Yup.string().required(__FIELD_REQUIRED_MSG__),
-        serial: serialRules,
-        comments: commentsRules
-      })
+      validationSchema: Yup.object(validationSchema)
   });
   
   const getFormErrorMessage = (name: keyof EquipFormSchema): string | null => {
@@ -156,14 +161,14 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
 
   const ownerMneOptions = instituteQuery.data.data.map((institute: any) => {
     return {
-      name: institute.name,
+      name: `${institute.mne} - ${institute.name}`,
       value: institute.mne
     };
   });
 
   const statusNameOptions = statusQuery.data.data.map((status: any) => {
     return {
-      name: status.name,
+      name: `${status.name} - ${status.description}`,
       value: status.name
     };
   });
@@ -183,7 +188,7 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
             <FormText
               id='id'
               name='ID'
-              required
+              required={!isEdit}
               value={formik.values.id}
               help='Equipment ID (Use the barcode)'
               onChange={(e) => {
@@ -196,7 +201,7 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
               id='owner_mne'
               name='Owner'
               options={ownerMneOptions}
-              required
+              required={!isEdit}
               value={formik.values.owner_mne}
               help='Institute that owns the equipment'
               onChange={(e) => {
@@ -209,7 +214,7 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
               id='location_name'
               name='Location'
               options={locationNameOptions}
-              required
+              required={!isEdit}
               value={formik.values.location_name}
               help='Current equipment location'
               onChange={(e) => {
@@ -222,7 +227,7 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
               id='status_name'
               name='Status'
               options={statusNameOptions}
-              required
+              required={!isEdit}
               value={formik.values.status_name}
               help='Current equipment status'
               onChange={(e) => {
@@ -232,15 +237,15 @@ export default function EquipForm({typeName, equipId, onSuccess}: EquipFormProps
           </div>
           <div className='mt-3'>
             <FormDropdown
-              id='detector_location'
+              id='detector_location_name'
               name='Detector Location'
               options={detectorLocations}
-              value={formik.values.detector_location}
+              value={formik.values.detector_location_name}
               help='Where in the detector the equipment should be.'
               onChange={(e) => {
-                formik.setFieldValue('detector_location', e.value);
+                formik.setFieldValue('detector_location_name', e.value);
               }}
-              errorText={getFormErrorMessage('detector_location')}/>
+              errorText={getFormErrorMessage('detector_location_name')}/>
           </div>
           <div className='mt-3'>
             <FormText

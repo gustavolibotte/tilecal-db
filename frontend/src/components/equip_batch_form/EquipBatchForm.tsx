@@ -28,7 +28,8 @@ export default function EquipBatchForm() {
   });
 
   const initialValues = {
-    type_name: '', file: ''
+    type_name: '',
+    file: ''
   };
 
   const toastId = useRef<Id>('');
@@ -50,17 +51,17 @@ export default function EquipBatchForm() {
     onError: (error: AxiosError) => {
       // The following "?" fields are guaranteed with the app
       toast.dismiss(toastId.current);
+      console.log(error);
       const responseData: any = error?.response?.data;
-      if (responseData.error == __INVALID_DATA_MSG__){
+      if (responseData.message == __INVALID_DATA_MSG__){
         Object.keys(responseData.data).forEach((key: string) => {
           formik.setFieldError(key as keyof EquipBatchFormSchema, responseData.data[key]);
         });
-      } else if (responseData.error.includes('entry')){
+      } else if (responseData.message.includes('entry')){
         setEquipFieldErrors(responseData.messages);
         setErrorMessage(responseData.error);
       } else{
         toast.error(__DEFAULT_ERROR_MSG__);
-        console.log(error);
       }
     },
   });

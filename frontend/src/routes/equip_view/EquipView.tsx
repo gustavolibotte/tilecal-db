@@ -104,9 +104,9 @@ export default function EquipView() {
     }
     let editForm;
     if (typeName == 'PMT'){
-      editForm = <PmtForm equipId={equipId} onSuccess={onSuccess}/>;
+      editForm = <PmtForm equipId={equipId} onSuccess={onSuccess} isEdit/>;
     } else{
-      editForm = <EquipForm equipId={equipId} typeName={typeName} onSuccess={onSuccess}/>;
+      editForm = <EquipForm equipId={equipId} typeName={typeName} onSuccess={onSuccess} isEdit/>;
     }
     const equipData = response.data[0];
     let buttons;

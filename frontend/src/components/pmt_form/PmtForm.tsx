@@ -2,7 +2,6 @@
 import { useFormik } from 'formik';
 import { Button } from 'primereact/button';
 import { Id, toast } from 'react-toastify';
-// import * as Yup from 'yup';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -15,6 +14,13 @@ import FormNumber from '../form_number/FormNumber';
 import { range } from '../../utils/array';
 import { useRef } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
+import { 
+  commentsRules,
+  equipIdRules,
+  serialRules,
+} from '../../utils/validation_rules';
+import * as Yup from 'yup';
+
 
 interface EquipFormSchema {
   id: string;
@@ -35,9 +41,10 @@ interface EquipFormSchema {
 interface PmtFormProps {
   equipId?: string;
   onSuccess?: () => void;
+  isEdit?: boolean;
 }
 
-export default function PmtForm({ equipId, onSuccess }: PmtFormProps) {
+export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
 
   const locationQuery: any = useQuery({
     queryKey: ['location', 'get', {}]
@@ -118,9 +125,22 @@ export default function PmtForm({ equipId, onSuccess }: PmtFormProps) {
     equipMutation.mutate(data);
   }
 
+  const validationSchema: any = {
+    id: equipIdRules,
+    serial: serialRules,
+    comments: commentsRules
+  }
+  if (!isEdit){
+    validationSchema.id = validationSchema.id.required(__FIELD_REQUIRED_MSG__);
+    validationSchema['owner_mne'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
+    validationSchema['location_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
+    validationSchema['status_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
+  }
+
   const formik = useFormik({
     initialValues: initialValues,
-    onSubmit: submitData
+    onSubmit: submitData,
+    validationSchema: Yup.object(validationSchema)
   });
 
   const getFormErrorMessage = (name: keyof EquipFormSchema): string | null => {
@@ -153,14 +173,14 @@ export default function PmtForm({ equipId, onSuccess }: PmtFormProps) {
 
   const ownerMneOptions = instituteQuery.data.data.map((institute: any) => {
     return {
-      name: institute.name,
+      name: `${institute.mne} - ${institute.name}`,
       value: institute.mne
     };
   });
 
   const statusNameOptions = statusQuery.data.data.map((status: any) => {
     return {
-      name: status.name,
+      name: `${status.name} - ${status.description}`,
       value: status.name
     };
   });
@@ -196,7 +216,7 @@ export default function PmtForm({ equipId, onSuccess }: PmtFormProps) {
             id='owner_mne'
             name='Owner'
             options={ownerMneOptions}
-            required
+            required={!isEdit}
             value={formik.values.owner_mne}
             help='Institute that owns the equipment'
             onChange={(e) => {
@@ -209,7 +229,7 @@ export default function PmtForm({ equipId, onSuccess }: PmtFormProps) {
             id='location_name'
             name='Location'
             options={locationNameOptions}
-            required
+            required={!isEdit}
             value={formik.values.location_name}
             help='Current equipment location'
             onChange={(e) => {
@@ -222,7 +242,7 @@ export default function PmtForm({ equipId, onSuccess }: PmtFormProps) {
             id='status_name'
             name='Status'
             options={statusNameOptions}
-            required
+            required={!isEdit}
             value={formik.values.status_name}
             help='Current equipment status'
             onChange={(e) => {
@@ -246,7 +266,7 @@ export default function PmtForm({ equipId, onSuccess }: PmtFormProps) {
           <FormText
             id='serial'
             name='Serial'
-            required
+            required={!isEdit}
             value={formik.values.serial}
             help='Equipment serial number (Identification code issued by the manufacturer)'
             onChange={(e) => {

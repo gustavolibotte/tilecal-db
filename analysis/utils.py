@@ -24,10 +24,11 @@ def greater_than(col: str, value: float, df: pd.DataFrame):
         return True
     else:
         return is_gt
-    
+
 
 def make_snake_case(string: str) -> str:
     return string.lower().replace(' ', '_')
+
 
 def is_empty(var, bool_cast=False) -> bool:
     if pd.isna(var):
@@ -39,6 +40,7 @@ def is_empty(var, bool_cast=False) -> bool:
     else:
         return False
 
+
 def dump_in_batches(df, filename, output_dir, chunksize):
     for i, chunk_start in enumerate(range(0, len(df), chunksize)):
         data_to_save = df.iloc[chunk_start:chunk_start+chunksize]
@@ -47,3 +49,14 @@ def dump_in_batches(df, filename, output_dir, chunksize):
             f'{filename}_{i:03d}.csv'
         )
         data_to_save.to_csv(chunkfilepath, index=False)
+
+
+def generate_mysql_insert_string(df, table_name):
+    column_str = f"({', '.join(df.columns)})"
+    insert_string = f"INSERT INTO {table_name} {column_str} VALUES\n"
+    for _, row in df.iterrows():
+        row_values = ', '.join([
+            'NULL' if pd.isna(row[col]) else f"'{row[col]}'" 
+            for col in df.columns])
+        insert_string += f"({row_values}),\n"
+    return insert_string[:-2] + ';'
