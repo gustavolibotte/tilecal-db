@@ -175,21 +175,21 @@
     "country": "FRANCE"
   },
   {
-    "name": "Centre National de la Recherche Scientifique (CNRS) - Institut National de Physique Nucléaire et de Physique des Particules (IN2P3) - LAPP-Laboratoire d'Annecy de Physique des Particules (LAPP)",
+    "name": "LAPP-Laboratoire d'Annecy de Physique des Particules (LAPP)",
     "mne": "LAP",
     "num": "056",
     "place": "ANNECY-LE-VIEUX",
     "country": "FRANCE"
   },
   {
-    "name": "Centre National de la Recherche Scientifique (CNRS) - Institut National de Physique Nucléaire et de Physique des Particules (IN2P3) - Laboratoire de Physique Subatomique et de Cosmologie (LPSC)",
+    "name": "Laboratoire de Physique Subatomique et de Cosmologie (LPSC)",
     "mne": "ISN",
     "num": "066",
     "place": "GRENOBLE",
     "country": "FRANCE"
   },
   {
-    "name": "Centre National de la Recherche Scientifique (CNRS) - Sorbonne Universite",
+    "name": "Sorbonne Universite",
     "mne": "LPN",
     "num": 108,
     "place": "PARIS 05",
@@ -203,14 +203,14 @@
     "country": "FRANCE"
   },
   {
-    "name": "Universite Paris-Saclay - Commissariat a l'energie atomique et aux energies alternatives (CEA) - IRFU",
+    "name": "Commissariat a l'energie atomique et aux energies alternatives (CEA) - IRFU",
     "mne": "CEA",
     "num": 134,
     "place": "GIF-SUR-YVETTE",
     "country": "FRANCE"
   },
   {
-    "name": "Universite Paris-Saclay - Institut National de Physique Nucleaire et de Physique des Particules (CNRS/IN2P3) - Laboratoire de l'Accélérateur Linéaire (LAL)",
+    "name": "Laboratoire de l'Accélérateur Linéaire (LAL)",
     "mne": "LAL",
     "num": "048",
     "place": "ORSAY",

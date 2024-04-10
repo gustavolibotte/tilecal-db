@@ -9,7 +9,7 @@
     },
     {
         "name": "Stored",
-        "description": "The equipment is stored but not tested at the location"
+        "description": "The equipment is stored at the location"
     },
     {
         "name": "Testing",
@@ -21,7 +21,7 @@
     },
     {
         "name": "Installed",
-        "description": "The equipment is installed at ATLAS"
+        "description": "The equipment is installed in a Module"
     },
     {
         "name": "Failure",
@@ -45,7 +45,7 @@
     },
     {
         "name": "Produced",
-        "description": "The equipment has been produces and is waiting delivery"
+        "description": "The equipment has been produced and is waiting delivery"
     },
     {
         "name": "Lost",
