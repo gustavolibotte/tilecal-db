@@ -6,6 +6,17 @@ function snake2Capitalized(string $str)
     return $str;
 }
 
+function makeCamelCase(string $str)
+{
+    $exploded = explode(' ', $str);
+    $newStr = '';
+    foreach ($exploded as $word){
+        $word = strtolower($word);
+        $newStr .= ucfirst($word);
+    }
+    return $newStr;
+}
+
 function snake2CamelCase(string $str)
 {
     $exploded = explode('_', $str);
