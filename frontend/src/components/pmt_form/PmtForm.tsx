@@ -16,13 +16,12 @@ import { useRef } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
 import { 
   commentsRules,
-  equipIdRules,
   serialRules,
 } from '../../utils/validation_rules';
 import * as Yup from 'yup';
 
 
-interface EquipFormSchema {
+interface PMTFormSchema {
   id: string;
   owner_mne: string;
   location_name: string;
@@ -62,7 +61,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     queryKey: ['detector_location', 'get', {}]
   });
 
-  let initialValues: EquipFormSchema = {
+  let initialValues: PMTFormSchema = {
     id: '',
     owner_mne: '',
     location_name: '',
@@ -108,7 +107,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
       const responseData: any = error?.response?.data;
       if (responseData.message == __INVALID_DATA_MSG__) {
         Object.keys(responseData.data).forEach((key: string) => {
-          formik.setFieldError(key as keyof EquipFormSchema, responseData.data[key]);
+          formik.setFieldError(key as keyof PMTFormSchema, responseData.data[key]);
         });
       } else {
         console.log(error);
@@ -117,7 +116,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     },
   });
 
-  const submitData = async (data: EquipFormSchema) => {
+  const submitData = async (data: PMTFormSchema) => {
     data['type_name'] = 'PMT';
     if (equipId) {
       data['id'] = equipId;
@@ -126,12 +125,10 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
   }
 
   const validationSchema: any = {
-    id: equipIdRules,
     serial: serialRules,
     comments: commentsRules
   }
   if (!isEdit){
-    validationSchema.id = validationSchema.id.required(__FIELD_REQUIRED_MSG__);
     validationSchema['owner_mne'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['location_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['status_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
@@ -143,7 +140,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     validationSchema: Yup.object(validationSchema)
   });
 
-  const getFormErrorMessage = (name: keyof EquipFormSchema): string | null => {
+  const getFormErrorMessage = (name: keyof PMTFormSchema): string | null => {
     return !!(formik.touched[name] && formik.errors[name]) ? String(formik.errors[name]) : null;
   };
 
