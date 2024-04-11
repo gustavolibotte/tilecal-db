@@ -49,10 +49,13 @@ class EquipmentRules{
 
     /**
      * Checks if the id value is sanitized
-     * If the id is a 14 character code,
-     * it is considered an AtlasId and the sequential number is extracted
-     * The value is changed to the sequential number inplace.
-     * Otherwise, supposes that the value is the sequential number
+     * If the id is a 14 character code, it is considered an ATLAS ID.
+     * The sequential number is extracted and checked against the regex
+     * If the id is a 7 character sequential number, it is checked against the regex
+     * If the id has the string 'CHI10V', it is considered a mainboard produced by Chicago
+     * The sequential number is extracted and checked against the regex.
+     * This is needed because the id from Chicago mainboards do not have the same format as the ATLAS ID
+     * This function should be changed together with preprocessEquipmentId function in equipment_helper.php
      * @param $value  Value given by CodeIgniter validator
      * @param ?string &$error Ignored
      */
@@ -62,16 +65,23 @@ class EquipmentRules{
         $fieldName = 'Equipment id';
         $strLength = strlen($value);
         if ($strLength === Self::$sequentialNumberLength){
+            // Id is a sequential number
             return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
         } else if ($strLength === Self::$atlasIdLength){
+            // Id is an ATLAS ID
             $atlasId = new AtlasId(['id' => $value]);
             $value = $atlasId->sequential;
             return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
-        } else {
-            $error = "The equipment id must be a 14 character ATLAS ID or a 7 character ATLAS sequential number";
+        } else if (str_contains($value, 'CHI10V')){
+            // Id is a mainboard produced by Chicago
+            $value = str_replace('V', '', $value);
+            $atlasId = new AtlasId(['id' => $value]);
+            $value = $atlasId->sequential;
+            return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
+        }else {
+            $error = "Invalid equipment id";
             return false;
         }
-
     }
 
     /**

@@ -36,7 +36,16 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
 
-        $inputRules = [
+        $inputParams = [
+            'id',
+            'type_name',
+            'relatedFileId',
+            'relatedEquipmentId',
+            'onlyDeleted'
+        ];
+
+        $inputData = $this->request->getVar($inputParams);
+        $idRules = [
             'id' => [
                 'rules' => [
                     'permit_empty',
@@ -44,7 +53,16 @@ class Equipments extends APIController
                 ],
                 'errors' => [
                 ]
-            ],
+            ]
+        ];
+        if(!$this->validateData($inputData, $idRules)){
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+        helper('equipment');
+        $inputData['id'] = preprocessEquipmentId($inputData['id'] ?? '');
+
+        $inputRules = [
+            'id' => [],
             'type_name' => [
                 'rules' => [
                     'permit_empty',
@@ -75,11 +93,7 @@ class Equipments extends APIController
                 ]
             ],
         ];
-
-        $inputData = $this->getRequestValuesFromRules($inputRules);
-        $inputData['id'] = $this->preprocessEquipmentId($inputData['id']);
-        $inputData['relatedEquipmentId'] = $this->preprocessEquipmentId($inputData['relatedEquipmentId']);
-    
+          
         if (!$this->validateData($inputData, $inputRules)){
             return $this->failValidationErrors($this->validator->getErrors());
         }
@@ -185,7 +199,6 @@ class Equipments extends APIController
             ]
         ];
         $inputData = $this->getRequestValuesFromRules($sanitationRules);
-        $inputData['id'] = $this->preprocessEquipmentId($inputData['id']);
         if (!$this->validateData($inputData, $sanitationRules)){
             return $this->failValidationErrors($this->validator->getErrors());
         }
@@ -365,8 +378,6 @@ class Equipments extends APIController
             ],
         ];
         $inputData = $this->getRequestValuesFromRules($inputRules);
-        $inputData['child_id'] = $this->preprocessEquipmentId($inputData['child_id']);
-        $inputData['parent_id'] = $this->preprocessEquipmentId($inputData['parent_id']);
 
         if ($this->validateData($inputData, $inputRules)){
             model('EquipmentModel')->disassemble(
@@ -408,8 +419,6 @@ class Equipments extends APIController
                 ]
         ];
         $inputData = $this->getRequestValuesFromRules($inputRules);
-        // $inputData['child_id'] = $this->preprocessEquipmentId($inputData['child_id']);
-        // $inputData['parent_id'] = $this->preprocessEquipmentId($inputData['parent_id']);
 
         if (!$this->validateData($inputData, $inputRules)){
             return $this->failValidationErrors($this->validator->getErrors());
@@ -460,7 +469,6 @@ class Equipments extends APIController
             ],
         ];
         $inputData = $this->getRequestValuesFromRules($inputRules);
-        $inputData['id'] = $this->preprocessEquipmentId($inputData['id']);
         if (!$this->validateData($inputData, $inputRules)){
             return $this->failValidationErrors($this->validator->getErrors());
         }
@@ -469,27 +477,5 @@ class Equipments extends APIController
             200,
             $children
         );
-    }
-
-    /**
-     * Preprocesses the equipment ID assuming that it is a ATLAS ID
-     * when it has 14 characters and returning only the sequential part.
-     * Otherwise, it returns the same ID.
-     * 
-     * @param string|null $id Equipment ID
-     * 
-     * @return string Processed ID
-     */
-    protected function preprocessEquipmentId(string|null $id): string
-    {
-        if (empty($id)){
-            return '';
-        }
-        // if (strlen($id) == 14){
-        //     $atlasId = new AtlasId(['id' => $id]);
-        //     $id = $atlasId->sequential;
-        //     return $id;
-        // }
-        return $id;
     }
 }
