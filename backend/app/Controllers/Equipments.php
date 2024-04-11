@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Validation\Validators\BatchRegisterValidator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
 use Throwable;
@@ -377,14 +376,41 @@ class Equipments extends APIController
         if (!$feature->isActive()){
             return $this->failServiceUnavailable();
         }
-        $validator = (new BatchRegisterValidator())->addRequest($this->request);
-        if ($validator->validate()){
-            $formData = $validator->getValidatedData();
-            $equipValidator = EquipmentValidator::getFromTypeName($formData['type_name']);
-            // Needs to rename the fields because the front end fields
+        $inputData = [
+            'type_name' => $this->request->getVar('type_name'),
+            'file' => $this->request->getFile('file')
+        ];
+
+        $notCsvMsg = "Only csv files are supported for batch registering.";
+        $inputRules = [
+            'type_name' => [
+                "required",
+                "equipment_type_name_is_sanitized",
+                "is_not_unique[equipment_types.name]",
+            ],
+            'file' => [
+                'rules' => [
+                    'uploaded[file]',
+                    'max_size[file,50]',
+                    'mime_in[file,text/csv]',
+                    'ext_in[file,csv]'
+                ],
+                'errors' => [
+                    'uploaded' => 'You must upload a file.',
+                    'max_size' => 'Max file size is 50 kB',
+                    'mime_in' => $notCsvMsg,
+                    'ext_in' => $notCsvMsg
+                ]
+            ]
+        ];
+        if (!$this->validateData($inputData, $inputRules)){
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+        $equipValidator = EquipmentValidator::getFromTypeName($inputData['type_name']);
+                    // Needs to rename the fields because the front end fields
             // have user friendly names
             $res = model('EquipmentModel')->insertFromFile(
-                $formData['file']->getTempName(),
+                $inputData['file']->getTempName(),
                 $equipValidator
             );
             if ($res === true){
@@ -392,8 +418,6 @@ class Equipments extends APIController
             }
             $res['row'] = remove_value('iRow', $res);
             return $this->failValidationErrors($res, 'Invalid row.');
-        }
-        return $this->failValidationErrors($validator->getErrors());
 
     }
 
