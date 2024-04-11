@@ -220,41 +220,70 @@ class EquipmentRules{
         $equipmentModel = model('EquipmentModel');
 
         if (!Self::equipment_id_is_sanitized($childId, $error)){
+            $error = sprintf(
+                'Invalid equipment id %s.',
+                $childId
+            );
+            return false;
+        }
+
+        if (!Self::equipment_id_is_sanitized($parentId, $error)){
+            $error = sprintf(
+                'Invalid equipment id %s.',
+                $parentId
+            );
             return false;
         }
 
         if (!EquipmentTypeRules::equipment_type_slot_name_is_sanitized($slotName, $error)){
+            $error = sprintf(
+                'Invalid slot name %s.',
+                $slotName
+            );
+            return false;
+        }
+
+        helper('equipment');
+        $childId = preprocessEquipmentId($childId);
+        $parentId = preprocessEquipmentId($parentId);
+        $equipmentModel = model('EquipmentModel');
+        $equip = $equipmentModel->select('1')->find($childId);
+        if (!isset($equip)){
+            $error = sprintf(
+                '%s: Equipment %s does not exist.',
+                $slotName, $childId
+            );
             return false;
         }
 
         if ($equipmentModel->equipIsAssembledInto($childId)){
             $error = sprintf(
-                'The equipment %s is already assembled into another one.',
-                $childId
+                '%s: The equipment %s is already assembled into another one.',
+                $slotName, $childId
             );
             return false;
         }
 
         if (!$equipmentModel->equipHasSlot($parentId, $slotName)){
             $error = sprintf(
-                'Equipment %s doesn\'t have the selected slot',
-                $parentId
+                '%s: Equipment %s doesn\'t have the selected slot',
+                $slotName, $parentId
             );
             return false;
         }
 
         if (!$equipmentModel->equipSlotIsEmpty($parentId, $slotName)){
             $error = sprintf(
-                'Selected slot from equipment %s is in use.',
-                $parentId
+                '%s: Selected slot from equipment %s is in use.',
+                $slotName, $parentId
             );
             return false;
         }
 
         if (!model('EquipmentTypeModel')->slotAllowsEquip($slotName, $childId)){
             $error = sprintf(
-                'Slot is available but does not allow insertion of equipment %s.',
-                $childId
+                '%s: Slot is available but does not allow insertion of equipment %s.',
+                $slotName, $childId
             );
             return false;
         }
