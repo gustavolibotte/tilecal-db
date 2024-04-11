@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Entities\AtlasId;
 use App\Validation\Validators\BatchRegisterValidator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -202,6 +201,8 @@ class Equipments extends APIController
         if (!$this->validateData($inputData, $sanitationRules)){
             return $this->failValidationErrors($this->validator->getErrors());
         }
+        helper('equipment');
+        $inputData['id'] = preprocessEquipmentId($inputData['id'] ?? '');
         $history = model('HistModel')
             ->getEquipmentHist($inputData['id']);
         return $this->respondQueryResults($history);
@@ -260,14 +261,41 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
 
-        $res = $this->getValidatedData($this->existingIdRule);
+        $inputParams = [
+            'id'
+        ];
 
-        if (!$res['valid']){
-            return $this->failValidationErrors($res['errors']);
+        $inputData = $this->request->getVar($inputParams);
+        $idRules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'equipment_id_is_sanitized'
+                ],
+                'errors' => [
+                ]
+            ]
+        ];
+        if(!$this->validateData($inputData, $idRules)){
+            return $this->failValidationErrors($this->validator->getErrors());
         }
-        $data = $res['data'];
-        model('EquipmentModel')->delete($data['id']);
-        return $this->respondDeleted($data['id']);
+        helper('equipment');
+        $inputData['id'] = preprocessEquipmentId($inputData['id'] ?? '');
+
+        $inputRules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'is_not_unique[equipments.id]'
+                ]
+            ]
+        ];
+
+        if (!$this->validate($inputData, $inputRules)){
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+        model('EquipmentModel')->delete($inputData['id']);
+        return $this->respondDeleted($inputData['id']);
     }
 
     public function restore(): ResponseInterface
@@ -286,16 +314,43 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
 
-        $res = $this->getValidatedData($this->existingIdRule);
+        $inputParams = [
+            'id'
+        ];
 
-        if (!$res['valid']){
-            return $this->failValidationErrors($res['errors']);
+        $inputData = $this->request->getVar($inputParams);
+        $idRules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'equipment_id_is_sanitized'
+                ],
+                'errors' => [
+                ]
+            ]
+        ];
+        if(!$this->validateData($inputData, $idRules)){
+            return $this->failValidationErrors($this->validator->getErrors());
         }
-        $data = $res['data'];
+        helper('equipment');
+        $inputData['id'] = preprocessEquipmentId($inputData['id'] ?? '');
+
+        $inputRules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'is_not_unique[equipments.id]'
+                ]
+            ]
+        ];
+
+        if (!$this->validateData($inputData, $inputRules)){
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
 
         $equipment = model('EquipmentModel')
             ->onlyDeleted()
-            ->find($data['id']);
+            ->find($inputData['id']);
         if (empty($equipment)){
             return $this->buildAPIResponse(
                 200,
@@ -303,8 +358,8 @@ class Equipments extends APIController
                 'Equipment is not deleted.'
             );
         }
-        model('EquipmentModel')->restore($data['id']);
-        return $this->respondRestored($data['id']);
+        model('EquipmentModel')->restore($inputData['id']);
+        return $this->respondRestored($inputData['id']);
     }
 
     public function batchCreate(): ResponseInterface
@@ -353,31 +408,57 @@ class Equipments extends APIController
 
     protected function __disassemble__(): ResponseInterface
     {
+        $inputParams = [
+            'parent_id',
+            'child_id'
+        ];
+
+        $inputData = $this->request->getVar($inputParams);
+        $idRules = [
+            'parent_id' => [
+                'rules' => [
+                    'required',
+                    'equipment_id_is_sanitized'
+                ],
+                'errors' => [
+                ]
+            ],
+            'child_id' => [
+                'rules' => [
+                    'required',
+                    'equipment_id_is_sanitized'
+                ],
+                'errors' => [
+                ]
+            ]
+        ];
+        if(!$this->validateData($inputData, $idRules)){
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+        helper('equipment');
+        $inputData['child_id'] = preprocessEquipmentId($inputData['child_id'] ?? '');
+        $inputData['parent_id'] = preprocessEquipmentId($inputData['parent_id'] ?? '');
+
         $inputRules = [
             'child_id' => [
                 'rules' => [
                     'required',
-                    'equipment_id_is_sanitized',
                     'is_not_unique[parent_child_equips.child_equip_id]'
                 ],
                 'errors' => [
-                    'required' => 'Mising child_id parameter.',
                     'is_not_unique' => 'The equipment {value} ID is not assembled to any equipment.'
                 ]
             ],
             'parent_id' => [
                 'rules' => [
                     'required',
-                    'equipment_id_is_sanitized',
                     'is_not_unique[parent_child_equips.parent_equip_id]'
                 ],
                 'errors' => [
-                    'required' => 'Mising parent_id parameter.',
                     'is_not_unique' => 'The equipment {value} ID has no equipment assembled to it.'
                 ]
             ],
         ];
-        $inputData = $this->getRequestValuesFromRules($inputRules);
 
         if ($this->validateData($inputData, $inputRules)){
             model('EquipmentModel')->disassemble(
@@ -405,11 +486,31 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
 
+        $inputParams = [
+            'id',
+            'slots'
+        ];
+
+        $inputData = $this->request->getVar($inputParams);
+        $idRules = [
+            'id' => [
+                'rules' => [
+                    'required',
+                    'equipment_id_is_sanitized'
+                ],
+                'errors' => [
+                ]
+            ]
+        ];
+        if(!$this->validateData($inputData, $idRules)){
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+        helper('equipment');
+        $inputData['id'] = preprocessEquipmentId($inputData['id'] ?? '');
+
         $inputRules = [
             'id' => [
                 "rules" => [
-                    "required",
-                    "equipment_id_is_sanitized",
                     "is_not_unique[equipments.id]"
                 ]
                 ],
@@ -418,7 +519,6 @@ class Equipments extends APIController
                     'is_valid_slot_for_assembly[{id}]'
                 ]
         ];
-        $inputData = $this->getRequestValuesFromRules($inputRules);
 
         if (!$this->validateData($inputData, $inputRules)){
             return $this->failValidationErrors($this->validator->getErrors());
