@@ -17,11 +17,13 @@ use App\Validation\EquipmentRules;
  * @return string
  * @throws \Exception
  */
-function preprocessEquipmentId(string $id): string
+function preprocessEquipmentId(?string $id): string
 {
     helper('string_validation');
     $strLength = strlen($id);
-    if ($strLength === EquipmentRules::$sequentialNumberLength){
+    if (empty($id)){
+        return '';
+    } else if ($strLength === EquipmentRules::$sequentialNumberLength){
         // Id is a sequential number
         return $id;
     } else if ($strLength === EquipmentRules::$atlasIdLength){
