@@ -13,9 +13,6 @@ class Validator{
         ];
         foreach ($ruleSets as $fieldName => $ruleSet){
             foreach($ruleSet as $ruleName => $ruleConfig){
-                // echo $fieldName;
-                // echo $ruleName;
-                // var_dump($data[$fieldName]);
                 if ($ruleName === self::$permitEmptyRule){
                     if (empty($data[$fieldName])){
                         break;

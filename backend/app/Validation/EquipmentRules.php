@@ -80,7 +80,7 @@ class EquipmentRules
             $error = "Invalid equipment id";
             return false;
         }
-        if (!regex_match($id, self::$sequentialNumberRegex, 'Equipment id', $error)) {
+        if (!StringRules::regexMatch($fieldName, ['id' => $id], $error, ['regex' => self::$sequentialNumberRegex])) {
             return false;
         }
         $data[$fieldName] = $id;
