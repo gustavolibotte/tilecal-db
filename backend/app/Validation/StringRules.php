@@ -82,4 +82,29 @@ class StringRules{
         }
         return true;
     }
+
+    /**
+     * Checks if the value length is less than or equal to the defined length
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Maximum length of the string
+     * The params array must have the following keys:
+     * length: int, the maximum length the value must have
+     * @return bool True if the value length is less than or equal to the defined length
+     */
+    public static function maxLength(string $fieldName, array $data, string &$error, array $params): bool
+    {
+        $value = $data[$fieldName];
+        $length = $params['length'];
+        if (strlen($value) > $length) {
+            $error = sprintf(
+                '%s must have exactly %d characters in length.',
+                $fieldName,
+                $length
+            );
+            return false;
+        }
+        return true;
+    }
 }
