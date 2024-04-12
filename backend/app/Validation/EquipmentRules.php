@@ -272,7 +272,13 @@ class EquipmentRules
         return true;
     }
 
-    public static function getGeneralEquipmentRegisterRules(): array
+    /**
+     * Returns the default rules for registering a new equipment.
+     * The rules consider that the field 'type_name' has been checked previously
+     * @return array Default rules for registering a new equipment
+     * @see Validator::validate
+     */
+    public static function getDefaultRegisterRule(): array
     {
         return [
             'id' => [
@@ -285,6 +291,7 @@ class EquipmentRules
                     ]
                 ]
             ],
+            'type_name' => [], // Should have been checked previously
             'owner_mne' => [
                 '\App\Validation\GeneralRules::required' => [],
                 '\App\Validation\InstituteRules::mneIsSanitized' => [],

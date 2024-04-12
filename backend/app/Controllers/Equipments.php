@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Entities\Equipment;
+use App\Validation\EquipmentRules;
 use App\Validation\Validator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -118,33 +120,45 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
 
-        $rules = [
+        $typeRules = [
             'type_name' => [
-                'rules' => [
-                    'required',
-                    'equipment_type_name_is_sanitized',
-                    'is_not_unique[equipment_types.name]'
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentTypeRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'equipment_types',
+                        'field' => 'name'
+                    ]
                 ]
             ]
         ];
-        $data = $this->getRequestValuesFromRules($rules);
-
-        if (!$this->validateData($data, $rules)) {
-            $errors = $this->validator->getErrors();
-            return $this->failValidationErrors($errors);
+        $inputData = $this->request->getVar(['type_name']);
+        $validationRes = Validator::validate($inputData, $typeRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
         }
+        $inputData = $validationRes['validatedData'];
 
-        $validator = EquipmentValidator::getFromTypeName($data['type_name']);
-        $validator->addRequest($this->request);
-        if ($validator->validate()) {
-            $equipment = $validator->getValidatedData();
-            $equipmentModel = model('EquipmentModel');
-            $equipmentModel->insert($equipment);
-            return $this->respondCreated($equipment->id);
+        helper('string');
+        $specificRuleMethod = sprintf(
+            'get%sRegisterRule',
+            makeCamelCase($inputData['type_name'])
+        );
+        if (method_exists(EquipmentRules::class, $specificRuleMethod)) {
+            $specificRule = EquipmentRules::$specificRuleMethod();
         } else {
-            $errors = $validator->getErrors();
-            return $this->failValidationErrors($errors);
+            $specificRule = EquipmentRules::getDefaultRegisterRule();
         }
+
+        $validationRes = Validator::validate($inputData, $specificRule);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
+        }
+
+        $validInput = $validationRes['validatedData'];
+        $equipment = new Equipment($validInput);
+        model('EquipmentModel')->insert($equipment);
+        return $this->respondCreated($equipment->id);
     }
 
     public function getHist(): ResponseInterface
