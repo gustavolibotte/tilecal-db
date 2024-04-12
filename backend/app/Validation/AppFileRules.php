@@ -25,7 +25,7 @@ class AppFileRules{
      */
     public static function idIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
-        return StringRules::regexMatch($fieldName, $data, $error, [self::$idRegex]);
+        return StringRules::regexMatch($fieldName, $data, $error, ['regex' => self::$idRegex]);
     }
 
     /**
