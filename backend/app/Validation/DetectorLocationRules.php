@@ -14,6 +14,8 @@ class DetectorLocationRules{
      * @param string $error Error message to return if the check fails
      * @param array $params Ignored
      * @return bool True if the value is sanitized
+     * @see StringRules::maxLength
+     * @see StringRules::regexMatch
      */
     public function detectorLocationNameIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {

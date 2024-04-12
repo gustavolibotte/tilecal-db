@@ -22,6 +22,8 @@ class AppFileRules{
      * @param array $data Data array to check
      * @param string $error Error message to return if the check fails
      * @param array $params Ignored
+     * @return bool True if the value is sanitized
+     * @see StringRules::regexMatch
      */
     public static function idIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {

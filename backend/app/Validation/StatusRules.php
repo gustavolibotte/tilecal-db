@@ -9,31 +9,21 @@ class StatusRules{
     public static $nameRegex = '/^[A-Za-z0-9]+$/';
 
     /**
-     * Checks if the id value is sanitized
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
+     * Checks if the status name value is sanitized
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Ignored
+     * @return bool True if the value is sanitized
+     * @see StringRules::maxLength
+     * @see StringRules::regexMatch
      */
-    public function status_id_is_sanitized($value, ?string &$error): bool
+    public function status_name_is_sanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
-        helper('string_validation');
-        $fieldName = 'Status id';
-        return (
-            regex_match($value, Self::$statusIdRegex, $fieldName, $error)
+        $approved =  (
+            StringRules::maxLength($fieldName, $data, $error, ['length' => self::$maxNameLength]) &&
+            StringRules::regexMatch($fieldName, $data, $error, ['regex' => self::$nameRegex])
         );
-    }
-
-    /**
-     * Checks if the name value is sanitized
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
-     */
-    public function status_name_is_sanitized($value, ?string &$error): bool
-    {
-        helper('string_validation');
-        $fieldName = 'Status name';
-        return (
-            max_length($value, Self::$maxNameLength, $fieldName, $error) &&
-            regex_match($value, Self::$nameRegex, $fieldName, $error)
-        );
+        return $approved;
     }
 }
