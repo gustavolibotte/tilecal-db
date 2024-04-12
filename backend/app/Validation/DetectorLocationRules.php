@@ -15,7 +15,7 @@ class DetectorLocationRules{
      * @param array $params Ignored
      * @return bool True if the value is sanitized
      */
-    public function detectorLocationnameIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
+    public function detectorLocationNameIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
         return  (
             StringRules::maxLength($fieldName, $data, $error, ['length' => self::$maxNameLength]) &&
