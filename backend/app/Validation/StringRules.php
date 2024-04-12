@@ -38,17 +38,45 @@ class StringRules{
      * Checks if the value matches the regex
      * @param string $fieldName Name of the field to check
      * @param array $data Data array to check
-     * @param string &$error Error message to return if the check fails
+     * @param string $error Error message to return if the check fails
      * @param array $params Regex to match
+     * The params array must have the following keys:
+     * regex: string, the regex to match
+     * @return bool True if the value matches the regex
      */
     public static function regexMatch(string $fieldName, array $data, string &$error, array $params): bool
     {
         $value = $data[$fieldName];
-        $regex = $params[0];
+        $regex = $params['regex'];
         if (!preg_match($regex, $value)) {
             $error = sprintf(
                 '%s is not valid',
                 $fieldName
+            );
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * Checks if the value is has the defined length
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Maximum length of the string
+     * The params array must have the following keys:
+     * length: int, the exact length the value must have
+     * @return bool True if the value has the defined length
+     */
+    public static function exactLength(string $fieldName, array $data, string &$error, array $params): bool
+    {
+        $value = $data[$fieldName];
+        $length = $params['length'];
+        if (strlen($value) != $length) {
+            $error = sprintf(
+                '%s must have exactly %d characters in length.',
+                $fieldName,
+                $length
             );
             return false;
         }
