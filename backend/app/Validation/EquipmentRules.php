@@ -125,40 +125,59 @@ class EquipmentRules
     }
 
     /**
-     * Checks if the a value doesn't exist for a given type. A negation of is_type_not_unique
-     *
-     * @param $value  Value given by CodeIgniter validator
-     * @param string $params Params with the format <column>,<typeid>. column is the equipments column to check for the given type id
-     * @param array $data Ignored
-     * @param ?string &$error Ignored
-     * 
-     * @return bool True if the data is unique on that column for a given equipment type
+     * Checks if a given field has a unique value for a given equipment type
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Parameters for the check
+     * The params array must have the following keys:
+     * typeIdField: int, the name of the field that contains the equipment type id
+     * column: string, the column to check for uniqueness
+     * @return bool True if the value is unique for the selected type
      */
-    public function is_type_unique($value, string $params, array $data, ?string &$error): bool
+    public function isTypeUnique(string $fieldName, array $data, string &$error, array $params): bool
     {
-        return !$this->is_type_not_unique($value, $params, $data, $error);
+        if (self::isTypeNotUnique($fieldName, $data, $error, $params)) {
+            $error = sprintf(
+                '%s %s exists for the selected type.',
+                ucfirst($fieldName), $data[$fieldName]
+            );
+            return false;
+        }
+        return true;
     }
 
     /**
-     * Checks if the a value already exists for a given type
-     *
-     * @param $value  Value given by CodeIgniter validator
-     * @param string $params Params with the format <column>,<typeid>. column is the equipments column to check for the given type id
-     * @param array $data Ignored
-     * @param ?string &$error Ignored
-     * 
-     * @return bool True if the data is not unique on that column for a given equipment type
+     * Checks if a given field has a non unique value for a given equipment type
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Parameters for the check
+     * The params array must have the following keys:
+     * typeIdField: int, the name of the field that contains the equipment type id
+     * column: string, the column to check for uniqueness
+     * @return bool True if the value is unique for the selected type
      */
-    public function is_type_not_unique($value, string $params, array $data, ?string &$error): bool
+    public function isTypeNotUnique(string $fieldName, array $data, string &$error, array $params): bool
     {
-        $params = explode(',', $params);
-        $column = $params[0];
-        $typeId = $params[1];
+        $value = $data[$fieldName];
+        $typeIdField = $params['typeIdField'];
+        $typeId = $data[$typeIdField];
+        $column = $params['column'];
         $db = db_connect();
-        $queryText = sprintf("SELECT {$column} FROM `equipments` WHERE `{$column}` = '{$value}' AND type_id = %d LIMIT 1", $typeId);
-        $query = $db->query($queryText);
-        $results = $query->getFirstRow();
-        return isset($results);
+        $queryResult = $db->table('equipments')
+            ->select('1')
+            ->where($column, $value)
+            ->where('type_id', $typeId)
+            ->get(1)->getResultArray();
+        if (count($queryResult) === 0) {
+            $error = sprintf(
+                '%s %s doesn\'t exist for the selected type.',
+                ucfirst($fieldName), $value
+            );
+            return false;
+        }
+        return true;
     }
 
     public function is_valid_slot_for_assembly($value, string $params, array $data, ?string &$error): bool
