@@ -24,7 +24,6 @@ class InstituteRules{
             StringRules::maxLength($fieldName, $data, $error, ['length' => self::$maxNameLength]) &&
             StringRules::regexMatch($fieldName, $data, $error, ['regex' => self::$nameRegex])
         );
-        $error = str_replace('mne', 'Insitute MNE', $error);
         return $approved;
     }
 
@@ -41,7 +40,6 @@ class InstituteRules{
             StringRules::exactLength($fieldName, $data, $error, ['length' => self::$mneLength]) &&
             StringRules::regexMatch($fieldName, $data, $error, ['regex' => self::$mneRegex])
         );
-        $error = str_replace('mne', 'Insitute MNE', $error);
         return $approved;
     }
 }
