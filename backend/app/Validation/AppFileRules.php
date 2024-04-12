@@ -14,15 +14,18 @@ class AppFileRules{
     public static int $nameMinLength = 1;
     public static string $nameRegex = '/^[A-Za-z_]+$/';
 
+    public static string $idRegex = '/^[0-9]+$/';
+
     /**
-     * Checks if the file id value is sanitized
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
+     * Checks if the id value is sanitized
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Ignored
      */
-    public function file_id_is_sanitized($value, ?string &$error): bool
+    public static function idIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
-        helper('string_validation');
-        return regex_match($value, Self::$fileIdRegex, 'File Id', $error);
+        return StringRules::regexMatch($fieldName, $data, $error, [self::$idRegex]);
     }
 
     /**

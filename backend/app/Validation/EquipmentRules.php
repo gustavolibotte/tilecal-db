@@ -1,12 +1,12 @@
 <?php
 
 namespace App\Validation;
+
 use App\Entities\AtlasId;
 use App\Models\EquipmentModel;
 
-class EquipmentRules{
-
-
+class EquipmentRules
+{
     public static int $serialMaxSize = 36;
     public static string $serialRegex = '/^[A-Za-z0-9 -_]*$/';
     public static int $commentsMaxSize = 65535; //MySQL max text size
@@ -25,7 +25,7 @@ class EquipmentRules{
         'LC' => 'Control'
     ];
 
-        /**
+    /**
      * Key value pairs for valid projects for the database according to the ATLAS ID rules
      * Keys are abbreviations and values which system they represent
      * Since Tilecal is ALTAS, only the ATLAS detetctor code is valid
@@ -34,7 +34,7 @@ class EquipmentRules{
     public static array $validProjects = [
         '20' => 'ATLAS Detector'
     ];
-    
+
     /**
      * Regex rule for the id sequential number part
      * @var string $sequentialNumberRegex
@@ -55,33 +55,36 @@ class EquipmentRules{
      * If the id has the string 'CHI10V', it is considered a mainboard produced by Chicago
      * The sequential number is extracted and checked against the regex.
      * This is needed because the id from Chicago mainboards do not have the same format as the ATLAS ID
-     * This function should be changed together with preprocessEquipmentId function in equipment_helper.php
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
+     * @param string $fieldName Field name with the id value
+     * @param array $data Data array to be modified
+     * @param string $error Error string to be modified
+     * @param array $params Ignored
      */
-    public static function equipment_id_is_sanitized($value, ?string &$error): bool
+    public static function idIsSanitized(string $fieldName, array &$data, string &$error, array $params): bool
     {
         helper('string_validation');
-        $fieldName = 'Equipment id';
-        $strLength = strlen($value);
-        if ($strLength === Self::$sequentialNumberLength){
+        $id = $data[$fieldName];
+        $strLength = strlen($id);
+        if ($strLength === self::$sequentialNumberLength) {
             // Id is a sequential number
-            return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
-        } else if ($strLength === Self::$atlasIdLength){
+        } else if ($strLength === self::$atlasIdLength) {
             // Id is an ATLAS ID
-            $atlasId = new AtlasId(['id' => $value]);
-            $value = $atlasId->sequential;
-            return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
-        } else if (str_contains($value, 'CHI10V')){
+            $atlasId = new AtlasId(['id' => $id]);
+            $id = $atlasId->sequential;
+        } else if (str_contains($id, 'CHI10V')) {
             // Id is a mainboard produced by Chicago
-            $value = str_replace('V', '', $value);
-            $atlasId = new AtlasId(['id' => $value]);
-            $value = $atlasId->sequential;
-            return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
-        }else {
+            $id = str_replace('V', '', $id);
+            $atlasId = new AtlasId(['id' => $id]);
+            $id = $atlasId->sequential;
+        } else {
             $error = "Invalid equipment id";
             return false;
         }
+        if (!regex_match($id, self::$sequentialNumberRegex, 'Equipment id', $error)) {
+            return false;
+        }
+        $data[$fieldName] = $id;
+        return true;
     }
 
     /**
@@ -94,8 +97,8 @@ class EquipmentRules{
         helper('string_validation');
         $fieldName = 'Equipment serial';
         return (
-            max_length($value, Self::$serialMaxSize, $fieldName, $error) &&
-            regex_match($value, Self::$serialRegex, $fieldName, $error)
+            max_length($value, self::$serialMaxSize, $fieldName, $error) &&
+            regex_match($value, self::$serialRegex, $fieldName, $error)
         );
     }
 
@@ -109,8 +112,8 @@ class EquipmentRules{
         helper('string_validation');
         $fieldName = 'Equipment comments';
         return (
-            max_length($value, Self::$commentsMaxSize, $fieldName, $error) &&
-            regex_match($value, Self::$commentsRegex, $fieldName, $error)
+            max_length($value, self::$commentsMaxSize, $fieldName, $error) &&
+            regex_match($value, self::$commentsRegex, $fieldName, $error)
         );
     }
 
@@ -123,9 +126,9 @@ class EquipmentRules{
      * @param ?string &$error Ignored
      * 
      * @return bool True if the data is unique on that column for a given equipment type
-     */ 
+     */
     public function is_type_unique($value, string $params, array $data, ?string &$error): bool
-    {   
+    {
         return !$this->is_type_not_unique($value, $params, $data, $error);
     }
 
@@ -138,7 +141,7 @@ class EquipmentRules{
      * @param ?string &$error Ignored
      * 
      * @return bool True if the data is not unique on that column for a given equipment type
-     */ 
+     */
     public function is_type_not_unique($value, string $params, array $data, ?string &$error): bool
     {
         $params = explode(',', $params);
@@ -160,14 +163,14 @@ class EquipmentRules{
      * @param ?string &$error Error string in the format "The parent id must be from a %s. The given id is from a %s"
      * 
      * @return bool True if the data was approved on this rule 
-     */ 
+     */
     public function equipment_is_type($value, string $params, array $data, ?string &$error): bool
-    {   
+    {
         helper('string');
         $equipmentModel = new EquipmentModel();
         $equipment = $equipmentModel->fullQuery()->find($value);
         $approved = $equipment->type_name == $params;
-        if (!$approved){
+        if (!$approved) {
             $error = sprintf(
                 "The parent id must be from a %s. The given id is from a %s",
                 snake2Capitalized($params),
@@ -186,14 +189,14 @@ class EquipmentRules{
      * @param ?string &$error Error string. Formated automatically by the function.
      * 
      * @return bool True if the data was approved on this rule
-     */ 
+     */
     public function equip_is_not_assembled_into($value, ?string &$error = null): bool
     {
         $childId = $value;
         $relation = model('ParentChildModel')
             ->where('child_equip_id', $childId)
             ->first();
-        if (isset($relation)){
+        if (isset($relation)) {
             $error = sprintf(
                 'The equipment %s is already assembled into equipment %s.',
                 $relation->child_equip_id,
@@ -206,11 +209,11 @@ class EquipmentRules{
 
     public function is_valid_slot_for_assembly($value, string $params, array $data, ?string &$error): bool
     {
-        if (!property_exists($value, 'name')){
+        if (!property_exists($value, 'name')) {
             $error = 'Missing slot name.';
             return false;
         }
-        if (!property_exists($value, 'equipment_id')){
+        if (!property_exists($value, 'equipment_id')) {
             $error = 'Missing slot equipment id to assemble.';
             return false;
         }
@@ -219,7 +222,7 @@ class EquipmentRules{
         $parentId = $params;
         $equipmentModel = model('EquipmentModel');
 
-        if (!Self::equipment_id_is_sanitized($childId, $error)){
+        if (!self::equipment_id_is_sanitized($childId, $error)) {
             $error = sprintf(
                 'Invalid equipment id %s.',
                 $childId
@@ -227,7 +230,7 @@ class EquipmentRules{
             return false;
         }
 
-        if (!Self::equipment_id_is_sanitized($parentId, $error)){
+        if (!self::equipment_id_is_sanitized($parentId, $error)) {
             $error = sprintf(
                 'Invalid equipment id %s.',
                 $parentId
@@ -235,7 +238,7 @@ class EquipmentRules{
             return false;
         }
 
-        if (!EquipmentTypeRules::equipment_type_slot_name_is_sanitized($slotName, $error)){
+        if (!EquipmentTypeRules::equipment_type_slot_name_is_sanitized($slotName, $error)) {
             $error = sprintf(
                 'Invalid slot name %s.',
                 $slotName
@@ -248,42 +251,47 @@ class EquipmentRules{
         $parentId = preprocessEquipmentId($parentId);
         $equipmentModel = model('EquipmentModel');
         $equip = $equipmentModel->select('1')->find($childId);
-        if (!isset($equip)){
+        if (!isset($equip)) {
             $error = sprintf(
                 '%s: Equipment %s does not exist.',
-                $slotName, $childId
+                $slotName,
+                $childId
             );
             return false;
         }
 
-        if ($equipmentModel->equipIsAssembledInto($childId)){
+        if ($equipmentModel->equipIsAssembledInto($childId)) {
             $error = sprintf(
                 '%s: The equipment %s is already assembled into another one.',
-                $slotName, $childId
+                $slotName,
+                $childId
             );
             return false;
         }
 
-        if (!$equipmentModel->equipHasSlot($parentId, $slotName)){
+        if (!$equipmentModel->equipHasSlot($parentId, $slotName)) {
             $error = sprintf(
                 '%s: Equipment %s doesn\'t have the selected slot',
-                $slotName, $parentId
+                $slotName,
+                $parentId
             );
             return false;
         }
 
-        if (!$equipmentModel->equipSlotIsEmpty($parentId, $slotName)){
+        if (!$equipmentModel->equipSlotIsEmpty($parentId, $slotName)) {
             $error = sprintf(
                 '%s: Selected slot from equipment %s is in use.',
-                $slotName, $parentId
+                $slotName,
+                $parentId
             );
             return false;
         }
 
-        if (!model('EquipmentTypeModel')->slotAllowsEquip($slotName, $childId)){
+        if (!model('EquipmentTypeModel')->slotAllowsEquip($slotName, $childId)) {
             $error = sprintf(
                 '%s: Slot is available but does not allow insertion of equipment %s.',
-                $slotName, $childId
+                $slotName,
+                $childId
             );
             return false;
         }

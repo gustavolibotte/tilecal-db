@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Validation\Validator;
 use App\Validation\Validators\EquipmentValidator;
 use CodeIgniter\HTTP\ResponseInterface;
 use Throwable;
@@ -20,9 +21,9 @@ class Equipments extends APIController
 
     public function get(): ResponseInterface
     {
-        try{
+        try {
             return $this->__get__();
-        } catch (Throwable $e){
+        } catch (Throwable $e) {
             return $this->failInternalError($e);
         }
     }
@@ -30,103 +31,72 @@ class Equipments extends APIController
     protected function __get__(): ResponseInterface
     {
         $feature = model('FeatureModel')->findName('api_equipment_get');
-        if (!$feature->isActive()){
+        if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
 
-        $inputParams = [
-            'id',
-            'type_name',
-            'relatedFileId',
-            'relatedEquipmentId',
-            'onlyDeleted'
-        ];
-
-        $inputData = $this->request->getVar($inputParams);
-        $idRules = [
-            'id' => [
-                'rules' => [
-                    'permit_empty',
-                    'equipment_id_is_sanitized'
-                ],
-                'errors' => [
-                ]
-            ]
-        ];
-        if(!$this->validateData($inputData, $idRules)){
-            return $this->failValidationErrors($this->validator->getErrors());
-        }
-        helper('equipment');
-        $inputData['id'] = preprocessEquipmentId($inputData['id'] ?? '');
-
         $inputRules = [
-            'id' => [],
+            'id' => [
+                'permitEmpty' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => []
+            ],
             'type_name' => [
-                'rules' => [
-                    'permit_empty',
-                    'equipment_type_name_is_sanitized'
-                ],
-                'errors' => [
-                ]
+                'permitEmpty' => [],
+                '\App\Validation\EquipmentTypeRules::nameIsSanitized' => []
             ],
             'relatedFileId' => [
-                'rules' => [
-                    'permit_empty',
-                    'file_id_is_sanitized',
-                ],
-                'errors' => [
-                ]
+                'permitEmpty' => [],
+                '\App\Validation\FileRules::idIsSanitized' => []
             ],
             'relatedEquipmentId' => [
-                'rules' => [
-                    'permit_empty',
-                    'equipment_id_is_sanitized'
-                ],
-                'errors' => []
+                'permitEmpty' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => []
             ],
             'onlyDeleted' => [
-                'rules' => [
-                ],
-                'errors' => [
-                ]
-            ],
+                'permitEmpty' => []
+            ]
         ];
-          
-        if (!$this->validateData($inputData, $inputRules)){
-            return $this->failValidationErrors($this->validator->getErrors());
+
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
         }
+        $validInput = $validationRes['validatedData'];
 
         $equipmentModel = model('EquipmentModel')->asArray();
-        $equipmentModel = $this->parseFilterCondition($inputData['id'], 'equipments.id', $equipmentModel);
-        $equipmentModel = $this->parseFilterCondition($inputData['type_name'], 'equipment_types.name', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition($validInput['id'], 'equipments.id', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition($validInput['type_name'], 'equipment_types.name', $equipmentModel);
 
-        if (!empty($inputData['relatedFileId'])){
+        if (!empty($validInput['relatedFileId'])) {
             $equipmentModel->joinFiles();
             $equipmentModel = $this->parseFilterCondition(
-                $inputData['relatedFileId'],
+                $validInput['relatedFileId'],
                 'equipments_to_files.file_id',
                 $equipmentModel
             );
         }
 
-        $equipmentModel = $this->parseDeletion($equipmentModel, !empty($inputData['onlyDeleted']));
+        $equipmentModel = $this->parseDeletion($equipmentModel, !empty($validInput['onlyDeleted']));
 
-        if (empty($inputData['relatedEquipmentId'])){
+        if (empty($validInput['relatedEquipmentId'])) {
             $data = $equipmentModel->fullQuery()->findAll();
         } else {
-            $data = $equipmentModel->getRelatedEquipments($inputData['relatedEquipmentId']);
+            $data = $equipmentModel->getRelatedEquipments($validInput['relatedEquipmentId']);
         }
         helper('app_array');
-        foreach($data as &$sample){
+        foreach ($data as &$sample) {
             $sample['type_params'] = json_decode($sample['type_params']);
         }
         $env = \Config\Services::environment();
-        if ($env->isLocal() || $env->isDev()){
+        if ($env->isLocal() || $env->isDev()) {
             return $this->buildAPIResponse(
                 200,
                 $data,
                 metadata: [
-                    'input' => $inputData]
+                    'validInput' => $validInput,
+                    'input' => $inputData
+                ]
             );
         }
         return $this->respondQueryResults($data);
@@ -134,9 +104,9 @@ class Equipments extends APIController
 
     public function post(): ResponseInterface
     {
-        try{
+        try {
             return $this->__post__();
-        } catch (Throwable $e){
+        } catch (Throwable $e) {
             return $this->failInternalError($e);
         }
     }
@@ -144,7 +114,7 @@ class Equipments extends APIController
     protected function __post__(): ResponseInterface
     {
         $feature = model('FeatureModel')->findName('equipment_register');
-        if (!$feature->isActive()){
+        if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
 
@@ -159,19 +129,19 @@ class Equipments extends APIController
         ];
         $data = $this->getRequestValuesFromRules($rules);
 
-        if (!$this->validateData($data, $rules)){
+        if (!$this->validateData($data, $rules)) {
             $errors = $this->validator->getErrors();
             return $this->failValidationErrors($errors);
         }
 
         $validator = EquipmentValidator::getFromTypeName($data['type_name']);
         $validator->addRequest($this->request);
-        if ($validator->validate()){
+        if ($validator->validate()) {
             $equipment = $validator->getValidatedData();
             $equipmentModel = model('EquipmentModel');
             $equipmentModel->insert($equipment);
             return $this->respondCreated($equipment->id);
-        }else{
+        } else {
             $errors = $validator->getErrors();
             return $this->failValidationErrors($errors);
         }
@@ -179,9 +149,9 @@ class Equipments extends APIController
 
     public function getHist(): ResponseInterface
     {
-        try{
+        try {
             return $this->__getHist__();
-        } catch (Throwable $e){
+        } catch (Throwable $e) {
             return $this->failInternalError($e);
         }
     }
@@ -197,7 +167,7 @@ class Equipments extends APIController
             ]
         ];
         $inputData = $this->getRequestValuesFromRules($sanitationRules);
-        if (!$this->validateData($inputData, $sanitationRules)){
+        if (!$this->validateData($inputData, $sanitationRules)) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
         helper('equipment');
@@ -209,9 +179,9 @@ class Equipments extends APIController
 
     public function put(): ResponseInterface
     {
-        try{
+        try {
             return $this->__put__();
-        } catch (Throwable $e){
+        } catch (Throwable $e) {
             return $this->failInternalError($e);
         }
     }
@@ -219,11 +189,11 @@ class Equipments extends APIController
     protected function __put__(): ResponseInterface
     {
         $feature = model('FeatureModel')->findName('equipment_edit');
-        if (!$feature->isActive()){
+        if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
         $res = $this->getValidatedData($this->existingIdRule);
-        if (!$res['valid']){
+        if (!$res['valid']) {
             return $this->failValidationErrors($res['errors']);
         }
         $data = $res['data'];
@@ -235,7 +205,7 @@ class Equipments extends APIController
         $validator = EquipmentValidator::getFromTypeName($equipment['type_name'])
             ->addRequest($this->request)
             ->asEdit();
-        if (!$validator->validate()){
+        if (!$validator->validate()) {
             $errors = $validator->getErrors();
             return $this->failValidationErrors($errors);
         }
@@ -246,9 +216,9 @@ class Equipments extends APIController
 
     public function delete(): ResponseInterface
     {
-        try{
+        try {
             return $this->__delete__();
-        } catch (Throwable $e){
+        } catch (Throwable $e) {
             return $this->failInternalError($e);
         }
     }
@@ -256,7 +226,7 @@ class Equipments extends APIController
     protected function __delete__(): ResponseInterface
     {
         $feature = model('FeatureModel')->findName('equipment_delete');
-        if (!$feature->isActive()){
+        if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
 
@@ -275,7 +245,7 @@ class Equipments extends APIController
                 ]
             ]
         ];
-        if(!$this->validateData($inputData, $idRules)){
+        if (!$this->validateData($inputData, $idRules)) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
         helper('equipment');
@@ -290,7 +260,7 @@ class Equipments extends APIController
             ]
         ];
 
-        if (!$this->validate($inputData, $inputRules)){
+        if (!$this->validate($inputData, $inputRules)) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
         model('EquipmentModel')->delete($inputData['id']);
@@ -299,9 +269,9 @@ class Equipments extends APIController
 
     public function restore(): ResponseInterface
     {
-        try{
+        try {
             return $this->__restore__();
-        } catch (Throwable $e){
+        } catch (Throwable $e) {
             return $this->failInternalError($e);
         }
     }
@@ -309,7 +279,7 @@ class Equipments extends APIController
     public function __restore__(): ResponseInterface
     {
         $feature = model('FeatureModel')->findName('equipment_restore');
-        if (!$feature->isActive()){
+        if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
 
@@ -328,7 +298,7 @@ class Equipments extends APIController
                 ]
             ]
         ];
-        if(!$this->validateData($inputData, $idRules)){
+        if (!$this->validateData($inputData, $idRules)) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
         helper('equipment');
@@ -343,14 +313,14 @@ class Equipments extends APIController
             ]
         ];
 
-        if (!$this->validateData($inputData, $inputRules)){
+        if (!$this->validateData($inputData, $inputRules)) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
 
         $equipment = model('EquipmentModel')
             ->onlyDeleted()
             ->find($inputData['id']);
-        if (empty($equipment)){
+        if (empty($equipment)) {
             return $this->buildAPIResponse(
                 200,
                 [],
@@ -363,9 +333,9 @@ class Equipments extends APIController
 
     public function batchCreate(): ResponseInterface
     {
-        try{
+        try {
             return $this->__batchCreate__();
-        } catch (Throwable $e){
+        } catch (Throwable $e) {
             return $this->failInternalError($e);
         }
     }
@@ -373,7 +343,7 @@ class Equipments extends APIController
     protected function __batchCreate__(): ResponseInterface
     {
         $feature = model('FeatureModel')->findName('equipment_batch_register');
-        if (!$feature->isActive()){
+        if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
         $inputData = [
@@ -403,29 +373,29 @@ class Equipments extends APIController
                 ]
             ]
         ];
-        if (!$this->validateData($inputData, $inputRules)){
+        if (!$this->validateData($inputData, $inputRules)) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
         $equipValidator = EquipmentValidator::getFromTypeName($inputData['type_name']);
-                    // Needs to rename the fields because the front end fields
-            // have user friendly names
-            $res = model('EquipmentModel')->insertFromFile(
-                $inputData['file']->getTempName(),
-                $equipValidator
-            );
-            if ($res === true){
-                return $this->respondCreated();
-            }
-            $res['row'] = remove_value('iRow', $res);
-            return $this->failValidationErrors($res, 'Invalid row.');
+        // Needs to rename the fields because the front end fields
+        // have user friendly names
+        $res = model('EquipmentModel')->insertFromFile(
+            $inputData['file']->getTempName(),
+            $equipValidator
+        );
+        if ($res === true) {
+            return $this->respondCreated();
+        }
+        $res['row'] = remove_value('iRow', $res);
+        return $this->failValidationErrors($res, 'Invalid row.');
 
     }
 
     public function disassemble(): ResponseInterface
     {
-        try{
+        try {
             return $this->__disassemble__();
-        } catch (Throwable $e){
+        } catch (Throwable $e) {
             return $this->failInternalError($e);
         }
     }
@@ -456,7 +426,7 @@ class Equipments extends APIController
                 ]
             ]
         ];
-        if(!$this->validateData($inputData, $idRules)){
+        if (!$this->validateData($inputData, $idRules)) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
         helper('equipment');
@@ -484,7 +454,7 @@ class Equipments extends APIController
             ],
         ];
 
-        if ($this->validateData($inputData, $inputRules)){
+        if ($this->validateData($inputData, $inputRules)) {
             model('EquipmentModel')->disassemble(
                 $inputData['parent_id'],
                 $inputData['child_id']
@@ -496,9 +466,9 @@ class Equipments extends APIController
 
     public function assemble()
     {
-        try{
+        try {
             return $this->__assemble__();
-        } catch (Throwable $e){
+        } catch (Throwable $e) {
             return $this->failInternalError($e);
         }
     }
@@ -506,7 +476,7 @@ class Equipments extends APIController
     protected function __assemble__()
     {
         $feature = model('FeatureModel')->findName('parent_relation');
-        if (!$feature->isActive()){
+        if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
 
@@ -526,7 +496,7 @@ class Equipments extends APIController
                 ]
             ]
         ];
-        if(!$this->validateData($inputData, $idRules)){
+        if (!$this->validateData($inputData, $idRules)) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
         helper('equipment');
@@ -537,21 +507,21 @@ class Equipments extends APIController
                 "rules" => [
                     "is_not_unique[equipments.id]"
                 ]
-                ],
-                'slots.*' => [
-                    'required',
-                    'is_valid_slot_for_assembly[{id}]'
-                ]
+            ],
+            'slots.*' => [
+                'required',
+                'is_valid_slot_for_assembly[{id}]'
+            ]
         ];
 
-        if (!$this->validateData($inputData, $inputRules)){
+        if (!$this->validateData($inputData, $inputRules)) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
         $db = db_connect();
         $equipmentModel = model('EquipmentModel');
         $typeSlotModel = model('TypeSlotModel');
         $db->transException(true)->transBegin();
-        foreach ($inputData['slots.*'] as $slotInfo){
+        foreach ($inputData['slots.*'] as $slotInfo) {
             $slotId = $typeSlotModel
                 ->select('id')
                 ->where('name', $slotInfo->name)
@@ -563,14 +533,14 @@ class Equipments extends APIController
             );
         }
         $db->transCommit();
-        return $this->buildAPIResponse(200, message:'Assembled');
+        return $this->buildAPIResponse(200, message: 'Assembled');
     }
 
     public function getChildren()
     {
-        try{
+        try {
             return $this->__getChildren__();
-        } catch (Throwable $e){
+        } catch (Throwable $e) {
             return $this->failInternalError($e);
         }
     }
@@ -578,7 +548,7 @@ class Equipments extends APIController
     protected function __getChildren__()
     {
         $feature = model('FeatureModel')->findName('parent_relation');
-        if (!$feature->isActive()){
+        if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
 
@@ -593,7 +563,7 @@ class Equipments extends APIController
             ],
         ];
         $inputData = $this->getRequestValuesFromRules($inputRules);
-        if (!$this->validateData($inputData, $inputRules)){
+        if (!$this->validateData($inputData, $inputRules)) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
         $children = model('EquipmentModel')->getChildrenIDs($inputData['id']);

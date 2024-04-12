@@ -10,16 +10,18 @@ class EquipmentTypeRules{
 
     /**
      * Checks if the name value is sanitized
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Ignored
      */
-    public function equipment_type_name_is_sanitized($value, ?string &$error): bool
+    public static function nameIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
         helper('string_validation');
         $fieldName = 'Equipment type name';
         return (
-            max_length($value, Self::$maxNameLength, $fieldName, $error) &&
-            regex_match($value, Self::$baseNameRegex, $fieldName, $error)
+            max_length($data['type_name'], Self::$maxNameLength, $fieldName, $error) &&
+            regex_match($data['type_name'], Self::$baseNameRegex, $fieldName, $error)
         );
     }
 

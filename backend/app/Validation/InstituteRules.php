@@ -15,7 +15,7 @@ class InstituteRules{
      * @param $value  Value given by CodeIgniter validator
      * @param ?string &$error Ignored
      */
-    public function institute_id_is_sanitized($value, ?string &$error): bool
+    public static function idIsSanitized($value, ?string &$error): bool
     {
         helper('string_validation');
         $fieldName = 'Institute id';
@@ -29,7 +29,7 @@ class InstituteRules{
      * @param $value  Value given by CodeIgniter validator
      * @param ?string &$error Ignored
      */
-    public function institute_name_is_sanitized($value, ?string &$error): bool
+    public static function nameIsSanitized($value, ?string &$error): bool
     {
 
         helper('string_validation');
