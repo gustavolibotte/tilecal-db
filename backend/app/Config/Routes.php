@@ -130,11 +130,11 @@ $routes->group('api', static function ($routes){
     $routes->delete('file', 'Files::delete', [
         'filter' =>['api_auth', 'action:delete'],
         'as' => 'api_file_delete'
-        ]);
+    ]);
     $routes->patch('file', 'Files::restore', [
         'filter' =>['api_auth', 'action:delete'],
         'as' => 'api_file_restore'
-        ]);
+    ]);
     $routes->get('file/download', 'Files::download', [
         'filter' => ['api_auth', 'action:download'],
         'as' => 'api_file_download'
