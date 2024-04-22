@@ -111,7 +111,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
         });
       } else {
         console.log(error);
-        toast.error('An error has occured.');
+        toast.error('An error has occurred.');
       }
     },
   });
@@ -275,7 +275,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
           <FormNumber
             id='beta'
             name='Beta'
-            value={formik.values.comments}
+            value={formik.values.beta}
             help='PMT Beta value. Must be a positive number.'
             onChange={(e) => {
               formik.setFieldValue('beta', e.value);
@@ -286,7 +286,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
           <FormNumber
             id='nominal_hv'
             name='Nominal HV'
-            value={formik.values.comments}
+            value={formik.values.nominal_hv}
             help='PMT Nominal HV value. Must be a positive number.'
             onChange={(e) => {
               formik.setFieldValue('nominal_hv', e.value);
@@ -297,7 +297,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
           <FormNumber
             id='qe'
             name='QE'
-            value={formik.values.comments}
+            value={formik.values.qe}
             help='PMT QE value. Must be a positive number.'
             onChange={(e) => {
               formik.setFieldValue('qe', e.value);
