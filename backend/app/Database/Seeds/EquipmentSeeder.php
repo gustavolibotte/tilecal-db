@@ -27,7 +27,7 @@ class EquipmentSeeder extends BaseSeeder
     protected array $institutes;
     protected TypeSlotModel $typeSlotModel;
     protected array $slots;
-    protected DetectorLocationmodel $detectorLocationModel;
+    protected DetectorLocationModel $detectorLocationModel;
     protected array $detectorLocations;
 
     protected int $numCommentsCharacters = 100;
