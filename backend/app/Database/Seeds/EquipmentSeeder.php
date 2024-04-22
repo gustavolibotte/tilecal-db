@@ -110,7 +110,7 @@ class EquipmentSeeder extends BaseSeeder
             'owner_id' => $faker->randomElement($this->institutes)->id,
             'detector_location_id' => $faker->randomElement($this->detectorLocations)->id,
             'comments' => $faker->text($this->numCommentsCharacters),
-            'type_params' => array_fill_keys(array_keys($equipType->params), null)
+            'type_params' => array_fill_keys($equipType->params, null)
         ]);
         $equip->serial = substr($equip->id, 1, 6);
         return $equip;
