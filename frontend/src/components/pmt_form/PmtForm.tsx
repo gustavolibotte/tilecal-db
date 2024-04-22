@@ -14,7 +14,7 @@ import FormNumber from '../form_number/FormNumber';
 import { range } from '../../utils/array';
 import { useRef } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
-import { 
+import {
   commentsRules,
   serialRules,
 } from '../../utils/validation_rules';
@@ -96,7 +96,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
       } else {
         toast.success('Equipment registered with success.');
       }
-      if (onSuccess){
+      if (onSuccess) {
         onSuccess();
       }
       formik.resetForm();
@@ -111,7 +111,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
         });
       } else {
         console.log(error);
-        toast.error('An error has occured.');
+        toast.error('An error has occurred.');
       }
     },
   });
@@ -122,13 +122,16 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
       data['id'] = equipId;
     }
     equipMutation.mutate(data);
-  }
+  };
 
   const validationSchema: any = {
     serial: serialRules,
-    comments: commentsRules
+    comments: commentsRules,
+    beta: Yup.number().positive(__FIELD_POSITIVE_MSG__).nullable(),
+    nominal_hv: Yup.number().positive(__FIELD_POSITIVE_MSG__).nullable(),
+    qe: Yup.number().positive(__FIELD_POSITIVE_MSG__).nullable()
   }
-  if (!isEdit){
+  if (!isEdit) {
     validationSchema['owner_mne'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['location_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['status_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
@@ -275,7 +278,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
           <FormNumber
             id='beta'
             name='Beta'
-            value={formik.values.comments}
+            value={formik.values.beta}
             help='PMT Beta value. Must be a positive number.'
             onChange={(e) => {
               formik.setFieldValue('beta', e.value);
@@ -286,7 +289,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
           <FormNumber
             id='nominal_hv'
             name='Nominal HV'
-            value={formik.values.comments}
+            value={formik.values.nominal_hv}
             help='PMT Nominal HV value. Must be a positive number.'
             onChange={(e) => {
               formik.setFieldValue('nominal_hv', e.value);
@@ -297,7 +300,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
           <FormNumber
             id='qe'
             name='QE'
-            value={formik.values.comments}
+            value={formik.values.qe}
             help='PMT QE value. Must be a positive number.'
             onChange={(e) => {
               formik.setFieldValue('qe', e.value);

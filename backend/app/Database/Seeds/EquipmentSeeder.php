@@ -27,7 +27,7 @@ class EquipmentSeeder extends BaseSeeder
     protected array $institutes;
     protected TypeSlotModel $typeSlotModel;
     protected array $slots;
-    protected DetectorLocationmodel $detectorLocationModel;
+    protected DetectorLocationModel $detectorLocationModel;
     protected array $detectorLocations;
 
     protected int $numCommentsCharacters = 100;
@@ -110,7 +110,7 @@ class EquipmentSeeder extends BaseSeeder
             'owner_id' => $faker->randomElement($this->institutes)->id,
             'detector_location_id' => $faker->randomElement($this->detectorLocations)->id,
             'comments' => $faker->text($this->numCommentsCharacters),
-            'type_params' => array_fill_keys(array_keys($equipType->params), null)
+            'type_params' => array_fill_keys($equipType->params, null)
         ]);
         $equip->serial = substr($equip->id, 1, 6);
         return $equip;
