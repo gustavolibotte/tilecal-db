@@ -20,7 +20,8 @@ export default defineConfig(() => {
       __BACKEND_CLIENTID__: JSON.stringify(process.env.sso_clientId),
       __KEYCLOAK_REFRESH_TIME__: JSON.stringify(process.env.keycloak_refresh_time),
       __FIELD_REQUIRED_MSG__: JSON.stringify("The field is required"),
-      __MYSQL_MAX_TEXT_SIZE__: 65535
+      __MYSQL_MAX_TEXT_SIZE__: 65535,
+      __FIELD_POSITIVE_MSG__: JSON.stringify("The value must be positive"),
     }
   };
 })

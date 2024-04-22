@@ -26,6 +26,8 @@ export default function FormNumber(props: FormTextProps){
         value={props.value}
         onChange={props.onChange}
         className={classNames({ 'p-invalid': Boolean(props.errorText) })}
+        minFractionDigits={0}
+        maxFractionDigits={10}
     />
   </FormField>
   )
