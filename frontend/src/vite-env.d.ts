@@ -11,3 +11,4 @@ declare const __BACKEND_CLIENTID__: string
 declare const __KEYCLOAK_REFRESH_TIME__: number
 declare const __FIELD_REQUIRED_MSG__: string
 declare const __MYSQL_MAX_TEXT_SIZE__: number
+declare const __FIELD_POSITIVE_MSG__: string
