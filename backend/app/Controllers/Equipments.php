@@ -112,27 +112,8 @@ class Equipments extends APIController
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
-
-        $typeRules = [
-            'type_name' => [
-                '\App\Validation\GeneralRules::required' => [],
-                '\App\Validation\EquipmentTypeRules::nameIsSanitized' => [],
-                '\App\Validation\DatabaseRules::isNotUnique' => [
-                    'params' => [
-                        'table' => 'equipment_types',
-                        'field' => 'name'
-                    ]
-                ]
-            ]
-        ];
         $inputData = $this->request->getVar(['type_name']);
-        $validationRes = Validator::validate($inputData, $typeRules);
-        if (!$validationRes['valid']) {
-            return $this->failValidationErrors($validationRes['errors']);
-        }
-        $inputData = $validationRes['validatedData'];
         $registerRules = EquipmentRules::getRegisterRulesFromTypeName($inputData['type_name']);
-
         $validationRes = Validator::validate($inputData, $registerRules);
         if (!$validationRes['valid']) {
             return $this->failValidationErrors($validationRes['errors']);
@@ -194,26 +175,37 @@ class Equipments extends APIController
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
-        $res = $this->getValidatedData($this->existingIdRule);
-        if (!$res['valid']) {
-            return $this->failValidationErrors($res['errors']);
+
+        $idRules = [
+            'id' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
+                    ]
+                ]
+            ]
+        ];
+        $inputData = $this->request->getVar(['id']);
+        $validationRes = Validator::validate($inputData, $idRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
         }
-        $data = $res['data'];
-        $equipmentModel = model('EquipmentModel');
-        $equipment = $equipmentModel
-            ->asArray()
-            ->fullQuery()
-            ->find($data['id']);
-        $validator = EquipmentValidator::getFromTypeName($equipment['type_name'])
-            ->addRequest($this->request)
-            ->asEdit();
-        if (!$validator->validate()) {
-            $errors = $validator->getErrors();
-            return $this->failValidationErrors($errors);
+        $id = $validationRes['validatedData']['id'];
+
+        $equipRules = EquipmentRules::getEditRulesFromId($id);
+        $inputData = $this->request->getVar(array_keys($equipRules));
+        $validationRes = Validator::validate($inputData, $idRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
         }
-        $updatedEquipment = $validator->getValidatedData();
-        $equipmentModel->update($data['id'], $updatedEquipment);
-        return $this->respondUpdated($data['id']);
+        $validData = $validationRes['validatedData'];
+        $validEquip = new Equipment($validData);
+        model('EquipmentModel')->update($validData['id'], $validEquip);
+
+        return $this->respondUpdated($validData['id']);
     }
 
     public function delete(): ResponseInterface

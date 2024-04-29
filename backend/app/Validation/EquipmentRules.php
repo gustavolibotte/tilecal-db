@@ -272,7 +272,14 @@ class EquipmentRules
         return true;
     }
 
-    public static function getRegisterRulesFromTypeName(string $typeName): array
+    /**
+     * Returns the rules for registering a new equipment based on its type.
+     * Useful for equipment types that have custom rules for registering.
+     * @param string $typeName Name of the equipment type
+     * @return array Rules for registering a new equipment
+     * @see Validator::validate
+     */
+    public static function getRegisterRulesFromTypeName(string $typeName=''): array
     {
         helper('string');
         $specificRuleMethod = sprintf(
@@ -288,14 +295,48 @@ class EquipmentRules
     }
 
     /**
+     * Returns the rules for editing an equipment based on its id.
+     * @param string $id Id of the equipment to edit
+     * @return array Rules for editing a new equipment
+     * @see Validator::validate
+     */
+    public static function getEditRulesFromId(string $id=''): array
+    {
+        helper('string');
+        $equip = model('EquipmentModel')->select('type_name')->find($id);
+        if (empty($equip->type_name)){
+            throw new \Exception('Equipment not found for building the edit rules.');
+        }
+        $specificRuleMethod = sprintf(
+            'get%sEditRule',
+            $equip->type_name
+        );
+        if (method_exists(Self::class, $specificRuleMethod)) {
+            $rules = Self::$specificRuleMethod();
+        } else {
+            $rules = Self::getDefaultEditRule();
+        }
+        return $rules;
+    }
+
+    /**
      * Returns the default rules for registering a new equipment.
-     * The rules consider that the field 'type_name' has been checked previously
      * @return array Default rules for registering a new equipment
      * @see Validator::validate
      */
     public static function getDefaultRegisterRule(): array
     {
         return [
+            'type_name' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentTypeRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'equipment_types',
+                        'field' => 'name'
+                    ]
+                ]
+            ],
             'id' => [
                 '\App\Validation\GeneralRules::required' => [],
                 '\App\Validation\EquipmentRules::idIsSanitized' => [],
@@ -306,7 +347,6 @@ class EquipmentRules
                     ]
                 ]
             ],
-            'type_name' => [], // Should have been checked previously
             'owner_mne' => [
                 '\App\Validation\GeneralRules::required' => [],
                 '\App\Validation\InstituteRules::mneIsSanitized' => [],
@@ -349,6 +389,73 @@ class EquipmentRules
             ],
             'serial' => [
                 '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::serialIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'serial'
+                    ]
+                ]
+            ],
+            'comments' => [
+                'permitEmpty' => [],
+                '\App\Validation\EquipmentRules::commentsIsSanitized' => []
+            ]
+        ];
+    }
+
+    /**
+     * Returns the default rules for editing a new equipment.
+     * The rules consider that the field 'id' has been checked previously
+     * @return array Default rules for editing a new equipment
+     * @see Validator::validate
+     */
+    public static function getDefaultEditRule(): array
+    {
+        return [
+            'id' => [],
+            'owner_mne' => [
+                'removeEmpty'=> [],
+                '\App\Validation\InstituteRules::mneIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'institutes',
+                        'column' => 'mne'
+                    ]
+                ]
+            ],
+            'detector_location_name' => [
+                'removeEmpty'=> [],
+                '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'detector_locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'location_name' => [
+                'removeEmpty'=> [],
+                '\App\Validation\LocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'status_name' => [
+                'removeEmpty'=> [],
+                '\App\Validation\StatusRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'statuses',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'serial' => [
+                'removeEmpty'=> [],
                 '\App\Validation\EquipmentRules::serialIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isUnique' => [
                     'params' => [
