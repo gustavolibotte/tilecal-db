@@ -90,18 +90,11 @@ class Equipments extends APIController
         foreach ($data as &$sample) {
             $sample['type_params'] = json_decode($sample['type_params']);
         }
-        $env = \Config\Services::environment();
-        if ($env->isLocal() || $env->isDev()) {
-            return $this->buildAPIResponse(
-                200,
-                $data,
-                metadata: [
-                    'validInput' => $validInput,
-                    'input' => $inputData
-                ]
-            );
-        }
-        return $this->respondQueryResults($data);
+        return respondQueryResults(
+            $data,
+            $inputData,
+            $validInput
+        );
     }
 
     public function post(): ResponseInterface
@@ -162,23 +155,28 @@ class Equipments extends APIController
 
     protected function __getHist__(): ResponseInterface
     {
-        $sanitationRules = [
+        $inputRules = [
             'id' => [
                 'rules' => [
-                    'required',
-                    'equipment_id_is_sanitized'
+                    '\App\Validation\GeneralRules::required' => [],
+                    '\App\Validation\EquipmentRules::idIsSanitized' => [],
                 ]
             ]
         ];
-        $inputData = $this->getRequestValuesFromRules($sanitationRules);
-        if (!$this->validateData($inputData, $sanitationRules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
+        $inputData = $this->getRequestValuesFromRules($inputRules);
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
         }
-        helper('equipment');
-        $inputData['id'] = preprocessEquipmentId($inputData['id'] ?? '');
+        $validInput = $validationRes['validatedData'];
         $history = model('HistModel')
-            ->getEquipmentHist($inputData['id']);
-        return $this->respondQueryResults($history);
+            ->getEquipmentHist($validInput['id']);
+        helper('response');
+        return respondQueryResults(
+            $history,
+            $inputData,
+            $validInput
+        );
     }
 
     public function put(): ResponseInterface

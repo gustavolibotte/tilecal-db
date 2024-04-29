@@ -27,7 +27,7 @@ class EquipmentRules
     /**
      * Key value pairs for valid projects for the database according to the ATLAS ID rules
      * Keys are abbreviations and values which system they represent
-     * Since Tilecal is ALTAS, only the ATLAS detetctor code is valid
+     * Since Tilecal is ALTAS, only the ATLAS detector code is valid
      * @var array $validProjects
      */
     public static array $validProjects = [
