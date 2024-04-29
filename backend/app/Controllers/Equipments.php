@@ -138,19 +138,9 @@ class Equipments extends APIController
             return $this->failValidationErrors($validationRes['errors']);
         }
         $inputData = $validationRes['validatedData'];
+        $registerRules = EquipmentRules::getRegisterRulesFromTypeName($inputData['type_name']);
 
-        helper('string');
-        $specificRuleMethod = sprintf(
-            'get%sRegisterRule',
-            makeCamelCase($inputData['type_name'])
-        );
-        if (method_exists(EquipmentRules::class, $specificRuleMethod)) {
-            $specificRule = EquipmentRules::$specificRuleMethod();
-        } else {
-            $specificRule = EquipmentRules::getDefaultRegisterRule();
-        }
-
-        $validationRes = Validator::validate($inputData, $specificRule);
+        $validationRes = Validator::validate($inputData, $registerRules);
         if (!$validationRes['valid']) {
             return $this->failValidationErrors($validationRes['errors']);
         }

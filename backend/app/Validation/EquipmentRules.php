@@ -272,6 +272,21 @@ class EquipmentRules
         return true;
     }
 
+    public static function getRegisterRulesFromTypeName(string $typeName): array
+    {
+        helper('string');
+        $specificRuleMethod = sprintf(
+            'get%sRegisterRule',
+            makeCamelCase($typeName)
+        );
+        if (method_exists(Self::class, $specificRuleMethod)) {
+            $rules = Self::$specificRuleMethod();
+        } else {
+            $rules = Self::getDefaultRegisterRule();
+        }
+        return $rules;
+    }
+
     /**
      * Returns the default rules for registering a new equipment.
      * The rules consider that the field 'type_name' has been checked previously
