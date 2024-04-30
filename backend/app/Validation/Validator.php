@@ -56,23 +56,20 @@ class Validator{
             'validatedData' => $data
         ];
         foreach($ruleSet as $ruleName => $ruleConfig){
-            $isEmpty = empty($data[$fieldName]);
+            $isEmpty = !isset($data[$fieldName]) || empty($data[$fieldName]);
             if ($ruleName === self::$permitEmptyRule && $isEmpty){
-                if (empty($data[$fieldName])){
-                    break;
-                } else {
-                    continue;
-                }
+                break;
             } else if ($ruleName === self::$removeEmptyRule && $isEmpty){
                 unset($res['validatedData'][$fieldName]);
-                continue;
-            }
-            $ruleParams = $ruleConfig['params'] ?? [];
-            $ruleError = $ruleConfig['error']?? '';
-            if (!$ruleName($fieldName, $res['validatedData'], $ruleError, $ruleParams)){
-                $res['errors'][$fieldName] = $ruleError;
-                $res['valid'] = false;
                 break;
+            } else {
+                $ruleParams = $ruleConfig['params'] ?? [];
+                $ruleError = $ruleConfig['error']?? '';
+                if (!$ruleName($fieldName, $res['validatedData'], $ruleError, $ruleParams)){
+                    $res['errors'][$fieldName] = $ruleError;
+                    $res['valid'] = false;
+                    break;
+                }
             }
         }
         return $res;

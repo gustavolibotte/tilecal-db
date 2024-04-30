@@ -46,6 +46,20 @@ class EquipmentRules
     public static int $sequentialNumberLength = 7;
 
     /**
+     * Valid values for PMT models
+     * @var array $validPmtModelValues
+     */
+    public static array $validPmtModelValues = [
+        'R11187',
+        'R7877',
+        'R7787',
+        'R11187-SEL',
+        'R11187-A1',
+        'R7600-20',
+        'R5900MOD'
+    ];
+
+    /**
      * Checks if the id value is sanitized
      * If the id is a 14 character code, it is considered an ATLAS ID.
      * The sequential number is extracted and checked against the regex
@@ -310,7 +324,7 @@ class EquipmentRules
         }
         $specificRuleMethod = sprintf(
             'get%sEditRule',
-            $equip->type_name
+            makeCamelCase($equip->type_name)
         );
         if (method_exists(self::class, $specificRuleMethod)) {
             $rules = self::$specificRuleMethod();
@@ -389,7 +403,7 @@ class EquipmentRules
                 ]
             ],
             'serial' => [
-                '\App\Validation\GeneralRules::required' => [],
+                'permitEmpty' => [],
                 '\App\Validation\EquipmentRules::serialIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isUnique' => [
                     'params' => [
@@ -470,5 +484,240 @@ class EquipmentRules
                 '\App\Validation\EquipmentRules::commentsIsSanitized' => []
             ]
         ];
+    }
+
+    /**
+     * Returns the rules for registering a PMT.
+     * @return array Rules for registering a PMT
+     * @see Validator::validate
+     */
+    public static function getPmtRegisterRule(): array
+    {
+        return [
+            'type_name' => [
+                '\App\Validation\GeneralRules::isStrictlyEqual' => [
+                    'value' => 'PMT'
+                ],
+            ],
+            'serial' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::serialIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'serial'
+                    ]
+                    ],
+                '\App\Validation\EquipmentRules::buildPmtId' => []
+            ],
+            'id' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
+                    ]
+                ]
+            ],
+            'owner_mne' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\InstituteRules::mneIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'institutes',
+                        'column' => 'mne'
+                    ]
+                ]
+            ],
+            'detector_location_name' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'detector_locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'location_name' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\LocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'status_name' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\StatusRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'statuses',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'comments' => [
+                'permitEmpty' => [],
+                '\App\Validation\EquipmentRules::commentsIsSanitized' => []
+            ],
+            'beta' => [
+                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::isFloat' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ]
+            ],
+            'nominal_hv' => [
+                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::isFloat' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ]
+                ],
+            'qe' => [
+                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::isFloat' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ]
+            ],
+            'model' => [
+                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::inList' => [
+                    'list' => self::$validPmtModelValues
+                ]
+                ],
+            'phase1_position' => [
+                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::isInt' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ],
+                '\App\Validation\GeneralRules::smallerThan' => [
+                    'value' => 50
+                ],
+            ]
+        ];
+    }
+
+    /**
+     * Returns the rules for editing a PMT.
+     * @return array Rules for editing a PMT
+     * @see Validator::validate
+     */
+    public static function getPmtEditRule(): array
+    {
+        return [
+            'id' => [],
+            'owner_mne' => [
+                'removeEmpty' => [],
+                '\App\Validation\InstituteRules::mneIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'institutes',
+                        'column' => 'mne'
+                    ]
+                ]
+            ],
+            'detector_location_name' => [
+                'removeEmpty' => [],
+                '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'detector_locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'location_name' => [
+                'removeEmpty' => [],
+                '\App\Validation\LocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'status_name' => [
+                'removeEmpty' => [],
+                '\App\Validation\StatusRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'statuses',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'comments' => [
+                'removeEmpty' => [],
+                '\App\Validation\EquipmentRules::commentsIsSanitized' => []
+            ],
+            'beta' => [
+                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::isFloat' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ]
+            ],
+            'nominal_hv' => [
+                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::isFloat' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ]
+                ],
+            'qe' => [
+                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::isFloat' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ]
+            ],
+            'model' => [
+                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::inList' => [
+                    'list' => self::$validPmtModelValues
+                ]
+                ],
+            'phase1_position' => [
+                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::isInt' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ],
+                '\App\Validation\GeneralRules::smallerThan' => [
+                    'value' => 50
+                ],
+            ]
+        ];
+    }
+
+    public static function buildPmtId(string $fieldName, array &$data, string &$error, array $params): bool
+    {
+        $data['id'] = sprintf(
+            '0%s',
+            $data['serial']);
+        return true;
     }
 }
