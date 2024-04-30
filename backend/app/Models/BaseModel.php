@@ -55,28 +55,6 @@ abstract class BaseModel extends Model
         return $results;
     }
 
-    public function getFormDropdownOptions(array $columns, string $separator = ' - ', string $value='id'){
-        helper(['string', 'app_form']);
-        $entities = $this->asArray()->findAll();
-        $options = get_blank_dropdown();
-        foreach ($entities as $entity){
-            $first = true;
-            $options[$entity[$value]] = '';
-            foreach ($columns as $colName){
-                if (!empty($entity[$colName])){
-                    if ($first){
-                        $options[$entity[$value]] = $entity[$colName];
-                        $first = false;
-                    } else{
-                        $options[$entity[$value]] .= $separator;
-                        $options[$entity[$value]] .= $entity[$colName];
-                    }
-                }
-            }
-        }
-        return $options;
-    }
-
     public function getCustomArray(string $keyField, ?string $valueField=null, ?array $ids=null, ): array
     {
         $nullValue = is_null($valueField);
@@ -106,66 +84,5 @@ abstract class BaseModel extends Model
             }
         }
         return $array;
-    }
-
-    private function fileAction(
-        string $filepath,
-        EntryValidator $validator,
-        string $action,
-        ?LoggerInterface $logger=null): bool|array|string
-    {
-        helper(['filesystem', 'app_array']);
-        $fieldRename = $validator->fieldRename;
-        $logger = is_null($logger)? new BlankLogger(): $logger;
-        $inputFile = new CSVFileReader($filepath, headerRename:$fieldRename);
-        $loggerContext = ['iRow' => null, 'action' => ucfirst($action)];
-        $this->db->transException(true)->transBegin();
-        foreach ($inputFile as $iRow=>$row){
-            $loggerContext['iRow'] = $iRow;
-            // Removes some fields that may conflict with the type defined in the validator
-            remove_value('type_name', $row, false);
-            remove_value('type_id', $row, false);
-            $validator->clearState()->setFieldValues($row);
-            if ($validator->validate()){
-                $validatedRow = $validator->getValidatedData();
-                $this->saveRow($validatedRow, $action);
-                $logger->info('{iRow} {action} with success', $loggerContext);
-            } else{
-                $errors =  $validator->getErrors();
-                $errors['iRow'] = $iRow;
-                $this->db->transRollback();
-                return $errors;
-            }
-        }
-        $this->db->transCommit();
-        return true;
-    }
-
-    protected function saveRow($validatedRow, string $action)
-    {
-        if ($action === 'update'){
-            $this->update($validatedRow->id, $validatedRow);
-        } else{
-            $this->insert($validatedRow);
-        }
-        return true;
-    }
-
-    public function insertFromFile(
-        string $filepath,
-        EntryValidator $validator,
-        ?LoggerInterface $logger=null
-    )
-    {
-        return $this->fileAction($filepath, $validator, $logger, 'insert');
-    }
-
-    public function updateFromFile(
-        string $filepath,
-        EntryValidator $validator,
-        ?LoggerInterface $logger=null
-    )
-    {
-        return $this->fileAction($filepath, $validator, $logger, 'update');
     }
 }

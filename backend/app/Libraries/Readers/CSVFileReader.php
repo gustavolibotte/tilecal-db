@@ -80,14 +80,14 @@ class CSVFileReader implements Iterator{
         return $this->row;
     }
 
-    public function next()
+    public function next(): void
     {
         helper('app_array');
         try{
             $row = fgetcsv($this->handle);
             if ($row === FALSE) {
                 $this->close();
-                return null;
+                return;
             }
             foreach ($row as $iCol=>&$value){
                 if ($value === ''){

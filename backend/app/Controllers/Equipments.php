@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Entities\Equipment;
 use App\Validation\EquipmentRules;
 use App\Validation\Validator;
-use App\Validation\Validators\EquipmentValidator;
+use App\Library\Readers\CSVFileReader;
 use CodeIgniter\HTTP\ResponseInterface;
 use Throwable;
 
@@ -314,49 +314,44 @@ class Equipments extends APIController
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
-        $inputData = [
-            'type_name' => $this->request->getVar('type_name'),
-            'file' => $this->request->getFile('file')
-        ];
-
-        $notCsvMsg = "Only csv files are supported for batch registering.";
         $inputRules = [
-            'type_name' => [
-                "required",
-                "equipment_type_name_is_sanitized",
-                "is_not_unique[equipment_types.name]",
-            ],
             'file' => [
-                'rules' => [
-                    'uploaded[file]',
-                    'max_size[file,50]',
-                    'mime_in[file,text/csv]',
-                    'ext_in[file,csv]'
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\FileRules::maxSize' => [
+                    'maxSize' => 50 * 1024  // 50 kB
                 ],
-                'errors' => [
-                    'uploaded' => 'You must upload a file.',
-                    'max_size' => 'Max file size is 50 kB',
-                    'mime_in' => $notCsvMsg,
-                    'ext_in' => $notCsvMsg
+                '\App\Validation\FileRules::mimeIn' => [
+                    'mimeTypes' =>['text/csv']
+                ],
+                '\App\Validation\FileRules::extIn' => [
+                    'exts' => ['csv']
                 ]
             ]
         ];
-        if (!$this->validateData($inputData, $inputRules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
         }
-        $equipValidator = EquipmentValidator::getFromTypeName($inputData['type_name']);
-        // Needs to rename the fields because the front end fields
-        // have user friendly names
-        $res = model('EquipmentModel')->insertFromFile(
-            $inputData['file']->getTempName(),
-            $equipValidator
-        );
-        if ($res === true) {
-            return $this->respondCreated();
-        }
-        $res['row'] = remove_value('iRow', $res);
-        return $this->failValidationErrors($res, 'Invalid row.');
+        $validInput = $validationRes['validatedData'];
 
+        $inputFile = new CSVFileReader($validInput->getTempName());
+        $db = db_connect();
+        $db->transException(true)->transBegin();
+        foreach ($inputFile as $iRow=>$row){
+            $registerRules = EquipmentRules::getRegisterRulesFromTypeName($row['type_name']);
+            $validationRes = Validator::validate($inputData, $registerRules);
+            if (!$validationRes['valid']) {
+                $errors = $validationRes['errors'];
+                $errors['row_number'] = $iRow;
+                return $this->failValidationErrors($errors);
+            }
+            $validInput = $validationRes['validatedData'];
+            $equipment = new Equipment($validInput);
+            model('EquipmentModel')->insert($equipment);
+        }
+        $db->transCommit();
+        return $this->respondCreated();
     }
 
     public function disassemble(): ResponseInterface
