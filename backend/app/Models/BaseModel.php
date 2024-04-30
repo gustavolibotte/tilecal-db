@@ -3,10 +3,6 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Validation\Validators\EntryValidator;
-use App\Library\Readers\CSVFileReader;
-use App\Library\Loggers\BlankLogger;
-use Psr\Log\LoggerInterface;
 
 abstract class BaseModel extends Model
 {
@@ -84,5 +80,47 @@ abstract class BaseModel extends Model
             }
         }
         return $array;
+    }
+
+    /**
+     * Substitutes a foreign key field based on some alias fields
+     * 
+     * For example, if type_id is a foreign key field, and type_name is an alias field,
+     * this method will include the type_id based on the type_name.
+     * 
+     * @param string $fkField The foreign key field
+     * @param array $aliasesFields The alias fields
+     * @param array $data The data to be processed
+     * @param BaseModel $model The model to be used to search for values
+     * 
+     * @return array The data with the foreign key field included and the aliases removed
+     */
+    public function substituteFK(
+        string $fkField,
+        array $aliasesFields,
+        array $data,
+        BaseModel $model
+    ): array {
+        helper('app_array');
+        $found = array_key_exists($fkField, $data);
+        foreach ($aliasesFields as $aliasField) {
+            if ($found && array_key_exists($aliasField, $data)) {
+                unset($data[$aliasField]);
+                continue;
+            } elseif ($found && !array_key_exists($aliasField, $data)) {
+                continue;
+            } elseif (!$found && !array_key_exists($aliasField, $data)) {
+                continue;
+            } elseif (!$found && array_key_exists($aliasField, $data)) {
+                $fkValue = $model->select($fkField)
+                    ->where($aliasField, $data[$aliasField])
+                    ->first()->$fkField;
+                $data[$fkField] = $fkValue;
+                unset($data[$aliasField]);
+                $found = true;
+                continue;
+            }
+        }
+        return $data;
     }
 }
