@@ -17,7 +17,7 @@ class DetectorLocationRules{
      * @see StringRules::maxLength
      * @see StringRules::regexMatch
      */
-    public function detectorLocationNameIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
+    public static function detectorLocationNameIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
         return  (
             StringRules::maxLength($fieldName, $data, $error, ['length' => self::$maxNameLength]) &&
