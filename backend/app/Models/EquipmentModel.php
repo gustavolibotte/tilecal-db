@@ -142,7 +142,7 @@ class EquipmentModel extends LogModel
         $this->db->transCommit();
         return $res;
     }
-    
+
     public function update($id = null, $data = null): bool
     {
         $this->db->transException(true)->transBegin();

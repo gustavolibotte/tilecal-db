@@ -5,7 +5,7 @@ namespace App\Validation;
 class LocationRules{
 
     public static $maxNameLength = 100;
-    public static $nameRegex = '/^[A-Za-z0-9 ]+$/';
+    public static $nameRegex = '/^.+$/';
 
     /**
      * Checks if the location name value is sanitized
@@ -16,8 +16,9 @@ class LocationRules{
      * @return bool True if the value is sanitized
      * @see StringRules::maxLength
      * @see StringRules::regexMatch
+     * @see Validator::validate
      */
-    public function location_name_is_sanitized(string $fieldName, array $data, string &$error, array $params): bool
+    public static function nameIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
         $approved =  (
             StringRules::maxLength($fieldName, $data, $error, ['length' => self::$maxNameLength]) &&

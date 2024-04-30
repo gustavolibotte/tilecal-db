@@ -112,9 +112,9 @@ abstract class BaseModel extends Model
             } elseif (!$found && !array_key_exists($aliasField, $data)) {
                 continue;
             } elseif (!$found && array_key_exists($aliasField, $data)) {
-                $fkValue = $model->select($fkField)
+                $fkValue = $model->select('id')
                     ->where($aliasField, $data[$aliasField])
-                    ->first()->$fkField;
+                    ->first()->id;
                 $data[$fkField] = $fkValue;
                 unset($data[$aliasField]);
                 $found = true;

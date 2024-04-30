@@ -103,3 +103,21 @@ function respondQueryResults(?array $data = [], array $inputData=[], array $vali
         $metadata
     );
 }
+
+function failValidationErrors(array $errors, array $inputData): ResponseInterface
+{
+    $env = \Config\Services::environment();
+    if ($env->isLocal() || $env->isDev()) {
+        $metadata = [
+            'input' => $inputData
+        ];
+    } else{
+        $metadata = [];
+    }
+    return buildAPIResponse(
+        400,
+        $errors,
+        'Invalid data',
+        $metadata
+    );
+}

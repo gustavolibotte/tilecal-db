@@ -34,7 +34,7 @@ class InstituteRules{
      * @param string $error Error message to return if the check fails
      * @param array $params Ignored
      */
-    public function mneIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
+    public static function mneIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
         $approved =  (
             StringRules::exactLength($fieldName, $data, $error, ['length' => self::$mneLength]) &&

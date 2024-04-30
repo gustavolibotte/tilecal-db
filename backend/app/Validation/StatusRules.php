@@ -17,8 +17,9 @@ class StatusRules{
      * @return bool True if the value is sanitized
      * @see StringRules::maxLength
      * @see StringRules::regexMatch
+     * @see Validator::validate
      */
-    public function status_name_is_sanitized(string $fieldName, array $data, string &$error, array $params): bool
+    public static function nameIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
         $approved =  (
             StringRules::maxLength($fieldName, $data, $error, ['length' => self::$maxNameLength]) &&

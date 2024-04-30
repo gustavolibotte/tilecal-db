@@ -348,7 +348,7 @@ class EquipmentRules
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
                         'table' => 'equipment_types',
-                        'field' => 'name'
+                        'column' => 'name'
                     ]
                 ]
             ],
@@ -373,7 +373,7 @@ class EquipmentRules
                 ]
             ],
             'detector_location_name' => [
-                '\App\Validation\GeneralRules::required' => [],
+                'permitEmpty' => [],
                 '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [

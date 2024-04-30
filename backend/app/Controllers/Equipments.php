@@ -32,6 +32,7 @@ class Equipments extends APIController
 
     protected function __get__(): ResponseInterface
     {
+        helper('response');
         $feature = model('FeatureModel')->findName('api_equipment_get');
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
@@ -62,7 +63,7 @@ class Equipments extends APIController
         $inputData = $this->request->getVar(array_keys($inputRules));
         $validationRes = Validator::validate($inputData, $inputRules);
         if (!$validationRes['valid']) {
-            return $this->failValidationErrors($validationRes['errors']);
+            return failValidationErrors($validationRes['errors'], $inputData);
         }
         $validInput = $validationRes['validatedData'];
 
@@ -112,11 +113,13 @@ class Equipments extends APIController
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
+        helper('response');
         $inputData = $this->request->getVar(['type_name']);
         $registerRules = EquipmentRules::getRegisterRulesFromTypeName($inputData['type_name']);
+        $inputData = $this->request->getVar(array_keys($registerRules));
         $validationRes = Validator::validate($inputData, $registerRules);
         if (!$validationRes['valid']) {
-            return $this->failValidationErrors($validationRes['errors']);
+            return failValidationErrors($validationRes['errors'], $inputData);
         }
 
         $validInput = $validationRes['validatedData'];
@@ -136,6 +139,7 @@ class Equipments extends APIController
 
     protected function __getHist__(): ResponseInterface
     {
+        helper('response');
         $inputRules = [
             'id' => [
                 '\App\Validation\GeneralRules::required' => [],
@@ -145,7 +149,7 @@ class Equipments extends APIController
         $inputData = $this->getRequestValuesFromRules($inputRules);
         $validationRes = Validator::validate($inputData, $inputRules);
         if (!$validationRes['valid']) {
-            return $this->failValidationErrors($validationRes['errors']);
+            return failValidationErrors($validationRes['errors'], $inputData);
         }
         $validInput = $validationRes['validatedData'];
         $history = model('HistModel')
