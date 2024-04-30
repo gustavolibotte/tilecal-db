@@ -138,10 +138,8 @@ class Equipments extends APIController
     {
         $inputRules = [
             'id' => [
-                'rules' => [
-                    '\App\Validation\GeneralRules::required' => [],
-                    '\App\Validation\EquipmentRules::idIsSanitized' => [],
-                ]
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
             ]
         ];
         $inputData = $this->getRequestValuesFromRules($inputRules);

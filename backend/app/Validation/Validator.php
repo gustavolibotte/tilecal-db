@@ -38,37 +38,23 @@ class Validator{
             'validatedData' => $data
         ];
         foreach ($ruleSets as $fieldName => $ruleSet){
-            $fieldRes = self::validateField($fieldName, $res['validatedData'], $ruleSet);
-            if (!$fieldRes['valid']){
-                $res['errors'] = $fieldRes['errors'];
-                $res['valid'] = false;
-                return $res;
-            }
-        }
-        return $res;
-    }
-
-    public static function validateField(string $fieldName, array $data, array $ruleSet): array
-    {
-        $res = [
-            'valid' => true,
-            'errors' => [],
-            'validatedData' => $data
-        ];
-        foreach($ruleSet as $ruleName => $ruleConfig){
-            $isEmpty = !isset($data[$fieldName]) || empty($data[$fieldName]);
-            if ($ruleName === self::$permitEmptyRule && $isEmpty){
-                break;
-            } else if ($ruleName === self::$removeEmptyRule && $isEmpty){
-                unset($res['validatedData'][$fieldName]);
-                break;
-            } else {
-                $ruleParams = $ruleConfig['params'] ?? [];
-                $ruleError = $ruleConfig['error']?? '';
-                if (!$ruleName($fieldName, $res['validatedData'], $ruleError, $ruleParams)){
-                    $res['errors'][$fieldName] = $ruleError;
-                    $res['valid'] = false;
+            foreach($ruleSet as $ruleName => $ruleConfig){
+                $isEmpty = !isset($data[$fieldName]) || empty($data[$fieldName]);
+                if ($ruleName === self::$permitEmptyRule){
+                    if ($isEmpty){
+                        break;
+                    }
+                } else if ($ruleName === self::$removeEmptyRule && $isEmpty){
+                    unset($res['validatedData'][$fieldName]);
                     break;
+                } else {
+                    $ruleParams = $ruleConfig['params'] ?? [];
+                    $baseError = '';
+                    if (!$ruleName($fieldName, $res['validatedData'], $baseError, $ruleParams)){
+                        $res['errors'][$fieldName] = $ruleConfig['error']?? $baseError;
+                        $res['valid'] = false;
+                        break;
+                    }
                 }
             }
         }

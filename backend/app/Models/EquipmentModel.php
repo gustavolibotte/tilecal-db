@@ -135,72 +135,18 @@ class EquipmentModel extends LogModel
         }
     }
 
-    /**
-     * Inserts equipment data.
-     * The equipment entity can also have a parent_id field that it will be inserted correctly
-     *
-     * @param Equipment $data Equipment entity
-     * 
-     * @throws TypeError If data is not instance of Equipment
-     * @return ?string returns id if $returnID is true
-     */
     public function insert($data = null, bool $returnID = true)
     {
         $this->db->transException(true)->transBegin();
-        if (!($data instanceof Equipment)) {
-            throw new TypeError('Equipment Model insert supports only Equipment as $data');
-        }
-        $data = $data->toRawArray();
-        $parentId = remove_value('parent_id', $data, false);
-        $slotId = remove_value('slot_id', $data, false);
-        $childId = parent::insert($data, true);
-        if (isset($parentId) && isset($slotId)) {
-            $this->addParent($childId, $parentId, $slotId);
-        }
+        $res = parent::insert($data, true);
         $this->db->transCommit();
-        if ($returnID) {
-            return $childId;
-        }
+        return $res;
     }
-
-    /**
-     * Updates equipment data.
-     * The equipment entity can also have a parent_id field that it will be updated correctly
-     *
-     * @param mixed $id Ids of the entries to update
-     * @param Equipment $data Equipment entity
-     * 
-     * @throws TypeError If data is not instance of Equipment 
-     * @return bool
-     */
+    
     public function update($id = null, $data = null): bool
     {
         $this->db->transException(true)->transBegin();
-        if (!($data instanceof Equipment)) {
-            throw new TypeError('Equipment Model insert supports only Equipment as $data');
-        }
-        if (is_null($id)) {
-            throw new TypeError('Equipment id must be passed');
-        }
-        $data = $data->toRawArray();
-        if (array_key_exists('parent_id', $data) || array_key_exists('slot_id', $data)) {
-            $parentId = remove_value('parent_id', $data);
-            $slotId = remove_value('slot_id', $data);
-        }
         $res = parent::update($id, $data);
-        if (!empty($data['location_id'])) {
-            $equipment = $this->select('location_id')->find($id);
-            $children = $this->getChildrenIDs($id);
-            if (!empty($children)) {
-                $this->builder()->set('location_id', $equipment->location_id)
-                    ->whereIn('id', $children)
-                    ->update();
-            }
-        }
-        if (isset($parentId) && isset($slotId)) {
-            $this->deleteParent($id);
-            $this->addParent($id, $parentId, $slotId);
-        }
         $this->db->transCommit();
         return $res;
     }

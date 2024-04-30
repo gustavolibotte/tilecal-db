@@ -90,8 +90,8 @@ function respondQueryResults(?array $data = [], array $inputData=[], array $vali
     $env = \Config\Services::environment();
     if ($env->isLocal() || $env->isDev()) {
         $metadata = [
-            'validInput' => $validInput,
-            'input' => $inputData
+            'input' => $inputData,
+            'validInput' => $validInput
         ];
     } else{
         $metadata = [];
