@@ -54,7 +54,7 @@ function makeSnakeCase(string $str): string
     return $str;
 }
 
-function implodeWithouEmpty(string $separator, array $array): string
+function implodeWithoutEmpty(string $separator, array $array): string
 {   
     $first = true;
     $newStr = '';

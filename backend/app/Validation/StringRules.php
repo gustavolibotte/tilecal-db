@@ -39,9 +39,9 @@ class StringRules{
      * @param string $fieldName Name of the field to check
      * @param array $data Data array to check
      * @param string $error Error message to return if the check fails
-     * @param array $params Regex to match
-     * The params array must have the following keys:
-     * regex: string, the regex to match
+     * @param array $params The params array must have the following keys:
+     * - regex: string, the regex to match
+     * - errorFieldName: field Name to use on the Regex error message
      * @return bool True if the value matches the regex
      */
     public static function regexMatch(string $fieldName, array $data, string &$error, array $params): bool
@@ -50,8 +50,9 @@ class StringRules{
         $regex = $params['regex'];
         if (!preg_match($regex, $value)) {
             $error = sprintf(
-                '%s is not valid',
-                $fieldName
+                '%s is not valid (%s)',
+                $params['errorFieldname']?? $fieldName,
+                $data[$fieldName]?? null
             );
             return false;
         }

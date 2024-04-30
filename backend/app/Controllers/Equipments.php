@@ -224,41 +224,28 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
 
-        $inputParams = [
-            'id'
-        ];
-
-        $inputData = $this->request->getVar($inputParams);
-        $idRules = [
-            'id' => [
-                'rules' => [
-                    'required',
-                    'equipment_id_is_sanitized'
-                ],
-                'errors' => [
-                ]
-            ]
-        ];
-        if (!$this->validateData($inputData, $idRules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
-        }
-        helper('equipment');
-        $inputData['id'] = preprocessEquipmentId($inputData['id'] ?? '');
-
         $inputRules = [
             'id' => [
                 'rules' => [
-                    'required',
-                    'is_not_unique[equipments.id]'
+                    '\App\Validation\GeneralRules::required' => [],
+                    '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                    '\App\Validation\DatabaseRules::isNotUnique' => [
+                        'params' => [
+                            'table' => 'equipments',
+                            'column' => 'id'
+                        ]
+                    ]
                 ]
             ]
         ];
-
-        if (!$this->validate($inputData, $inputRules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
         }
-        model('EquipmentModel')->delete($inputData['id']);
-        return $this->respondDeleted($inputData['id']);
+        $validInput = $validationRes['validatedData'];
+        model('EquipmentModel')->delete($validInput['id']);
+        return $this->respondDeleted($validInput['id']);
     }
 
     public function restore(): ResponseInterface
@@ -277,43 +264,30 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
 
-        $inputParams = [
-            'id'
-        ];
-
-        $inputData = $this->request->getVar($inputParams);
-        $idRules = [
-            'id' => [
-                'rules' => [
-                    'required',
-                    'equipment_id_is_sanitized'
-                ],
-                'errors' => [
-                ]
-            ]
-        ];
-        if (!$this->validateData($inputData, $idRules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
-        }
-        helper('equipment');
-        $inputData['id'] = preprocessEquipmentId($inputData['id'] ?? '');
-
         $inputRules = [
             'id' => [
                 'rules' => [
-                    'required',
-                    'is_not_unique[equipments.id]'
+                    '\App\Validation\GeneralRules::required' => [],
+                    '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                    '\App\Validation\DatabaseRules::isNotUnique' => [
+                        'params' => [
+                            'table' => 'equipments',
+                            'column' => 'id'
+                        ]
+                    ]
                 ]
             ]
         ];
-
-        if (!$this->validateData($inputData, $inputRules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
         }
+        $validInput = $validationRes['validatedData'];
 
         $equipment = model('EquipmentModel')
             ->onlyDeleted()
-            ->find($inputData['id']);
+            ->find($validInput['id']);
         if (empty($equipment)) {
             return $this->buildAPIResponse(
                 200,
@@ -321,8 +295,8 @@ class Equipments extends APIController
                 'Equipment is not deleted.'
             );
         }
-        model('EquipmentModel')->restore($inputData['id']);
-        return $this->respondRestored($inputData['id']);
+        model('EquipmentModel')->restore($validInput['id']);
+        return $this->respondRestored($validInput['id']);
     }
 
     public function batchCreate(): ResponseInterface
@@ -402,60 +376,40 @@ class Equipments extends APIController
         ];
 
         $inputData = $this->request->getVar($inputParams);
-        $idRules = [
+        $inputRules = [
             'parent_id' => [
-                'rules' => [
-                    'required',
-                    'equipment_id_is_sanitized'
-                ],
-                'errors' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
+                    ]
                 ]
             ],
             'child_id' => [
-                'rules' => [
-                    'required',
-                    'equipment_id_is_sanitized'
-                ],
-                'errors' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
+                    ]
                 ]
             ]
         ];
-        if (!$this->validateData($inputData, $idRules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
-        }
-        helper('equipment');
-        $inputData['child_id'] = preprocessEquipmentId($inputData['child_id'] ?? '');
-        $inputData['parent_id'] = preprocessEquipmentId($inputData['parent_id'] ?? '');
 
-        $inputRules = [
-            'child_id' => [
-                'rules' => [
-                    'required',
-                    'is_not_unique[parent_child_equips.child_equip_id]'
-                ],
-                'errors' => [
-                    'is_not_unique' => 'The equipment {value} ID is not assembled to any equipment.'
-                ]
-            ],
-            'parent_id' => [
-                'rules' => [
-                    'required',
-                    'is_not_unique[parent_child_equips.parent_equip_id]'
-                ],
-                'errors' => [
-                    'is_not_unique' => 'The equipment {value} ID has no equipment assembled to it.'
-                ]
-            ],
-        ];
-
-        if ($this->validateData($inputData, $inputRules)) {
-            model('EquipmentModel')->disassemble(
-                $inputData['parent_id'],
-                $inputData['child_id']
-            );
-            return $this->buildAPIResponse(200, message: 'Disassembled');
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
         }
-        return $this->failValidationErrors($inputData['errors']);
+        $validInput = $validationRes['validatedData'];
+        model('EquipmentModel')->disassemble(
+            $validInput['parent_id'],
+            $validInput['child_id']
+        );
+        return $this->buildAPIResponse(200, message: 'Disassembled');
     }
 
     public function assemble()
@@ -474,55 +428,47 @@ class Equipments extends APIController
             return $this->failServiceUnavailable();
         }
 
-        $inputParams = [
-            'id',
-            'slots'
-        ];
-
-        $inputData = $this->request->getVar($inputParams);
-        $idRules = [
-            'id' => [
-                'rules' => [
-                    'required',
-                    'equipment_id_is_sanitized'
-                ],
-                'errors' => [
-                ]
-            ]
-        ];
-        if (!$this->validateData($inputData, $idRules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
-        }
-        helper('equipment');
-        $inputData['id'] = preprocessEquipmentId($inputData['id'] ?? '');
-
         $inputRules = [
             'id' => [
-                "rules" => [
-                    "is_not_unique[equipments.id]"
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
+                    ]
                 ]
             ],
-            'slots.*' => [
-                'required',
-                'is_valid_slot_for_assembly[{id}]'
+            'slots' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\GeneralRules::isArray' => [],
+                '\App\Validation\EquipmentRules::validAssemblySlot' => [
+                    'params' => [
+                        'parent_id_field' => 'id'
+                    ]
+                ]
             ]
         ];
 
-        if (!$this->validateData($inputData, $inputRules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
         }
+        $validInput = $validationRes['validatedData'];
+
         $db = db_connect();
         $equipmentModel = model('EquipmentModel');
         $typeSlotModel = model('TypeSlotModel');
         $db->transException(true)->transBegin();
-        foreach ($inputData['slots.*'] as $slotInfo) {
+        foreach ($validInput['slots'] as $slotInfo) {
             $slotId = $typeSlotModel
                 ->select('id')
                 ->where('name', $slotInfo->name)
                 ->first()->id;
             $equipmentModel->updateParent(
                 $slotInfo->equipment_id,
-                $inputData['id'],
+                $validInput['id'],
                 $slotId
             );
         }
@@ -548,19 +494,24 @@ class Equipments extends APIController
 
         $inputRules = [
             'id' => [
-                "rules" => [
-                    "required",
-                    "equipment_id_is_sanitized",
-                    "is_not_unique[equipments.id]"
-                ],
-                "errors" => []
-            ],
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
+                    ]
+                ]
+            ]
         ];
-        $inputData = $this->getRequestValuesFromRules($inputRules);
-        if (!$this->validateData($inputData, $inputRules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
         }
-        $children = model('EquipmentModel')->getChildrenIDs($inputData['id']);
+        $validInput = $validationRes['validatedData'];
+
+        $children = model('EquipmentModel')->getChildrenIDs($validInput['id']);
         return $this->buildAPIResponse(
             200,
             $children

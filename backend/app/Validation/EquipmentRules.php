@@ -3,7 +3,6 @@
 namespace App\Validation;
 
 use App\Entities\AtlasId;
-
 class EquipmentRules
 {
     public static int $serialMaxSize = 36;
@@ -100,7 +99,7 @@ class EquipmentRules
      */
     public static function equipmentSerialIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
-        $approved =  (
+        $approved = (
             StringRules::maxLength($fieldName, $data, $error, ['length' => self::$serialMaxSize]) &&
             StringRules::regexMatch($fieldName, $data, $error, ['regex' => self::$serialRegex])
         );
@@ -118,7 +117,7 @@ class EquipmentRules
      */
     public static function equipmentCommentsIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
-        $approved =  (
+        $approved = (
             StringRules::maxLength($fieldName, $data, $error, ['length' => self::$commentsMaxSize])
         );
         return $approved;
@@ -140,7 +139,8 @@ class EquipmentRules
         if (self::isTypeNotUnique($fieldName, $data, $error, $params)) {
             $error = sprintf(
                 '%s %s exists for the selected type.',
-                ucfirst($fieldName), $data[$fieldName]
+                ucfirst($fieldName),
+                $data[$fieldName]
             );
             return false;
         }
@@ -173,102 +173,103 @@ class EquipmentRules
         if (count($queryResult) === 0) {
             $error = sprintf(
                 '%s %s doesn\'t exist for the selected type.',
-                ucfirst($fieldName), $value
+                ucfirst($fieldName),
+                $value
             );
             return false;
         }
         return true;
     }
 
-    public function is_valid_slot_for_assembly($value, string $params, array $data, ?string &$error): bool
+    public static function processSlotError(string $error, int $slotIdx){
+        return sprintf(
+            'Slot %d: %s',
+            $slotIdx,
+            $error
+        );
+    }
+
+    /**
+     * Checks if the slots are valid for assemble
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Parameters for the check
+     */
+    public static function validAssemblySlots(string $fieldName, array $data, string &$error, array $params): bool
     {
-        if (!property_exists($value, 'name')) {
-            $error = 'Missing slot name.';
-            return false;
-        }
-        if (!property_exists($value, 'equipment_id')) {
-            $error = 'Missing slot equipment id to assemble.';
-            return false;
-        }
-        $slotName = $value->name;
-        $childId = $value->equipment_id;
-        $parentId = $params;
-        $equipmentModel = model('EquipmentModel');
+        $parentId = $data[$params['parent_id_field']];
+        foreach ($data[$fieldName] as $index => &$assemblySlot) {
+            if (!GeneralRules::required('name', $assemblySlot, $error, [])) {
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+            if (!GeneralRules::required('equipment_id', $assemblySlot, $error, [])) {
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
 
-        if (!self::equipment_id_is_sanitized($childId, $error)) {
-            $error = sprintf(
-                'Invalid equipment id %s.',
-                $childId
-            );
-            return false;
-        }
+            if (!self::idIsSanitized('equipment_id', $assemblySlot, $error, [])) {
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+            if (!EquipmentTypeRules::slotNameIsSanitized('name', $assemblySlot, $error, [])) {
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
 
-        if (!self::equipment_id_is_sanitized($parentId, $error)) {
-            $error = sprintf(
-                'Invalid equipment id %s.',
-                $parentId
-            );
-            return false;
-        }
+            if (!DatabaseRules::isNotUnique('equipment_id', $assemblySlot, $error, ['table' => 'equipments', 'column' => 'id'])) {
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
 
-        if (!EquipmentTypeRules::equipment_type_slot_name_is_sanitized($slotName, $error)) {
-            $error = sprintf(
-                'Invalid slot name %s.',
-                $slotName
-            );
-            return false;
-        }
+            if (!DatabaseRules::isNotUnique('name', $assemblySlot, $error, ['table' => 'equipment_types', 'column' => 'name'])) {
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
 
-        helper('equipment');
-        $childId = preprocessEquipmentId($childId);
-        $parentId = preprocessEquipmentId($parentId);
-        $equipmentModel = model('EquipmentModel');
-        $equip = $equipmentModel->select('1')->find($childId);
-        if (!isset($equip)) {
-            $error = sprintf(
-                '%s: Equipment %s does not exist.',
-                $slotName,
-                $childId
-            );
-            return false;
-        }
+            $equipmentModel = model('EquipmentModel');
+            if ($equipmentModel->equipIsAssembledInto($assemblySlot['equipment_id'])) {
+                $error = sprintf(
+                    '%s: The equipment %s is already assembled into another one.',
+                    $assemblySlot['name'],
+                    $assemblySlot['equipment_id']
+                );
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+    
+            if (!$equipmentModel->equipHasSlot($parentId, $assemblySlot['name'])) {
+                $error = sprintf(
+                    '%s: Equipment %s doesn\'t have the selected slot',
+                    $assemblySlot['name'],
+                    $parentId
+                );
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+    
+            if (!$equipmentModel->equipSlotIsEmpty($parentId, $assemblySlot['name'])) {
+                $error = sprintf(
+                    '%s: Selected slot from equipment %s is in use.',
+                    $assemblySlot['name'],
+                    $parentId
+                );
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+    
+            if (!model('EquipmentTypeModel')->slotAllowsEquip($assemblySlot['name'], $assemblySlot['equipment_id'])) {
+                $error = sprintf(
+                    '%s: Slot is available but does not allow insertion of equipment %s.',
+                    $assemblySlot['name'],
+                    $assemblySlot['equipment_id']
+                );
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
 
-        if ($equipmentModel->equipIsAssembledInto($childId)) {
-            $error = sprintf(
-                '%s: The equipment %s is already assembled into another one.',
-                $slotName,
-                $childId
-            );
-            return false;
         }
-
-        if (!$equipmentModel->equipHasSlot($parentId, $slotName)) {
-            $error = sprintf(
-                '%s: Equipment %s doesn\'t have the selected slot',
-                $slotName,
-                $parentId
-            );
-            return false;
-        }
-
-        if (!$equipmentModel->equipSlotIsEmpty($parentId, $slotName)) {
-            $error = sprintf(
-                '%s: Selected slot from equipment %s is in use.',
-                $slotName,
-                $parentId
-            );
-            return false;
-        }
-
-        if (!model('EquipmentTypeModel')->slotAllowsEquip($slotName, $childId)) {
-            $error = sprintf(
-                '%s: Slot is available but does not allow insertion of equipment %s.',
-                $slotName,
-                $childId
-            );
-            return false;
-        }
-
         return true;
     }
 
@@ -279,17 +280,17 @@ class EquipmentRules
      * @return array Rules for registering a new equipment
      * @see Validator::validate
      */
-    public static function getRegisterRulesFromTypeName(string $typeName=''): array
+    public static function getRegisterRulesFromTypeName(string $typeName = ''): array
     {
         helper('string');
         $specificRuleMethod = sprintf(
             'get%sRegisterRule',
             makeCamelCase($typeName)
         );
-        if (method_exists(Self::class, $specificRuleMethod)) {
-            $rules = Self::$specificRuleMethod();
+        if (method_exists(self::class, $specificRuleMethod)) {
+            $rules = self::$specificRuleMethod();
         } else {
-            $rules = Self::getDefaultRegisterRule();
+            $rules = self::getDefaultRegisterRule();
         }
         return $rules;
     }
@@ -300,21 +301,21 @@ class EquipmentRules
      * @return array Rules for editing a new equipment
      * @see Validator::validate
      */
-    public static function getEditRulesFromId(string $id=''): array
+    public static function getEditRulesFromId(string $id = ''): array
     {
         helper('string');
         $equip = model('EquipmentModel')->select('type_name')->find($id);
-        if (empty($equip->type_name)){
+        if (empty($equip->type_name)) {
             throw new \Exception('Equipment not found for building the edit rules.');
         }
         $specificRuleMethod = sprintf(
             'get%sEditRule',
             $equip->type_name
         );
-        if (method_exists(Self::class, $specificRuleMethod)) {
-            $rules = Self::$specificRuleMethod();
+        if (method_exists(self::class, $specificRuleMethod)) {
+            $rules = self::$specificRuleMethod();
         } else {
-            $rules = Self::getDefaultEditRule();
+            $rules = self::getDefaultEditRule();
         }
         return $rules;
     }
@@ -415,7 +416,7 @@ class EquipmentRules
         return [
             'id' => [],
             'owner_mne' => [
-                'removeEmpty'=> [],
+                'removeEmpty' => [],
                 '\App\Validation\InstituteRules::mneIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -425,7 +426,7 @@ class EquipmentRules
                 ]
             ],
             'detector_location_name' => [
-                'removeEmpty'=> [],
+                'removeEmpty' => [],
                 '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -435,7 +436,7 @@ class EquipmentRules
                 ]
             ],
             'location_name' => [
-                'removeEmpty'=> [],
+                'removeEmpty' => [],
                 '\App\Validation\LocationRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -445,7 +446,7 @@ class EquipmentRules
                 ]
             ],
             'status_name' => [
-                'removeEmpty'=> [],
+                'removeEmpty' => [],
                 '\App\Validation\StatusRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -455,7 +456,7 @@ class EquipmentRules
                 ]
             ],
             'serial' => [
-                'removeEmpty'=> [],
+                'removeEmpty' => [],
                 '\App\Validation\EquipmentRules::serialIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isUnique' => [
                     'params' => [
