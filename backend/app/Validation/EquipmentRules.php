@@ -98,7 +98,7 @@ class EquipmentRules
      * @see StringRules::maxLength
      * @see StringRules::regexMatch
      */
-    public function equipmentSerialIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
+    public static function equipmentSerialIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
         $approved =  (
             StringRules::maxLength($fieldName, $data, $error, ['length' => self::$serialMaxSize]) &&
@@ -116,7 +116,7 @@ class EquipmentRules
      * @return bool True if the value is sanitized
      * @see StringRules::maxLength
      */
-    public function equipmentCommentsIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
+    public static function equipmentCommentsIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
         $approved =  (
             StringRules::maxLength($fieldName, $data, $error, ['length' => self::$commentsMaxSize])
@@ -135,7 +135,7 @@ class EquipmentRules
      * column: string, the column to check for uniqueness
      * @return bool True if the value is unique for the selected type
      */
-    public function isTypeUnique(string $fieldName, array $data, string &$error, array $params): bool
+    public static function isTypeUnique(string $fieldName, array $data, string &$error, array $params): bool
     {
         if (self::isTypeNotUnique($fieldName, $data, $error, $params)) {
             $error = sprintf(
@@ -158,7 +158,7 @@ class EquipmentRules
      * column: string, the column to check for uniqueness
      * @return bool True if the value is unique for the selected type
      */
-    public function isTypeNotUnique(string $fieldName, array $data, string &$error, array $params): bool
+    public static function isTypeNotUnique(string $fieldName, array $data, string &$error, array $params): bool
     {
         $value = $data[$fieldName];
         $typeIdField = $params['typeIdField'];
