@@ -94,7 +94,7 @@ class EquipmentRules
         } else {
             return false;
         }
-        if (!StringRules::regexMatch($fieldName, ['id' => $id], $error, ['regex' => self::$sequentialNumberRegex])) {
+        if (!StringRules::regexMatch($fieldName, [$fieldName => $id], $error, ['regex' => self::$sequentialNumberRegex])) {
             return false;
         }
         $data[$fieldName] = $id;
