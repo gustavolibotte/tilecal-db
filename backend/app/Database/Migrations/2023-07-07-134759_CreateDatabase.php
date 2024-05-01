@@ -343,7 +343,6 @@ class CreateDatabase extends BaseMigration
         $this->forge->addField($this->getHistFields($fields));
         $this->forge->addPrimaryKey('id');
         $this->forge->addForeignKey('parent_type_id', 'equipment_types', 'id');
-        $this->forge->addUniqueKey(['name', 'parent_type_id']);
         $this->forge->createTable('type_slots_hist', true);
 
     }

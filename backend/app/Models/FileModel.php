@@ -14,20 +14,11 @@ class FileModel extends LogModel
     protected $useAutoIncrement = true;
     protected $returnType       = \App\Entities\File::class;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'description', 'fileObj', 'path', 'copy'];
-    protected bool $copyFile;
-
-    public function __construct(?ConnectionInterface $db = null, ?ValidationInterface $validation = null, bool $copyFile=false)
-    {
-        parent::__construct($db, $validation);
-        $this->copyFile = $copyFile;
-    }
-
+    protected $allowedFields    = ['name', 'description', 'path'];
+    
     public function initialize(){
         parent::initialize();
         helper(['app_array']);
-        $this->beforeInsert[] = 'treatFileObj';
-        $this->beforeUpdate[] = 'treatFileObj';
         $this->afterDelete[] = 'deleteRelationsCallback';
     }
 
@@ -85,42 +76,6 @@ class FileModel extends LogModel
     protected function deleteRelationsCallback(array $data): array
     {
         $this->deleteRelations($data['id']);
-        return $data;
-    }
-
-    protected function treatFileObj(array $data): array
-    {
-        helper(['app_array', 'path', 'filesystem']);
-        $fileObj = remove_value('fileObj', $data['data'], false);
-        $copy = remove_value('copy', $data['data'], false);
-        
-        if (!($fileObj instanceof File)){
-            return $data;
-        }
-        $appPaths = config('Paths');
-        $newName = $fileObj->getRandomName();
-        $newPath = joinPaths([
-            $appPaths->uploadedFilesDirectory,
-            $newName
-        ]);
-        if ($copy){
-            copy($fileObj->getRealPath(), $newPath);
-        } else{
-            $fileObj->move($appPaths->uploadedFilesDirectory, $newName);
-        }
-        $data['data']['path'] = $newPath;
-        return $data;
-    }
-
-    protected function checkExtension(array $data, File $fileObj): array
-    {
-        if (!array_key_exists('name', $data['data'])){
-            return $data;
-        }
-        $extension = '.' . $fileObj->guessExtension();
-        if (!str_ends_with($data['data']['name'], $extension)){
-            $data['data']['name'] .= $extension;
-        }
         return $data;
     }
 
