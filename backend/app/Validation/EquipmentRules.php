@@ -210,7 +210,7 @@ class EquipmentRules
      * @param string $error Error message to return if the check fails
      * @param array $params Parameters for the check
      */
-    public static function validAssemblySlots(string $fieldName, array $data, string &$error, array $params): bool
+    public static function validAssemblySlots(string $fieldName, array &$data, string &$error, array $params): bool
     {
         $parentId = $data[$params['parent_id_field']];
         foreach ($data[$fieldName] as $index => &$assemblySlot) {

@@ -41,7 +41,8 @@ class EquipmentSeeder extends BaseSeeder
         'FENICS' => 100,
         'PMT Block' => 100,
         'P2 LB Super Drawer' => 2,
-        'Mini Drawer' => 10
+        'Mini Drawer' => 10,
+        'Mainboard' => 10
     ];
 
     protected float $deleteChance = 0.03;

@@ -231,14 +231,12 @@ class Equipments extends APIController
 
         $inputRules = [
             'id' => [
-                'rules' => [
-                    '\App\Validation\GeneralRules::required' => [],
-                    '\App\Validation\EquipmentRules::idIsSanitized' => [],
-                    '\App\Validation\DatabaseRules::isNotUnique' => [
-                        'params' => [
-                            'table' => 'equipments',
-                            'column' => 'id'
-                        ]
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotDeleted' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
                     ]
                 ]
             ]
@@ -264,6 +262,7 @@ class Equipments extends APIController
 
     public function __restore__(): ResponseInterface
     {
+        helper('response');
         $feature = model('FeatureModel')->findName('equipment_restore');
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
@@ -271,14 +270,12 @@ class Equipments extends APIController
 
         $inputRules = [
             'id' => [
-                'rules' => [
-                    '\App\Validation\GeneralRules::required' => [],
-                    '\App\Validation\EquipmentRules::idIsSanitized' => [],
-                    '\App\Validation\DatabaseRules::isNotUnique' => [
-                        'params' => [
-                            'table' => 'equipments',
-                            'column' => 'id'
-                        ]
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isDeleted' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
                     ]
                 ]
             ]
