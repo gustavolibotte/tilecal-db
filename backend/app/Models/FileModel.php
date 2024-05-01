@@ -2,9 +2,6 @@
 
 namespace App\Models;
 
-use CodeIgniter\Database\ConnectionInterface;
-use CodeIgniter\Files\File;
-use CodeIgniter\Validation\ValidationInterface;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Model;
 
@@ -18,7 +15,6 @@ class FileModel extends LogModel
     
     public function initialize(){
         parent::initialize();
-        helper(['app_array']);
         $this->afterDelete[] = 'deleteRelationsCallback';
     }
 
