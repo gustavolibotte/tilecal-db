@@ -109,4 +109,31 @@ class StringRules{
         }
         return true;
     }
+
+    /**
+     * Checks if the string starts with the defined prefix
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params The params array must have the following keys:
+     * 
+     * - prefix: string, the prefix the value must start with
+     * 
+     * @return bool True if the string starts with the defined prefix
+     * @see Validator::validate
+     */
+    public static function startsWith(string $fieldName, array $data, string &$error, array $params): bool
+    {
+        $value = $data[$fieldName];
+        $prefix = $params['prefix'];
+        if (strpos($value, $prefix) !== 0) {
+            $error = sprintf(
+                '%s must start with %s.',
+                $fieldName,
+                $prefix
+            );
+            return false;
+        }
+        return true;
+    }
 }
