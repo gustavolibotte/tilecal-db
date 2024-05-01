@@ -413,33 +413,39 @@ class EquipmentModel extends LogModel
         $data['data'] = $this->substituteFK(
             'type_id',
             ['type_name'],
+            ['name'],
             $data['data'],
             model('EquipmentTypeModel')
         );
         $data['data'] = $this->substituteFK(
             'owner_id',
             ['owner_mne'],
+            ['mne'],
             $data['data'],
             model('InstituteModel')
         );
         $data['data'] = $this->substituteFK(
             'location_id',
             ['location_name'],
+            ['name'],
             $data['data'],
             model('LocationModel')
         );
         $data['data'] = $this->substituteFK(
             'status_id',
             ['status_name'],
+            ['name'],
             $data['data'],
             model('StatusModel')
         );
         $data['data'] = $this->substituteFK(
             'detector_location_id',
             ['detector_location_name'],
+            ['name'],
             $data['data'],
             model('DetectorLocationModel')
         );
+        echo json_encode($data['data']);
         return $data;
     }
 }

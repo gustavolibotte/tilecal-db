@@ -90,20 +90,25 @@ abstract class BaseModel extends Model
      * 
      * @param string $fkField The foreign key field
      * @param array $aliasesFields The alias fields
+     * @param array $tableFields The table fields
      * @param array $data The data to be processed
      * @param BaseModel $model The model to be used to search for values
+     * 
+     * 
      * 
      * @return array The data with the foreign key field included and the aliases removed
      */
     public function substituteFK(
         string $fkField,
         array $aliasesFields,
+        array $tableFields,
         array $data,
         BaseModel $model
     ): array {
         helper('app_array');
         $found = array_key_exists($fkField, $data);
-        foreach ($aliasesFields as $aliasField) {
+        foreach ($aliasesFields as $idx=>$aliasField) {
+            $tableField = $tableFields[$idx];
             if ($found && array_key_exists($aliasField, $data)) {
                 unset($data[$aliasField]);
                 continue;
@@ -112,9 +117,16 @@ abstract class BaseModel extends Model
             } elseif (!$found && !array_key_exists($aliasField, $data)) {
                 continue;
             } elseif (!$found && array_key_exists($aliasField, $data)) {
+                if (empty($data[$aliasField])) {
+                    unset($data[$aliasField]);
+                    continue;
+                }
                 $fkValue = $model->select('id')
-                    ->where($aliasField, $data[$aliasField])
+                    ->where($tableField, $data[$aliasField])
                     ->first()->id;
+                if (is_null($fkValue)) {
+                    continue;
+                }
                 $data[$fkField] = $fkValue;
                 unset($data[$aliasField]);
                 $found = true;
