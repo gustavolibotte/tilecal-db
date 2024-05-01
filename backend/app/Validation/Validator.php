@@ -3,8 +3,7 @@
 namespace App\Validation;
 
 class Validator{
-    public static string $permitEmptyRule = 'permitEmpty';
-    public static string $removeEmptyRule = 'removeEmpty';
+    public static string $ruleBreak = 'break';
 
     /**
      * Validates an array of data against a set of rules
@@ -39,25 +38,15 @@ class Validator{
         ];
         foreach ($ruleSets as $fieldName => $ruleSet){
             foreach($ruleSet as $ruleName => $ruleConfig){
-                $isEmpty = !isset($data[$fieldName]) || empty($data[$fieldName]);
-                // echo json_encode([$fieldName, $ruleName, $ruleConfig, $isEmpty]);
-                if ($ruleName === self::$permitEmptyRule){
-                    if ($isEmpty){
-                        break;
-                    }
-                } else if ($ruleName === self::$removeEmptyRule){
-                    if ($isEmpty){
-                        unset($res['validatedData'][$fieldName]);
-                        break;
-                    }
-                } else {
-                    $ruleParams = $ruleConfig['params'] ?? [];
-                    $baseError = '';
-                    if (!$ruleName($fieldName, $res['validatedData'], $baseError, $ruleParams)){
-                        $res['errors'][$fieldName] = $ruleConfig['error']?? $baseError;
-                        $res['valid'] = false;
-                        break;
-                    }
+                $ruleParams = $ruleConfig['params'] ?? [];
+                $baseError = '';
+                $ruleRes = $ruleName($fieldName, $res['validatedData'], $baseError, $ruleParams);
+                if ($ruleRes === false){
+                    $res['errors'][$fieldName] = $ruleConfig['error']?? $baseError;
+                    $res['valid'] = false;
+                    break;
+                } else if ($ruleRes === self::$ruleBreak){
+                    break;
                 }
             }
         }

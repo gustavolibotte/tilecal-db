@@ -176,6 +176,18 @@ class GeneralRules	{
         return true;
     }
 
+    /**
+     * Checks if the value in the data array is an integer
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Array containing some params to modify function behavior
+     * 
+     * - `cast` - if true, the function will cast the value to an integer.
+     * 
+     * @return bool
+     * @see Validator::validate
+     */
     public static function isInt(string $fieldName, array &$data, string &$error, array $params): bool
     {   
         if (is_int($data[$fieldName])){
@@ -192,5 +204,92 @@ class GeneralRules	{
             $fieldName
         );
         return false;
+    }
+
+    /**
+     * Checks if the value in the data array is a boolean
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Array containing some params to modify function behavior
+     * 
+     * - `cast` - if true, the function will cast the value to a boolean.
+     * 
+     * @return bool
+     * @see Validator::validate
+     */
+    public static function isBool(string $fieldName, array &$data, string &$error, array $params): bool
+    {
+        if (is_bool($data[$fieldName])){
+            return true;
+        }
+        if (is_string($data[$fieldName]) && in_array($data[$fieldName], ['true', 'false'])){
+            if ($params['cast']){
+                $data[$fieldName] = $data[$fieldName] === 'true';
+            }
+            return true;
+        }
+        $error = sprintf(
+            '%s must be a boolean.',
+            $fieldName
+        );
+        return false;
+    }
+
+    /**
+     * Allows the value to be empty
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Ignored
+     * @param array $params Ignored
+     * @return bool|string
+     */
+    public static function permitEmpty(string $fieldName, array $data, string &$error, array $params): bool|string
+    {
+        if (!isset($data[$fieldName]) || empty($data[$fieldName])){
+            return 'break';
+        }
+        return true;
+    }
+
+    /**
+     * Removes the value from the data array if it is empty
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Ignored
+     * @param array $params Ignored
+     * @return bool|string
+     * @see Validator::validate
+     */
+    public static function removeEmpty(string $fieldName, array &$data, string &$error, array $params): bool|string
+    {
+        if (!isset($data[$fieldName]) || empty($data[$fieldName])){
+            unset($data[$fieldName]);
+            return 'break';
+        }
+        return true;
+    }
+
+    /**
+     * Requires the value to be present if the field in the params array is empty.
+     * If the field is not empty, breaks the current check.
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Array containing the field to check
+     * 
+     * The params array should have the following keys:
+     * 
+     * - `field` - the field to check
+     * 
+     * @return bool|string
+     * @see Validator::validate
+     */
+    public static function requireWhenFieldIsEmpty(string $fieldName, array $data, string &$error, array $params): bool|string
+    {
+        if (!isset($data[$params['field']]) || empty($data[$params['field']])){
+            return self::required($fieldName, $data, $error, $params);
+        }
+        return 'break';
     }
 }

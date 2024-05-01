@@ -135,14 +135,6 @@ $routes->group('api', static function ($routes){
         'filter' =>['api_auth', 'action:delete'],
         'as' => 'api_file_restore'
     ]);
-    $routes->get('file/download', 'Files::download', [
-        'filter' => ['api_auth', 'action:download'],
-        'as' => 'api_file_download'
-    ]);
-    $routes->get('file/download-hist', 'Files::downloadHist', [
-        'filter' =>['api_auth', 'action:view'],
-        'as' => 'api_file_download_hist'
-    ]);
 
     // User API
     $routes->get('user', 'User::get', [

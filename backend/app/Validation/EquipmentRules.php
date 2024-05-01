@@ -375,7 +375,7 @@ class EquipmentRules
                 ]
             ],
             'detector_location_name' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -405,7 +405,7 @@ class EquipmentRules
                 ]
             ],
             'serial' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\EquipmentRules::serialIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isUnique' => [
                     'params' => [
@@ -415,7 +415,7 @@ class EquipmentRules
                 ]
             ],
             'comments' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\EquipmentRules::commentsIsSanitized' => []
             ]
         ];
@@ -432,7 +432,7 @@ class EquipmentRules
         return [
             'id' => [],
             'owner_mne' => [
-                'removeEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\InstituteRules::mneIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -442,7 +442,7 @@ class EquipmentRules
                 ]
             ],
             'detector_location_name' => [
-                'removeEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -452,7 +452,7 @@ class EquipmentRules
                 ]
             ],
             'location_name' => [
-                'removeEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\LocationRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -462,7 +462,7 @@ class EquipmentRules
                 ]
             ],
             'status_name' => [
-                'removeEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\StatusRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -472,7 +472,7 @@ class EquipmentRules
                 ]
             ],
             'serial' => [
-                'removeEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\EquipmentRules::serialIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isUnique' => [
                     'params' => [
@@ -482,7 +482,7 @@ class EquipmentRules
                 ]
             ],
             'comments' => [
-                'removeEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\EquipmentRules::commentsIsSanitized' => []
             ]
         ];
@@ -563,11 +563,11 @@ class EquipmentRules
                 ]
             ],
             'comments' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\EquipmentRules::commentsIsSanitized' => []
             ],
             'beta' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::isFloat' => [
                     'cast' => true
                 ],
@@ -576,7 +576,7 @@ class EquipmentRules
                 ]
             ],
             'nominal_hv' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::isFloat' => [
                     'cast' => true
                 ],
@@ -585,7 +585,7 @@ class EquipmentRules
                 ]
                 ],
             'qe' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::isFloat' => [
                     'cast' => true
                 ],
@@ -594,13 +594,13 @@ class EquipmentRules
                 ]
             ],
             'model' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::inList' => [
                     'list' => self::$validPmtModelValues
                 ]
                 ],
             'phase1_position' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::isInt' => [
                     'cast' => true
                 ],
@@ -624,7 +624,7 @@ class EquipmentRules
         return [
             'id' => [],
             'owner_mne' => [
-                'removeEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\InstituteRules::mneIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -634,7 +634,7 @@ class EquipmentRules
                 ]
             ],
             'detector_location_name' => [
-                'removeEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -644,7 +644,7 @@ class EquipmentRules
                 ]
             ],
             'location_name' => [
-                'removeEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\LocationRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -654,7 +654,7 @@ class EquipmentRules
                 ]
             ],
             'status_name' => [
-                'removeEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\StatusRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -664,11 +664,11 @@ class EquipmentRules
                 ]
             ],
             'comments' => [
-                'removeEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\EquipmentRules::commentsIsSanitized' => []
             ],
             'beta' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::isFloat' => [
                     'cast' => true
                 ],
@@ -677,7 +677,7 @@ class EquipmentRules
                 ]
             ],
             'nominal_hv' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::isFloat' => [
                     'cast' => true
                 ],
@@ -686,7 +686,7 @@ class EquipmentRules
                 ]
                 ],
             'qe' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::isFloat' => [
                     'cast' => true
                 ],
@@ -695,13 +695,13 @@ class EquipmentRules
                 ]
             ],
             'model' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::inList' => [
                     'list' => self::$validPmtModelValues
                 ]
                 ],
             'phase1_position' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::isInt' => [
                     'cast' => true
                 ],

@@ -40,23 +40,23 @@ class Equipments extends APIController
 
         $inputRules = [
             'id' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\EquipmentRules::idIsSanitized' => []
             ],
             'type_name' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\EquipmentTypeRules::nameIsSanitized' => []
             ],
             'relatedFileId' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\FileRules::idIsSanitized' => []
             ],
             'relatedEquipmentId' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\EquipmentRules::idIsSanitized' => []
             ],
             'onlyDeleted' => [
-                'permitEmpty' => []
+                '\App\Validation\GeneralRules::permitEmpty' => []
             ]
         ];
 

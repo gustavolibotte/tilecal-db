@@ -21,7 +21,7 @@ class EquipmentType extends APIController
     {
         $inputRules = [
             'type_name' => [
-                'permitEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\EquipmentTypeRules::nameIsSanitized' => [],
             ]
         ];
