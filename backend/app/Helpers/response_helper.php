@@ -121,3 +121,25 @@ function failValidationErrors(array $errors, array $inputData): ResponseInterfac
         $metadata
     );
 }
+
+function respondUpdated(array|int|string $id = [], array $inputData=[], array $validInput=[]): ResponseInterface
+{
+    if (!is_array($id)){
+        $id = [$id];
+    }
+    $env = \Config\Services::environment();
+    if ($env->isLocal() || $env->isDev()) {
+        $metadata = [
+            'input' => $inputData,
+            'validInput' => $validInput
+        ];
+    } else{
+        $metadata = [];
+    }
+    return buildAPIResponse(
+        200,
+        $id,
+        'Updated',
+        $metadata
+    );
+}

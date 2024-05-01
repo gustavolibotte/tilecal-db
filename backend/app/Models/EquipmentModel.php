@@ -445,7 +445,6 @@ class EquipmentModel extends LogModel
             $data['data'],
             model('DetectorLocationModel')
         );
-        echo json_encode($data['data']);
         return $data;
     }
 }

@@ -27,24 +27,8 @@ class EquipmentTypeRules
         );
     }
 
-    /**
-     * Checks if the type_slot_name value is sanitized
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
-     */
-    public static function equipment_type_slot_name_is_sanitized($value, ?string &$error): bool
-    {
-        helper('string_validation');
-        $fieldName = 'Equipment type slot name';
-        return (
-            regex_match($value, '/^[A-Za-z0-9_]+$/', $fieldName, $error)
-        );
-    }
-
     public static function slotNameIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
-        helper('string_validation');
-        $fieldName = 'Equipment type slot name';
         return (
             StringRules::regexMatch($fieldName, $data, $error, [
                 'regex' => self::$slotNameRegex,

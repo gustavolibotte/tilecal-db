@@ -190,24 +190,27 @@ class Equipments extends APIController
                 ]
             ]
         ];
-        $inputData = $this->request->getVar(['id']);
+        $inputData = $this->request->getVar(array_keys($idRules));
         $validationRes = Validator::validate($inputData, $idRules);
+        helper('response');
         if (!$validationRes['valid']) {
-            return $this->failValidationErrors($validationRes['errors']);
+            return failValidationErrors($validationRes['errors'], $inputData);
         }
         $id = $validationRes['validatedData']['id'];
 
         $equipRules = EquipmentRules::getEditRulesFromId($id);
         $inputData = $this->request->getVar(array_keys($equipRules));
-        $validationRes = Validator::validate($inputData, $idRules);
+        echo "Validating full input data\n";
+        $validationRes = Validator::validate($inputData, $equipRules);
         if (!$validationRes['valid']) {
-            return $this->failValidationErrors($validationRes['errors']);
+            return failValidationErrors($validationRes['errors'], $inputData);
         }
-        $validData = $validationRes['validatedData'];
-        $validEquip = new Equipment($validData);
-        model('EquipmentModel')->update($validData['id'], $validEquip);
+        $validInput = $validationRes['validatedData'];
+        $id = $validInput['id'];
+        unset($validInput['id']);
+        model('EquipmentModel')->update($id, $validInput);
 
-        return $this->respondUpdated($validData['id']);
+        return respondUpdated($id, $inputData, $validInput);
     }
 
     public function delete(): ResponseInterface
@@ -439,7 +442,7 @@ class Equipments extends APIController
             'slots' => [
                 '\App\Validation\GeneralRules::required' => [],
                 '\App\Validation\GeneralRules::isArray' => [],
-                '\App\Validation\EquipmentRules::validAssemblySlot' => [
+                '\App\Validation\EquipmentRules::validAssemblySlots' => [
                     'params' => [
                         'parent_id_field' => 'id'
                     ]
@@ -448,9 +451,11 @@ class Equipments extends APIController
         ];
 
         $inputData = $this->request->getVar(array_keys($inputRules));
+        helper(['cast', 'response']);
+        $inputData = std_to_array($inputData);  // The data inside slots come as an stdClass
         $validationRes = Validator::validate($inputData, $inputRules);
         if (!$validationRes['valid']) {
-            return $this->failValidationErrors($validationRes['errors']);
+            return failValidationErrors($validationRes['errors'], $inputData);
         }
         $validInput = $validationRes['validatedData'];
 
@@ -461,16 +466,16 @@ class Equipments extends APIController
         foreach ($validInput['slots'] as $slotInfo) {
             $slotId = $typeSlotModel
                 ->select('id')
-                ->where('name', $slotInfo->name)
+                ->where('name', $slotInfo['name'])
                 ->first()->id;
             $equipmentModel->updateParent(
-                $slotInfo->equipment_id,
+                $slotInfo['equipment_id'],
                 $validInput['id'],
                 $slotId
             );
         }
         $db->transCommit();
-        return $this->buildAPIResponse(200, message: 'Assembled');
+        return buildAPIResponse(200, message: 'Assembled');
     }
 
     public function getChildren()

@@ -40,13 +40,16 @@ class Validator{
         foreach ($ruleSets as $fieldName => $ruleSet){
             foreach($ruleSet as $ruleName => $ruleConfig){
                 $isEmpty = !isset($data[$fieldName]) || empty($data[$fieldName]);
+                // echo json_encode([$fieldName, $ruleName, $ruleConfig, $isEmpty]);
                 if ($ruleName === self::$permitEmptyRule){
                     if ($isEmpty){
                         break;
                     }
-                } else if ($ruleName === self::$removeEmptyRule && $isEmpty){
-                    unset($res['validatedData'][$fieldName]);
-                    break;
+                } else if ($ruleName === self::$removeEmptyRule){
+                    if ($isEmpty){
+                        unset($res['validatedData'][$fieldName]);
+                        break;
+                    }
                 } else {
                     $ruleParams = $ruleConfig['params'] ?? [];
                     $baseError = '';
@@ -58,6 +61,7 @@ class Validator{
                 }
             }
         }
+        // echo json_encode($data);
         return $res;
     }
 }

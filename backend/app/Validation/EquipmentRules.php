@@ -111,7 +111,7 @@ class EquipmentRules
      * @see StringRules::maxLength
      * @see StringRules::regexMatch
      */
-    public static function equipmentSerialIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
+    public static function serialIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
         $approved = (
             StringRules::maxLength($fieldName, $data, $error, ['length' => self::$serialMaxSize]) &&
@@ -237,7 +237,7 @@ class EquipmentRules
                 return false;
             }
 
-            if (!DatabaseRules::isNotUnique('name', $assemblySlot, $error, ['table' => 'equipment_types', 'column' => 'name'])) {
+            if (!DatabaseRules::isNotUnique('name', $assemblySlot, $error, ['table' => 'type_slots', 'column' => 'name'])) {
                 $error = self::processSlotError($error, $index);
                 return false;
             }
@@ -318,7 +318,9 @@ class EquipmentRules
     public static function getEditRulesFromId(string $id = ''): array
     {
         helper('string');
-        $equip = model('EquipmentModel')->select('type_name')->find($id);
+        $equip = model('EquipmentModel')
+            ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
+            ->select('equipment_types.name as type_name')->find($id);
         if (empty($equip->type_name)) {
             throw new \Exception('Equipment not found for building the edit rules.');
         }
@@ -480,7 +482,7 @@ class EquipmentRules
                 ]
             ],
             'comments' => [
-                'permitEmpty' => [],
+                'removeEmpty' => [],
                 '\App\Validation\EquipmentRules::commentsIsSanitized' => []
             ]
         ];
