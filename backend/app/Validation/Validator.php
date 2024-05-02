@@ -8,7 +8,8 @@ class Validator{
     /**
      * Validates an array of data against a set of rules
      * @param array $data Data to validate
-     * @param array $ruleSets Rules to validate against
+     * @param array|string $ruleSets The rules to validate against.
+     * If a string is passed, searches the attribute with that name in the Validation config file
      * 
      * The structure of the $ruleSets array should be:
      * ```[
@@ -29,13 +30,16 @@ class Validator{
      * - `validatedData` - the data that was validated.
      * It will have the field names as keys and the validated values as values
      */
-    public static function validate(array $data, array $ruleSets): array
+    public static function validate(array $data, array|string $ruleSets): array
     {
         $res = [
             'valid' => true,
             'errors' => [],
             'validatedData' => $data
         ];
+        if (is_string($ruleSets)){
+            $ruleSets = config('Validation')->$ruleSets;
+        }
         foreach ($ruleSets as $fieldName => $ruleSet){
             foreach($ruleSet as $ruleName => $ruleConfig){
                 $ruleParams = $ruleConfig['params'] ?? [];
@@ -50,7 +54,12 @@ class Validator{
                 }
             }
         }
-        // echo json_encode($data);
+        $ruleKeys = array_keys($ruleSets);
+        foreach (array_keys($res['validatedData']) as $fieldName){
+            if (!in_array($fieldName, $ruleKeys)){
+                unset($res['validatedData'][$fieldName]);
+            }
+        }
         return $res;
     }
 }

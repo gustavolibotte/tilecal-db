@@ -39,4 +39,68 @@ class Validation extends BaseConfig
     // --------------------------------------------------------------------
     // Rules
     // --------------------------------------------------------------------
+
+    public array $fileCreateRules = [
+        'name' => [
+            '\App\Validation\GeneralRules::required' => [],
+            '\App\Validation\AppFileRules::nameIsSanitized' => [],
+            '\App\Validation\DatabaseRules::isUnique' => [
+                'params' => [
+                    'table' => 'files',
+                    'column' => 'name'
+                ]
+            ]
+        ],
+        'path' => [
+            '\App\Validation\GeneralRules::required' => [],
+            '\App\Validation\AppFileRules::pathIsSanitized' => [],
+            '\App\Validation\DatabaseRules::isUnique' => [
+                'params' => [
+                    'table' => 'files',
+                    'column' => 'path'
+                ]
+            ]
+        ],
+        'description' => [
+            '\App\Validation\GeneralRules::required' => [],
+            '\App\Validation\AppFileRules::descriptionIsSanitized' => []
+        ]
+    ];
+
+    public array $fileUpdateRules = [
+        'id' => [
+            '\App\Validation\GeneralRules::required' => [],
+            '\App\Validation\AppFileRules::idIsSanitized' => [],
+            '\App\Validation\DatabaseRules::isNotUnique' => [
+                'params' => [
+                    'table' => 'files',
+                    'column' => 'id'
+                ]
+            ]
+        ],
+        'name' => [
+            '\App\Validation\GeneralRules::removeEmpty' => [],
+            '\App\Validation\AppFileRules::nameIsSanitized' => [],
+            '\App\Validation\DatabaseRules::isUnique' => [
+                'params' => [
+                    'table' => 'files',
+                    'column' => 'name'
+                ]
+            ]
+        ],
+        'path' => [
+            '\App\Validation\GeneralRules::removeEmpty' => [],
+            '\App\Validation\AppFileRules::pathIsSanitized' => [],
+            '\App\Validation\DatabaseRules::isUnique' => [
+                'params' => [
+                    'table' => 'files',
+                    'column' => 'path'
+                ]
+            ]
+        ],
+        'description' => [
+            '\App\Validation\GeneralRules::removeEmpty' => [],
+            '\App\Validation\AppFileRules::descriptionIsSanitized' => []
+        ]
+    ];
 }
