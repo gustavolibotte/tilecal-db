@@ -9,13 +9,13 @@ class AppFileRules{
     public static int $minDescriptionSize = 10;
     public static int $nameMaxLength = 100;
     public static int $nameMinLength = 1;
-    public static string $nameRegex = '/^[A-Za-z_]+$/';
+    public static string $nameRegex = '/^.+$/';
 
     public static string $idRegex = '/^[0-9]+$/';
 
     public static int $pathMaxLength = 300;
 
-    public static int $pathStartsWith = 'https://cernbox.cern.ch';
+    public static string $pathStartsWith = 'https://cernbox.cern.ch';
 
     /**
      * Checks if the id value is sanitized

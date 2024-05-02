@@ -229,6 +229,10 @@ class GeneralRules	{
             }
             return true;
         }
+        if (empty($data[$fieldName]) && $params['cast']){
+            $data[$fieldName] = false;
+            return true;
+        }
         $error = sprintf(
             '%s must be a boolean.',
             $fieldName

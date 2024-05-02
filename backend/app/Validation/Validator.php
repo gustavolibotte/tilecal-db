@@ -2,6 +2,9 @@
 
 namespace App\Validation;
 
+/**
+ * Class Validator
+ */
 class Validator{
     public static string $ruleBreak = 'break';
 
@@ -28,7 +31,9 @@ class Validator{
      * - `errors` - an array of error messages.
      * It will have the field names as keys and the error messages as values
      * - `validatedData` - the data that was validated.
-     * It will have the field names as keys and the validated values as values
+     * It will have the field names as keys and the validated values as values.
+     * Only the fields that had rules will be present. If you want to keep all fields,
+     * create a rule set with an empty rule array for fields that do not need any validation.
      */
     public static function validate(array $data, array|string $ruleSets): array
     {

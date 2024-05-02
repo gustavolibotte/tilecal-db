@@ -10,6 +10,10 @@ use App\Validation\Validator;
 class Files extends APIController
 {
 
+    /**
+     * Get a list of files
+     * @return ResponseInterface
+     */
     public function get(): ResponseInterface
     {
         try{
@@ -27,29 +31,7 @@ class Files extends APIController
             return failServiceUnavailable();
         }
 
-        $inputRules = [
-            'id' => [
-                '\App\Validation\GeneralRules::permitEmpty' => [],
-                '\App\Validation\AppFileRules::idIsSanitized' => []
-            ],
-            'name' => [
-                '\App\Validation\GeneralRules::permitEmpty' => [],
-                '\App\Validation\AppFileRules::nameIsSanitized' => []
-            ],
-            'onlyDeleted' => [
-                '\App\Validation\GeneralRules::permitEmpty' => [],
-                '\App\Validation\GeneralRules::isBool' => [
-                    'params' => [
-                        'cast' => true
-                    ]
-                ]
-            ],
-            'relatedEquipmentId' => [
-                '\App\Validation\GeneralRules::permitEmpty' => [],
-                '\App\Validation\AppEquipmentRules::idIsSanitized' => []
-            ]
-        ];
-
+        $inputRules = config('Validation')->fileGetRules;
         $inputData = $this->request->getVar(array_keys($inputRules));
         $validationRes = Validator::validate($inputData, $inputRules);
         if (!$validationRes['valid']) {
@@ -68,6 +50,7 @@ class Files extends APIController
             ->asArray();
         $this->parseFilterCondition($validInput['id'], 'files.id', $fileModel);
         $this->parseFilterCondition($validInput['name'], 'files.name', $fileModel);
+        echo json_encode($validInput);  
         $this->parseDeletion($fileModel, $validInput['onlyDeleted']);
 
         if (!empty($validInput['relatedEquipmentId'])){
@@ -199,7 +182,11 @@ class Files extends APIController
                 ]
             ],
             'name' => [
-                '\App\Validation\GeneralRules::requireWhenFieldIsEmpty' => [],
+                '\App\Validation\GeneralRules::requireWhenFieldIsEmpty' => [
+                    'params' => [
+                        'field' => 'id'
+                    ]
+                ],
                 '\App\Validation\AppFileRules::nameIsSanitized' => [],
             ],
         ];
@@ -240,7 +227,7 @@ class Files extends APIController
             'id' => [
                 '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\AppFileRules::idIsSanitized' => [],
-                '\App\Validation\DatabaseRules::isNotDeleted' => [
+                '\App\Validation\DatabaseRules::isDeleted' => [
                     'params' => [
                         'table' => 'files',
                         'column' => 'id'
@@ -248,7 +235,11 @@ class Files extends APIController
                 ]
             ],
             'name' => [
-                '\App\Validation\GeneralRules::requireWhenFieldIsEmpty' => [],
+                '\App\Validation\GeneralRules::requireWhenFieldIsEmpty' => [
+                    'params' => [
+                        'field'=> 'id'
+                    ]
+                ],
                 '\App\Validation\AppFileRules::nameIsSanitized' => [],
             ],
         ];

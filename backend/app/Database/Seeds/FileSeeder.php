@@ -1,11 +1,13 @@
 <?php
 
 namespace App\Database\Seeds;
-use CodeIgniter\Files\File;
 use App\Validation\Validator;
 
 class FileSeeder extends BaseSeeder
 {
+    /**
+     * Seeds the database with file test data.
+     */
     public function run()
     {
         helper('path');
@@ -16,7 +18,7 @@ class FileSeeder extends BaseSeeder
             $validData = $validationRes['validatedData'];
             $fileModel->insert($validData);
             if (str_starts_with($validData['name'], 'deleted')){
-                $fileModel->delete($validData['id']);
+                $fileModel->delete($fileData['id']);
             }
         }
     }

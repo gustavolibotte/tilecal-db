@@ -40,6 +40,28 @@ class Validation extends BaseConfig
     // Rules
     // --------------------------------------------------------------------
 
+    public array $fileGetRules = [
+        'id' => [
+            '\App\Validation\GeneralRules::permitEmpty' => [],
+            '\App\Validation\AppFileRules::idIsSanitized' => []
+        ],
+        'name' => [
+            '\App\Validation\GeneralRules::permitEmpty' => [],
+            '\App\Validation\AppFileRules::nameIsSanitized' => []
+        ],
+        'onlyDeleted' => [
+            '\App\Validation\GeneralRules::isBool' => [
+                'params' => [
+                    'cast' => true
+                ]
+            ]
+        ],
+        'relatedEquipmentId' => [
+            '\App\Validation\GeneralRules::permitEmpty' => [],
+            '\App\Validation\EquipmentRules::idIsSanitized' => []
+        ]
+    ];
+
     public array $fileCreateRules = [
         'name' => [
             '\App\Validation\GeneralRules::required' => [],
