@@ -125,4 +125,27 @@ class Validation extends BaseConfig
             '\App\Validation\AppFileRules::descriptionIsSanitized' => []
         ]
     ];
+
+    public array $relateUnrelateFileEquipRules = [
+        'fileName' => [
+            '\App\Validation\GeneralRules::required' => [],
+            '\App\Validation\AppFileRules::nameIsSanitized' => [],
+            '\App\Validation\DatabaseRules::isNotUnique' => [
+                'params' => [
+                    'table' => 'files',
+                    'column' => 'name'
+                ]
+            ]
+        ],
+        'equipmentId' => [
+            '\App\Validation\GeneralRules::required' => [],
+            '\App\Validation\AppEquipmentRules::idIsSanitized' => [],
+            '\App\Validation\DatabaseRules::isNotUnique' => [
+                'params' => [
+                    'table' => 'equipments',
+                    'column' => 'id'
+                ]
+            ]
+        ]
+    ];
 }

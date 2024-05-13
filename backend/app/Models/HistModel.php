@@ -73,6 +73,7 @@ class HistModel extends BaseModel
         $fileLogs = $this->db->table('files_hist fh')
             ->select("fh.id")
             ->select("'file' as hist_type")
+            ->select('fh.path as path')
             ->select('name')
             ->select('description')
             ->select('user')

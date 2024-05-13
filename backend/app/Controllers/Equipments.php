@@ -49,7 +49,7 @@ class Equipments extends APIController
             ],
             'relatedFileId' => [
                 '\App\Validation\GeneralRules::permitEmpty' => [],
-                '\App\Validation\FileRules::idIsSanitized' => []
+                '\App\Validation\AppFileRules::idIsSanitized' => []
             ],
             'relatedEquipmentId' => [
                 '\App\Validation\GeneralRules::permitEmpty' => [],
@@ -514,6 +514,84 @@ class Equipments extends APIController
         return $this->buildAPIResponse(
             200,
             $children
+        );
+    }
+
+    public function relateFile()
+    {
+        helper('response');
+        try {
+            return $this->__relateFile__();
+        } catch (Throwable $e) {
+            return failInternalError($e);
+        }
+    }
+
+    public function __relateFile__()
+    {
+        $feature = model('FeatureModel')->findName('file_equip_relation');
+        if (!$feature->isActive()) {
+            return failServiceUnavailable();
+        }
+
+        $inputRules = config('Validation')->relateUnrelateFileEquipRules;
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return failValidationErrors($validationRes['errors'], $inputData);
+        }
+        $validInput = $validationRes['validatedData'];
+        $fileId = model('fileModel')
+            ->select('id')
+            ->where('name', $validInput['fileName'])
+            ->first()->id;
+        model('Equipment2FileModel')->insert([
+            'equipment_id' => $validInput['equipmentId'],
+            'file_id' => $fileId
+        ]);
+        helper('response');
+        return buildAPIResponse(
+            200,
+            message: 'Related'
+        );
+    }
+
+    public function unrelateFile()
+    {
+        helper('response');
+        try {
+            return $this->__unrelateFile__();
+        } catch (Throwable $e) {
+            return failInternalError($e);
+        }
+    }
+
+    public function __unrelateFile__()
+    {
+        $feature = model('FeatureModel')->findName('file_equip_relation');
+        if (!$feature->isActive()) {
+            return failServiceUnavailable();
+        }
+
+        $inputRules = config('Validation')->relateUnrelateFileEquipRules;
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return failValidationErrors($validationRes['errors'], $inputData);
+        }
+        $validInput = $validationRes['validatedData'];
+        $fileId = model('fileModel')
+            ->select('id')
+            ->where('name', $validInput['fileName'])
+            ->first()->id;
+        model('Equipment2FileModel')
+            ->where('equipment_id', $validInput['equipmentId'])
+            ->where('file_id', $fileId)
+            ->delete();
+        helper('response');
+        return buildAPIResponse(
+            200,
+            message: 'Unrelated'
         );
     }
 }

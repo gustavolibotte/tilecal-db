@@ -78,5 +78,9 @@
     {
         "name": "parent_relation",
         "status": "active"
+    },
+    {
+        "name": "file_equip_relation",
+        "status": "active"
     }
 ]

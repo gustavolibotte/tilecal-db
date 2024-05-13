@@ -79,6 +79,14 @@ $routes->group('api', static function ($routes){
         'filter' =>['api_auth', 'action:view'],
         'as' => 'api_equipment_children'
     ]);
+    $routes->post('equipment/relate-file', 'Equipments::relateFile', [
+        'filter' =>['api_auth', 'action:edit'],
+        'as' => 'api_equipment_relate_file'
+    ]);
+    $routes->post('equipment/unrelate-file', 'Equipments::unrelateFile', [
+        'filter' =>['api_auth', 'action:edit'],
+        'as' => 'api_equipment_unrelate_file'
+    ]);
 
     // EquipmentTypes API
     $routes->get('equipment-type', 'EquipmentType::get',[

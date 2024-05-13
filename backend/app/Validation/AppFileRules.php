@@ -9,7 +9,7 @@ class AppFileRules{
     public static int $minDescriptionSize = 10;
     public static int $nameMaxLength = 100;
     public static int $nameMinLength = 1;
-    public static string $nameRegex = '/^.+$/';
+    public static string $nameRegex = '/^.*$/';
 
     public static string $idRegex = '/^[0-9]+$/';
 
