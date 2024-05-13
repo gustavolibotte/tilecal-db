@@ -6,7 +6,7 @@ class StatusRules{
 
     public static string $statusIdRegex = '/^[0-9]+$/';
     public static $maxNameLength = 30;
-    public static $nameRegex = '/^[A-Za-z0-9]+$/';
+    public static $nameRegex = '/^.*$/';
 
     /**
      * Checks if the status name value is sanitized
