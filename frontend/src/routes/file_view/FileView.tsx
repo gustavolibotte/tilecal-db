@@ -16,7 +16,6 @@ import { Id, toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import { useUser } from '../../utils/user';
 import ButtonConfirmation from '../../components/button_confirmation/ButtonConfirmation';
-import DownloadButton from '../../components/download_button/DownloadButton';
 import { midTransactionToastConfig } from '../../utils/toast';
 
 export default function FileView() {
@@ -83,7 +82,7 @@ export default function FileView() {
     onError: (error: AxiosError) => {
       toast.dismiss(restoreToastId.current);
       console.log(error);
-      toast.error('An error has occured.');
+      toast.error('An error has occurred.');
     }
   });
 
@@ -93,7 +92,7 @@ export default function FileView() {
   } else if(isError){
     console.log(response);
     // Have to put a better error management
-    component = <h1>An Error has occured</h1>;
+    component = <h1>An Error has occurred</h1>;
   } else{
     if (response.data.length < 1){
       return <NotFound/>;
@@ -153,10 +152,6 @@ export default function FileView() {
               <div className="col-6">
                 <div className="flex flex-wrap align-items-center justify-content gap-3">
                   <h2>File Info</h2>
-                  <DownloadButton
-                  downloadUrl={getEndpoint('file_download')}
-                  params={{id: fileId}}
-                  filename={fileData.name}/>
                 </div>
               </div>
               <div className="col-6">

@@ -4,8 +4,6 @@ import { ExpandRowType, BaseTable, ColumnMeta } from '../base_table/BaseTable';
 import FileInfo from '../file_info/FileInfo';
 import { HistData, HistAction } from '../hist/HistAction';
 import { DataTableSortMeta } from 'primereact/datatable';
-import DownloadButton from '../download_button/DownloadButton';
-import { getEndpoint } from '../../utils/DbClient';
 
 interface FileHistTableProps {
     fileId: string
@@ -31,18 +29,6 @@ export default function FileHistTable(props: FileHistTableProps) {
   const onRowCollapse = () => { };
   const onRowExpand = () => { };
 
-  const getDownloadButton = (rowData: any) => {
-    if (rowData.id){
-      return (
-        <DownloadButton
-          downloadUrl={getEndpoint('file_download_hist')}
-          params={{id: rowData.id}}
-          filename={rowData.name}/>
-      );
-    }
-    return '';
-  }
-
   const columns: ColumnMeta[] = [
     {
       field: 'row_toggle', header: 'Toggle',
@@ -65,11 +51,6 @@ export default function FileHistTable(props: FileHistTableProps) {
       body: HistAction,
       filter: true, sortable: true,
       filterPlaceholder: 'Search'
-    },
-    {
-      field: 'download', header: 'Download',
-      body: getDownloadButton,
-      filter: false, sortable: false
     }
   ];
 

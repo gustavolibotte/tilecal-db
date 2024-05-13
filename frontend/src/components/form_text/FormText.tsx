@@ -11,6 +11,7 @@ interface FormTextProps {
   onChange: ChangeEventHandler<HTMLInputElement>;
   errorText: string | null;
   required?: boolean;
+  placeholder?: string;
 }
 
 export default class FormText extends Component<FormTextProps> {
@@ -28,6 +29,7 @@ export default class FormText extends Component<FormTextProps> {
           value={this.props.value}
           onChange={this.props.onChange}
           className={classNames({ 'p-invalid': Boolean(this.props.errorText)})}
+          placeholder={this.props.placeholder}
       />
     </FormField>
     )

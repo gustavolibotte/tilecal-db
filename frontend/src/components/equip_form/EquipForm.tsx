@@ -85,7 +85,7 @@ export default function EquipForm({typeName, equipId, onSuccess, isEdit}: EquipF
         });
       } else{
         console.log(error);
-        toast.error('An error has occured.');
+        toast.error('An error has occurred.');
       }
     },
   });
