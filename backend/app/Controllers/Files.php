@@ -50,7 +50,6 @@ class Files extends APIController
             ->asArray();
         $this->parseFilterCondition($validInput['id'], 'files.id', $fileModel);
         $this->parseFilterCondition($validInput['name'], 'files.name', $fileModel);
-        echo json_encode($validInput);  
         $this->parseDeletion($fileModel, $validInput['onlyDeleted']);
 
         if (!empty($validInput['relatedEquipmentId'])){

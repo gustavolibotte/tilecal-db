@@ -26,14 +26,16 @@ export default function EquipInfo(props: EquipInfoProps) {
     { name: 'Serial', field: 'serial' }
   ];
 
-  fieldConfig = fieldConfig.concat(
-    Object.keys(props.equipData.type_params).map((key: string): any => {
-      return {
-        name: snakeToSpaced(key? key: ''),
-        field: `type_params.${key}`,
-        template: (data: any) => data.type_params[key]};
-    })
-  )
+  if (props.equipData.type_params != null){
+    fieldConfig = fieldConfig.concat(
+      Object.keys(props.equipData.type_params).map((key: string): any => {
+        return {
+          name: snakeToSpaced(key? key: ''),
+          field: `type_params.${key}`,
+          template: (data: any) => data.type_params[key]};
+      })
+    );
+  }
 
   fieldConfig = fieldConfig.concat([
     { name: 'Comments', field: 'comments' },
