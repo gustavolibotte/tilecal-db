@@ -541,12 +541,12 @@ class Equipments extends APIController
             return failValidationErrors($validationRes['errors'], $inputData);
         }
         $validInput = $validationRes['validatedData'];
-        $fileId = model('fileModel')
+        $fileId = model('FileModel')
             ->select('id')
-            ->where('name', $validInput['fileName'])
+            ->where('name', $validInput['file_name'])
             ->first()->id;
         model('Equipment2FileModel')->insert([
-            'equipment_id' => $validInput['equipmentId'],
+            'equipment_id' => $validInput['equipment_id'],
             'file_id' => $fileId
         ]);
         helper('response');
@@ -580,14 +580,17 @@ class Equipments extends APIController
             return failValidationErrors($validationRes['errors'], $inputData);
         }
         $validInput = $validationRes['validatedData'];
-        $fileId = model('fileModel')
+        $fileId = model('FileModel')
             ->select('id')
-            ->where('name', $validInput['fileName'])
+            ->where('name', $validInput['file_name'])
             ->first()->id;
-        model('Equipment2FileModel')
-            ->where('equipment_id', $validInput['equipmentId'])
+        $relationId = model('Equipment2FileModel')
+            ->where('equipment_id', $validInput['equipment_id'])
             ->where('file_id', $fileId)
-            ->delete();
+            ->first()->id;
+        // I don't now why but calling delete after the where clause raises the error
+        // "Deletes are not allowed unless they contain a \"where\" or \"like\" clause."
+        model('Equipment2FileModel')->delete($relationId); 
         helper('response');
         return buildAPIResponse(
             200,

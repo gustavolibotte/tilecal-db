@@ -127,7 +127,7 @@ class Validation extends BaseConfig
     ];
 
     public array $relateUnrelateFileEquipRules = [
-        'fileName' => [
+        'file_name' => [
             '\App\Validation\GeneralRules::required' => [],
             '\App\Validation\AppFileRules::nameIsSanitized' => [],
             '\App\Validation\DatabaseRules::isNotUnique' => [
@@ -137,9 +137,9 @@ class Validation extends BaseConfig
                 ]
             ]
         ],
-        'equipmentId' => [
+        'equipment_id' => [
             '\App\Validation\GeneralRules::required' => [],
-            '\App\Validation\AppEquipmentRules::idIsSanitized' => [],
+            '\App\Validation\EquipmentRules::idIsSanitized' => [],
             '\App\Validation\DatabaseRules::isNotUnique' => [
                 'params' => [
                     'table' => 'equipments',
