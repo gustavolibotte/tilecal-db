@@ -188,6 +188,7 @@ class EquipmentModel extends LogModel
             ->$whereClause('child_equip_id', $id)
                 ->findAll();
         foreach ($relations as $relation) {
+            $parentChildModel->update($relation->id, ['user' => \Config\Services::user()->getUsername()]);
             $parentChildModel->delete($relation->id, true);
         }
         return true;
