@@ -3,10 +3,6 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
-use App\Validation\Validators\EntryValidator;
-use App\Library\Readers\CSVFileReader;
-use App\Library\Loggers\BlankLogger;
-use Psr\Log\LoggerInterface;
 
 abstract class BaseModel extends Model
 {
@@ -55,28 +51,6 @@ abstract class BaseModel extends Model
         return $results;
     }
 
-    public function getFormDropdownOptions(array $columns, string $separator = ' - ', string $value='id'){
-        helper(['string', 'app_form']);
-        $entities = $this->asArray()->findAll();
-        $options = get_blank_dropdown();
-        foreach ($entities as $entity){
-            $first = true;
-            $options[$entity[$value]] = '';
-            foreach ($columns as $colName){
-                if (!empty($entity[$colName])){
-                    if ($first){
-                        $options[$entity[$value]] = $entity[$colName];
-                        $first = false;
-                    } else{
-                        $options[$entity[$value]] .= $separator;
-                        $options[$entity[$value]] .= $entity[$colName];
-                    }
-                }
-            }
-        }
-        return $options;
-    }
-
     public function getCustomArray(string $keyField, ?string $valueField=null, ?array $ids=null, ): array
     {
         $nullValue = is_null($valueField);
@@ -108,64 +82,57 @@ abstract class BaseModel extends Model
         return $array;
     }
 
-    private function fileAction(
-        string $filepath,
-        EntryValidator $validator,
-        string $action,
-        ?LoggerInterface $logger=null): bool|array|string
-    {
-        helper(['filesystem', 'app_array']);
-        $fieldRename = $validator->fieldRename;
-        $logger = is_null($logger)? new BlankLogger(): $logger;
-        $inputFile = new CSVFileReader($filepath, headerRename:$fieldRename);
-        $loggerContext = ['iRow' => null, 'action' => ucfirst($action)];
-        $this->db->transException(true)->transBegin();
-        foreach ($inputFile as $iRow=>$row){
-            $loggerContext['iRow'] = $iRow;
-            // Removes some fields that may conflict with the type defined in the validator
-            remove_value('type_name', $row, false);
-            remove_value('type_id', $row, false);
-            $validator->clearState()->setFieldValues($row);
-            if ($validator->validate()){
-                $validatedRow = $validator->getValidatedData();
-                $this->saveRow($validatedRow, $action);
-                $logger->info('{iRow} {action} with success', $loggerContext);
-            } else{
-                $errors =  $validator->getErrors();
-                $errors['iRow'] = $iRow;
-                $this->db->transRollback();
-                return $errors;
+    /**
+     * Substitutes a foreign key field based on some alias fields
+     * 
+     * For example, if type_id is a foreign key field, and type_name is an alias field,
+     * this method will include the type_id based on the type_name.
+     * 
+     * @param string $fkField The foreign key field
+     * @param array $aliasesFields The alias fields
+     * @param array $tableFields The table fields
+     * @param array $data The data to be processed
+     * @param BaseModel $model The model to be used to search for values
+     * 
+     * 
+     * 
+     * @return array The data with the foreign key field included and the aliases removed
+     */
+    public function substituteFK(
+        string $fkField,
+        array $aliasesFields,
+        array $tableFields,
+        array $data,
+        BaseModel $model
+    ): array {
+        helper('app_array');
+        $found = array_key_exists($fkField, $data);
+        foreach ($aliasesFields as $idx=>$aliasField) {
+            $tableField = $tableFields[$idx];
+            if ($found && array_key_exists($aliasField, $data)) {
+                unset($data[$aliasField]);
+                continue;
+            } elseif ($found && !array_key_exists($aliasField, $data)) {
+                continue;
+            } elseif (!$found && !array_key_exists($aliasField, $data)) {
+                continue;
+            } elseif (!$found && array_key_exists($aliasField, $data)) {
+                if (empty($data[$aliasField])) {
+                    unset($data[$aliasField]);
+                    continue;
+                }
+                $fkValue = $model->select('id')
+                    ->where($tableField, $data[$aliasField])
+                    ->first()->id;
+                if (is_null($fkValue)) {
+                    continue;
+                }
+                $data[$fkField] = $fkValue;
+                unset($data[$aliasField]);
+                $found = true;
+                continue;
             }
         }
-        $this->db->transCommit();
-        return true;
-    }
-
-    protected function saveRow($validatedRow, string $action)
-    {
-        if ($action === 'update'){
-            $this->update($validatedRow->id, $validatedRow);
-        } else{
-            $this->insert($validatedRow);
-        }
-        return true;
-    }
-
-    public function insertFromFile(
-        string $filepath,
-        EntryValidator $validator,
-        ?LoggerInterface $logger=null
-    )
-    {
-        return $this->fileAction($filepath, $validator, $logger, 'insert');
-    }
-
-    public function updateFromFile(
-        string $filepath,
-        EntryValidator $validator,
-        ?LoggerInterface $logger=null
-    )
-    {
-        return $this->fileAction($filepath, $validator, $logger, 'update');
+        return $data;
     }
 }

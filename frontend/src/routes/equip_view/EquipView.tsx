@@ -8,7 +8,6 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import EquipForm from '../../components/equip_form/EquipForm';
 import PmtForm from '../../components/pmt_form/PmtForm';
-import FileTable from '../../components/file_table/FileTable';
 import NotFound from '../../components/not_found/NotFound';
 import RelatedEquipTable from '../../components/related_equip_table/RelatedEquipTable';
 import EquipHistTable from '../../components/equip_hist/EquipHistTable';
@@ -20,6 +19,8 @@ import ButtonConfirmation from '../../components/button_confirmation/ButtonConfi
 import { useUser } from '../../utils/user';
 import AssembleComponent from '../../components/assemble_component/AssembleComponent';
 import { midTransactionToastConfig } from '../../utils/toast';
+import RelateFileComponent from '../../components/relate_file_component/RelateFileComponent';
+import RelatedFileTable from '../../components/related_file_table/RelatedFileTable';
 
 
 export default function EquipView() {
@@ -57,7 +58,7 @@ export default function EquipView() {
     onError: (error: AxiosError) => {
       toast.dismiss(deleteToastId.current);
       console.log(error);
-      toast.error('An error has occured.');
+      toast.error(__DEFAULT_ERROR_MSG__);
     }
   });
 
@@ -81,7 +82,7 @@ export default function EquipView() {
     onError: (error: AxiosError) => {
       console.log(error);
       toast.dismiss(restoreToastId.current);
-      toast.error('An error has occured.');
+      toast.error(__DEFAULT_ERROR_MSG__);
     }
   });
 
@@ -91,7 +92,7 @@ export default function EquipView() {
   } else if(isError){
     console.log(response);
     // Have to put a better error management
-    component = <h1>An Error has occured</h1>;
+    component = <h1>An Error has occurred</h1>;
   } else{
     if (response.data.length < 1){
       return <NotFound/>;
@@ -179,8 +180,17 @@ export default function EquipView() {
             </div>
             <RelatedEquipTable equipmentId={equipId}/>
             <hr></hr>
-            <h2>Related Files</h2>
-            <FileTable queryKey={['file', 'get', {relatedEquipmentId: equipId}]}/>
+            <div className="grid">
+              <div className="col-6">
+                <h2>Related Files</h2>
+              </div>
+              <div className="col-6">
+                <div className="flex flex-row-reverse flex-wrap gap-2">
+                  <RelateFileComponent equipmentId={equipId? equipId: ''}/>
+                </div>
+              </div>
+            </div>
+            <RelatedFileTable equipmentId={equipId? equipId: ''}/>
           </div>
         </TabPanel>
         <TabPanel header="History">

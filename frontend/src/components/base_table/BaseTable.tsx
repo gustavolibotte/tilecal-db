@@ -58,22 +58,6 @@ export function BaseTable(props: TableProps){
     });
   }
 
-  // const exportPdf = (): void => {
-  //   const exportColumns = visibleColumns.map(
-  //     (col: ColumnProps) => ({ title: col.header, dataKey: col.field })
-  //   );
-  //   import('jspdf').then((jsPDF) => {
-  //     import('jspdf-autotable').then(() => {
-  //         const doc = new jsPDF.default('landscape');
-  //         // I don't now why but ts can't find the function autoTable but it exists
-  //         // The flag exists only to force it to compile otherwise it would raise errors
-  //         // @ts-ignore
-  //         doc.autoTable(exportColumns, response.data);
-  //         doc.save(`${props.fileName}.pdf`);
-  //     });
-  //   });
-  // }
-
   const getHeader = (): ReactNode =>{
     return (
       <div className="flex flex-wrap align-items-center justify-content gap-2">
@@ -92,10 +76,28 @@ export function BaseTable(props: TableProps){
     });   // Triggers query refetch
     clearFilter();
   }
-  const renderDataTable = (data: Array<any>): ReactNode => {
+
+  const dt: any = useRef();
+  const queryClient = useQueryClient();
+
+  const [filters, setFilters] = useState<DataTableFilterMeta>(getClearFilters());
+  const [visibleColumns, setVisibleColumns] = useState<ColumnProps[]>(props.columns);
+
+  // Any exists only to deal with ts errors
+  const {isError, isPending, data: response, error}: any = useQuery({
+    queryKey: props.queryKey,
+  });
+
+  if (isError){
+    toast.error('An error has occurred');
+    console.log(error);
+    return <p>An error has occurred when loading this table</p>;
+  } else if (isPending){
+    return <p>Loading...</p>;
+  } else{
     return (<DataTable
       ref={dt}
-      value={data}
+      value={response.data}
       header={getHeader()}
       tableStyle={{ minWidth: '50rem' }}
       filters={filters}
@@ -118,26 +120,5 @@ export function BaseTable(props: TableProps){
               {...colProps}/>
         ))}
     </DataTable>);
-  }
-
-  const dt: any = useRef();
-  const queryClient = useQueryClient();
-
-  const [filters, setFilters] = useState<DataTableFilterMeta>(getClearFilters());
-  const [visibleColumns, setVisibleColumns] = useState<ColumnProps[]>(props.columns);
-
-  // Any exists only to deal with ts errors
-  const {isError, isPending, data: response, error}: any = useQuery({
-    queryKey: props.queryKey,
-  });
-
-  if (isError){
-    toast.error('An error has occured');
-    console.log(error);
-    return renderDataTable([]);
-  } else if (isPending){
-    return renderDataTable([]);
-  } else{
-    return renderDataTable(response.data);
   }
 }

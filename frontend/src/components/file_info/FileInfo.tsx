@@ -7,8 +7,13 @@ interface FileInfoProps {
 
 export default function FileInfo(props: FileInfoProps) {
 
+  const pathTemplate = (data: any) => {
+    return <a href={data.path} target="_blank" rel="noreferrer">{data.path}</a>;
+  }
+
   let fieldConfig = [
     { name: 'Name', field: 'name' },
+    { name: 'Path', field: 'path', template: pathTemplate},
     { name: 'Description', field: 'description' }
   ];
   if (!props.hist){

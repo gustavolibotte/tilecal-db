@@ -8,34 +8,39 @@ use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Model;
 use TypeError;
 
-
 class EquipmentModel extends LogModel
 {
-    protected $table            = 'equipments';
-    protected $returnType       = Equipment::class;
-    protected $allowedFields    = [
+    protected $table = 'equipments';
+    protected $returnType = Equipment::class;
+    protected $allowedFields = [
         'id',
         'type_id',
+        'type_name',
         'owner_id',
+        'owner_mne',
         'location_id',
+        'location_name',
         'status_id',
-        'parent_id',
-        'slot_id',
+        'status_name',
         'serial',
         'comments',
         'type_params',
-        'detector_location_id'
+        'detector_location_id',
+        'detector_location_name'
     ];
 
-    public function initialize(){
+    public function initialize()
+    {
         parent::initialize();
         helper(['app_array']);
+        $this->beforeInsert = array_merge(['substituteFKs'], $this->beforeInsert);
+        $this->beforeUpdate = array_merge(['substituteFKs'], $this->beforeUpdate);
         $this->afterDelete[] = 'deleteRelations';
     }
 
-    public function fullQuery(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
+    public function fullQuery(BaseBuilder|Model $queryBuilder = null): BaseBuilder|Model
     {
-        if (is_null($queryBuilder)){
+        if (is_null($queryBuilder)) {
             $queryBuilder = $this;
         }
         $queryBuilder->select('equipments.id as id');
@@ -65,14 +70,14 @@ class EquipmentModel extends LogModel
         return $queryBuilder;
     }
 
-    public function joinFiles(BaseBuilder|Model $queryBuilder=null): BaseBuilder|Model
+    public function joinFiles(BaseBuilder|Model $queryBuilder = null): BaseBuilder|Model
     {
-        if (is_null($queryBuilder)){
+        if (is_null($queryBuilder)) {
             $queryBuilder = $this;
         }
         $queryBuilder = $queryBuilder
             ->join('equipments_to_files', 'equipments.id = equipments_to_files.equipment_id', 'left');
-        
+
         return $queryBuilder;
     }
 
@@ -82,28 +87,30 @@ class EquipmentModel extends LogModel
      * @param string $id The equipment id to get relations from.
      * 
      * @return array All Equipment instances found
-     */ 
+     */
     public function getRelatedEquipments(string|array $id): array
-    {   
+    {
         $parentExtra = sprintf(
             "%s as relation_type, ts.name as slot_name",
-            $this->db->escape('parent'));
-        $whereClause = is_array($id)? 'whereIn': 'where';
+            $this->db->escape('parent')
+        );
+        $whereClause = is_array($id) ? 'whereIn' : 'where';
         $parentQuery = $this->fullQuery(db_connect()->table('equipments'))
-            ->select($parentExtra)
-            ->join('parent_child_equips pce', 'equipments.id=pce.parent_equip_id', 'left')
-            ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
+                    ->select($parentExtra)
+                    ->join('parent_child_equips pce', 'equipments.id=pce.parent_equip_id', 'left')
+                    ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
             ->$whereClause('pce.child_equip_id', $id);
 
         $extraQuery = sprintf(
             "%s as relation_type, ts.name as slot_name",
-            $this->db->escape('child'));
+            $this->db->escape('child')
+        );
         $equipments = $this->fullQuery()->select($extraQuery)
-            ->join('parent_child_equips pce', 'equipments.id=pce.child_equip_id', 'left')
-            ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
+                    ->join('parent_child_equips pce', 'equipments.id=pce.child_equip_id', 'left')
+                    ->join('type_slots ts', 'pce.slot_id=ts.id', 'left')
             ->$whereClause('pce.parent_equip_id', $id)
-            ->union($parentQuery)
-            ->findAll();
+                ->union($parentQuery)
+                ->findAll();
         return $equipments;
     }
 
@@ -115,85 +122,31 @@ class EquipmentModel extends LogModel
      * @param string $id The equipment id to get the parent from.
      * 
      * @return ?ParentChildRelation $parentRelation The obtained parent relation
-     */ 
+     */
     public function getParentRelation(string $id): ?ParentChildRelation
     {
         $parentRelation = model('ParentChildModel')
             ->where('child_equip_id', $id)
             ->first();
-        if (is_null($parentRelation)){
+        if (is_null($parentRelation)) {
             return null;
         } else {
             return $parentRelation;
         }
     }
 
-    /**
-     * Inserts equipment data.
-     * The equipment entity can also have a parent_id field that it will be inserted correctly
-     *
-     * @param Equipment $data Equipment entity
-     * 
-     * @throws TypeError If data is not instance of EquipmenturnId is true
-     * @return ?string returns id if $returnID is true
-     */
     public function insert($data = null, bool $returnID = true)
     {
         $this->db->transException(true)->transBegin();
-        if (!($data instanceof Equipment)){
-            throw new TypeError('Equipment Model insert supports only Equipment as $data');
-        }
-        $data = $data->toRawArray();
-        $parentId = remove_value('parent_id', $data, false);
-        $slotId = remove_value('slot_id', $data, false);
-        $childId = parent::insert($data, true);
-        if(isset($parentId) && isset($slotId)){
-            $this->addParent($childId, $parentId, $slotId);
-        }
+        $res = parent::insert($data, true);
         $this->db->transCommit();
-        if($returnID){
-            return $childId;
-        }
+        return $res;
     }
 
-    /**
-     * Updates equipment data.
-     * The equipment entity can also have a parent_id field that it will be updated correctly
-     *
-     * @param mixed $id Ids of the entries to update
-     * @param Equipment $data Equipment entity
-     * 
-     * @throws TypeError If data is not instance of Equipment 
-     * @return bool
-     */
     public function update($id = null, $data = null): bool
     {
         $this->db->transException(true)->transBegin();
-        if (!($data instanceof Equipment)){
-            throw new TypeError('Equipment Model insert supports only Equipment as $data');
-        }
-        if (is_null($id)){
-            throw new TypeError('Equipment id must be passed');
-        }
-        $data = $data->toRawArray();
-        if(array_key_exists('parent_id', $data) || array_key_exists('slot_id', $data)){
-            $parentId = remove_value('parent_id', $data);
-            $slotId = remove_value('slot_id', $data);
-        }
         $res = parent::update($id, $data);
-        if (!empty($data['location_id'])){
-            $equipment = $this->select('location_id')->find($id);
-            $children = $this->getChildrenIDs($id);
-            if (!empty($children)){
-                $this->builder()->set('location_id', $equipment->location_id)
-                ->whereIn('id', $children)
-                ->update();
-            }
-        }
-        if(isset($parentId) && isset($slotId)){
-            $this->deleteParent($id);
-            $this->addParent($id, $parentId, $slotId);
-        }
         $this->db->transCommit();
         return $res;
     }
@@ -206,7 +159,7 @@ class EquipmentModel extends LogModel
     }
 
     protected function deleteRelations(array $data): array
-    {   
+    {
         $this->deleteFileRelations($data['id']);
         $this->deleteEquipmentRelations($data['id']);
         return $data;
@@ -215,27 +168,28 @@ class EquipmentModel extends LogModel
     protected function deleteFileRelations(string|array $id): bool
     {
         $equipments2FilesModel = model('Equipment2FileModel');
-        $whereClause = (is_array($id))? 'whereIn': 'where';
+        $whereClause = (is_array($id)) ? 'whereIn' : 'where';
         $relations = $equipments2FilesModel
-            ->select('id')
+                    ->select('id')
             ->$whereClause('equipment_id', $id)
-            ->findAll();
-        foreach($relations as $relation){
-             $equipments2FilesModel->delete($relation->id, true);
+                ->findAll();
+        foreach ($relations as $relation) {
+            $equipments2FilesModel->delete($relation->id, true);
         }
         return true;
     }
 
     protected function deleteEquipmentRelations(string|array $id): bool
     {
-        $whereClause = (is_array($id))? 'orWhereIn': 'orWhere';
+        $whereClause = (is_array($id)) ? 'orWhereIn' : 'orWhere';
         $parentChildModel = model('ParentChildModel');
         $relations = $parentChildModel
             ->$whereClause('parent_equip_id', $id)
             ->$whereClause('child_equip_id', $id)
-            ->findAll();
-        foreach($relations as $relation){
-             $parentChildModel->delete($relation->id, true);
+                ->findAll();
+        foreach ($relations as $relation) {
+            $parentChildModel->update($relation->id, ['user' => \Config\Services::user()->getUsername()]);
+            $parentChildModel->delete($relation->id, true);
         }
         return true;
     }
@@ -249,7 +203,7 @@ class EquipmentModel extends LogModel
      * @param string $slotId Slot equipment id
      *  
      * @return bool Always true
-     */ 
+     */
     public function addParent(string $childId, string $parentId, int $slotId): bool
     {
         $parentChildModel = model('ParentChildModel');
@@ -269,7 +223,7 @@ class EquipmentModel extends LogModel
      * @param string $slotId Slot equipment id
      * 
      * @return bool Always true
-     */ 
+     */
     public function updateParent(string $childId, string $parentId, int $slotId): bool
     {
         $this->db->transException(true)->transBegin();
@@ -292,13 +246,13 @@ class EquipmentModel extends LogModel
      * @param string $childId Child equipment id
      * 
      * @return bool Always true
-     */ 
+     */
     public function deleteParent(string $childId): bool
-    {   
+    {
         $this->db->transException(true)->transBegin();
         $parentChildModel = model('ParentChildModel');
         $relations = $parentChildModel->where('child_equip_id', $childId)->findAll();
-        foreach($relations as $relation){
+        foreach ($relations as $relation) {
             $parentChildModel->delete($relation->id, purge: true);
         }
         $this->db->transCommit();
@@ -312,13 +266,13 @@ class EquipmentModel extends LogModel
      * @param string $parentId Parent equipment id
      * 
      * @return bool Always true
-     */ 
+     */
     public function deleteChildren(string $parentId): bool
     {
         $this->db->transException(true)->transBegin();
         $parentChildModel = model('ParentChildModel');
         $relations = $parentChildModel->where('parent_equip_id', $parentId)->findAll();
-        foreach($relations as $relation){
+        foreach ($relations as $relation) {
             $parentChildModel->delete($relation->id, purge: true);
         }
         $this->db->transCommit();
@@ -332,7 +286,7 @@ class EquipmentModel extends LogModel
      * @param string $childId Child equipment id
      * 
      * @return bool Always true
-     */ 
+     */
     public function disassemble(string $parentId, string $childId): bool
     {
         $this->db->transException(true)->transBegin();
@@ -341,7 +295,7 @@ class EquipmentModel extends LogModel
             ->where('parent_equip_id', $parentId)
             ->where('child_equip_id', $childId)
             ->findAll();
-        foreach($relations as $relation){
+        foreach ($relations as $relation) {
             $parentChildModel->delete($relation->id, purge: true);
         }
         $this->db->transCommit();
@@ -350,11 +304,11 @@ class EquipmentModel extends LogModel
 
     protected function mergeTypeParams(array $data): array
     {
-        if(!array_key_exists('type_params', $data)){
+        if (!array_key_exists('type_params', $data)) {
             return $data;
         }
         $typeParams = json_decode(remove_value('type_params', $data), true);
-        foreach ($typeParams as $key=>$value){
+        foreach ($typeParams as $key => $value) {
             $data[$key] = $value;
         }
         return $data;
@@ -373,15 +327,17 @@ class EquipmentModel extends LogModel
 
      * @return Self This model instance
      */
-    public function withDeletedJoin(array $joinedTables): Self
+    public function withDeletedJoin(array $joinedTables): self
     {
-        if ($this->tempUseSoftDeletes){
-            foreach ($joinedTables as $tableName){
-                $this->where(sprintf(
-                    '`%s`.`%s` IS NULL',
-                    $tableName,
-                    $this->deletedField
-                ));
+        if ($this->tempUseSoftDeletes) {
+            foreach ($joinedTables as $tableName) {
+                $this->where(
+                    sprintf(
+                        '`%s`.`%s` IS NULL',
+                        $tableName,
+                        $this->deletedField
+                    )
+                );
             }
         }
         return $this;
@@ -436,7 +392,7 @@ class EquipmentModel extends LogModel
         $res = [];
         // If there are no children, the method returns an empty array
         //If there are children, checks if the children have children
-        foreach ($children as $child){
+        foreach ($children as $child) {
             $res[] = $child['id'];
             $res = array_merge($res, $this->getChildrenIds($child['id']));
         }
@@ -451,5 +407,45 @@ class EquipmentModel extends LogModel
             ->where('child_equip_id', $id)
             ->get()->getResult('array');
         return !empty($res);
+    }
+
+    public function substituteFKs(array $data): array
+    {
+        $data['data'] = $this->substituteFK(
+            'type_id',
+            ['type_name'],
+            ['name'],
+            $data['data'],
+            model('EquipmentTypeModel')
+        );
+        $data['data'] = $this->substituteFK(
+            'owner_id',
+            ['owner_mne'],
+            ['mne'],
+            $data['data'],
+            model('InstituteModel')
+        );
+        $data['data'] = $this->substituteFK(
+            'location_id',
+            ['location_name'],
+            ['name'],
+            $data['data'],
+            model('LocationModel')
+        );
+        $data['data'] = $this->substituteFK(
+            'status_id',
+            ['status_name'],
+            ['name'],
+            $data['data'],
+            model('StatusModel')
+        );
+        $data['data'] = $this->substituteFK(
+            'detector_location_id',
+            ['detector_location_name'],
+            ['name'],
+            $data['data'],
+            model('DetectorLocationModel')
+        );
+        return $data;
     }
 }

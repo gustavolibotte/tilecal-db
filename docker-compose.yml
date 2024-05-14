@@ -21,6 +21,9 @@ services:
       - type: bind
         source : .
         target: /root/tilecal-db
+      - type: bind
+        source : ../tilecal-p2-db-docs
+        target: /root/tilecal-p2-db-docs
     ports:
       - "8080:8080"
     environment:

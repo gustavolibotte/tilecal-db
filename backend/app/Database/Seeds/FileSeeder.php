@@ -1,26 +1,24 @@
 <?php
 
 namespace App\Database\Seeds;
-use CodeIgniter\Files\File;
+use App\Validation\Validator;
 
 class FileSeeder extends BaseSeeder
 {
+    /**
+     * Seeds the database with file test data.
+     */
     public function run()
     {
         helper('path');
         $jsonData = $this->readFile('files.json');
-        $fileModel = new \App\Models\FileModel(copyFile: true);
+        $fileModel = new \App\Models\FileModel();
         foreach ($jsonData as $fileData){
-            $filepath =  joinPaths([config('Paths')->dataDirectory, $fileData['path']]);
-            $file = new \App\Entities\File();
-            $file->fileObj = new File($filepath);
-            $file->id = $fileData['id'];
-            $file->name = $fileData['name'];
-            $file->description = $fileData['description'];
-            $file->copy = true;
-            $fileModel->insert($file);
-            if (str_starts_with($fileData['name'], 'deleted')){
-                $fileModel->delete($file->id);
+            $validationRes = Validator::validate($fileData, 'fileCreateRules');
+            $validData = $validationRes['validatedData'];
+            $fileModel->insert($validData);
+            if (str_starts_with($validData['name'], 'deleted')){
+                $fileModel->delete($fileData['id']);
             }
         }
     }

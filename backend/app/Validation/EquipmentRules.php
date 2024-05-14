@@ -1,12 +1,10 @@
 <?php
 
 namespace App\Validation;
+
 use App\Entities\AtlasId;
-use App\Models\EquipmentModel;
-
-class EquipmentRules{
-
-
+class EquipmentRules
+{
     public static int $serialMaxSize = 36;
     public static string $serialRegex = '/^[A-Za-z0-9 -_]*$/';
     public static int $commentsMaxSize = 65535; //MySQL max text size
@@ -25,16 +23,16 @@ class EquipmentRules{
         'LC' => 'Control'
     ];
 
-        /**
+    /**
      * Key value pairs for valid projects for the database according to the ATLAS ID rules
      * Keys are abbreviations and values which system they represent
-     * Since Tilecal is ALTAS, only the ATLAS detetctor code is valid
+     * Since Tilecal is ALTAS, only the ATLAS detector code is valid
      * @var array $validProjects
      */
     public static array $validProjects = [
         '20' => 'ATLAS Detector'
     ];
-    
+
     /**
      * Regex rule for the id sequential number part
      * @var string $sequentialNumberRegex
@@ -48,207 +46,680 @@ class EquipmentRules{
     public static int $sequentialNumberLength = 7;
 
     /**
-     * Checks if the id value is sanitized
-     * If the id is a 14 character code,
-     * it is considered an AtlasId and the sequential number is extracted
-     * The value is changed to the sequential number inplace.
-     * Otherwise, supposes that the value is the sequential number
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
+     * Valid values for PMT models
+     * @var array $validPmtModelValues
      */
-    public static function equipment_id_is_sanitized($value, ?string &$error): bool
+    public static array $validPmtModelValues = [
+        'R11187',
+        'R7877',
+        'R7787',
+        'R11187-SEL',
+        'R11187-A1',
+        'R7600-20',
+        'R5900MOD'
+    ];
+
+    /**
+     * Checks if the id value is sanitized
+     * If the id is a 14 character code, it is considered an ATLAS ID.
+     * The sequential number is extracted and checked against the regex
+     * If the id is a 7 character sequential number, it is checked against the regex
+     * If the id has the string 'CHI10V', it is considered a mainboard produced by Chicago
+     * The sequential number is extracted and checked against the regex.
+     * This is needed because the id from Chicago mainboards do not have the same format as the ATLAS ID
+     * @param string $fieldName Field name with the id value
+     * @param array $data Data array to be modified
+     * @param string $error Error string to be modified
+     * @param array $params Ignored
+     * @return bool True if the id is sanitized
+     * @see StringRules::regexMatch
+     */
+    public static function idIsSanitized(string $fieldName, array &$data, string &$error, array $params): bool
     {
         helper('string_validation');
-        $fieldName = 'Equipment id';
-        $strLength = strlen($value);
-        if ($strLength === Self::$sequentialNumberLength){
-            return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
-        } else if ($strLength === Self::$atlasIdLength){
-            $atlasId = new AtlasId(['id' => $value]);
-            $value = $atlasId->sequential;
-            return regex_match($value, Self::$sequentialNumberRegex, $fieldName, $error);
+        $id = $data[$fieldName];
+        $strLength = strlen($id);
+        $error = "Equipment ID did not match any known format.";
+        if ($strLength === self::$sequentialNumberLength) {
+            // Id is a sequential number
+        } else if ($strLength === self::$atlasIdLength) {
+            // Id is an ATLAS ID
+            $atlasId = new AtlasId(['id' => $id]);
+            $id = $atlasId->sequential;
+        } else if (str_contains($id, 'CHI10V')) {
+            // Id is a mainboard produced by Chicago
+            $id = str_replace('V', '', $id);
+            $atlasId = new AtlasId(['id' => $id]);
+            $id = $atlasId->sequential;
         } else {
-            $error = "The equipment id must be a 14 character ATLAS ID or a 7 character ATLAS sequential number";
             return false;
         }
-
-    }
-
-    /**
-     * Checks if the serial value is sanitized
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
-     */
-    public function equipment_serial_is_sanitized($value, ?string &$error): bool
-    {
-        helper('string_validation');
-        $fieldName = 'Equipment serial';
-        return (
-            max_length($value, Self::$serialMaxSize, $fieldName, $error) &&
-            regex_match($value, Self::$serialRegex, $fieldName, $error)
-        );
-    }
-
-    /**
-     * Checks if the serial value is sanitized
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
-     */
-    public function equipment_comments_is_sanitized($value, ?string &$error): bool
-    {
-        helper('string_validation');
-        $fieldName = 'Equipment comments';
-        return (
-            max_length($value, Self::$commentsMaxSize, $fieldName, $error) &&
-            regex_match($value, Self::$commentsRegex, $fieldName, $error)
-        );
-    }
-
-    /**
-     * Checks if the a value doesn't exist for a given type. A negation of is_type_not_unique
-     *
-     * @param $value  Value given by CodeIgniter validator
-     * @param string $params Params with the format <column>,<typeid>. column is the equipments column to check for the given type id
-     * @param array $data Ignored
-     * @param ?string &$error Ignored
-     * 
-     * @return bool True if the data is unique on that column for a given equipment type
-     */ 
-    public function is_type_unique($value, string $params, array $data, ?string &$error): bool
-    {   
-        return !$this->is_type_not_unique($value, $params, $data, $error);
-    }
-
-    /**
-     * Checks if the a value already exists for a given type
-     *
-     * @param $value  Value given by CodeIgniter validator
-     * @param string $params Params with the format <column>,<typeid>. column is the equipments column to check for the given type id
-     * @param array $data Ignored
-     * @param ?string &$error Ignored
-     * 
-     * @return bool True if the data is not unique on that column for a given equipment type
-     */ 
-    public function is_type_not_unique($value, string $params, array $data, ?string &$error): bool
-    {
-        $params = explode(',', $params);
-        $column = $params[0];
-        $typeId = $params[1];
-        $db = db_connect();
-        $queryText = sprintf("SELECT {$column} FROM `equipments` WHERE `{$column}` = '{$value}' AND type_id = %d LIMIT 1", $typeId);
-        $query = $db->query($queryText);
-        $results = $query->getFirstRow();
-        return isset($results);
-    }
-
-    /**
-     * Checks if the equipment id is of a given type
-     *
-     * @param $value  Value given by CodeIgniter validator, considered as an equipment id
-     * @param string $params Equipment type name
-     * @param array $data Ignored
-     * @param ?string &$error Error string in the format "The parent id must be from a %s. The given id is from a %s"
-     * 
-     * @return bool True if the data was approved on this rule 
-     */ 
-    public function equipment_is_type($value, string $params, array $data, ?string &$error): bool
-    {   
-        helper('string');
-        $equipmentModel = new EquipmentModel();
-        $equipment = $equipmentModel->fullQuery()->find($value);
-        $approved = $equipment->type_name == $params;
-        if (!$approved){
-            $error = sprintf(
-                "The parent id must be from a %s. The given id is from a %s",
-                snake2Capitalized($params),
-                $equipment->type_name
-            );
+        if (!StringRules::regexMatch($fieldName, $data, $error, ['regex' => self::$sequentialNumberRegex])) {
+            return false;
         }
+        $data[$fieldName] = $id;
+        return true;
+    }
+
+    /**
+     * Checks if the equipment serial value is sanitized
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Ignored
+     * @return bool True if the value is sanitized
+     * @see StringRules::maxLength
+     * @see StringRules::regexMatch
+     */
+    public static function serialIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
+    {
+        $approved = (
+            StringRules::maxLength($fieldName, $data, $error, ['length' => self::$serialMaxSize]) &&
+            StringRules::regexMatch($fieldName, $data, $error, ['regex' => self::$serialRegex])
+        );
         return $approved;
     }
 
     /**
-     * Checks if the equipment id is of a given type
-     *
-     * @param $value  Value given by CodeIgniter validator, considered as an equipment id
-     * @param string $params Ignored
-     * @param array $data Ignored
-     * @param ?string &$error Error string. Formated automatically by the function.
-     * 
-     * @return bool True if the data was approved on this rule
-     */ 
-    public function equip_is_not_assembled_into($value, ?string &$error = null): bool
+     * Checks if the equipment comments value is sanitized
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Ignored
+     * @return bool True if the value is sanitized
+     * @see StringRules::maxLength
+     */
+    public static function equipmentCommentsIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
-        $childId = $value;
-        $relation = model('ParentChildModel')
-            ->where('child_equip_id', $childId)
-            ->first();
-        if (isset($relation)){
+        $approved = (
+            StringRules::maxLength($fieldName, $data, $error, ['length' => self::$commentsMaxSize])
+        );
+        return $approved;
+    }
+
+    /**
+     * Checks if a given field has a unique value for a given equipment type
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Parameters for the check
+     * The params array must have the following keys:
+     * typeIdField: int, the name of the field that contains the equipment type id
+     * column: string, the column to check for uniqueness
+     * @return bool True if the value is unique for the selected type
+     */
+    public static function isTypeUnique(string $fieldName, array $data, string &$error, array $params): bool
+    {
+        if (self::isTypeNotUnique($fieldName, $data, $error, $params)) {
             $error = sprintf(
-                'The equipment %s is already assembled into equipment %s.',
-                $relation->child_equip_id,
-                $relation->parent_equip_id
+                '%s %s exists for the selected type.',
+                ucfirst($fieldName),
+                $data[$fieldName]
             );
             return false;
         }
         return true;
     }
 
-    public function is_valid_slot_for_assembly($value, string $params, array $data, ?string &$error): bool
+    /**
+     * Checks if a given field has a non unique value for a given equipment type
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Parameters for the check
+     * The params array must have the following keys:
+     * typeIdField: int, the name of the field that contains the equipment type id
+     * column: string, the column to check for uniqueness
+     * @return bool True if the value is unique for the selected type
+     */
+    public static function isTypeNotUnique(string $fieldName, array $data, string &$error, array $params): bool
     {
-        if (!property_exists($value, 'name')){
-            $error = 'Missing slot name.';
-            return false;
-        }
-        if (!property_exists($value, 'equipment_id')){
-            $error = 'Missing slot equipment id to assemble.';
-            return false;
-        }
-        $slotName = $value->name;
-        $childId = $value->equipment_id;
-        $parentId = $params;
-        $equipmentModel = model('EquipmentModel');
-
-        if (!Self::equipment_id_is_sanitized($childId, $error)){
-            return false;
-        }
-
-        if (!EquipmentTypeRules::equipment_type_slot_name_is_sanitized($slotName, $error)){
-            return false;
-        }
-
-        if ($equipmentModel->equipIsAssembledInto($childId)){
+        $value = $data[$fieldName];
+        $typeIdField = $params['typeIdField'];
+        $typeId = $data[$typeIdField];
+        $column = $params['column'];
+        $db = db_connect();
+        $queryResult = $db->table('equipments')
+            ->select('1')
+            ->where($column, $value)
+            ->where('type_id', $typeId)
+            ->get(1)->getResultArray();
+        if (count($queryResult) === 0) {
             $error = sprintf(
-                'The equipment %s is already assembled into another one.',
-                $childId
+                '%s %s doesn\'t exist for the selected type.',
+                ucfirst($fieldName),
+                $value
             );
             return false;
         }
+        return true;
+    }
 
-        if (!$equipmentModel->equipHasSlot($parentId, $slotName)){
-            $error = sprintf(
-                'Equipment %s doesn\'t have the selected slot',
-                $parentId
-            );
-            return false;
+    public static function processSlotError(string $error, int $slotIdx){
+        return sprintf(
+            'Slot %d: %s',
+            $slotIdx,
+            $error
+        );
+    }
+
+    /**
+     * Checks if the slots are valid for assemble
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Parameters for the check
+     */
+    public static function validAssemblySlots(string $fieldName, array &$data, string &$error, array $params): bool
+    {
+        $parentId = $data[$params['parent_id_field']];
+        foreach ($data[$fieldName] as $index => &$assemblySlot) {
+            if (!GeneralRules::required('name', $assemblySlot, $error, [])) {
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+            if (!GeneralRules::required('equipment_id', $assemblySlot, $error, [])) {
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+
+            if (!self::idIsSanitized('equipment_id', $assemblySlot, $error, [])) {
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+            if (!EquipmentTypeRules::slotNameIsSanitized('name', $assemblySlot, $error, [])) {
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+
+            if (!DatabaseRules::isNotUnique('equipment_id', $assemblySlot, $error, ['table' => 'equipments', 'column' => 'id'])) {
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+
+            if (!DatabaseRules::isNotUnique('name', $assemblySlot, $error, ['table' => 'type_slots', 'column' => 'name'])) {
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+
+            $equipmentModel = model('EquipmentModel');
+            if ($equipmentModel->equipIsAssembledInto($assemblySlot['equipment_id'])) {
+                $error = sprintf(
+                    '%s: The equipment %s is already assembled into another one.',
+                    $assemblySlot['name'],
+                    $assemblySlot['equipment_id']
+                );
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+    
+            if (!$equipmentModel->equipHasSlot($parentId, $assemblySlot['name'])) {
+                $error = sprintf(
+                    '%s: Equipment %s doesn\'t have the selected slot',
+                    $assemblySlot['name'],
+                    $parentId
+                );
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+    
+            if (!$equipmentModel->equipSlotIsEmpty($parentId, $assemblySlot['name'])) {
+                $error = sprintf(
+                    '%s: Selected slot from equipment %s is in use.',
+                    $assemblySlot['name'],
+                    $parentId
+                );
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+    
+            if (!model('EquipmentTypeModel')->slotAllowsEquip($assemblySlot['name'], $assemblySlot['equipment_id'])) {
+                $error = sprintf(
+                    '%s: Slot is available but does not allow insertion of equipment %s.',
+                    $assemblySlot['name'],
+                    $assemblySlot['equipment_id']
+                );
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+
         }
+        return true;
+    }
 
-        if (!$equipmentModel->equipSlotIsEmpty($parentId, $slotName)){
-            $error = sprintf(
-                'Selected slot from equipment %s is in use.',
-                $parentId
-            );
-            return false;
+    /**
+     * Returns the rules for registering a new equipment based on its type.
+     * Useful for equipment types that have custom rules for registering.
+     * @param string $typeName Name of the equipment type
+     * @return array Rules for registering a new equipment
+     * @see Validator::validate
+     */
+    public static function getRegisterRulesFromTypeName(string $typeName = ''): array
+    {
+        helper('string');
+        $specificRuleMethod = sprintf(
+            'get%sRegisterRule',
+            makeCamelCase($typeName)
+        );
+        if (method_exists(self::class, $specificRuleMethod)) {
+            $rules = self::$specificRuleMethod();
+        } else {
+            $rules = self::getDefaultRegisterRule();
         }
+        return $rules;
+    }
 
-        if (!model('EquipmentTypeModel')->slotAllowsEquip($slotName, $childId)){
-            $error = sprintf(
-                'Slot is available but does not allow insertion of equipment %s.',
-                $childId
-            );
-            return false;
+    /**
+     * Returns the rules for editing an equipment based on its id.
+     * @param string $id Id of the equipment to edit
+     * @return array Rules for editing a new equipment
+     * @see Validator::validate
+     */
+    public static function getEditRulesFromId(string $id = ''): array
+    {
+        helper('string');
+        $equip = model('EquipmentModel')
+            ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
+            ->select('equipment_types.name as type_name')->find($id);
+        if (empty($equip->type_name)) {
+            throw new \Exception('Equipment not found for building the edit rules.');
         }
+        $specificRuleMethod = sprintf(
+            'get%sEditRule',
+            makeCamelCase($equip->type_name)
+        );
+        if (method_exists(self::class, $specificRuleMethod)) {
+            $rules = self::$specificRuleMethod();
+        } else {
+            $rules = self::getDefaultEditRule();
+        }
+        return $rules;
+    }
 
+    /**
+     * Returns the default rules for registering a new equipment.
+     * @return array Default rules for registering a new equipment
+     * @see Validator::validate
+     */
+    public static function getDefaultRegisterRule(): array
+    {
+        return [
+            'type_name' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentTypeRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'equipment_types',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'id' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
+                    ]
+                ]
+            ],
+            'owner_mne' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\InstituteRules::mneIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'institutes',
+                        'column' => 'mne'
+                    ]
+                ]
+            ],
+            'detector_location_name' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'detector_locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'location_name' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\LocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'status_name' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\StatusRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'statuses',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'serial' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\EquipmentRules::serialIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'serial'
+                    ]
+                ]
+            ],
+            'comments' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\EquipmentRules::commentsIsSanitized' => []
+            ]
+        ];
+    }
+
+    /**
+     * Returns the default rules for editing a new equipment.
+     * The rules consider that the field 'id' has been checked previously
+     * @return array Default rules for editing a new equipment
+     * @see Validator::validate
+     */
+    public static function getDefaultEditRule(): array
+    {
+        return [
+            'id' => [],
+            'owner_mne' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\InstituteRules::mneIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'institutes',
+                        'column' => 'mne'
+                    ]
+                ]
+            ],
+            'detector_location_name' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'detector_locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'location_name' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\LocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'status_name' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\StatusRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'statuses',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'serial' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\EquipmentRules::serialIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'serial'
+                    ]
+                ]
+            ],
+            'comments' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\EquipmentRules::commentsIsSanitized' => []
+            ]
+        ];
+    }
+
+    /**
+     * Returns the rules for registering a PMT.
+     * @return array Rules for registering a PMT
+     * @see Validator::validate
+     */
+    public static function getPmtRegisterRule(): array
+    {
+        return [
+            'type_name' => [
+                '\App\Validation\GeneralRules::isStrictlyEqual' => [
+                    'value' => 'PMT'
+                ],
+            ],
+            'serial' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::serialIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'serial'
+                    ]
+                    ],
+                '\App\Validation\EquipmentRules::buildPmtId' => []
+            ],
+            'id' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
+                    ]
+                ]
+            ],
+            'owner_mne' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\InstituteRules::mneIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'institutes',
+                        'column' => 'mne'
+                    ]
+                ]
+            ],
+            'detector_location_name' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'detector_locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'location_name' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\LocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'status_name' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\StatusRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'statuses',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'comments' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\EquipmentRules::commentsIsSanitized' => []
+            ],
+            'beta' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::isFloat' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ]
+            ],
+            'nominal_hv' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::isFloat' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ]
+                ],
+            'qe' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::isFloat' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ]
+            ],
+            'model' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::inList' => [
+                    'list' => self::$validPmtModelValues
+                ]
+                ],
+            'phase1_position' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::isInt' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ],
+                '\App\Validation\GeneralRules::smallerThan' => [
+                    'value' => 50
+                ],
+            ]
+        ];
+    }
+
+    /**
+     * Returns the rules for editing a PMT.
+     * @return array Rules for editing a PMT
+     * @see Validator::validate
+     */
+    public static function getPmtEditRule(): array
+    {
+        return [
+            'id' => [],
+            'owner_mne' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\InstituteRules::mneIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'institutes',
+                        'column' => 'mne'
+                    ]
+                ]
+            ],
+            'detector_location_name' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'detector_locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'location_name' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\LocationRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'locations',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'status_name' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\StatusRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'statuses',
+                        'column' => 'name'
+                    ]
+                ]
+            ],
+            'comments' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\EquipmentRules::commentsIsSanitized' => []
+            ],
+            'beta' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::isFloat' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ]
+            ],
+            'nominal_hv' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::isFloat' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ]
+                ],
+            'qe' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::isFloat' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ]
+            ],
+            'model' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::inList' => [
+                    'list' => self::$validPmtModelValues
+                ]
+                ],
+            'phase1_position' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::isInt' => [
+                    'cast' => true
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'value' => 0
+                ],
+                '\App\Validation\GeneralRules::smallerThan' => [
+                    'value' => 50
+                ],
+            ]
+        ];
+    }
+
+    public static function buildPmtId(string $fieldName, array &$data, string &$error, array $params): bool
+    {
+        $data['id'] = sprintf(
+            '0%s',
+            $data['serial']);
         return true;
     }
 }

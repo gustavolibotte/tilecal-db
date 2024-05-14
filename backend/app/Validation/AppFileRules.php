@@ -5,79 +5,78 @@ use ValueError;
 
 class AppFileRules{
 
-    private static int $maxFileSize = 5000000;  //Bytes
-    public static int $maxNameSize = 100;
     public static int $maxDescriptionSize = 65535;
     public static int $minDescriptionSize = 10;
-    public static string $fileIdRegex = '/^[0-9]$/';
     public static int $nameMaxLength = 100;
     public static int $nameMinLength = 1;
-    public static string $nameRegex = '/^[A-Za-z_]+$/';
+    public static string $nameRegex = '/^.*$/';
+
+    public static string $idRegex = '/^[0-9]+$/';
+
+    public static int $pathMaxLength = 300;
+
+    public static string $pathStartsWith = 'https://cernbox.cern.ch';
 
     /**
-     * Checks if the file id value is sanitized
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
+     * Checks if the id value is sanitized
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Ignored
+     * @return bool True if the value is sanitized
+     * @see StringRules::regexMatch
+     * @see Validator::validate
      */
-    public function file_id_is_sanitized($value, ?string &$error): bool
+    public static function idIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
-        helper('string_validation');
-        return regex_match($value, Self::$fileIdRegex, 'File Id', $error);
+        return StringRules::regexMatch($fieldName, $data, $error, ['regex' => self::$idRegex]);
     }
 
     /**
      * Checks if the file name value is sanitized
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Ignored
+     * @return bool True if the value is sanitized
+     * @see StringRules::regexMatch
+     * @see StringRules::minLength
+     * @see StringRules::maxLength
+     * @see Validator::validate
      */
-    public function file_name_is_sanitized($value, ?string &$error): bool
+    public static function nameIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
-        helper('string_validation');
-        $fieldName = 'File name';
         return (
-            max_length($value, Self::$nameMaxLength, $fieldName, $error) &&
-            min_length($value, Self::$nameMinLength, $fieldName, $error) &&
-            regex_match($value, Self::$fileIdRegex, $fieldName, $error)
+            StringRules::regexMatch($fieldName, $data, $error, ['regex' => self::$nameRegex]) &&
+            StringRules::minLength($fieldName, $data, $error, ['length' => self::$nameMinLength]) &&
+            StringRules::maxLength($fieldName, $data, $error, ['length' => self::$nameMaxLength])
         );
     }
 
     /**
      * Checks if the file description value is sanitized
-     * @param $value  Value given by CodeIgniter validator
-     * @param ?string &$error Ignored
+     * @param string $fieldName Name of the field to check
+     * @param array $data Data array to check
+     * @param string $error Error message to return if the check fails
+     * @param array $params Ignored
+     * @return bool True if the value is sanitized
+     * @see StringRules::minLength
+     * @see StringRules::maxLength
+     * @see Validator::validate
      */
-    public function file_description_is_sanitized($value, ?string &$error): bool
+    public static function descriptionIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
-        $fieldName = 'File description';
         return (
-            max_length($value, Self::$maxDescriptionSize, $fieldName, $error) &&
-            min_length($value, Self::$minDescriptionSize, $fieldName, $error)
+            StringRules::minLength($fieldName, $data, $error, ['length' => self::$minDescriptionSize]) &&
+            StringRules::maxLength($fieldName, $data, $error, ['length' => self::$maxDescriptionSize])
         );
     }
 
-    public static function getMaxFileSize(string $size): int
+    public static function pathIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
-        if ($size === 'B' || $size === 'Bytes') {
-            return Self::$maxFileSize;
-        } elseif ($size === 'kB'){
-            return Self::$maxFileSize/1000;
-        } elseif ($size === 'MB'){
-            return Self::$maxFileSize/1000000;
-        }
-        throw new ValueError(sprintf('%s not valid for $size', $size));
-    }
-
-    public function local_mime_in($value, string $params, array $data, ?string &$error): bool
-    {
-        $filepath = $value;
-        $validMimes = explode(',', $params);
-        $fileMime = mime_content_type($filepath);
-        return in_array($fileMime, $validMimes);
-    }
-
-    public function local_file_exists($value): bool
-    {
-        $filepath = $value;
-        return file_exists($filepath);
+        return (
+            StringRules::startsWith($fieldName, $data, $error, ['prefix' => self::$pathStartsWith]) &&
+            StringRules::maxLength($fieldName, $data, $error, ['length' => self::$pathMaxLength])
+        );
     }
 }

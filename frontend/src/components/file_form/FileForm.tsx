@@ -6,15 +6,16 @@ import FormText from '../form_text/FormText';
 import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
 import FormTextArea from '../form_text_area/FormTextArea';
 import { Button } from 'primereact/button';
+import * as Yup from 'yup';
 
 import './file_form.css';
-import FormFile from '../form_file/FormFile';
 import { useRef } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
+import { fileDescriptionRules, fileNameRules, filePathRules } from '../../utils/validation_rules';
 
 interface FileFormSchema {
   name: string;
-  file?: File;
+  path: string;
   description: string;
 }
 
@@ -25,12 +26,9 @@ interface FileFormProps {
 
 export default function FileForm({ fileId, onSuccess }: FileFormProps) {
 
-  const initialValues = {
-    name: '', description: '', file: undefined
-  };
-
-  const headers = {
-    'Content-Type': 'multipart/form-data'
+  const isEdit = fileId? true: false;
+  const initialValues: FileFormSchema = {
+    name: '', description: '', path: ''
   };
 
   const toastId = useRef<Id>();
@@ -38,8 +36,7 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
   const fileMutation = useMutation({
     mutationFn: makeMutationFunction(
       'post',
-      fileId? getEndpoint('file_put'): getEndpoint('file'),
-      headers),
+      fileId? getEndpoint('file_put'): getEndpoint('file')),
     onMutate: () => {
       toastId.current = toast.info('Uploading file.', midTransactionToastConfig);
     },
@@ -48,7 +45,7 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
       if (fileId){
         toast.success('File edited with success');
       } else{
-        toast.success('File uploaded with success');
+        toast.success('File registered with success');
       }
       if (onSuccess){
         onSuccess();
@@ -59,33 +56,41 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
       toast.dismiss(toastId.current);
       // The following "?" fields are guaranteed with the app
       const responseData: any = error?.response?.data;
+      console.log(error)
       if (responseData.message == __INVALID_DATA_MSG__) {
         Object.keys(responseData.data).forEach((key: string) => {
           formik.setFieldError(key as keyof FileFormSchema, responseData.data[key]);
         });
       } else {
         toast.error(__DEFAULT_ERROR_MSG__);
-        console.log(error);
       }
     },
   });
 
-  const submitData = async (data: FileFormSchema) => {
-    const formData = new FormData();
-    if (data.file){
-      formData.append('file', data.file);
-    }
+  const submitData = async (data: any) => {
+    console.log('SUBMITTING');
+    console.log(data);
     if (fileId){
-      formData.append('id', fileId);
+      data.id = fileId;
     }
-    formData.append('name', data.name);
-    formData.append('description', data.description);
-    fileMutation.mutate(formData);
+    fileMutation.mutate(data);
+  }
+
+  const validationSchema = {
+    name: fileNameRules,
+    path: filePathRules,
+    description: fileDescriptionRules
+  };
+  if (!isEdit){
+    validationSchema.name = validationSchema.name.required(__FIELD_REQUIRED_MSG__);
+    validationSchema.path = validationSchema.path.required(__FIELD_REQUIRED_MSG__);
+    validationSchema.description = validationSchema.description.required(__FIELD_REQUIRED_MSG__);
   }
 
   const formik = useFormik({
     initialValues: initialValues,
-    onSubmit: submitData
+    onSubmit: submitData,
+    validationSchema: Yup.object(validationSchema)
   });
 
   const getFormErrorMessage = (name: keyof FileFormSchema): string | null => {
@@ -101,35 +106,40 @@ export default function FileForm({ fileId, onSuccess }: FileFormProps) {
             name='Name'
             value={formik.values.name}
             help='File name'
-            required={fileId? false: true}
+            required={!isEdit}
             onChange={(e) => {
               formik.setFieldValue('name', e.target.value);
             }}
-            errorText={getFormErrorMessage('name')} />
+            errorText={getFormErrorMessage('name')}
+            placeholder='filename.png' />
+        </div>
+        <div className='mt-3'>
+          <FormText
+            id='path'
+            name='Path'
+            value={formik.values.path}
+            help='CERNBox link to file location'
+            required={!isEdit}
+            onChange={(e) => {
+              formik.setFieldValue('path', e.target.value);
+            }}
+            errorText={getFormErrorMessage('path')}
+            placeholder='https://cernbox.cern.ch/public-link-to-file-or-directory' />
         </div>
         <div className='mt-3'>
           <FormTextArea
             id='description'
             name='Description'
             value={formik.values.description}
-            help='Max size of 60000 characters - Optional'
+            help='Max size of 60000 characters'
             placeholder='Brief summary of file content.'
+            required={!isEdit}
             onChange={(e) => {
               formik.setFieldValue('description', e.target.value);
             }}
             errorText={getFormErrorMessage('description')} />
         </div>
-        <div className='mt-3'>
-          <FormFile
-            id='file'
-            name='File'
-            help={`File to upload (${__MAX_FILE_SIZE__/1000000}MB max size)`}
-            onChange={(event: any) => {
-              formik.setFieldValue("file", event.currentTarget.files[0]);
-            }}
-            errorText={getFormErrorMessage('file')} />
-        </div>
-        <div className='mt-3'><Button type="submit" label="Upload" icon="pi pi-file-import"/></div>
+        <div className='mt-3'><Button type="submit" label="Submit"/></div>
       </form>
     </div>
   )

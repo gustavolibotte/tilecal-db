@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use CodeIgniter\HTTP\ResponseInterface;
 use Throwable;
+use App\Validation\Validator;
 
 class EquipmentType extends APIController
 {
@@ -20,21 +21,19 @@ class EquipmentType extends APIController
     {
         $inputRules = [
             'type_name' => [
-                'rules' => [
-                    'permit_empty',
-                    'equipment_type_name_is_sanitized'
-                ],
-                'errors' => []
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\EquipmentTypeRules::nameIsSanitized' => [],
             ]
         ];
-        $res = $this->getValidatedData($inputRules);
-        if (!$res['valid']){
-            return $this->failValidationErrors($res['errors']);
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
         }
-        $inputData = $res['data'];
+        $validInput = $validationRes['validatedData'];
 
         $equipmentTypeModel = model('EquipmentTypeModel');
-        $this->parseFilterCondition($inputData['type_name'], 'equipment_types.name', $equipmentTypeModel);
+        $this->parseFilterCondition($validInput['type_name'], 'equipment_types.name', $equipmentTypeModel);
         $data = $equipmentTypeModel
             ->joinWithGroupedTypeSlots()
             ->select('name')

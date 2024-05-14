@@ -79,6 +79,14 @@ $routes->group('api', static function ($routes){
         'filter' =>['api_auth', 'action:view'],
         'as' => 'api_equipment_children'
     ]);
+    $routes->post('equipment/relate-file', 'Equipments::relateFile', [
+        'filter' =>['api_auth', 'action:edit'],
+        'as' => 'api_equipment_relate_file'
+    ]);
+    $routes->post('equipment/unrelate-file', 'Equipments::unrelateFile', [
+        'filter' =>['api_auth', 'action:edit'],
+        'as' => 'api_equipment_unrelate_file'
+    ]);
 
     // EquipmentTypes API
     $routes->get('equipment-type', 'EquipmentType::get',[
@@ -130,18 +138,10 @@ $routes->group('api', static function ($routes){
     $routes->delete('file', 'Files::delete', [
         'filter' =>['api_auth', 'action:delete'],
         'as' => 'api_file_delete'
-        ]);
+    ]);
     $routes->patch('file', 'Files::restore', [
         'filter' =>['api_auth', 'action:delete'],
         'as' => 'api_file_restore'
-        ]);
-    $routes->get('file/download', 'Files::download', [
-        'filter' => ['api_auth', 'action:download'],
-        'as' => 'api_file_download'
-    ]);
-    $routes->get('file/download-hist', 'Files::downloadHist', [
-        'filter' =>['api_auth', 'action:view'],
-        'as' => 'api_file_download_hist'
     ]);
 
     // User API
