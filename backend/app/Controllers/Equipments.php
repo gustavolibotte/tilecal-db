@@ -590,7 +590,7 @@ class Equipments extends APIController
             ->first()->id;
         // I don't now why but calling delete after the where clause raises the error
         // "Deletes are not allowed unless they contain a \"where\" or \"like\" clause."
-        model('Equipment2FileModel')->delete($relationId); 
+        model('Equipment2FileModel')->delete($relationId, purge: true); 
         helper('response');
         return buildAPIResponse(
             200,

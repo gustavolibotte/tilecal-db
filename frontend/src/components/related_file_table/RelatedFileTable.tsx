@@ -72,7 +72,6 @@ export default function RelatedFileTable({ equipmentId }: RelatedFileTableProps)
       file_name: rowData.name,
       equipment_id: equipmentId
     }
-    console.log(mutationData)
     return (
       <ButtonConfirmation
         actionIcon='pi pi-trash'
