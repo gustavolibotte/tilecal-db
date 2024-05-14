@@ -1,9 +1,9 @@
 import * as Yup from 'yup';
 
 export const equipIdRules = Yup.string().matches(
-  /^([A-Z0-9]{7}|[A-Z0-9]{14})+$/,
+  /^([A-Z0-9]{7}|[A-Z0-9]{14}|20LLCHI10V[0-9]{5})+$/,
   "Should be 7 or 14 characters long. Uppercase letters and numbers only"
-);
+);  // The extra condition 20LLCHI... refers to mainboard IDs that were issued with an extra character V
 
 export const serialRules = Yup.string().max(
   36, "Serial max size is ${max} characters.").matches(
