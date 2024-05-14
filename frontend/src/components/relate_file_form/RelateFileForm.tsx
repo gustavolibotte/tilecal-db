@@ -97,7 +97,7 @@ export default function RelateFileForm({ equipmentId }: RelateFileFormProps) {
       name='Equipment ID'
       value={formik.values.equipment_id}
       help='Equipment ID (Field is frozen)'
-      onChange={(e) => {}}
+      onChange={() => {}}
       errorText={getFormErrorMessage('equipment_id')} />
   } else {
     equipmentIdField = <FormText

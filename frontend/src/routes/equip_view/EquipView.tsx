@@ -8,7 +8,6 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import EquipForm from '../../components/equip_form/EquipForm';
 import PmtForm from '../../components/pmt_form/PmtForm';
-import FileTable from '../../components/file_table/FileTable';
 import NotFound from '../../components/not_found/NotFound';
 import RelatedEquipTable from '../../components/related_equip_table/RelatedEquipTable';
 import EquipHistTable from '../../components/equip_hist/EquipHistTable';
