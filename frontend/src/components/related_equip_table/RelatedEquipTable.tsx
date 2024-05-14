@@ -62,7 +62,7 @@ export default function RelatedEquipTable(props: RelatedEquipTableProps) {
     onError: (error: AxiosError) => {
       console.log(error);
       toast.dismiss(toastId.current);
-      toast.error('An error has occured.');
+      toast.error(__DEFAULT_ERROR_MSG__);
     }
   });
 

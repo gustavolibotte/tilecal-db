@@ -17,6 +17,8 @@ interface EndpointType {
   equipment_disassemble: string;
   file_download: string;
   file_download_hist: string;
+  file_relation: string;
+  file_unrelate: string;
 }
 
 const ENDPOINT: EndpointType = {
@@ -35,7 +37,9 @@ const ENDPOINT: EndpointType = {
   equipment_assemble: 'api/equipment/assemble',
   equipment_disassemble: 'api/equipment/disassemble',
   file_download: 'api/file/download',
-  file_download_hist: 'api/file/download-hist'
+  file_download_hist: 'api/file/download-hist',
+  file_relation: 'api/equipment/relate-file',
+  file_unrelate: 'api/equipment/unrelate-file'
 };
 
 export function getEndpoint(name: keyof EndpointType): string{
