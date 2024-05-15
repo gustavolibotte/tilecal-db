@@ -5,10 +5,6 @@ namespace App\Filters;
 use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
-use Exception;
-use Jumbojett\OpenIDConnectClient;
-use Firebase\JWT\JWK;
-use Firebase\JWT\JWT;
 use Throwable;
 
 class Authentication implements FilterInterface
@@ -37,7 +33,7 @@ class Authentication implements FilterInterface
                 return addCorsHeaders($res);
             }
         } catch (Throwable $e){
-            $env = \Config\Services::env();
+            $env = \Config\Services::environment();
             if ($env->isLocal()){
                 return addCorsHeaders(failInternalError($e));
             } else {
