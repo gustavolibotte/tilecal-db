@@ -89,7 +89,8 @@ class GeneralRules	{
             );
             return false;
         }
-        if ($params['cast'] && !is_float($data[$fieldName])){
+        $cast = $params['cast'] ?? false;
+        if ($cast && !is_float($data[$fieldName])){
             $data[$fieldName] = (float) $data[$fieldName];
         }
         return true;
@@ -193,8 +194,9 @@ class GeneralRules	{
         if (is_int($data[$fieldName])){
             return true;
         }
+        $cast = $params['cast'] ?? false;
         if (is_string($data[$fieldName]) && ctype_digit($data[$fieldName])) {
-            if ($params['cast']){
+            if ($cast){
                 $data[$fieldName] = (int) $data[$fieldName];
             }
             return true;
@@ -223,13 +225,14 @@ class GeneralRules	{
         if (is_bool($data[$fieldName])){
             return true;
         }
+        $cast = $params['cast'] ?? false;
         if (is_string($data[$fieldName]) && in_array($data[$fieldName], ['true', 'false'])){
-            if ($params['cast']){
+            if ($cast){
                 $data[$fieldName] = $data[$fieldName] === 'true';
             }
             return true;
         }
-        if (empty($data[$fieldName]) && $params['cast']){
+        if (empty($data[$fieldName]) && $cast){
             $data[$fieldName] = false;
             return true;
         }

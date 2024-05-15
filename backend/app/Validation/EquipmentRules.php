@@ -310,23 +310,18 @@ class EquipmentRules
     }
 
     /**
-     * Returns the rules for editing an equipment based on its id.
-     * @param string $id Id of the equipment to edit
+     * Returns the rules for editing a new equipment based on its type.
+     * Useful for equipment types that have custom rules for editing.
+     * @param string $typeName Name of the equipment type
      * @return array Rules for editing a new equipment
      * @see Validator::validate
      */
-    public static function getEditRulesFromId(string $id = ''): array
+    public static function getEditRulesFromTypeName(string $typeName = ''): array
     {
         helper('string');
-        $equip = model('EquipmentModel')
-            ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
-            ->select('equipment_types.name as type_name')->find($id);
-        if (empty($equip->type_name)) {
-            throw new \Exception('Equipment not found for building the edit rules.');
-        }
         $specificRuleMethod = sprintf(
             'get%sEditRule',
-            makeCamelCase($equip->type_name)
+            makeCamelCase($typeName)
         );
         if (method_exists(self::class, $specificRuleMethod)) {
             $rules = self::$specificRuleMethod();
@@ -338,22 +333,14 @@ class EquipmentRules
 
     /**
      * Returns the default rules for registering a new equipment.
+     * Attention: The rules consider that the field 'type_name' has been checked previously
      * @return array Default rules for registering a new equipment
      * @see Validator::validate
      */
     public static function getDefaultRegisterRule(): array
     {
         return [
-            'type_name' => [
-                '\App\Validation\GeneralRules::required' => [],
-                '\App\Validation\EquipmentTypeRules::nameIsSanitized' => [],
-                '\App\Validation\DatabaseRules::isNotUnique' => [
-                    'params' => [
-                        'table' => 'equipment_types',
-                        'column' => 'name'
-                    ]
-                ]
-            ],
+            'type_name' => [],
             'id' => [
                 '\App\Validation\GeneralRules::required' => [],
                 '\App\Validation\EquipmentRules::idIsSanitized' => [],
@@ -498,8 +485,16 @@ class EquipmentRules
         return [
             'type_name' => [
                 '\App\Validation\GeneralRules::isStrictlyEqual' => [
-                    'value' => 'PMT'
+                    'params' => [
+                        'value' => 'PMT'
+                    ]
                 ],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'equipment_types',
+                        'column' => 'name'
+                    ]
+                ]
             ],
             'serial' => [
                 '\App\Validation\GeneralRules::required' => [],
@@ -509,7 +504,7 @@ class EquipmentRules
                         'table' => 'equipments',
                         'column' => 'serial'
                     ]
-                    ],
+                ],
                 '\App\Validation\EquipmentRules::buildPmtId' => []
             ],
             'id' => [
@@ -533,7 +528,7 @@ class EquipmentRules
                 ]
             ],
             'detector_location_name' => [
-                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
@@ -569,46 +564,66 @@ class EquipmentRules
             'beta' => [
                 '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::isFloat' => [
-                    'cast' => true
+                    'params' => [
+                        'cast' => true
+                    ]
                 ],
                 '\App\Validation\GeneralRules::greaterThan' => [
-                    'value' => 0
+                    'params' => [
+                        'value' => 0
+                    ]
                 ]
             ],
             'nominal_hv' => [
                 '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::isFloat' => [
-                    'cast' => true
+                    'params' => [
+                        'cast' => true
+                    ]
                 ],
                 '\App\Validation\GeneralRules::greaterThan' => [
-                    'value' => 0
+                    'params' => [
+                        'value' => 0
+                    ]
                 ]
-                ],
+            ],
             'qe' => [
                 '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::isFloat' => [
-                    'cast' => true
+                    'params' => [
+                        'cast' => true
+                    ]
                 ],
                 '\App\Validation\GeneralRules::greaterThan' => [
-                    'value' => 0
+                    'params' => [
+                        'value' => 0
+                    ]
                 ]
             ],
             'model' => [
                 '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::inList' => [
-                    'list' => self::$validPmtModelValues
-                ]
+                    'params' => [
+                        'values' => self::$validPmtModelValues
+                    ]
                 ],
+            ],
             'phase1_position' => [
                 '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\GeneralRules::isInt' => [
-                    'cast' => true
+                    'params' => [
+                        'cast' => true
+                    ]
                 ],
                 '\App\Validation\GeneralRules::greaterThan' => [
-                    'value' => 0
+                    'params' => [
+                        'value' => 0
+                    ]
                 ],
                 '\App\Validation\GeneralRules::smallerThan' => [
-                    'value' => 50
+                    'params' => [
+                        'value' => 50
+                    ]
                 ],
             ]
         ];
@@ -668,48 +683,68 @@ class EquipmentRules
                 '\App\Validation\EquipmentRules::commentsIsSanitized' => []
             ],
             'beta' => [
-                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\GeneralRules::isFloat' => [
-                    'cast' => true
+                    'params' => [
+                        'cast' => true
+                    ]
                 ],
                 '\App\Validation\GeneralRules::greaterThan' => [
-                    'value' => 0
+                    'params' => [
+                        'value' => 0
+                    ]
                 ]
             ],
             'nominal_hv' => [
-                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\GeneralRules::isFloat' => [
-                    'cast' => true
+                    'params' => [
+                        'cast' => true
+                    ]
                 ],
                 '\App\Validation\GeneralRules::greaterThan' => [
-                    'value' => 0
+                    'params' => [
+                        'value' => 0
+                    ]
                 ]
                 ],
             'qe' => [
-                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\GeneralRules::isFloat' => [
-                    'cast' => true
+                    'params' => [
+                        'cast' => true
+                    ]
                 ],
                 '\App\Validation\GeneralRules::greaterThan' => [
-                    'value' => 0
+                    'params' => [
+                        'value' => 0
+                    ]
                 ]
             ],
             'model' => [
-                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\GeneralRules::inList' => [
-                    'list' => self::$validPmtModelValues
+                    'params' => [
+                        'values' => self::$validPmtModelValues
+                    ]
                 ]
                 ],
             'phase1_position' => [
-                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\GeneralRules::isInt' => [
-                    'cast' => true
+                    'params' => [
+                        'cast' => true
+                    ]
                 ],
                 '\App\Validation\GeneralRules::greaterThan' => [
-                    'value' => 0
+                    'params' => [
+                        'value' => 0
+                    ]
                 ],
                 '\App\Validation\GeneralRules::smallerThan' => [
-                    'value' => 50
+                    'params' => [
+                        'value' => 50
+                    ]
                 ],
             ]
         ];
