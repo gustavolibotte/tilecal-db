@@ -113,16 +113,43 @@ class Equipments extends APIController
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
-        helper('response');
-        $inputData = $this->request->getVar(['type_name']);
-        $registerRules = EquipmentRules::getRegisterRulesFromTypeName($inputData['type_name']);
+        $typeRules = [
+            'type_name' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentTypeRules::nameIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'equipment_types',
+                        'column' => 'name'
+                    ]
+                ]
+            ]
+        ];
+        $inputData = $this->request->getVar(array_keys($typeRules));
+        $validationRes = Validator::validate($inputData, $typeRules);
+        helper(['response', 'app_array']);
+        if (!$validationRes['valid']) {
+            return failValidationErrors($validationRes['errors'], $inputData);
+        }
+
+        $typeName = $validationRes['validatedData']['type_name'];
+        $registerRules = EquipmentRules::getRegisterRulesFromTypeName($typeName);
         $inputData = $this->request->getVar(array_keys($registerRules));
         $validationRes = Validator::validate($inputData, $registerRules);
         if (!$validationRes['valid']) {
             return failValidationErrors($validationRes['errors'], $inputData);
         }
 
+        $equipType = model('EquipmentTypeModel')
+            ->select('params')
+            ->where('name', $typeName)
+            ->first();
         $validInput = $validationRes['validatedData'];
+        $validInput['type_params'] = [];
+        foreach($equipType->params as $param) {
+            $validInput['type_params'][$param] = remove_value($param, $validInput, false);
+        }
+
         $equipment = new Equipment($validInput);
         model('EquipmentModel')->insert($equipment);
         return $this->respondCreated($equipment->id);
@@ -146,7 +173,7 @@ class Equipments extends APIController
                 '\App\Validation\EquipmentRules::idIsSanitized' => [],
             ]
         ];
-        $inputData = $this->getRequestValuesFromRules($inputRules);
+        $inputData = $this->request->getVar(array($inputRules));
         $validationRes = Validator::validate($inputData, $inputRules);
         if (!$validationRes['valid']) {
             return failValidationErrors($validationRes['errors'], $inputData);
@@ -192,24 +219,33 @@ class Equipments extends APIController
         ];
         $inputData = $this->request->getVar(array_keys($idRules));
         $validationRes = Validator::validate($inputData, $idRules);
-        helper('response');
+        helper(['response', 'app_array']);
         if (!$validationRes['valid']) {
             return failValidationErrors($validationRes['errors'], $inputData);
         }
         $id = $validationRes['validatedData']['id'];
-
-        $equipRules = EquipmentRules::getEditRulesFromId($id);
+        $queryData = model('EquipmentModel')
+            ->join('equipment_types et', 'equipments.type_id = et.id', 'left')
+            ->select('equipments.type_params as type_params')
+            ->select('et.name as type_name')
+            ->select('et.params as params')
+            ->find($id);
+        $equipRules = EquipmentRules::getEditRulesFromTypeName($queryData->type_name);
         $inputData = $this->request->getVar(array_keys($equipRules));
-        echo "Validating full input data\n";
         $validationRes = Validator::validate($inputData, $equipRules);
         if (!$validationRes['valid']) {
             return failValidationErrors($validationRes['errors'], $inputData);
         }
         $validInput = $validationRes['validatedData'];
-        $id = $validInput['id'];
-        unset($validInput['id']);
-        model('EquipmentModel')->update($id, $validInput);
-
+        $validInput['type_params'] = $queryData->type_params;
+        foreach(json_decode($queryData->params, true) as $param) {
+            if (array_key_exists($param, $validInput)) {
+                $validInput['type_params'][$param] = remove_value($param, $validInput);
+            }
+        }
+        echo json_encode($validInput);
+        $equip = new Equipment($validInput);
+        model('EquipmentModel')->update($equip->id, $equip);
         return respondUpdated($id, $inputData, $validInput);
     }
 
