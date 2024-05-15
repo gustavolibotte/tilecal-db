@@ -28,7 +28,7 @@ interface PMTFormSchema {
   status_name: string;
   serial: string;
   comments: string;
-  detector_location: string;
+  detector_location_name: string;
   type_name?: string;
   beta: number | null;
   qe: number | null;
@@ -68,7 +68,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     status_name: '',
     serial: '',
     comments: '',
-    detector_location: '',
+    detector_location_name: '',
     beta: null,
     qe: null,
     nominal_hv: null,
@@ -252,15 +252,15 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
         </div>
         <div className='mt-3'>
           <FormDropdown
-            id='detector_location'
+            id='detector_location_name'
             name='Detector Location'
             options={detectorLocations}
-            value={formik.values.detector_location}
+            value={formik.values.detector_location_name}
             help='Where in the detector the equipment should be.'
             onChange={(e) => {
-              formik.setFieldValue('detector_location', e.value);
+              formik.setFieldValue('detector_location_name', e.value);
             }}
-            errorText={getFormErrorMessage('detector_location')} />
+            errorText={getFormErrorMessage('detector_location_name')} />
         </div>
         <div className='mt-3'>
           <FormText
