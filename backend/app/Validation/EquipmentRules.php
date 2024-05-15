@@ -129,7 +129,7 @@ class EquipmentRules
      * @return bool True if the value is sanitized
      * @see StringRules::maxLength
      */
-    public static function equipmentCommentsIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
+    public static function commentsIsSanitized(string $fieldName, array $data, string &$error, array $params): bool
     {
         $approved = (
             StringRules::maxLength($fieldName, $data, $error, ['length' => self::$commentsMaxSize])
@@ -528,7 +528,7 @@ class EquipmentRules
                 ]
             ],
             'detector_location_name' => [
-                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\DetectorLocationRules::nameIsSanitized' => [],
                 '\App\Validation\DatabaseRules::isNotUnique' => [
                     'params' => [
