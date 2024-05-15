@@ -173,7 +173,7 @@ class Equipments extends APIController
                 '\App\Validation\EquipmentRules::idIsSanitized' => [],
             ]
         ];
-        $inputData = $this->request->getVar(array($inputRules));
+        $inputData = $this->request->getVar(array_keys($inputRules));
         $validationRes = Validator::validate($inputData, $inputRules);
         if (!$validationRes['valid']) {
             return failValidationErrors($validationRes['errors'], $inputData);
