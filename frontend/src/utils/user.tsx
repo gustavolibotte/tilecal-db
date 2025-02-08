@@ -15,6 +15,20 @@ export class User{
     this.roles = roles;
   }
 
+  get highestRole(): string{
+    if (this.isAdmin()){
+      return 'admin';
+    } else if (this.isDeleter()){
+      return 'deleter';
+    } else if (this.isEditor()){
+      return 'editor';
+    } else if (this.isViewer()){
+      return 'viewer';
+    } else {
+      return 'none';
+    }
+  }
+
   isRole(role: string): Boolean{
     return this.roles.includes(makeSnakeCase(role));
   }

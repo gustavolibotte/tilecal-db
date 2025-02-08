@@ -108,7 +108,7 @@ export default function Header() {
 
   let end;
   if (user) {
-    end = <span className="p-menuitem-text text-s">{user.username}</span>;
+    end = <span className="p-menuitem-text text-s">{user.username} - {user.highestRole}</span>;
   } else {
     end = <span className="p-menuitem-text text-s">Loading</span>;
   }
