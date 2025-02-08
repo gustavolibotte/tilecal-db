@@ -204,7 +204,10 @@ class EquipmentModel extends LogModel
      *  
      * @return bool Always true
      */
-    public function addParent(string $childId, string $parentId, int $slotId): bool
+    public function addParent(string $childId,
+                              string $parentId,
+                              int $slotId,
+                              bool $updateStatus = false): bool
     {
         $parentChildModel = model('ParentChildModel');
         $parentChildModel->insert([
@@ -212,6 +215,15 @@ class EquipmentModel extends LogModel
             'child_equip_id' => $childId,
             'slot_id' => $slotId
         ]);
+        if ($updateStatus){
+            $statusModel = model('StatusModel');
+            $status = $statusModel->where('name', 'Assembled')->first();
+            $child = new Equipment([
+                'id' => $childId,
+                'status_id' => $status->id
+            ]);
+            $this->update($childId, $child);
+        }
         return true;
     }
 
@@ -230,9 +242,12 @@ class EquipmentModel extends LogModel
         $this->deleteParent($childId);
         $this->addParent($childId, $parentId, $slotId);
         $parent = $this->select('location_id')->find($parentId);
+        $statusModel = model('StatusModel');
+        $status = $statusModel->where('name', 'Installed')->first();
         $child = new Equipment([
             'id' => $childId,
-            'location_id' => $parent->location_id
+            'location_id' => $parent->location_id,
+            'status_id' => $status->id
         ]);
         $this->update($childId, $child);
         $this->db->transCommit();
@@ -247,13 +262,23 @@ class EquipmentModel extends LogModel
      * 
      * @return bool Always true
      */
-    public function deleteParent(string $childId): bool
+    public function deleteParent(string $childId,
+                                 bool $updateStatus = false): bool
     {
         $this->db->transException(true)->transBegin();
         $parentChildModel = model('ParentChildModel');
         $relations = $parentChildModel->where('child_equip_id', $childId)->findAll();
         foreach ($relations as $relation) {
             $parentChildModel->delete($relation->id, purge: true);
+        }
+        if ($updateStatus){
+            $statusModel = model('StatusModel');
+            $status = $statusModel->where('name', 'Stored')->first();
+            $child = new Equipment([
+                'id' => $childId,
+                'status_id' => $status->id
+            ]);
+            $this->update($childId, $child);
         }
         $this->db->transCommit();
         return true;
@@ -298,6 +323,13 @@ class EquipmentModel extends LogModel
         foreach ($relations as $relation) {
             $parentChildModel->delete($relation->id, purge: true);
         }
+        $statusModel = model('StatusModel');
+        $status = $statusModel->where('name', 'Stored')->first();
+        $child = new Equipment([
+            'id' => $childId,
+            'status_id' => $status->id
+        ]);
+        $this->update($childId, $child);
         $this->db->transCommit();
         return true;
     }
