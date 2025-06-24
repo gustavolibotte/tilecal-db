@@ -2,8 +2,8 @@
 FROM php:8.2.7
 EXPOSE 8080
 
-LABEL maintainer="Lucas Nunes"
-LABEL email="lucas.nunes@cern.ch"
+LABEL maintainer="Gustavo Libotte"
+LABEL email="gustavo.barbosa.libotte@cern.ch"
 
 ARG app_baseURL
 ARG app_indexPage
