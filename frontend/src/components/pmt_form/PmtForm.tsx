@@ -67,7 +67,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     location_name: '',
     status_name: '',
     serial: '',
-    comments: '',
+    comments: 'Was tested at ',
     detector_location_name: '',
     beta: null,
     qe: null,
