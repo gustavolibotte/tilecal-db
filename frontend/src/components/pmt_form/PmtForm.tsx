@@ -1,4 +1,3 @@
-
 import { useFormik } from 'formik';
 import { Button } from 'primereact/button';
 import { Id, toast } from 'react-toastify';
@@ -7,12 +6,13 @@ import FormDropdown from '../form_dropdown/FormDropdown';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import {
+  defaultQueryFunction,
   getEndpoint,
   makeMutationFunction,
 } from '../../utils/DbClient';
 import FormNumber from '../form_number/FormNumber';
 import { range } from '../../utils/array';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
 import {
   commentsRules,
@@ -46,19 +46,33 @@ interface PmtFormProps {
 export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
 
   const locationQuery: any = useQuery({
-    queryKey: ['location', 'get', {}]
+    queryKey: ['location', 'get', {}],
+    queryFn: defaultQueryFunction
   });
 
   const instituteQuery: any = useQuery({
-    queryKey: ['institute', 'get', {}]
+    queryKey: ['institute', 'get', {}],
+    queryFn: defaultQueryFunction
   });
 
   const statusQuery: any = useQuery({
-    queryKey: ['status', 'get', {}]
+    queryKey: ['status', 'get', {}],
+    queryFn: defaultQueryFunction
   });
 
   const detectorLocationQuery: any = useQuery({
-    queryKey: ['detector_location', 'get', {}]
+    queryKey: ['detector_location', 'get', {}],
+    queryFn: defaultQueryFunction
+  });
+
+  const {
+    data: equipData,
+    isPending: isEquipPending
+  } = useQuery({
+    queryKey: ['equipment', 'get', { id: equipId }],
+    queryFn: defaultQueryFunction,
+    // This query will only run if equipId is provided
+    enabled: !!equipId,
   });
 
   let initialValues: PMTFormSchema = {
@@ -143,15 +157,47 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     validationSchema: Yup.object(validationSchema)
   });
 
+  // Use an effect to populate the form once the equipment data is fetched.
+  useEffect(() => {
+    // The API returns an array, so we take the first element.
+    const equipment = equipData?.data?.[0];
+
+    if (equipment) {
+      // Use setValues to populate the form with the fetched data.
+      formik.setValues({
+        ...initialValues, // Ensures all fields from the schema are present
+        ...equipment, // Overwrites with values from the API response
+        // Ensure null values from the API don't break the components
+        comments: equipment.comments || '',
+        owner_mne: equipment.owner_mne || '',
+        location_name: equipment.location_name || '',
+        status_name: equipment.status_name || '',
+        serial: equipment.serial || '',
+        detector_location_name: equipment.detector_location_name || '',
+        // Nested parameters need to be unpacked from 'type_params'
+        beta: equipment.type_params?.beta || null,
+        qe: equipment.type_params?.qe || null,
+        nominal_hv: equipment.type_params?.nominal_hv || null,
+        model: equipment.type_params?.model || '',
+        phase1_position: equipment.type_params?.phase1_position || ''
+      });
+    }
+  }, [equipData]); // This effect runs whenever equipData changes.
+
+
   const getFormErrorMessage = (name: keyof PMTFormSchema): string | null => {
     return !!(formik.touched[name] && formik.errors[name]) ? String(formik.errors[name]) : null;
   };
-
+  
+  // Add the new query's pending state to the overall loading check.
   const isPending = (
     locationQuery.isPending
     || instituteQuery.isPending
     || statusQuery.isPending
-    || detectorLocationQuery.isPending);
+    || detectorLocationQuery.isPending
+    || (isEdit && isEquipPending)
+  );
+
   if (isPending) {
     return 'Loading';
   }
