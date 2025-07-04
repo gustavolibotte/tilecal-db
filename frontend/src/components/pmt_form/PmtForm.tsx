@@ -110,10 +110,16 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
       } else {
         toast.success('Equipment registered with success.');
       }
+
+      // This calls the parent function which closes the dialog
       if (onSuccess) {
         onSuccess();
       }
-      formik.resetForm();
+
+      // Only reset the form if it was NOT an edit operation
+      if (!equipId) {
+        formik.resetForm();
+      }
     },
     onError: (error: AxiosError) => {
       toast.dismiss(toastId.current);

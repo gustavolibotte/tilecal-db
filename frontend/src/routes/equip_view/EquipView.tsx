@@ -102,6 +102,7 @@ export default function EquipView() {
       queryClient.invalidateQueries({
         queryKey: queryKey
       });
+      setVisibleEditForm(false);
     }
     let editForm;
     if (typeName == 'PMT'){
