@@ -4,9 +4,12 @@ namespace App\Validation;
 
 class EquipmentTypeRules
 {
-
-    public static $maxNameLength = 30;
-    public static $baseNameRegex = '/^[A-Za-z0-9 ]+$/';
+    // Updated to 100 characters to support longer names like "Active HV Divider (Long Cable)"
+    public static $maxNameLength = 100;
+    
+    // Regex updated to allow parentheses () and hyphens -
+    public static $baseNameRegex = '/^[A-Za-z0-9 \(\)\-]+$/';
+    
     public static $typeSlotIdRegex = '/^[0-9]+$/';
     public static $slotNameRegex = '/^[A-Za-z0-9_]+$/';
 
