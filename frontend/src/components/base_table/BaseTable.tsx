@@ -72,7 +72,7 @@ export function BaseTable(props: TableProps){
 
   const invalidateQuery = (): void => {
     queryClient.invalidateQueries({
-      queryKey: props.queryKey
+      queryKey: [props.queryKey[0], props.queryKey[1]]
     });   // Triggers query refetch
     clearFilter();
   }
@@ -83,9 +83,30 @@ export function BaseTable(props: TableProps){
   const [filters, setFilters] = useState<DataTableFilterMeta>(getClearFilters());
   const [visibleColumns, setVisibleColumns] = useState<ColumnProps[]>(props.columns);
 
+  const [lazyParams, setLazyParams] = useState({
+    first: 0,
+    rows: 10,
+    page: 0,
+  });
+
+  const queryParams = { 
+    ...props.queryKey[2], 
+    limit: lazyParams.rows, 
+    offset: lazyParams.first 
+  };
+  const paginatedQueryKey = [props.queryKey[0], props.queryKey[1], queryParams];
+
+  const onPage = (event: any) => {
+    setLazyParams({
+      first: event.first,
+      rows: event.rows,
+      page: event.page
+    });
+  };
+
   // Any exists only to deal with ts errors
   const {isError, isPending, data: response, error}: any = useQuery({
-    queryKey: props.queryKey,
+    queryKey: paginatedQueryKey,
   });
 
   if (isError){
@@ -99,6 +120,11 @@ export function BaseTable(props: TableProps){
       ref={dt}
       value={response.data}
       header={getHeader()}
+      lazy={true}
+      totalRecords={response.totalRecords || 0}
+      first={lazyParams.first}
+      rows={lazyParams.rows}
+      onPage={onPage}
       tableStyle={{ minWidth: '50rem' }}
       filters={filters}
       filterDisplay="menu"
@@ -106,8 +132,7 @@ export function BaseTable(props: TableProps){
       stripedRows
       paginator
       reorderableColumns
-      rows={10}
-      rowsPerPageOptions={[5, 10, 25, 50]}
+      rowsPerPageOptions={[5, 10, 25, 50, 100, 250, 500]} 
       sortMode={props.sortMode}
       multiSortMeta={props.multiSortMeta}
       removableSort
