@@ -57,6 +57,12 @@ class Equipments extends APIController
             ],
             'onlyDeleted' => [
                 '\App\Validation\GeneralRules::permitEmpty' => []
+            ],
+            'limit' => [
+                '\App\Validation\GeneralRules::permitEmpty' => []
+            ],
+            'offset' => [
+                '\App\Validation\GeneralRules::permitEmpty' => []
             ]
         ];
 
@@ -83,16 +89,31 @@ class Equipments extends APIController
         $equipmentModel = $this->parseDeletion($equipmentModel, !empty($validInput['onlyDeleted']));
 
         if (empty($validInput['relatedEquipmentId'])) {
-            $data = $equipmentModel->fullQuery()->findAll();
+            $queryModel = $equipmentModel->fullQuery();
+            
+            $totalRecords = $queryModel->countAllResults(false);
+
+            $limit = (isset($validInput['limit']) && $validInput['limit'] !== '') ? (int)$validInput['limit'] : 0;
+            $offset = (isset($validInput['offset']) && $validInput['offset'] !== '') ? (int)$validInput['offset'] : 0;
+
+            $data = $queryModel->findAll($limit, $offset);
         } else {
             $data = $equipmentModel->getRelatedEquipments($validInput['relatedEquipmentId']);
+            $totalRecords = count($data);
         }
+        
         helper('app_array');
         foreach ($data as &$sample) {
             $sample['type_params'] = json_decode($sample['type_params']);
         }
+        
+        $payload = [
+            'data' => $data,
+            'totalRecords' => $totalRecords
+        ];
+
         return respondQueryResults(
-            $data,
+            $payload,
             $inputData,
             $validInput
         );

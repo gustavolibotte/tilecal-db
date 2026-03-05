@@ -115,13 +115,19 @@ export function BaseTable(props: TableProps){
     return <p>An error has occurred when loading this table</p>;
   } else if (isPending){
     return <p>Loading...</p>;
-  } else{
+  } else {
+    // Essa lógica garante retrocompatibilidade com endpoints que não tem paginação
+    const responseData = response?.data || [];
+    const isPaginated = !Array.isArray(responseData) && responseData.data !== undefined;
+    const tableData = isPaginated ? responseData.data : responseData;
+    const totalRecords = isPaginated ? responseData.totalRecords : tableData.length;
+
     return (<DataTable
       ref={dt}
-      value={response.data}
+      value={tableData}
       header={getHeader()}
       lazy={true}
-      totalRecords={response.totalRecords || 0}
+      totalRecords={totalRecords}
       first={lazyParams.first}
       rows={lazyParams.rows}
       onPage={onPage}
