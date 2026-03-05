@@ -1,5 +1,6 @@
 import requests
 import os
+import json
 
 # Obtaining the access token
 url = "https://auth.cern.ch/auth/realms/cern/api-access/token"
@@ -35,5 +36,13 @@ response = requests.get(
     headers=headers
 )
 
+response_json = response.json()
+
+if isinstance(response_json, dict) and 'data' in response_json:
+    equipment_list = response_json['data']
+    print(f"Fetched {len(equipment_list)} items. Total in DB: {response_json.get('totalRecords')}")
+else:
+    equipment_list = response_json
+
 with open('equipment.json', 'w') as f:
-    f.write(response.text)
+    json.dump(equipment_list, f, indent=4)

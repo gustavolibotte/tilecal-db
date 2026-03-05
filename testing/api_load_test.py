@@ -10,9 +10,18 @@ class TileDbUser(HttpUser):
         'Authorization': f'Bearer {access_token}'
     }
 
-    @task
-    def get_equipment(self):
+    @task(3)
+    def get_equipment_paginated(self):
+        self.client.get(
+            f"{ENDPOINTS['equipment']}?limit=50&offset=0",
+            headers=self.base_headers,
+            name="/api/equipment (paginated)"
+        )
+        
+    @task(1)
+    def get_equipment_full(self):
         self.client.get(
             ENDPOINTS['equipment'],
-            headers=self.base_headers
-            )
+            headers=self.base_headers,
+            name="/api/equipment (full)"
+        )
