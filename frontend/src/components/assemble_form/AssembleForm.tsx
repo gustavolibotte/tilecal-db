@@ -22,6 +22,27 @@ interface AssembleFormProps{
   barcodeReaderSafe?: boolean;
 }
 
+const formatSlotLabel = (slotName: string): string => {
+  const mapping: Record<string, string> = {
+    'fenics': 'FENICS (Short Cable)',
+    'fenics_short': 'FENICS (Short Cable)',
+    'fenics_long': 'FENICS (Long Cable)',
+    'pmt': 'PMT',
+    'pmt_block': 'PMT Block',
+    'active_hv_divider': 'Active HV Divider (Short Cable)',
+    'active_hv_divider_short': 'Active HV Divider (Short Cable)',
+    'active_hv_divider_long': 'Active HV Divider (Long Cable)',
+    'mainboard': 'Mainboard',
+    'daughterboard': 'Daughterboard',
+    'hv_divider': 'HV Divider',
+    'hv_micro': 'HV Micro',
+    'adc': 'ADC',
+    'dac': 'DAC'
+  };
+  
+  return mapping[slotName.toLowerCase()] || snakeToSpaced(slotName);
+};
+
 export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSafe }: AssembleFormProps) {
 
   const [equipSlotErrors, setEquipSlotErrors] = useState<Array<ReactNode>>([]);
@@ -36,7 +57,6 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       id: extractSequentialNumber(parentId),
       slots: []
     };
-    //Adds slots from the form
     Object.entries(data).forEach(([name, id]) => {
       if (id.length){
         mutationData.slots.push({
@@ -54,7 +74,6 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   });
 
   const queryClient = useQueryClient();
-
   const toastId = useRef<Id>('');
 
   const assembleMutation = useMutation({
@@ -78,23 +97,19 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       setEquipSlotErrors([]);
     },
     onError: (error: AxiosError) => {
-      // The following "?" field types are guaranteed with the app architecture
-      console.log(error)
       toast.dismiss(toastId.current)
       const responseData: any = error?.response?.data;
-      console.log(responseData);
-      if (responseData.message == __INVALID_DATA_MSG__) {
+      if (responseData?.message === __INVALID_DATA_MSG__) {
         toast.error(__INVALID_DATA_MSG__)
         let errorTexts: Array<ReactNode> = [];
-        Object.values(responseData.data).forEach((value: any) => {
+        Object.values(responseData.data).forEach((value: any, idx: number) => {
           errorTexts.push(
-            <p>{value}</p>
+            <p key={idx}>{value}</p>
           );
         });
         setEquipSlotErrors(errorTexts);
       } else {
         toast.error(__DEFAULT_ERROR_MSG__);
-        console.log(error);
       }
     },
   });
@@ -109,23 +124,31 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     </div>;
   }
 
-  const equipTypeData = equipTypeQuery.data.data[0];
-  equipTypeData.slot_names.sort();
-  if (!equipTypeData.slot_names){
-    return <div className="card flex justify-content-center flex-column gap-2">
-      <h4>This equipment doesn't have slots to assemble.</h4>
-    </div>;
+  const responseData: any = equipTypeQuery.data?.data || [];
+  const equipTypeData = (!Array.isArray(responseData) && responseData.data !== undefined) 
+    ? responseData.data[0] 
+    : responseData[0];
+
+  if (!equipTypeData || !equipTypeData.slot_names || equipTypeData.slot_names.length === 0){
+    return (
+      <div className="card flex justify-content-center flex-column gap-2 text-yellow-600">
+        <h4>Note: This equipment type ({parentTypeName}) does not have predefined slots for assembly.</h4>
+      </div>
+    );
   }
+
+  const sortedSlots = [...equipTypeData.slot_names].sort();
+  
   const equipSlotFields: Array<any> = [];
-  equipTypeData.slot_names.forEach((slotName: string) => {
-    const spacedName = snakeToSpaced(slotName);
+  sortedSlots.forEach((slotName: string) => {
+    const formattedName = formatSlotLabel(slotName);
     const field =  (
-      <div className='mt-3'>
+      <div className='mt-3' key={slotName}>
         <FormText
           id={slotName}
-          name={spacedName}
-          value={formik.values[slotName]}
-          help={`Equipment to be assembled into ${spacedName}`}
+          name={formattedName}
+          value={formik.values[slotName] || ''}
+          help={`Equipment to be assembled into ${formattedName}`}
           onChange={(e) => {
             formik.setFieldValue(slotName, e.target.value);
           }}
@@ -133,10 +156,12 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       </div>);
     equipSlotFields.push(field)
     });
+
   const onKeyDown = barcodeReaderSafe? preventEnterDefault: undefined;
+  
   return (
     <div className="card flex justify-content-center flex-column gap-2">
-      {equipSlotErrors && <div className='text-red-500'>
+      {equipSlotErrors.length > 0 && <div className='text-red-500'>
         {equipSlotErrors}
       </div>}
     <form onSubmit={formik.handleSubmit} onKeyDown={onKeyDown}>
