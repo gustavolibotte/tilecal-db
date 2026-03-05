@@ -146,8 +146,13 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
 
   // Use an effect to populate the form once the equipment data is fetched
   useEffect(() => {
+    const responseData: any = equipData?.data || [];
+    const equipArray = (!Array.isArray(responseData) && responseData.data !== undefined) 
+      ? responseData.data 
+      : responseData;
+
     // The API returns an array, so we take the first element
-    const equipment = equipData?.data?.[0];
+    const equipment = equipArray[0];
 
     if (equipment) {
       // Use setValues to populate the form with the fetched data

@@ -12,15 +12,21 @@ export default function EquipAssembleComponents({parentId}: EquipAssembleCompone
   const {isError, isPending, data: response, error}: any = useQuery({
     queryKey: ['equipment', 'get', {id: cleanParentId}]
   });
+  
   if (isPending){
     return <h2>Loading...</h2>;
   } else if (isError){
     console.log('Error while querying equipment');
     console.log(error);
     return <h2>An error has occured</h2>;
-  } else{
-    if (response.data.length){
-      const equipData = response.data[0];
+  } else {
+    const responseData = response?.data || [];
+    const equipArray = (!Array.isArray(responseData) && responseData.data !== undefined) 
+      ? responseData.data 
+      : responseData;
+
+    if (equipArray.length > 0){
+      const equipData = equipArray[0];
       return (
         <>
           <h2>Assemble new equipment into {equipData.type_name} "{parentId}"</h2>
