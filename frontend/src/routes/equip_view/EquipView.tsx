@@ -22,7 +22,6 @@ import { midTransactionToastConfig } from '../../utils/toast';
 import RelateFileComponent from '../../components/relate_file_component/RelateFileComponent';
 import RelatedFileTable from '../../components/related_file_table/RelatedFileTable';
 
-
 export default function EquipView() {
 
   const { equipId } = useParams();
@@ -91,13 +90,18 @@ export default function EquipView() {
     component = <h1>Loading...</h1>;
   } else if(isError){
     console.log(response);
-    // Have to put a better error management
     component = <h1>An Error has occurred</h1>;
   } else{
-    if (response.data.length < 1){
+    
+    const responseData = response?.data || [];
+    const equipArray = (!Array.isArray(responseData) && responseData.data !== undefined) 
+      ? responseData.data 
+      : responseData;
+
+    if (equipArray.length < 1){
       return <NotFound/>;
     }
-    const typeName = response.data[0].type_name;
+    const typeName = equipArray[0].type_name;
     const onSuccess = () => {
       queryClient.invalidateQueries({
         queryKey: queryKey
@@ -110,7 +114,7 @@ export default function EquipView() {
     } else{
       editForm = <EquipForm equipId={equipId} typeName={typeName} onSuccess={onSuccess} isEdit/>;
     }
-    const equipData = response.data[0];
+    const equipData = equipArray[0];
     let buttons;
     if (equipData.deleted_at && user.canRestore()){
       buttons = (
