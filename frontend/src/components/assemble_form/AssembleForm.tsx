@@ -22,11 +22,9 @@ interface AssembleFormProps {
 }
 
 const getCleanLabel = (slot: any): string => {
-  if (slot.allowed_types && slot.allowed_types.length > 0) {
-    return slot.allowed_types[0].name; 
-  }
+  if (slot.allowed_types && slot.allowed_types.length > 0) return slot.allowed_types[0].name; 
   
-  const name = slot.name.toLowerCase();
+  const name = String(slot.name).toLowerCase();
   if (name.includes('electronics_slot') || name.includes('fenics')) return 'FENICS (Short Cable)';
   if (name.includes('hv_divider_slot')) return 'Active HV Divider (Short Cable)';
   if (name === 'pmt_block_pmt_slot') return 'PMT';
@@ -37,7 +35,7 @@ const getCleanLabel = (slot: any): string => {
     return match ? `PMT Block ${match[0]}` : 'PMT Block';
   }
 
-  return slot.name
+  return String(slot.name)
     .replace(/pmt_block_|mini_drawer_|_slot/g, '')
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (l: string) => l.toUpperCase());
@@ -45,17 +43,13 @@ const getCleanLabel = (slot: any): string => {
 
 const extractSlots = (typeData: any): any[] => {
   if (!typeData) return [];
-
-  if (Array.isArray(typeData.slots) && typeData.slots.length > 0) {
-    return typeData.slots;
-  }
+  if (Array.isArray(typeData.slots) && typeData.slots.length > 0) return typeData.slots;
 
   let rawNames: string[] = [];
-
   if (typeData.slot_names) {
     rawNames = Array.isArray(typeData.slot_names) 
       ? typeData.slot_names 
-      : typeData.slot_names.split(',');
+      : String(typeData.slot_names).split(',');
   }
 
   if (rawNames.length === 0 && typeData.params) {
@@ -69,7 +63,9 @@ const extractSlots = (typeData: any): any[] => {
     }
   }
 
-  return rawNames.filter(name => name.trim().length > 0).map(name => ({ name: name.trim() }));
+  return rawNames
+    .filter(name => name && name !== 'null' && name.trim().length > 0)
+    .map(name => ({ name: name.trim() }));
 };
 
 export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSafe }: AssembleFormProps) {
@@ -121,9 +117,20 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   if (equipTypeQuery.isPending) return <h4>Loading assembly slots...</h4>;
   if (equipTypeQuery.isError) return <h4>Error loading equipment metadata.</h4>;
 
-  const responseData = equipTypeQuery.data?.data || [];
-  const typeData = Array.isArray(responseData) ? responseData[0] : responseData.data?.[0];
+  const rawQueryData = equipTypeQuery.data;
+  let equipTypesArray: any[] = [];
+  
+  if (Array.isArray(rawQueryData)) {
+    equipTypesArray = rawQueryData;
+  } else if (rawQueryData?.data) {
+    if (Array.isArray(rawQueryData.data)) {
+      equipTypesArray = rawQueryData.data;
+    } else if (Array.isArray(rawQueryData.data.data)) {
+      equipTypesArray = rawQueryData.data.data;
+    }
+  }
 
+  const typeData = equipTypesArray[0];
   const availableSlots = extractSlots(typeData);
 
   if (!typeData || availableSlots.length === 0) {
@@ -131,6 +138,12 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       <div className="card p-3 text-yellow-600 bg-yellow-50 border-round">
         <i className="pi pi-info-circle mr-2"></i>
         Note: <b>{parentTypeName}</b> is a standalone component and does not receive sub-assemblies.
+        
+        {/* Painel de Depuração: Só aparece se houver falha na extração */}
+        <div className="mt-3 p-2 border-round text-xs font-mono" style={{ backgroundColor: '#fffbe6', border: '1px solid #ffe58f', color: '#5c3a21', wordBreak: 'break-all' }}>
+          <b>[DEBUG] API Payload recebido:</b><br/>
+          {JSON.stringify(rawQueryData || 'Nenhum dado recebido')}
+        </div>
       </div>
     );
   }
