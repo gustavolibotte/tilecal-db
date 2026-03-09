@@ -26,10 +26,50 @@ const getCleanLabel = (slot: any): string => {
     return slot.allowed_types[0].name; 
   }
   
+  const name = slot.name.toLowerCase();
+  if (name.includes('electronics_slot') || name.includes('fenics')) return 'FENICS (Short Cable)';
+  if (name.includes('hv_divider_slot')) return 'Active HV Divider (Short Cable)';
+  if (name === 'pmt_block_pmt_slot') return 'PMT';
+  if (name.includes('mainboard_slot')) return 'Mainboard';
+  if (name.includes('daughterboard_slot')) return 'Daughterboard';
+  if (name.includes('pmt_block_slot')) {
+    const match = name.match(/\d+$/);
+    return match ? `PMT Block ${match[0]}` : 'PMT Block';
+  }
+
   return slot.name
     .replace(/pmt_block_|mini_drawer_|_slot/g, '')
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (l: string) => l.toUpperCase());
+};
+
+const extractSlots = (typeData: any): any[] => {
+  if (!typeData) return [];
+
+  if (Array.isArray(typeData.slots) && typeData.slots.length > 0) {
+    return typeData.slots;
+  }
+
+  let rawNames: string[] = [];
+
+  if (typeData.slot_names) {
+    rawNames = Array.isArray(typeData.slot_names) 
+      ? typeData.slot_names 
+      : typeData.slot_names.split(',');
+  }
+
+  if (rawNames.length === 0 && typeData.params) {
+    try {
+      const paramsObj = typeof typeData.params === 'string' ? JSON.parse(typeData.params) : typeData.params;
+      if (paramsObj && Array.isArray(paramsObj.slots)) {
+        rawNames = paramsObj.slots;
+      }
+    } catch (e) {
+      console.error("Failed to parse params JSON", e);
+    }
+  }
+
+  return rawNames.filter(name => name.trim().length > 0).map(name => ({ name: name.trim() }));
 };
 
 export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSafe }: AssembleFormProps) {
@@ -46,7 +86,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     onSubmit: (values) => {
       const mutationData = {
         id: extractSequentialNumber(parentId),
-        slots: (Object.entries(values) as [string, string][]) // Cast explícito para resolver o erro de 'unknown'
+        slots: (Object.entries(values) as [string, string][])
           .filter(([_, id]) => id.length > 0)
           .map(([name, id]) => ({ 
             name, 
@@ -84,7 +124,9 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   const responseData = equipTypeQuery.data?.data || [];
   const typeData = Array.isArray(responseData) ? responseData[0] : responseData.data?.[0];
 
-  if (!typeData || !typeData.slots || typeData.slots.length === 0) {
+  const availableSlots = extractSlots(typeData);
+
+  if (!typeData || availableSlots.length === 0) {
     return (
       <div className="card p-3 text-yellow-600 bg-yellow-50 border-round">
         <i className="pi pi-info-circle mr-2"></i>
@@ -93,11 +135,13 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     );
   }
 
+  const sortedSlots = [...availableSlots].sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <div className="card flex flex-column gap-3">
       {equipSlotErrors.length > 0 && <div className="p-message p-message-error">{equipSlotErrors}</div>}
       <form onSubmit={formik.handleSubmit} onKeyDown={barcodeReaderSafe ? preventEnterDefault : undefined}>
-        {typeData.slots.map((slot: any) => (
+        {sortedSlots.map((slot: any) => (
           <div className="field mt-4" key={slot.name}>
             <label htmlFor={slot.name} className="font-bold block mb-2">
               {getCleanLabel(slot)}
