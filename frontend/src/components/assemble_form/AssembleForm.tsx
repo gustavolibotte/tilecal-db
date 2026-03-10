@@ -21,7 +21,6 @@ interface AssembleFormProps {
   barcodeReaderSafe?: boolean;
 }
 
-// Format technical slot names to user-friendly UI labels
 const formatSlotLabel = (slotName: string): string => {
   const name = String(slotName).toLowerCase();
   if (name.includes('electronics_slot') || name.includes('fenics')) return 'FENICS (Short Cable)';
@@ -93,11 +92,9 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     const namesArray = Array.isArray(typeData.slot_names) 
         ? typeData.slot_names 
         : String(typeData.slot_names).split(',');
-    // Explicit string type added for parameter 'n' to resolve TypeScript errors
     slotsToRender = namesArray.filter((n: string) => n.trim().length > 0).map((n: string) => ({ name: n.trim() }));
   }
 
-  // Rely strictly on backend data: If no slots are defined in the DB, it is standalone
   if (slotsToRender.length === 0) {
     return (
       <div className="card p-3 text-yellow-600 bg-yellow-50 border-round">
@@ -113,22 +110,22 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     <div className="card flex flex-column gap-3">
       {equipSlotErrors.length > 0 && <div className="p-message p-message-error">{equipSlotErrors}</div>}
       <form onSubmit={formik.handleSubmit} onKeyDown={barcodeReaderSafe ? preventEnterDefault : undefined}>
-        {sortedSlots.map((slot: any) => (
-          <div className="field mt-4" key={slot.name}>
-            <label htmlFor={slot.name} className="font-bold block mb-2">
-              {formatSlotLabel(slot.name)}
-            </label>
-            <FormText
-              id={slot.name}
-              name={formatSlotLabel(slot.name)} 
-              value={formik.values[slot.name] || ''}
-              onChange={(e: any) => formik.setFieldValue(slot.name, e.target.value)}
-              placeholder={`Scan ID for ${formatSlotLabel(slot.name)}`}
-              help="" 
-              errorText=""
-            />
-          </div>
-        ))}
+        {sortedSlots.map((slot: any) => {
+          const label = formatSlotLabel(slot.name);
+          return (
+            <div className="field mt-4" key={slot.name}>
+              <FormText
+                id={slot.name}
+                name={label} 
+                value={formik.values[slot.name] || ''}
+                onChange={(e: any) => formik.setFieldValue(slot.name, e.target.value)}
+                placeholder={`Scan ID for ${label}`}
+                help="" 
+                errorText=""
+              />
+            </div>
+          );
+        })}
         <div className="mt-4">
           <Button type="submit" label="Confirm Assembly" icon="pi pi-box" />
         </div>
