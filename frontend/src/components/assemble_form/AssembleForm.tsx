@@ -23,16 +23,23 @@ interface AssembleFormProps {
 
 const formatSlotLabel = (slotName: string): string => {
   const name = String(slotName).toLowerCase();
-  if (name.includes('electronics_slot') || name.includes('fenics')) return 'FENICS (Short Cable)';
-  if (name.includes('hv_divider_slot')) return 'Active HV Divider (Short Cable)';
+
+  if (name.includes('electronics_slot') || name.includes('fenics')) return 'FENICS';
+  if (name.includes('hv_divider_slot')) return 'Active HV Divider';
   if (name.includes('pmt_slot')) return 'PMT';
+
   if (name.includes('mainboard_slot')) return 'Mainboard';
   if (name.includes('daughterboard_slot')) return 'Daughterboard';
+
   if (name.includes('pmt_block_slot')) {
     const match = name.match(/\d+$/);
     return match ? `PMT Block ${match[0]}` : 'PMT Block';
   }
-  return String(slotName).replace(/pmt_block_|mini_drawer_|_slot/g, '').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+
+  return String(slotName)
+    .replace(/pmt_block_|mini_drawer_|_slot/g, '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (l) => l.toUpperCase());
 };
 
 export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSafe }: AssembleFormProps) {
@@ -51,9 +58,9 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
         id: extractSequentialNumber(parentId),
         slots: (Object.entries(values) as [string, string][])
           .filter(([_, id]) => id.length > 0)
-          .map(([name, id]) => ({ 
-            name, 
-            equipment_id: extractSequentialNumber(id) 
+          .map(([name, id]) => ({
+            name,
+            equipment_id: extractSequentialNumber(id)
           }))
       };
       assembleMutation.mutate(mutationData);
@@ -89,9 +96,9 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
 
   let slotsToRender: any[] = [];
   if (typeData && typeData.slot_names) {
-    const namesArray = Array.isArray(typeData.slot_names) 
-        ? typeData.slot_names 
-        : String(typeData.slot_names).split(',');
+    const namesArray = Array.isArray(typeData.slot_names)
+      ? typeData.slot_names
+      : String(typeData.slot_names).split(',');
     slotsToRender = namesArray.filter((n: string) => n.trim().length > 0).map((n: string) => ({ name: n.trim() }));
   }
 
@@ -116,11 +123,11 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
             <div className="field mt-4" key={slot.name}>
               <FormText
                 id={slot.name}
-                name={label} 
+                name={label}
                 value={formik.values[slot.name] || ''}
                 onChange={(e: any) => formik.setFieldValue(slot.name, e.target.value)}
                 placeholder={`Scan ID for ${label}`}
-                help="" 
+                help=""
                 errorText=""
               />
             </div>
