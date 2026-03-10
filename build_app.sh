@@ -1,22 +1,21 @@
 #!/bin/bash
 set -e
 
-# Install backend dependencies
+# Install backend dependencies (use install instead of update)
 cd backend
-composer update
+composer install
 if [ $ENVIRONMENT = 'local' ]; then
     source setup_directories.sh
 fi
 cd ../
 
-# Build React app
+# Clean old distribution files
 PUBLIC_DIR="backend/public"
 DIST_DIR="$PUBLIC_DIR/dist"
 if [ -d "$DIST_DIR" ]; then
     echo "Deleting old dir $DIST_DIR"
     rm -r $DIST_DIR
 fi
-# ls /shrebbles
 
 ASSETS_DIR="$PUBLIC_DIR/assets"
 if [ -d "$ASSETS_DIR" ]; then
@@ -25,7 +24,14 @@ if [ -d "$ASSETS_DIR" ]; then
 fi
 
 VIEWS_DIR="backend/app/Views"
-cd frontend && npm install && npm run build && cd ../
+
+# Build React app
+cd frontend
+npm install 
+npm run build 
+cd ../
+
+# Move build artifacts
 mv $DIST_DIR/index.html $VIEWS_DIR/index.php
 mv $DIST_DIR/assets $PUBLIC_DIR
 rm -r $DIST_DIR

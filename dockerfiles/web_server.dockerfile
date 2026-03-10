@@ -18,9 +18,6 @@ ARG COMPOSER_ALLOW_SUPERUSER 1
 LABEL ci_version=${CI_VERSION}
 
 # Installs needed/useful packages
-# https://stackoverflow.com/questions/48674297/php-intl-extension-in-docker-container
-# https://stackoverflow.com/questions/46879196/mysqli-not-found-dockerized-php
-# Some commands come from here https://github.com/kenjis/docker-codeigniter-apache/blob/ci4/infra/docker/php/Dockerfile
 RUN apt-get -y update \
 && apt-get install -y git libicu-dev libonig-dev libzip-dev zip unzip locales \
 && apt-get -y install libpq-dev libxml2-dev libbz2-dev zlib1g-dev \
@@ -28,7 +25,6 @@ RUN apt-get -y update \
 && apt-get install -y bash vim nano \
 && apt install dos2unix \
 && apt-get clean
-
 
 # composer command
 COPY --from=composer:2.6.2 /usr/bin/composer /usr/bin/composer
@@ -39,23 +35,26 @@ COPY --from=node:20.11.0 /usr/local/lib /usr/local/lib
 # yarn command
 COPY --from=node:20.11.0 /opt /opt
 
-# Configs
-# COPY configs/php.ini /usr/local/etc/php/
-# COPY configs/ports.conf /etc/apache2/
-# # COPY configs/custom.conf /etc/apache2/conf-available
-# COPY configs/httpd.conf /etc/apache2/sites-available
-# COPY configs/hosts /etc/
-# RUN a2enmod rewrite \
-# && a2enmod vhost_alias \
-# && a2ensite httpd
+# Create the working directory early
+WORKDIR /repo
 
-# Set the working directory to your CodeIgniter app folder
-ADD . repo/
-# RUN echo 'BASE URL IN DOCKERFILE'
-# RUN echo $app_baseURL
-RUN cd repo/ \
-&& bash build_app.sh \
+# Copy ONLY the files needed for dependency installation first
+COPY backend/composer.json backend/composer.lock ./backend/
+COPY frontend/package.json frontend/package-lock.json ./frontend/
+
+# Install backend dependencies (using install instead of update for speed/consistency)
+RUN cd backend && composer install --no-dev --optimize-autoloader
+
+# Install frontend dependencies (using ci for speed)
+RUN cd frontend && npm ci
+
+# Now copy the rest of the application code
+COPY . .
+
+# Run the build script (which we will also optimize)
+RUN bash build_app.sh \
 && cp -r backend/* /var/www/html \
 && chmod -R 777 /var/www/html
+
 WORKDIR /var/www/html
 CMD php spark serve --host 0.0.0.0 --port 8080
