@@ -21,51 +21,19 @@ interface AssembleFormProps {
   barcodeReaderSafe?: boolean;
 }
 
-const getCleanLabel = (slot: any): string => {
-  if (slot.allowed_types && slot.allowed_types.length > 0) return slot.allowed_types[0].name; 
-  
-  const name = String(slot.name).toLowerCase();
+// Format technical slot names to user-friendly UI labels
+const formatSlotLabel = (slotName: string): string => {
+  const name = String(slotName).toLowerCase();
   if (name.includes('electronics_slot') || name.includes('fenics')) return 'FENICS (Short Cable)';
   if (name.includes('hv_divider_slot')) return 'Active HV Divider (Short Cable)';
-  if (name === 'pmt_block_pmt_slot') return 'PMT';
+  if (name.includes('pmt_slot')) return 'PMT';
   if (name.includes('mainboard_slot')) return 'Mainboard';
   if (name.includes('daughterboard_slot')) return 'Daughterboard';
   if (name.includes('pmt_block_slot')) {
     const match = name.match(/\d+$/);
     return match ? `PMT Block ${match[0]}` : 'PMT Block';
   }
-
-  return String(slot.name)
-    .replace(/pmt_block_|mini_drawer_|_slot/g, '')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (l: string) => l.toUpperCase());
-};
-
-const extractSlots = (typeData: any): any[] => {
-  if (!typeData) return [];
-  if (Array.isArray(typeData.slots) && typeData.slots.length > 0) return typeData.slots;
-
-  let rawNames: string[] = [];
-  if (typeData.slot_names) {
-    rawNames = Array.isArray(typeData.slot_names) 
-      ? typeData.slot_names 
-      : String(typeData.slot_names).split(',');
-  }
-
-  if (rawNames.length === 0 && typeData.params) {
-    try {
-      const paramsObj = typeof typeData.params === 'string' ? JSON.parse(typeData.params) : typeData.params;
-      if (paramsObj && Array.isArray(paramsObj.slots)) {
-        rawNames = paramsObj.slots;
-      }
-    } catch (e) {
-      console.error("Failed to parse params JSON", e);
-    }
-  }
-
-  return rawNames
-    .filter(name => name && name !== 'null' && name.trim().length > 0)
-    .map(name => ({ name: name.trim() }));
+  return String(slotName).replace(/pmt_block_|mini_drawer_|_slot/g, '').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 };
 
 export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSafe }: AssembleFormProps) {
@@ -117,38 +85,29 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   if (equipTypeQuery.isPending) return <h4>Loading assembly slots...</h4>;
   if (equipTypeQuery.isError) return <h4>Error loading equipment metadata.</h4>;
 
-  const rawQueryData = equipTypeQuery.data;
-  let equipTypesArray: any[] = [];
-  
-  if (Array.isArray(rawQueryData)) {
-    equipTypesArray = rawQueryData;
-  } else if (rawQueryData?.data) {
-    if (Array.isArray(rawQueryData.data)) {
-      equipTypesArray = rawQueryData.data;
-    } else if (Array.isArray(rawQueryData.data.data)) {
-      equipTypesArray = rawQueryData.data.data;
-    }
+  const responseData = equipTypeQuery.data?.data || [];
+  const typeData = Array.isArray(responseData) ? responseData[0] : responseData.data?.[0];
+
+  let slotsToRender: any[] = [];
+  if (typeData && typeData.slot_names) {
+    const namesArray = Array.isArray(typeData.slot_names) 
+        ? typeData.slot_names 
+        : String(typeData.slot_names).split(',');
+    // Explicit string type added for parameter 'n' to resolve TypeScript errors
+    slotsToRender = namesArray.filter((n: string) => n.trim().length > 0).map((n: string) => ({ name: n.trim() }));
   }
 
-  const typeData = equipTypesArray[0];
-  const availableSlots = extractSlots(typeData);
-
-  if (!typeData || availableSlots.length === 0) {
+  // Rely strictly on backend data: If no slots are defined in the DB, it is standalone
+  if (slotsToRender.length === 0) {
     return (
       <div className="card p-3 text-yellow-600 bg-yellow-50 border-round">
         <i className="pi pi-info-circle mr-2"></i>
         Note: <b>{parentTypeName}</b> is a standalone component and does not receive sub-assemblies.
-        
-        {/* Painel de Depuração: Só aparece se houver falha na extração */}
-        <div className="mt-3 p-2 border-round text-xs font-mono" style={{ backgroundColor: '#fffbe6', border: '1px solid #ffe58f', color: '#5c3a21', wordBreak: 'break-all' }}>
-          <b>[DEBUG] API Payload recebido:</b><br/>
-          {JSON.stringify(rawQueryData || 'Nenhum dado recebido')}
-        </div>
       </div>
     );
   }
 
-  const sortedSlots = [...availableSlots].sort((a, b) => a.name.localeCompare(b.name));
+  const sortedSlots = [...slotsToRender].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="card flex flex-column gap-3">
@@ -157,14 +116,14 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
         {sortedSlots.map((slot: any) => (
           <div className="field mt-4" key={slot.name}>
             <label htmlFor={slot.name} className="font-bold block mb-2">
-              {getCleanLabel(slot)}
+              {formatSlotLabel(slot.name)}
             </label>
             <FormText
               id={slot.name}
-              name={getCleanLabel(slot)} 
+              name={formatSlotLabel(slot.name)} 
               value={formik.values[slot.name] || ''}
               onChange={(e: any) => formik.setFieldValue(slot.name, e.target.value)}
-              placeholder={`Scan ID for ${getCleanLabel(slot)}`}
+              placeholder={`Scan ID for ${formatSlotLabel(slot.name)}`}
               help="" 
               errorText=""
             />
