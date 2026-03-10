@@ -160,6 +160,11 @@ $routes->group('api', static function ($routes){
         ]);
     });
 
+    $routes->group('api/v1/statistics', ['filter' => 'api_auth'], static function ($routes) {
+        $routes->get('inventory-by-type', 'Statistics::getInventoryByType');
+        $routes->get('global-status', 'Statistics::getGlobalStatusDistribution');
+    });
+
     // This first route was made to comply with the CORS protocol used
     //  by the browsers.
     // https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe
