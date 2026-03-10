@@ -1,5 +1,5 @@
 import { Menubar } from 'primereact/menubar';
-import { getEquipRegisterRoute, getSpecEquipRoute } from '../../utils/routes';
+import { getEquipRegisterRoute, getSpecEquipRoute, ROUTES } from '../../utils/routes';
 import { useUser } from '../../utils/user';
 import { useQuery } from '@tanstack/react-query';
 import './header.css'
@@ -99,7 +99,7 @@ export default function Header() {
     });
   }
 
-  // 4. Help Menu (New Feature)
+  // 4. Help Menu
   const helpItems = [
     {
       label: 'Documentation',
@@ -110,7 +110,7 @@ export default function Header() {
     },
     {
       label: 'Report Issue',
-      icon: 'pi pi-github', // generic git icon, usually appropriate for GitLab links too
+      icon: 'pi pi-github', 
       command: () => {
         window.open(GITLAB_ISSUES_URL, '_blank');
       }
@@ -126,7 +126,7 @@ export default function Header() {
     {
       label: 'Register',
       items: registerItems,
-      visible: registerItems.length > 0 // Hide if empty
+      visible: registerItems.length > 0 
     },
     {
       label: 'Files',
@@ -136,6 +136,13 @@ export default function Header() {
       label: 'Assemble',
       command: () => {
         navigate('equipment/assemble')
+      }
+    },
+    {
+      label: 'Statistics',
+      icon: 'pi pi-chart-bar',
+      command: () => {
+        navigate(ROUTES.STATISTICS)
       }
     },
     {
@@ -153,9 +160,13 @@ export default function Header() {
   }
 
   return (
-    <div className="card w-auto ">
-      <Menubar model={items} start={<HomeButton />} end={end}
-        className='shadow-2' />
+    <div className="w-full sticky top-0" style={{ zIndex: 1000 }}>
+      <Menubar 
+        model={items} 
+        start={<HomeButton />} 
+        end={end}
+        className='shadow-2 border-none border-noround w-full' 
+      />
     </div>
   )
 }

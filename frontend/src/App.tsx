@@ -17,6 +17,9 @@ import EquipBatchRegister from './routes/equip_batch_register/EquipBatchRegister
 import EquipAssemble from './routes/assemble/EquipAssemble.tsx';
 import ErrorPage from './routes/error_page/ErrorPage.tsx';
 
+import { StatisticsDashboard } from './routes/statistics/StatisticsDashboard.tsx';
+import { ROUTES } from './utils/routes.tsx';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -78,6 +81,10 @@ export default function App(){
       path: "file",
       element: <FileIndex/>,
     },
+    {
+      path: ROUTES.STATISTICS,
+      element: <StatisticsDashboard/>,
+    }
   ]
   const router = createBrowserRouter([
     {

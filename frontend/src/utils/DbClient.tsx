@@ -19,6 +19,11 @@ interface EndpointType {
   file_download_hist: string;
   file_relation: string;
   file_unrelate: string;
+  statistics_inventory: string;
+  statistics_status: string;
+  statistics_location: string;
+  statistics_institute: string;
+  statistics_orphaned: string;
 }
 
 const ENDPOINT: EndpointType = {
@@ -39,7 +44,12 @@ const ENDPOINT: EndpointType = {
   file_download: 'api/file/download',
   file_download_hist: 'api/file/download-hist',
   file_relation: 'api/equipment/relate-file',
-  file_unrelate: 'api/equipment/unrelate-file'
+  file_unrelate: 'api/equipment/unrelate-file',
+  statistics_inventory: 'api/v1/statistics/inventory-by-type',
+  statistics_status: 'api/v1/statistics/global-status',
+  statistics_location: 'api/v1/statistics/location-distribution',
+  statistics_institute: 'api/v1/statistics/institute-distribution',
+  statistics_orphaned: 'api/v1/statistics/orphaned-components'
 };
 
 export function getEndpoint(name: keyof EndpointType): string{
@@ -115,3 +125,65 @@ function getRequestHeaders(extraHeaders: any = {}) {
   }
   return baseHeaders;
 }
+
+/**
+ * STATISTICS API CLIENT
+ */
+const DbClient = {
+  getInventoryByType: async function() {
+    try {
+      const url = getEndpoint('statistics_inventory');
+      const response = await axios.get(url, { headers: getRequestHeaders() });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching inventory statistics:", error);
+      throw error;
+    }
+  },
+
+  getGlobalStatusDistribution: async function() {
+    try {
+      const url = getEndpoint('statistics_status');
+      const response = await axios.get(url, { headers: getRequestHeaders() });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching status statistics:", error);
+      throw error;
+    }
+  },
+
+  getLocationDistribution: async function() {
+    try {
+      const url = getEndpoint('statistics_location');
+      const response = await axios.get(url, { headers: getRequestHeaders() });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching location statistics:", error);
+      throw error;
+    }
+  },
+
+  getInstituteDistribution: async function() {
+    try {
+      const url = getEndpoint('statistics_institute');
+      const response = await axios.get(url, { headers: getRequestHeaders() });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching institute statistics:", error);
+      throw error;
+    }
+  },
+
+  getOrphanedComponents: async function() {
+    try {
+      const url = getEndpoint('statistics_orphaned');
+      const response = await axios.get(url, { headers: getRequestHeaders() });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching orphaned components:", error);
+      throw error;
+    }
+  }
+};
+
+export default DbClient;

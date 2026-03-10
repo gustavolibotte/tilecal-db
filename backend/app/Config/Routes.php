@@ -160,9 +160,12 @@ $routes->group('api', static function ($routes){
         ]);
     });
 
-    $routes->group('api/v1/statistics', ['filter' => 'api_auth'], static function ($routes) {
+    $routes->group('v1/statistics', ['filter' => 'api_auth'], static function ($routes) {
         $routes->get('inventory-by-type', 'Statistics::getInventoryByType');
         $routes->get('global-status', 'Statistics::getGlobalStatusDistribution');
+        $routes->get('location-distribution', 'Statistics::getLocationDistribution');
+        $routes->get('institute-distribution', 'Statistics::getInstituteDistribution');        
+        $routes->get('orphaned-components', 'Statistics::getOrphanedComponents');
     });
 
     // This first route was made to comply with the CORS protocol used

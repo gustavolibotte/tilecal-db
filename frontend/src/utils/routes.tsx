@@ -22,3 +22,7 @@ export function concatenateUrlParams(url: string, params: any): string{
     url += keyValuePairs.join('&');
     return url;
 }
+
+export const ROUTES = {
+    STATISTICS: '/statistics',
+};
