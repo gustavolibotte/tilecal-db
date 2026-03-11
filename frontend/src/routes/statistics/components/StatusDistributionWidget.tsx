@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Button } from 'primereact/button';
 import DbClient from '../../../utils/DbClient';
 
-// Paleta expandida para corresponder à sua DB real
 const STATUS_COLORS: { [key: string]: string } = {
   'Good': '#008000',
   'Broken': '#dc3545',
@@ -31,11 +31,28 @@ export const StatusDistributionWidget: React.FC = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const exportCSV = () => {
+    const csv = ['Status,Quantity\n' + data.map(d => `"${d.status_name}",${d.total_count}`).join('\n')];
+    const blob = new Blob(csv, { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'status_distribution.csv';
+    link.click();
+  };
+
+  const renderLegend = (value: string, entry: any) => {
+    return <span style={{ color: '#333', fontWeight: 500, marginRight: '10px' }}>{value} ({entry.payload.total_count})</span>;
+  };
+
   if (loading) return <div className="p-4">Loading status data...</div>;
 
   return (
     <div style={{ minWidth: 0, width: '100%', background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-      <h3 style={{ color: '#0053a1', marginTop: 0, marginBottom: '1rem' }}>Global Status Distribution</h3>
+      <div className="flex justify-content-between align-items-start mb-3">
+        <h3 style={{ color: '#0053a1', margin: 0 }}>Global Status Distribution</h3>
+        <Button icon="pi pi-download" className="p-button-sm p-button-rounded p-button-text p-button-success" onClick={exportCSV} tooltip="Exportar CSV" tooltipOptions={{position: 'top'}} />
+      </div>
+
       {data.length === 0 ? (
         <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>No data</div>
       ) : (
@@ -43,13 +60,13 @@ export const StatusDistributionWidget: React.FC = () => {
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={data} dataKey="total_count" nameKey="status_name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} label>
+                <Pie data={data} dataKey="total_count" nameKey="status_name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5}>
                   {data.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.status_name] || FALLBACK_COLORS[index % FALLBACK_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [value, 'Quantity']} />
-                <Legend verticalAlign="bottom" height={36}/>
+                <Tooltip />
+                <Legend formatter={renderLegend} verticalAlign="bottom" height={40}/>
               </PieChart>
             </ResponsiveContainer>
           </div>
