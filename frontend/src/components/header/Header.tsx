@@ -134,6 +134,7 @@ export default function Header() {
     },
     {
       label: 'Assemble',
+      icon: 'pi pi-wrench',
       command: () => {
         navigate('equipment/assemble')
       }
