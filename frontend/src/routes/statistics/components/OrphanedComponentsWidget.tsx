@@ -40,16 +40,16 @@ export const OrphanedComponentsWidget: React.FC = () => {
           <span style={{ fontSize: '0.85rem', color: '#666' }}>Components with 'Good' status not yet assembled.</span>
         </div>
         <div className="flex gap-2">
-          <Button icon="pi pi-chart-bar" className={`p-button-sm p-button-rounded p-button-text ${scale === 'auto' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('auto')} tooltip="Escala Linear" tooltipOptions={{position: 'top'}} />
-          <Button icon="pi pi-chart-line" className={`p-button-sm p-button-rounded p-button-text ${scale === 'log' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('log')} tooltip="Escala Logarítmica" tooltipOptions={{position: 'top'}} />
-          <Button icon="pi pi-download" className="p-button-sm p-button-rounded p-button-text p-button-success" onClick={exportCSV} tooltip="Exportar CSV" tooltipOptions={{position: 'top'}} />
+          <Button icon="pi pi-chart-bar" className={`p-button-sm p-button-rounded p-button-text ${scale === 'auto' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('auto')} tooltip="Linear Scale" tooltipOptions={{position: 'top'}} />
+          <Button icon="pi pi-chart-line" className={`p-button-sm p-button-rounded p-button-text ${scale === 'log' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('log')} tooltip="Log Scale" tooltipOptions={{position: 'top'}} />
+          <Button icon="pi pi-download" className="p-button-sm p-button-rounded p-button-text p-button-success" onClick={exportCSV} tooltip="Export CSV" tooltipOptions={{position: 'top'}} />
         </div>
       </div>
       
       {data.length === 0 ? (
-        <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>No bottlenecks found.</div>
+        <div style={{ height: 350, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>No bottlenecks found.</div>
       ) : (
-        <div style={{ width: '100%', height: 360, position: 'relative' }}>
+        <div style={{ width: '100%', height: 350, position: 'relative' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 90 }}>
