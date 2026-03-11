@@ -12,36 +12,43 @@ export const OrphanedComponentsWidget: React.FC = () => {
     DbClient.getOrphanedComponents()
       .then(res => {
         if (res && res.data && Array.isArray(res.data)) {
-          setData(res.data);
+          setData(res.data.map((d: any) => ({ ...d, total_count: Number(d.total_count) })));
         }
       })
-      .catch(err => console.error("Error fetching orphaned data:", err))
+      .catch(err => console.error(err))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="p-4">Loading orphaned components...</div>;
 
   return (
-    <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', borderTop: '4px solid #e85c0f', minWidth: 0 }}>
+    <div style={{ minWidth: 0, width: '100%', background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', borderTop: '4px solid #e85c0f' }}>
       <div style={{ marginBottom: '1rem' }}>
         <h3 style={{ color: '#e85c0f', marginTop: 0, marginBottom: '4px' }}>Orphaned Components (Bottlenecks)</h3>
         <span style={{ fontSize: '0.85rem', color: '#666' }}>Components with 'Good' status not yet assembled.</span>
       </div>
-      <div style={{ width: '100%', height: 300 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="type_name" />
-            <YAxis />
-            <Tooltip cursor={{fill: '#fff3e6'}} />
-            <Bar dataKey="total_count" radius={[4, 4, 0, 0]}>
-              {data.map((_entry, index) => (
-                <Cell key={`cell-${index}`} fill={ALERT_COLORS[index % ALERT_COLORS.length]} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      
+      {data.length === 0 ? (
+        <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>No bottlenecks found.</div>
+      ) : (
+        <div style={{ width: '100%', height: 300, position: 'relative' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="type_name" tick={{fontSize: 12}} />
+                <YAxis />
+                <Tooltip cursor={{fill: '#fff3e6'}} />
+                <Bar dataKey="total_count" radius={[4, 4, 0, 0]}>
+                  {data.map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={ALERT_COLORS[index % ALERT_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
