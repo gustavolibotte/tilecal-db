@@ -24,8 +24,8 @@ export const LocationDistributionWidget: React.FC = () => {
   return (
     <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', minWidth: 0 }}>
       <h3 style={{ color: '#0053a1', marginTop: 0 }}>Top 10 Locations</h3>
-      <div style={{ width: '100%' }}>
-        <ResponsiveContainer width="100%" height={300}>
+      <div style={{ width: '100%', height: 300 }}>
+        <ResponsiveContainer width="100%" height="100%">
           <BarChart layout="vertical" data={data} margin={{ top: 20, right: 30, left: 40, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
             <XAxis type="number" />

@@ -27,8 +27,8 @@ export const OrphanedComponentsWidget: React.FC = () => {
         <h3 style={{ color: '#e85c0f', marginTop: 0, marginBottom: '4px' }}>Orphaned Components (Bottlenecks)</h3>
         <span style={{ fontSize: '0.85rem', color: '#666' }}>Components with 'Good' status not yet assembled.</span>
       </div>
-      <div style={{ width: '100%' }}>
-        <ResponsiveContainer width="100%" height={300}>
+      <div style={{ width: '100%', height: 300 }}>
+        <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="type_name" />

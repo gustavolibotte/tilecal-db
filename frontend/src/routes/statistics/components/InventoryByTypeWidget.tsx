@@ -24,8 +24,8 @@ export const InventoryByTypeWidget: React.FC = () => {
   return (
     <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', minWidth: 0 }}>
       <h3 style={{ color: '#0053a1', marginTop: 0 }}>Equipments by Type</h3>
-      <div style={{ width: '100%' }}>
-        <ResponsiveContainer width="100%" height={300}>
+      <div style={{ width: '100%', height: 300 }}>
+        <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="type_name" />
