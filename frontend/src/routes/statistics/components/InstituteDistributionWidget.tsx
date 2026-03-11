@@ -8,7 +8,7 @@ import { exportChartAsImage } from '../../../utils/exportUtils';
 const INSTITUTE_COLORS = ['#0053a1', '#e85c0f', '#008000', '#f4b400', '#6050dc', '#dc3545', '#17a2b8', '#6c757d'];
 
 const PieGradient = (props: any) => {
-  const { cx, cy, outerRadius, index, fill, width, height, isActive } = props;
+  const { cx, cy, outerRadius, index, fill, isActive } = props; 
   return (
     <>
       <defs>

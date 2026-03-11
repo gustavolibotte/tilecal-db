@@ -13,7 +13,7 @@ const STATUS_COLORS: { [key: string]: string } = {
 const FALLBACK_COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#d0ed57', '#a4de6c', '#ff8042', '#00C49F'];
 
 const PieGradient = (props: any) => {
-  const { cx, cy, outerRadius, index, fill, width, height, isActive } = props;
+  const { cx, cy, outerRadius, index, fill, isActive } = props; 
   return (
     <>
       <defs>
