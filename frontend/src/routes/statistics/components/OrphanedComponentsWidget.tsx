@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Button } from 'primereact/button';
+import { SelectButton } from 'primereact/selectbutton';
 import DbClient from '../../../utils/DbClient';
+import { exportChartAsImage } from '../../../utils/exportUtils';
 
 const ALERT_COLORS = ['#e85c0f', '#f47b20', '#ff9933', '#ffb366', '#ffcc99'];
 
@@ -9,6 +11,8 @@ export const OrphanedComponentsWidget: React.FC = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [scale, setScale] = useState<'auto' | 'log'>('auto');
+  const [exportFormat, setExportFormat] = useState<'PNG' | 'PDF' | 'CSV'>('PNG');
+  const exportOptions = ['PNG', 'PDF', 'CSV'];
 
   useEffect(() => {
     DbClient.getOrphanedComponents()
@@ -21,13 +25,17 @@ export const OrphanedComponentsWidget: React.FC = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const exportCSV = () => {
-    const csv = ['Equipment Type,Quantity\n' + data.map(d => `"${d.type_name}",${d.total_count}`).join('\n')];
-    const blob = new Blob(csv, { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'orphaned_components.csv';
-    link.click();
+  const handleExport = () => {
+    if (exportFormat === 'CSV') {
+      const csv = ['Equipment Type,Quantity\n' + data.map(d => `"${d.type_name}",${d.total_count}`).join('\n')];
+      const blob = new Blob(csv, { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'orphaned_components.csv';
+      link.click();
+    } else {
+      exportChartAsImage('orphaned-chart', 'orphaned_components', exportFormat);
+    }
   };
 
   if (loading) return <div className="p-4">Loading orphaned components...</div>;
@@ -39,10 +47,12 @@ export const OrphanedComponentsWidget: React.FC = () => {
           <h3 style={{ color: '#e85c0f', marginTop: 0, marginBottom: '4px' }}>Orphaned Components (Bottlenecks)</h3>
           <span style={{ fontSize: '0.85rem', color: '#666' }}>Components with 'Good' status not yet assembled.</span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex align-items-center gap-2">
           <Button icon="pi pi-chart-bar" className={`p-button-sm p-button-rounded p-button-text ${scale === 'auto' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('auto')} tooltip="Linear Scale" tooltipOptions={{position: 'top'}} />
-          <Button icon="pi pi-chart-line" className={`p-button-sm p-button-rounded p-button-text ${scale === 'log' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('log')} tooltip="Log Scale" tooltipOptions={{position: 'top'}} />
-          <Button icon="pi pi-download" className="p-button-sm p-button-rounded p-button-text p-button-success" onClick={exportCSV} tooltip="Export CSV" tooltipOptions={{position: 'top'}} />
+          <Button icon="pi pi-chart-line" className={`p-button-sm p-button-rounded p-button-text ${scale === 'log' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('log')} tooltip="Logarithmic Scale" tooltipOptions={{position: 'top'}} />
+          
+          <SelectButton value={exportFormat} options={exportOptions} onChange={(e) => { if(e.value) setExportFormat(e.value) }} className="p-button-sm ml-3" style={{transform: 'scale(0.85)', transformOrigin: 'right'}} />
+          <Button icon="pi pi-download" className="p-button-rounded p-button-success" onClick={handleExport} tooltip={`Export as ${exportFormat}`} tooltipOptions={{position: 'top'}} />
         </div>
       </div>
       
@@ -50,13 +60,18 @@ export const OrphanedComponentsWidget: React.FC = () => {
         <div style={{ height: 350, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>No bottlenecks found.</div>
       ) : (
         <div style={{ width: '100%', height: 350, position: 'relative' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <div id="orphaned-chart" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 90 }}>
+              <BarChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 90 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="type_name" tick={{fontSize: 11}} interval={0} angle={-45} textAnchor="end" />
-                <YAxis scale={scale} domain={scale === 'log' ? [1, 'auto'] : [0, 'auto']} allowDataOverflow />
-                <Tooltip cursor={{fill: '#fff3e6'}} />
+                <YAxis 
+                    scale={scale} 
+                    domain={scale === 'log' ? [1, 'auto'] : [0, 'auto']} 
+                    allowDataOverflow 
+                    label={{ value: 'Quantity', angle: -90, position: 'insideLeft', offset: -10 }}
+                />
+                <Tooltip cursor={{fill: '#fff3e6'}} formatter={(value) => [value, 'Quantity']} />
                 <Bar dataKey="total_count" name="Quantity" radius={[4, 4, 0, 0]}>
                   {data.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={ALERT_COLORS[index % ALERT_COLORS.length]} />
