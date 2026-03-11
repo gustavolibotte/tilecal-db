@@ -150,7 +150,7 @@ $routes->group('api', static function ($routes){
         'as' => 'api_user_get'
     ]);
 
-    $routes->group('v1/statistics', ['filter' => 'api_auth'], static function ($routes) {
+    $routes->group('v1/statistics', ['filter' => ['api_auth', 'action:view']], static function ($routes) {
         $routes->get('inventory-by-type', 'Statistics::getInventoryByType');
         $routes->get('global-status', 'Statistics::getGlobalStatusDistribution');
         $routes->get('location-distribution', 'Statistics::getLocationDistribution');
@@ -162,7 +162,7 @@ $routes->group('api', static function ($routes){
     if (!$env->isSafe()){
         return null;
     }
-    
+
     $routes->group('test', static function ($routes){
         $routes->get('headers', 'Dev::headers', [
             'filter' =>['api_auth', 'action:delete'],
