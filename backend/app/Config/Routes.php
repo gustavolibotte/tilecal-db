@@ -149,23 +149,25 @@ $routes->group('api', static function ($routes){
         'filter' =>['api_auth', 'action:view'],
         'as' => 'api_user_get'
     ]);
-    $env = Services::environment();
-    if (!$env->isSafe()){
-        return null;
-    }
-    $routes->group('test', static function ($routes){
-        $routes->get('headers', 'Dev::headers', [
-            'filter' =>['api_auth', 'action:delete'],
-            'as' => 'api_test_headers'
-        ]);
-    });
 
     $routes->group('v1/statistics', ['filter' => 'api_auth'], static function ($routes) {
         $routes->get('inventory-by-type', 'Statistics::getInventoryByType');
         $routes->get('global-status', 'Statistics::getGlobalStatusDistribution');
         $routes->get('location-distribution', 'Statistics::getLocationDistribution');
-        $routes->get('institute-distribution', 'Statistics::getInstituteDistribution');        
+        $routes->get('institute-distribution', 'Statistics::getInstituteDistribution');
         $routes->get('orphaned-components', 'Statistics::getOrphanedComponents');
+    });
+
+    $env = Services::environment();
+    if (!$env->isSafe()){
+        return null;
+    }
+    
+    $routes->group('test', static function ($routes){
+        $routes->get('headers', 'Dev::headers', [
+            'filter' =>['api_auth', 'action:delete'],
+            'as' => 'api_test_headers'
+        ]);
     });
 
     // This first route was made to comply with the CORS protocol used
