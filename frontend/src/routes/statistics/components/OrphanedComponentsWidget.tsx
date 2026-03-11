@@ -31,15 +31,15 @@ export const OrphanedComponentsWidget: React.FC = () => {
       {data.length === 0 ? (
         <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>No bottlenecks found.</div>
       ) : (
-        <div style={{ width: '100%', height: 300, position: 'relative' }}>
+        <div style={{ width: '100%', height: 360, position: 'relative' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <BarChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 90 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="type_name" tick={{fontSize: 12}} />
+                <XAxis dataKey="type_name" tick={{fontSize: 11}} interval={0} angle={-45} textAnchor="end" />
                 <YAxis />
-                <Tooltip cursor={{fill: '#fff3e6'}} />
-                <Bar dataKey="total_count" radius={[4, 4, 0, 0]}>
+                <Tooltip cursor={{fill: '#fff3e6'}} formatter={(value) => [value, 'Quantity']} />
+                <Bar dataKey="total_count" name="Quantity" radius={[4, 4, 0, 0]}>
                   {data.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={ALERT_COLORS[index % ALERT_COLORS.length]} />
                   ))}

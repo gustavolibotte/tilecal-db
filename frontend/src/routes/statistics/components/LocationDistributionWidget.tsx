@@ -34,8 +34,8 @@ export const LocationDistributionWidget: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                 <XAxis type="number" />
                 <YAxis dataKey="location_name" type="category" width={80} tick={{fontSize: 12}} />
-                <Tooltip cursor={{fill: '#f5f5f5'}} />
-                <Bar dataKey="total_count" radius={[0, 4, 4, 0]}>
+                <Tooltip cursor={{fill: '#f5f5f5'}} formatter={(value) => [value, 'Quantity']} />
+                <Bar dataKey="total_count" name="Quantity" radius={[0, 4, 4, 0]}>
                   {data.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}

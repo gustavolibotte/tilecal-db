@@ -2,13 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import DbClient from '../../../utils/DbClient';
 
+// Paleta expandida para corresponder à sua DB real
 const STATUS_COLORS: { [key: string]: string } = {
   'Good': '#008000',
-  'Broken': '#c86400',
+  'Broken': '#dc3545',
   'Under Test': '#0053a1',
-  'To Be Repaired': '#ffcc00',
-  'Lost': '#505050'
+  'To Be Repaired': '#ffc107',
+  'Lost': '#6c757d',
+  'In Use': '#17a2b8',
+  'Scrapped': '#343a40',
+  'Returned': '#e83e8c',
+  'Maintenance': '#fd7e14'
 };
+const FALLBACK_COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#d0ed57', '#a4de6c', '#ff8042', '#00C49F', '#FFBB28'];
 
 export const StatusDistributionWidget: React.FC = () => {
   const [data, setData] = useState<any[]>([]);
@@ -39,10 +45,10 @@ export const StatusDistributionWidget: React.FC = () => {
               <PieChart>
                 <Pie data={data} dataKey="total_count" nameKey="status_name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} label>
                   {data.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.status_name] || '#8884d8'} />
+                    <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.status_name] || FALLBACK_COLORS[index % FALLBACK_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip formatter={(value) => [value, 'Quantity']} />
                 <Legend verticalAlign="bottom" height={36}/>
               </PieChart>
             </ResponsiveContainer>
