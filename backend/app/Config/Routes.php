@@ -156,6 +156,7 @@ $routes->group('api', static function ($routes){
         $routes->get('location-distribution', 'Statistics::getLocationDistribution');
         $routes->get('institute-distribution', 'Statistics::getInstituteDistribution');
         $routes->get('orphaned-components', 'Statistics::getOrphanedComponents');
+        $routes->get('location-equipments', 'Statistics::getEquipmentsByLocation');
     });
 
     $env = Services::environment();

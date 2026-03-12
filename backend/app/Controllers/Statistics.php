@@ -103,4 +103,34 @@ class Statistics extends ResourceController
         
         return $this->respond(['status' => 200, 'data' => $builder->get()->getResultArray()]);
     }
+
+    /**
+     * Get the list of equipments for a specific location.
+     * @return \CodeIgniter\HTTP\ResponseInterface
+     */
+    public function getEquipmentsByLocation()
+    {
+        $locationName = $this->request->getGet('location');
+        
+        if (!$locationName) {
+            return $this->fail('Location name is required', 400);
+        }
+
+        $db = \Config\Database::connect();
+        $builder = $db->table('equipments e');
+        
+        $builder->select('e.id as equipment_id, et.name as type_name, s.name as status_name, i.name as owner_name');
+        
+        $builder->join('equipment_types et', 'e.type_id = et.id', 'left');
+        $builder->join('statuses s', 'e.status_id = s.id', 'left');
+        $builder->join('institutes i', 'e.owner_id = i.id', 'left');
+        $builder->join('locations l', 'e.location_id = l.id', 'left');
+        
+        $builder->where('e.deleted_at', null);
+        $builder->where('l.name', $locationName);
+        $builder->orderBy('e.id', 'ASC');
+        
+        $query = $builder->get();
+        return $this->respond(['status' => 200, 'data' => $query->getResultArray()]);
+    }
 }

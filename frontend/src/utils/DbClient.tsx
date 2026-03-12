@@ -24,6 +24,7 @@ interface EndpointType {
   statistics_location: string;
   statistics_institute: string;
   statistics_orphaned: string;
+  statistics_location_equipments: string;
 }
 
 const ENDPOINT: EndpointType = {
@@ -49,7 +50,8 @@ const ENDPOINT: EndpointType = {
   statistics_status: 'api/v1/statistics/global-status',
   statistics_location: 'api/v1/statistics/location-distribution',
   statistics_institute: 'api/v1/statistics/institute-distribution',
-  statistics_orphaned: 'api/v1/statistics/orphaned-components'
+  statistics_orphaned: 'api/v1/statistics/orphaned-components',
+  statistics_location_equipments: 'api/v1/statistics/location-equipments'
 };
 
 export function getEndpoint(name: keyof EndpointType): string{
@@ -181,6 +183,17 @@ const DbClient = {
       return response.data;
     } catch (error) {
       console.error("Error fetching orphaned components:", error);
+      throw error;
+    }
+  },
+
+  getEquipmentsByLocation: async function(locationName: string) {
+    try {
+      const url = `${getEndpoint('statistics_location_equipments')}?location=${encodeURIComponent(locationName)}`;
+      const response = await axios.get(url, { headers: getRequestHeaders() });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching location details:", error);
       throw error;
     }
   }

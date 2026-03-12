@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Button } from 'primereact/button';
 import { SelectButton } from 'primereact/selectbutton';
+import { Dialog } from 'primereact/dialog';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 import DbClient from '../../../utils/DbClient';
 import { exportChartAsImage } from '../../../utils/exportUtils';
 
@@ -13,6 +16,11 @@ export const LocationDistributionWidget: React.FC = () => {
   const [scale, setScale] = useState<'auto' | 'log'>('auto');
   const [exportFormat, setExportFormat] = useState<'PNG' | 'PDF' | 'CSV'>('PNG');
   const exportOptions = ['PNG', 'PDF', 'CSV'];
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [locationEquipments, setLocationEquipments] = useState<any[]>([]);
+  const [loadingEquipments, setLoadingEquipments] = useState(false);
 
   useEffect(() => {
     DbClient.getLocationDistribution()
@@ -38,6 +46,25 @@ export const LocationDistributionWidget: React.FC = () => {
     }
   };
 
+  // Handle click on a specific bar
+  const onBarClick = (barData: any) => {
+    const locName = barData?.payload?.location_name || barData?.location_name;
+    if (!locName) return;
+
+    setSelectedLocation(locName);
+    setShowModal(true);
+    setLoadingEquipments(true);
+
+    DbClient.getEquipmentsByLocation(locName)
+      .then(res => {
+        if (res && res.data) {
+          setLocationEquipments(res.data);
+        }
+      })
+      .catch(err => console.error("Failed to load details", err))
+      .finally(() => setLoadingEquipments(false));
+  };
+
   if (loading) return <div className="p-4">Loading location data...</div>;
 
   return (
@@ -61,16 +88,16 @@ export const LocationDistributionWidget: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart layout="vertical" data={data} margin={{ top: 10, right: 30, left: 40, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                <XAxis 
-                    type="number" 
-                    scale={scale} 
-                    domain={scale === 'log' ? [1, 'auto'] : [0, 'auto']} 
-                    allowDataOverflow 
-                    label={{ value: 'Quantity', position: 'bottom', offset: 0 }} 
-                />
+                <XAxis type="number" scale={scale} domain={scale === 'log' ? [1, 'auto'] : [0, 'auto']} allowDataOverflow label={{ value: 'Quantity', position: 'bottom', offset: 0 }} />
                 <YAxis dataKey="location_name" type="category" width={80} tick={{fontSize: 12}} />
                 <Tooltip cursor={{fill: '#f5f5f5'}} formatter={(value) => [value, 'Quantity']} />
-                <Bar dataKey="total_count" name="Quantity" radius={[0, 4, 4, 0]}>
+                <Bar 
+                  dataKey="total_count" 
+                  name="Quantity" 
+                  radius={[0, 4, 4, 0]} 
+                  onClick={onBarClick} 
+                  style={{ cursor: 'pointer' }}
+                >
                   {data.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
@@ -80,6 +107,30 @@ export const LocationDistributionWidget: React.FC = () => {
           </div>
         </div>
       )}
+
+      <Dialog 
+        header={`Equipments in ${selectedLocation}`} 
+        visible={showModal} 
+        style={{ width: '70vw' }} 
+        onHide={() => setShowModal(false)}
+        maximizable
+      >
+        <DataTable 
+          value={locationEquipments} 
+          loading={loadingEquipments} 
+          paginator 
+          rows={10} 
+          rowsPerPageOptions={[5, 10, 25, 50]}
+          emptyMessage="No equipments found in this location."
+          size="small"
+          stripedRows
+        >
+          <Column field="equipment_id" header="ID" sortable />
+          <Column field="type_name" header="Type" sortable />
+          <Column field="status_name" header="Status" sortable />
+          <Column field="owner_name" header="Owner / Institute" sortable />
+        </DataTable>
+      </Dialog>
     </div>
   );
 };
