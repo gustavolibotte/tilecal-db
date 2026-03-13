@@ -67,14 +67,64 @@ export const LocationDistributionWidget: React.FC = () => {
       .finally(() => setLoadingEquipments(false));
   };
 
+  const exportModalCSV = () => {
+    if (!locationEquipments || locationEquipments.length === 0) return;
+    
+    const flattenedData = locationEquipments.map(row => {
+        const flat: any = { ...row };
+        if (flat.type_params && typeof flat.type_params === 'object') {
+            Object.keys(flat.type_params).forEach(pk => {
+                flat[`param_${pk}`] = flat.type_params[pk];
+            });
+            delete flat.type_params;
+        }
+        return flat;
+    });
+
+    const keysSet = new Set<string>();
+    flattenedData.forEach(row => Object.keys(row).forEach(k => keysSet.add(k)));
+    const keys = Array.from(keysSet);
+    
+    const csv = [
+      keys.join(','),
+      ...flattenedData.map(row => keys.map(k => `"${(row[k] ?? '').toString().replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `equipments_${selectedLocation}.csv`;
+    link.click();
+  };
+
+  const renderModalHeader = () => (
+    <div className="flex justify-content-between align-items-center w-full pr-4">
+      <span>Equipments in {selectedLocation}</span>
+      <div className="flex gap-2">
+        <Button 
+          icon="pi pi-external-link" 
+          label="View in Equipments Page" 
+          className="p-button-sm p-button-outlined p-button-info" 
+          onClick={() => navigate('/equipments', { state: { filters: { location_name: selectedLocation } } })} 
+        />
+        <Button 
+          icon="pi pi-file-excel" 
+          label="Export All CSV" 
+          className="p-button-sm p-button-success" 
+          onClick={exportModalCSV} 
+        />
+      </div>
+    </div>
+  );
+
   const idBodyTemplate = (rowData: any) => {
     return (
       <Button 
-        label={rowData.equipment_id} 
+        label={rowData.id} 
         className="p-button-link p-0 m-0" 
         style={{ padding: 0 }}
-        onClick={() => navigate(getEquipviewRoute(rowData.equipment_id))} 
-        tooltip="View Equipment Details"
+        onClick={() => navigate(getEquipviewRoute(rowData.id))} 
+        tooltip="View Details"
         tooltipOptions={{position: 'top'}}
       />
     );
@@ -116,9 +166,9 @@ export const LocationDistributionWidget: React.FC = () => {
         </div>
       )}
 
-      <Dialog header={`Equipments in ${selectedLocation}`} visible={showModal} style={{ width: '70vw' }} onHide={() => setShowModal(false)} maximizable>
-        <DataTable value={locationEquipments} loading={loadingEquipments} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50]} emptyMessage="No equipments found in this location." size="small" stripedRows>
-          <Column field="equipment_id" header="ID" body={idBodyTemplate} sortable />
+      <Dialog header={renderModalHeader()} visible={showModal} style={{ width: '80vw' }} onHide={() => setShowModal(false)} maximizable>
+        <DataTable value={locationEquipments} loading={loadingEquipments} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50, 100, 250, 500]} emptyMessage="No equipments found in this location." size="small" stripedRows>
+          <Column field="id" header="ID" body={idBodyTemplate} sortable />
           <Column field="type_name" header="Type" sortable />
           <Column field="status_name" header="Status" sortable />
           <Column field="owner_name" header="Owner / Institute" sortable />

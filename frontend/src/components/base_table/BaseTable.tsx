@@ -1,4 +1,5 @@
 import { ReactNode, useRef, useState, useMemo } from 'react'
+import { useLocation } from 'react-router-dom';
 import { 
   DataTable,
   DataTableFilterMeta,
@@ -30,19 +31,28 @@ export interface ColumnMeta extends OmittedColumnProps {
 
 export function BaseTable(props: TableProps){
 
+  const routeLocation = useLocation();
+
   const getClearFilters = (): DataTableFilterMeta => {
     let filters: DataTableFilterMeta = {};
     const filterableColumns = props.columns.filter(
       (colProps: ColumnProps) => Boolean(colProps.filter));
     filterableColumns.forEach(
         (colProps: any)  => {
-            filters[colProps.field] = {value: null, matchMode: FilterMatchMode.CONTAINS}
+            let initialValue = null;
+            if (routeLocation.state?.filters && routeLocation.state.filters[colProps.field]) {
+                initialValue = routeLocation.state.filters[colProps.field];
+            }
+            filters[colProps.field] = {value: initialValue, matchMode: FilterMatchMode.CONTAINS}
         }
     );
     return filters;
   }
 
   const clearFilter = (): void => {
+    if (routeLocation.state && routeLocation.state.filters) {
+        routeLocation.state.filters = undefined;
+    }
     setFilters(getClearFilters());
     setLazyParams(prev => ({ ...prev, first: 0, page: 0 }));
   }

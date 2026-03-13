@@ -105,7 +105,7 @@ class Statistics extends ResourceController
     }
 
     /**
-     * Get the list of equipments for a specific location.
+     * Get the list of ALL equipments and ALL columns for a specific location.
      * @return \CodeIgniter\HTTP\ResponseInterface
      */
     public function getEquipmentsByLocation()
@@ -116,21 +116,21 @@ class Statistics extends ResourceController
             return $this->fail('Location name is required', 400);
         }
 
-        $db = \Config\Database::connect();
-        $builder = $db->table('equipments e');
+        $equipmentModel = model('EquipmentModel')->asArray();
         
-        $builder->select('e.id as equipment_id, et.name as type_name, s.name as status_name, i.name as owner_name');
+        $queryModel = $equipmentModel->fullQuery();
+        $queryModel->where('locations.name', $locationName);
+        $queryModel->where('equipments.deleted_at', null);
         
-        $builder->join('equipment_types et', 'e.type_id = et.id', 'left');
-        $builder->join('statuses s', 'e.status_id = s.id', 'left');
-        $builder->join('institutes i', 'e.owner_id = i.id', 'left');
-        $builder->join('locations l', 'e.location_id = l.id', 'left');
+        $data = $queryModel->findAll();
+
+        helper('app_array');
+        foreach ($data as &$sample) {
+            if (isset($sample['type_params']) && is_string($sample['type_params'])) {
+                $sample['type_params'] = json_decode($sample['type_params'], true);
+            }
+        }
         
-        $builder->where('e.deleted_at', null);
-        $builder->where('l.name', $locationName);
-        $builder->orderBy('e.id', 'ASC');
-        
-        $query = $builder->get();
-        return $this->respond(['status' => 200, 'data' => $query->getResultArray()]);
+        return $this->respond(['status' => 200, 'data' => $data]);
     }
 }
