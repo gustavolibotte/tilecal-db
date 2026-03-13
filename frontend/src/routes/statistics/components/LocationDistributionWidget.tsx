@@ -105,11 +105,11 @@ export const LocationDistributionWidget: React.FC = () => {
           icon="pi pi-external-link" 
           label="View in Equipments Page" 
           className="p-button-sm p-button-outlined p-button-info" 
-          onClick={() => navigate('/equipments', { state: { filters: { location_name: selectedLocation } } })} 
+          onClick={() => navigate('/equipment', { state: { filters: { location_name: selectedLocation } } })} 
         />
         <Button 
           icon="pi pi-file-excel" 
-          label="Export All CSV" 
+          label="Export CSV" 
           className="p-button-sm p-button-success" 
           onClick={exportModalCSV} 
         />
