@@ -40,12 +40,25 @@ class Equipments extends APIController
 
         $inputRules = [
             'id' => [
-                '\App\Validation\GeneralRules::permitEmpty' => [],
-                '\App\Validation\EquipmentRules::idIsSanitized' => []
+                '\App\Validation\GeneralRules::permitEmpty' => []
             ],
             'type_name' => [
-                '\App\Validation\GeneralRules::permitEmpty' => [],
-                '\App\Validation\EquipmentTypeRules::nameIsSanitized' => []
+                '\App\Validation\GeneralRules::permitEmpty' => []
+            ],
+            'status_name' => [
+                '\App\Validation\GeneralRules::permitEmpty' => []
+            ],
+            'location_name' => [
+                '\App\Validation\GeneralRules::permitEmpty' => []
+            ],
+            'owner_name' => [
+                '\App\Validation\GeneralRules::permitEmpty' => []
+            ],
+            'detector_location_name' => [
+                '\App\Validation\GeneralRules::permitEmpty' => []
+            ],
+            'comments' => [
+                '\App\Validation\GeneralRules::permitEmpty' => []
             ],
             'relatedFileId' => [
                 '\App\Validation\GeneralRules::permitEmpty' => [],
@@ -74,8 +87,14 @@ class Equipments extends APIController
         $validInput = $validationRes['validatedData'];
 
         $equipmentModel = model('EquipmentModel')->asArray();
-        $equipmentModel = $this->parseFilterCondition($validInput['id'], 'equipments.id', $equipmentModel);
-        $equipmentModel = $this->parseFilterCondition($validInput['type_name'], 'equipment_types.name', $equipmentModel);
+        
+        $equipmentModel = $this->parseFilterCondition($validInput['id'] ?? null, 'equipments.id', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition($validInput['type_name'] ?? null, 'equipment_types.name', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition($validInput['status_name'] ?? null, 'statuses.name', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition($validInput['location_name'] ?? null, 'locations.name', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition($validInput['owner_name'] ?? null, 'institutes.name', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition($validInput['detector_location_name'] ?? null, 'detector_locations.name', $equipmentModel);
+        $equipmentModel = $this->parseFilterCondition($validInput['comments'] ?? null, 'equipments.comments', $equipmentModel);
 
         if (!empty($validInput['relatedFileId'])) {
             $equipmentModel->joinFiles();
@@ -506,7 +525,7 @@ class Equipments extends APIController
 
         $inputData = $this->request->getVar(array_keys($inputRules));
         helper(['cast', 'response']);
-        $inputData = std_to_array($inputData);  // The data inside slots come as an stdClass
+        $inputData = std_to_array($inputData);
         $validationRes = Validator::validate($inputData, $inputRules);
         if (!$validationRes['valid']) {
             return failValidationErrors($validationRes['errors'], $inputData);
@@ -645,8 +664,6 @@ class Equipments extends APIController
             ->where('equipment_id', $validInput['equipment_id'])
             ->where('file_id', $fileId)
             ->first()->id;
-        // I don't now why but calling delete after the where clause raises the error
-        // "Deletes are not allowed unless they contain a \"where\" or \"like\" clause."
         model('Equipment2FileModel')->delete($relationId, purge: true); 
         helper('response');
         return buildAPIResponse(
