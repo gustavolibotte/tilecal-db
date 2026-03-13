@@ -1,10 +1,11 @@
-import { ReactNode, useRef, useState } from 'react'
+import { ReactNode, useRef, useState, useMemo } from 'react'
 import { 
   DataTable,
   DataTableFilterMeta,
   DataTableExpandedRows,
   DataTableValueArray,
-  DataTableBaseProps} from 'primereact/datatable';
+  DataTableBaseProps,
+  DataTableFilterEvent} from 'primereact/datatable';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 import { Column, ColumnProps } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -35,7 +36,7 @@ export function BaseTable(props: TableProps){
       (colProps: ColumnProps) => Boolean(colProps.filter));
     filterableColumns.forEach(
         (colProps: any)  => {
-            filters[colProps.field] = {value: null, matchMode: FilterMatchMode.STARTS_WITH}
+            filters[colProps.field] = {value: null, matchMode: FilterMatchMode.CONTAINS}
         }
     );
     return filters;
@@ -43,6 +44,7 @@ export function BaseTable(props: TableProps){
 
   const clearFilter = (): void => {
     setFilters(getClearFilters());
+    setLazyParams(prev => ({ ...prev, first: 0, page: 0 }));
   }
 
   const onColumnToggle = (event: MultiSelectChangeEvent): void => {
@@ -64,7 +66,6 @@ export function BaseTable(props: TableProps){
         <span>Select Columns:</span>
         <MultiSelect value={visibleColumns} options={props.columns} optionLabel="header" onChange={onColumnToggle} className="w-full sm:w-20rem" display="chip" />
         <Button type="button" icon="pi pi-filter-slash" label="Clear Filters" outlined onClick={clearFilter} />
-        {/* <Button type="button" icon="pi pi-file-pdf" label="PDF" onClick={exportPdf} data-pr-tooltip="PDF" /> */}
         <Button type="button" icon="pi pi-file" label="CSV" onClick={() => exportCSV(false)} data-pr-tooltip="CSV" />
         <Button type="button" icon="pi pi-refresh" onClick={invalidateQuery} data-pr-tooltip="Refresh" />
       </div>);
@@ -73,7 +74,7 @@ export function BaseTable(props: TableProps){
   const invalidateQuery = (): void => {
     queryClient.invalidateQueries({
       queryKey: [props.queryKey[0], props.queryKey[1]]
-    });   // Triggers query refetch
+    });
     clearFilter();
   }
 
@@ -89,11 +90,24 @@ export function BaseTable(props: TableProps){
     page: 0,
   });
 
+  const activeFilters = useMemo(() => {
+    const parsedFilters: Record<string, any> = {};
+    Object.keys(filters).forEach(key => {
+      const filterObj = filters[key] as any;
+      if (filterObj && filterObj.value !== null && filterObj.value !== undefined && filterObj.value !== '') {
+        parsedFilters[key] = filterObj.value;
+      }
+    });
+    return parsedFilters;
+  }, [filters]);
+
   const queryParams = { 
     ...props.queryKey[2], 
     limit: lazyParams.rows, 
-    offset: lazyParams.first 
+    offset: lazyParams.first,
+    ...activeFilters 
   };
+  
   const paginatedQueryKey = [props.queryKey[0], props.queryKey[1], queryParams];
 
   const onPage = (event: any) => {
@@ -104,7 +118,11 @@ export function BaseTable(props: TableProps){
     });
   };
 
-  // Any exists only to deal with ts errors
+  const onFilter = (event: DataTableFilterEvent) => {
+    setFilters(event.filters);
+    setLazyParams(prev => ({ ...prev, first: 0, page: 0 }));
+  };
+
   const {isError, isPending, data: response, error}: any = useQuery({
     queryKey: paginatedQueryKey,
   });
@@ -116,7 +134,6 @@ export function BaseTable(props: TableProps){
   } else if (isPending){
     return <p>Loading...</p>;
   } else {
-    // Essa lógica garante retrocompatibilidade com endpoints que não tem paginação
     const responseData = response?.data || [];
     const isPaginated = !Array.isArray(responseData) && responseData.data !== undefined;
     const tableData = isPaginated ? responseData.data : responseData;
@@ -131,9 +148,10 @@ export function BaseTable(props: TableProps){
       first={lazyParams.first}
       rows={lazyParams.rows}
       onPage={onPage}
-      tableStyle={{ minWidth: '50rem' }}
+      onFilter={onFilter}
       filters={filters}
       filterDisplay="menu"
+      tableStyle={{ minWidth: '50rem' }}
       showGridlines
       stripedRows
       paginator
