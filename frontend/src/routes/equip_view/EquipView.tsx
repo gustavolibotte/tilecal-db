@@ -8,6 +8,7 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import EquipForm from '../../components/equip_form/EquipForm';
 import PmtForm from '../../components/pmt_form/PmtForm';
+import DaughterboardForm from '../../components/daughterboard_form/DaughterboardForm';
 import NotFound from '../../components/not_found/NotFound';
 import RelatedEquipTable from '../../components/related_equip_table/RelatedEquipTable';
 import EquipHistTable from '../../components/equip_hist/EquipHistTable';
@@ -108,12 +109,16 @@ export default function EquipView() {
       });
       setVisibleEditForm(false);
     }
+    
     let editForm;
-    if (typeName == 'PMT'){
+    if (typeName === 'PMT'){
       editForm = <PmtForm equipId={equipId} onSuccess={onSuccess} isEdit/>;
-    } else{
+    } else if (typeName === 'Daughterboard') {
+      editForm = <DaughterboardForm equipId={equipId} typeName={typeName} onSuccess={onSuccess} isEdit/>;
+    } else {
       editForm = <EquipForm equipId={equipId} typeName={typeName} onSuccess={onSuccess} isEdit/>;
     }
+
     const equipData = equipArray[0];
     let buttons;
     if (equipData.deleted_at && user.canRestore()){
