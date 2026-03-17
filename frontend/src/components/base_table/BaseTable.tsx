@@ -106,6 +106,7 @@ export function BaseTable(props: TableProps){
       const filterObj = filters[key] as any;
       if (filterObj && filterObj.value !== null && filterObj.value !== undefined && filterObj.value !== '') {
         parsedFilters[key] = filterObj.value;
+        parsedFilters[`${key}_matchMode`] = filterObj.matchMode; 
       }
     });
     return parsedFilters;

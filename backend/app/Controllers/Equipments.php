@@ -39,27 +39,20 @@ class Equipments extends APIController
         }
 
         $inputRules = [
-            'id' => [
-                '\App\Validation\GeneralRules::permitEmpty' => []
-            ],
-            'type_name' => [
-                '\App\Validation\GeneralRules::permitEmpty' => []
-            ],
-            'status_name' => [
-                '\App\Validation\GeneralRules::permitEmpty' => []
-            ],
-            'location_name' => [
-                '\App\Validation\GeneralRules::permitEmpty' => []
-            ],
-            'owner_name' => [
-                '\App\Validation\GeneralRules::permitEmpty' => []
-            ],
-            'detector_location_name' => [
-                '\App\Validation\GeneralRules::permitEmpty' => []
-            ],
-            'comments' => [
-                '\App\Validation\GeneralRules::permitEmpty' => []
-            ],
+            'id' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'id_matchMode' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'type_name' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'type_name_matchMode' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'status_name' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'status_name_matchMode' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'location_name' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'location_name_matchMode' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'owner_name' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'owner_name_matchMode' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'detector_location_name' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'detector_location_name_matchMode' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'comments' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'comments_matchMode' => ['\App\Validation\GeneralRules::permitEmpty' => []],
             'relatedFileId' => [
                 '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\AppFileRules::idIsSanitized' => []
@@ -68,15 +61,9 @@ class Equipments extends APIController
                 '\App\Validation\GeneralRules::permitEmpty' => [],
                 '\App\Validation\EquipmentRules::idIsSanitized' => []
             ],
-            'onlyDeleted' => [
-                '\App\Validation\GeneralRules::permitEmpty' => []
-            ],
-            'limit' => [
-                '\App\Validation\GeneralRules::permitEmpty' => []
-            ],
-            'offset' => [
-                '\App\Validation\GeneralRules::permitEmpty' => []
-            ]
+            'onlyDeleted' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'limit' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'offset' => ['\App\Validation\GeneralRules::permitEmpty' => []]
         ];
 
         $inputData = $this->request->getVar(array_keys($inputRules));
@@ -88,13 +75,13 @@ class Equipments extends APIController
 
         $equipmentModel = model('EquipmentModel')->asArray();
         
-        $equipmentModel = $this->parseFilterCondition($validInput['id'] ?? null, 'equipments.id', $equipmentModel);
-        $equipmentModel = $this->parseFilterCondition($validInput['type_name'] ?? null, 'equipment_types.name', $equipmentModel);
-        $equipmentModel = $this->parseFilterCondition($validInput['status_name'] ?? null, 'statuses.name', $equipmentModel);
-        $equipmentModel = $this->parseFilterCondition($validInput['location_name'] ?? null, 'locations.name', $equipmentModel);
-        $equipmentModel = $this->parseFilterCondition($validInput['owner_name'] ?? null, 'institutes.name', $equipmentModel);
-        $equipmentModel = $this->parseFilterCondition($validInput['detector_location_name'] ?? null, 'detector_locations.name', $equipmentModel);
-        $equipmentModel = $this->parseFilterCondition($validInput['comments'] ?? null, 'equipments.comments', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['id'] ?? null, $validInput['id_matchMode'] ?? null, 'equipments.id', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['type_name'] ?? null, $validInput['type_name_matchMode'] ?? null, 'equipment_types.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['status_name'] ?? null, $validInput['status_name_matchMode'] ?? null, 'statuses.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['location_name'] ?? null, $validInput['location_name_matchMode'] ?? null, 'locations.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['owner_name'] ?? null, $validInput['owner_name_matchMode'] ?? null, 'institutes.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['detector_location_name'] ?? null, $validInput['detector_location_name_matchMode'] ?? null, 'detector_locations.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['comments'] ?? null, $validInput['comments_matchMode'] ?? null, 'equipments.comments', $equipmentModel);
 
         if (!empty($validInput['relatedFileId'])) {
             $equipmentModel->joinFiles();

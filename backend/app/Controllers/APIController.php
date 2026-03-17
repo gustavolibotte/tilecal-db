@@ -175,6 +175,46 @@ class APIController extends BaseController
         return $queryBuilder;
     }
 
+    protected function parseDynamicFilter(mixed $var, ?string $matchMode, string $colName, BaseBuilder|Model $queryBuilder): BaseBuilder|Model
+    {   
+        if (empty($var) && $var !== '0') {
+            return $queryBuilder;
+        }
+
+        $matchMode = $matchMode ?? 'contains';
+
+        if (is_array($var)) {
+            if ($matchMode === 'notEquals') {
+                return $queryBuilder->whereNotIn($colName, $var);
+            }
+            return $queryBuilder->whereIn($colName, $var);
+        }
+
+        switch ($matchMode) {
+            case 'startsWith':
+                $queryBuilder = $queryBuilder->like($colName, (string)$var, 'after');
+                break;
+            case 'endsWith':
+                $queryBuilder = $queryBuilder->like($colName, (string)$var, 'before');
+                break;
+            case 'equals':
+                $queryBuilder = $queryBuilder->where($colName, $var);
+                break;
+            case 'notEquals':
+                $queryBuilder = $queryBuilder->where($colName . ' !=', $var);
+                break;
+            case 'notContains':
+                $queryBuilder = $queryBuilder->notLike($colName, (string)$var, 'both');
+                break;
+            case 'contains':
+            default:
+                $queryBuilder = $queryBuilder->like($colName, (string)$var, 'both');
+                break;
+        }
+
+        return $queryBuilder;
+    }
+
     protected function getValidatedData(array $rules): array
     {
         $data = $this->getRequestValuesFromRules($rules);
