@@ -57,4 +57,4 @@ RUN bash build_app.sh \
 && chmod -R 777 /var/www/html
 
 WORKDIR /var/www/html
-CMD php spark serve --host 0.0.0.0 --port 8080
+CMD php spark migrate && php spark serve --host 0.0.0.0 --port 8080
