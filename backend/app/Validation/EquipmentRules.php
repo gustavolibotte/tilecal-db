@@ -757,4 +757,60 @@ class EquipmentRules
             $data['serial']);
         return true;
     }
+
+    /**
+     * Returns the rules for registering a Daughterboard.
+     * @return array Rules for registering a Daughterboard
+     */
+    public static function getDaughterboardRegisterRule(): array
+    {
+        $daughterboardRules = [
+            'fpga_dna_a' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\StringRules::exactLength' => ['params' => ['length' => 24]],
+                '\App\Validation\StringRules::alphaNumeric' => []
+            ],
+            'fpga_dna_b' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\StringRules::exactLength' => ['params' => ['length' => 24]],
+                '\App\Validation\StringRules::alphaNumeric' => []
+            ],
+            'serial_number' => [
+                '\App\Validation\GeneralRules::permitEmpty' => [],
+                '\App\Validation\StringRules::regexMatch' => [
+                    'params' => ['pattern' => '/^11[0-9]{5}$/']
+                ]
+            ]
+        ];
+        
+        return array_merge(self::getDefaultRegisterRule(), $daughterboardRules);
+    }
+
+    /**
+     * Returns the rules for editing a Daughterboard.
+     * @return array Rules for editing a Daughterboard
+     */
+    public static function getDaughterboardEditRule(): array
+    {
+        $daughterboardRules = [
+            'fpga_dna_a' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\StringRules::exactLength' => ['params' => ['length' => 24]],
+                '\App\Validation\StringRules::alphaNumeric' => []
+            ],
+            'fpga_dna_b' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\StringRules::exactLength' => ['params' => ['length' => 24]],
+                '\App\Validation\StringRules::alphaNumeric' => []
+            ],
+            'serial_number' => [
+                '\App\Validation\GeneralRules::removeEmpty' => [],
+                '\App\Validation\StringRules::regexMatch' => [
+                    'params' => ['pattern' => '/^11[0-9]{5}$/']
+                ]
+            ]
+        ];
+        
+        return array_merge(self::getDefaultEditRule(), $daughterboardRules);
+    }
 }

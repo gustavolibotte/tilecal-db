@@ -28,6 +28,15 @@ export const filePathRules = Yup.string().max(
   'Invalid CERNBox link.'
 ).url();
 
+export const fpgaDnaRules = Yup.string().matches(
+  /^[A-Za-z0-9]{24}$/,
+  "Kintex ID (FPGA DNA) must be exactly 24 alphanumeric characters."
+).nullable();
+
+export const daughterboardSerialRules = Yup.string().matches(
+  /^11[0-9]{5}$/,
+  "Serial number must be exactly 7 digits and start with '11' (e.g. 1101001)."
+).nullable();
 
 export function extractSequentialNumber(id: string): string{
   if (id.length === 14){

@@ -148,7 +148,11 @@
         "system": "LL",
         "project": "20",
         "id_regex": "/11[0-9]{5}/",
-        "params": [],
+        "params": [
+            "fpga_dna_a",
+            "fpga_dna_b",
+            "serial_number"
+        ],
         "in_detector": true,
         "description": null,
         "active": 1,
