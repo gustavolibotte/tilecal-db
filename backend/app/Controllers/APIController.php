@@ -184,31 +184,34 @@ class APIController extends BaseController
         $matchMode = $matchMode ?? 'contains';
 
         if (is_array($var)) {
+            $varLower = array_map('strtolower', $var);
             if ($matchMode === 'notEquals') {
-                return $queryBuilder->whereNotIn($colName, $var);
+                return $queryBuilder->whereNotIn("LOWER($colName)", $varLower);
             }
-            return $queryBuilder->whereIn($colName, $var);
+            return $queryBuilder->whereIn("LOWER($colName)", $varLower);
         }
+
+        $varLower = strtolower((string)$var);
 
         switch ($matchMode) {
             case 'startsWith':
-                $queryBuilder = $queryBuilder->like($colName, (string)$var, 'after');
+                $queryBuilder = $queryBuilder->like("LOWER($colName)", $varLower, 'after');
                 break;
             case 'endsWith':
-                $queryBuilder = $queryBuilder->like($colName, (string)$var, 'before');
+                $queryBuilder = $queryBuilder->like("LOWER($colName)", $varLower, 'before');
                 break;
             case 'equals':
-                $queryBuilder = $queryBuilder->where($colName, $var);
+                $queryBuilder = $queryBuilder->where("LOWER($colName)", $varLower);
                 break;
             case 'notEquals':
-                $queryBuilder = $queryBuilder->where($colName . ' !=', $var);
+                $queryBuilder = $queryBuilder->where("LOWER($colName) !=", $varLower);
                 break;
             case 'notContains':
-                $queryBuilder = $queryBuilder->notLike($colName, (string)$var, 'both');
+                $queryBuilder = $queryBuilder->notLike("LOWER($colName)", $varLower, 'both');
                 break;
             case 'contains':
             default:
-                $queryBuilder = $queryBuilder->like($colName, (string)$var, 'both');
+                $queryBuilder = $queryBuilder->like("LOWER($colName)", $varLower, 'both');
                 break;
         }
 
