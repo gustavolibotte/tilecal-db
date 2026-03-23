@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Button } from "primereact/button";
 import ButtonConfirmation from "../../components/button_confirmation/ButtonConfirmation";
 import { useFormik } from "formik";
-import FormText from "../../components/form_text/FormText";
 import EquipAssembleComponents from "../../components/equip_assemble_components/EquipAssembleComponents";
+import SlotSearchInput from "../../components/slot_search_input/SlotSearchInput";
 import { preventEnterDefault } from "../../utils/event";
 import { equipIdRules } from "../../utils/validation_rules";
 import * as Yup from 'yup';
@@ -36,31 +36,38 @@ export default function EquipAssemble() {
   }
   
   return (
-    <div className="col-12">`
+    <div className="col-12">
       <h1>Assemble Equipment:</h1>
         <form onSubmit={formik.handleSubmit} onKeyDown={preventEnterDefault}>
-        <div className="flex flex-wrap align-items-center justify-content gap-2">
-          <FormText
+        {/* Usamos align-items-center para os botões ficarem alinhados com a caixa de texto */}
+        <div className="flex flex-wrap align-items-center justify-content-start gap-2">
+          
+          <SlotSearchInput
             id='parent_id'
-            name='Search for an Equipment to assemble parts'
+            label='Search for an Equipment to assemble parts'
             value={formik.values.parent_id}
             help='Example: ABC1234'
             required
-            onChange={(e) => {
+            onChange={(val) => {
               setShowAssemblyStatus(false);
-              formik.setFieldValue('parent_id', e.target.value);
+              formik.setFieldValue('parent_id', val);
             }}
-            errorText={getFormErrorMessage('parent_id')} />
-          <Button label="Submit" type="submit"/>
-          <ButtonConfirmation 
-          actionLabel="Clear"
-          actionSeverity="danger"
-          onConfirmation={() => {
-            formik.resetForm();
-            setShowAssemblyStatus(false);
-          }}
-          dialogHeader="Clear page?"
-          cancelSeverity="danger"/>
+            errorText={getFormErrorMessage('parent_id')} 
+          />
+
+          <div className="flex gap-2 mb-2">
+              <Button label="Submit" type="submit"/>
+              <ButtonConfirmation 
+                actionLabel="Clear"
+                actionSeverity="danger"
+                onConfirmation={() => {
+                  formik.resetForm();
+                  setShowAssemblyStatus(false);
+                }}
+                dialogHeader="Clear page?"
+                cancelSeverity="danger"
+              />
+          </div>
           </div>
         </form>
       <hr/>

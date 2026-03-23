@@ -5,7 +5,7 @@ import { toast, Id } from 'react-toastify';
 import { useFormik } from 'formik';
 import { AxiosError } from 'axios';
 import { Button } from 'primereact/button';
-import FormText from '../form_text/FormText';
+import SlotSearchInput from '../slot_search_input/SlotSearchInput';
 import { ReactNode, useRef, useState } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
 import { preventEnterDefault } from '../../utils/event';
@@ -48,7 +48,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   const toastId = useRef<Id>('');
 
   const equipTypeQuery: any = useQuery({
-    queryKey: ['equipment_type', 'get', { type_name: parentTypeName }]
+    queryKey: ['equipment_type', 'get', { name: parentTypeName }]
   });
 
   const formik = useFormik<AssembleFormValues>({
@@ -115,24 +115,38 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
 
   return (
     <div className="card flex flex-column gap-3">
-      {equipSlotErrors.length > 0 && <div className="p-message p-message-error">{equipSlotErrors}</div>}
+      {equipSlotErrors.length > 0 && <div className="p-message p-message-error mb-3">{equipSlotErrors}</div>}
       <form onSubmit={formik.handleSubmit} onKeyDown={barcodeReaderSafe ? preventEnterDefault : undefined}>
+        
         {sortedSlots.map((slot: any) => {
           const label = formatSlotLabel(slot.name);
+          
+          let allowedTypes: string[] | undefined = undefined;
+          try {
+            if (typeData.slots) {
+              const parsedSlots = typeof typeData.slots === 'string' ? JSON.parse(typeData.slots) : typeData.slots;
+              const slotDef = parsedSlots.find((s: any) => s.name === slot.name);
+              if (slotDef && slotDef.allowed_type_ids) {
+                allowedTypes = slotDef.allowed_type_ids;
+              }
+            }
+          } catch (e) {
+            console.warn("Could not parse allowed types for slot", slot.name);
+          }
+
           return (
-            <div className="field mt-4" key={slot.name}>
-              <FormText
+            <div className="mt-2" key={slot.name}>
+              <SlotSearchInput
                 id={slot.name}
-                name={label}
+                label={label}
                 value={formik.values[slot.name] || ''}
-                onChange={(e: any) => formik.setFieldValue(slot.name, e.target.value)}
-                placeholder={`Scan ID for ${label}`}
-                help=""
-                errorText=""
+                onChange={(val: string) => formik.setFieldValue(slot.name, val)}
+                allowedTypes={allowedTypes}
               />
             </div>
           );
         })}
+        
         <div className="mt-4">
           <Button type="submit" label="Confirm Assembly" icon="pi pi-box" />
         </div>
