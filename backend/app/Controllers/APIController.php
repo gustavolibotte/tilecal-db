@@ -185,8 +185,22 @@ class APIController extends BaseController
 
         if (is_array($var)) {
             $varLower = array_map('strtolower', $var);
+            
             if ($matchMode === 'notEquals') {
                 return $queryBuilder->whereNotIn("LOWER($colName)", $varLower);
+            } elseif (in_array($matchMode, ['contains', 'startsWith', 'endsWith'])) {
+                $queryBuilder->groupStart();
+                foreach ($varLower as $val) {
+                    if ($matchMode === 'startsWith') {
+                        $queryBuilder->orLike("LOWER($colName)", $val, 'after');
+                    } elseif ($matchMode === 'endsWith') {
+                        $queryBuilder->orLike("LOWER($colName)", $val, 'before');
+                    } else {
+                        $queryBuilder->orLike("LOWER($colName)", $val, 'both');
+                    }
+                }
+                $queryBuilder->groupEnd();
+                return $queryBuilder;
             }
             return $queryBuilder->whereIn("LOWER($colName)", $varLower);
         }

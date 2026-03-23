@@ -18,12 +18,26 @@ interface SlotSearchInputProps {
     help?: string;
 }
 
+const processSearchTerm = (term: string) => {
+    if (!term) return term;
+    
+    const chunks = term.split(/[^a-zA-Z0-9]+/);
+    
+    const validChunks = chunks.filter(c => c.length >= 3);
+    
+    if (validChunks.length > 1) {
+        return validChunks;
+    }
+    
+    return term;
+};
+
 export default function SlotSearchInput({ id, label, value, onChange, allowedTypes, errorText, required, help }: SlotSearchInputProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState(value);
 
     const queryParams: any = {
-        id: searchTerm,
+        id: processSearchTerm(searchTerm),
         id_matchMode: 'contains',
     };
 
@@ -37,7 +51,6 @@ export default function SlotSearchInput({ id, label, value, onChange, allowedTyp
         enabled: isModalOpen 
     });
 
-    // Correção do TypeScript: tratamento seguro da resposta paginada ou array direto
     const responseData: any = data?.data || [];
     const results = (!Array.isArray(responseData) && responseData.data !== undefined) 
         ? responseData.data 
@@ -83,10 +96,14 @@ export default function SlotSearchInput({ id, label, value, onChange, allowedTyp
             <Dialog 
                 header={`Select Equipment for: ${label}`} 
                 visible={isModalOpen} 
-                style={{ width: '60vw' }} 
+                style={{ width: '70vw' }} 
                 onHide={() => setIsModalOpen(false)}
                 dismissableMask
             >
+                <div className="mb-3 text-600">
+                    <i className="pi pi-info-circle mr-2"></i>
+                    Found the following matches for your search. Click on a row to select the exact ID.
+                </div>
                 <DataTable 
                     value={results} 
                     loading={isFetching} 
@@ -102,7 +119,7 @@ export default function SlotSearchInput({ id, label, value, onChange, allowedTyp
                     <Column field="type_name" header="Type" />
                     <Column field="status_name" header="Status" />
                     <Column field="location_name" header="Location" />
-                    <Column field="owner_mne" header="Owner" />
+                    <Column field="owner_name" header="Owner" />
                 </DataTable>
             </Dialog>
         </div>
