@@ -48,7 +48,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   const toastId = useRef<Id>('');
 
   const equipTypeQuery: any = useQuery({
-    queryKey: ['equipment_type', 'get', { name: parentTypeName }]
+    queryKey: ['equipment_type', 'get', { type_name: parentTypeName }]
   });
 
   const formik = useFormik<AssembleFormValues>({
