@@ -3,6 +3,7 @@ import { Button } from 'primereact/button';
 import { Id, toast } from 'react-toastify';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
+import { InputTextarea } from 'primereact/inputtextarea';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import {
@@ -166,10 +167,29 @@ export default function DaughterboardForm({ equipId, typeName, onSuccess, isEdit
         <div className='mt-3'>
           <FormText id='serial' name='Manufacturer Serial' required={!isEdit} value={formik.values.serial} help='Equipment identification code issued by the manufacturer' onChange={(e) => formik.setFieldValue('serial', e.target.value)} errorText={getFormErrorMessage('serial')} />
         </div>
-        <div className='mt-3'>
-          <FormText id='comments' name='Comments' value={formik.values.comments} help='Remarks about the equipment' onChange={(e) => formik.setFieldValue('comments', e.target.value)} errorText={getFormErrorMessage('comments')} />
+        
+        <div className='mt-3 flex flex-column gap-2'>
+          <label htmlFor='comments' className='font-bold text-600'>Comments</label>
+          <InputTextarea
+            id='comments'
+            value={formik.values.comments}
+            onChange={(e) => {
+              formik.setFieldValue('comments', e.target.value);
+            }}
+            rows={4}
+            autoResize
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.stopPropagation();
+              }
+            }}
+            className={getFormErrorMessage('comments') ? 'p-invalid' : ''}
+          />
+          <small className="text-500">Remarks about the equipment</small>
+          {getFormErrorMessage('comments') && <small className="p-error">{getFormErrorMessage('comments')}</small>}
         </div>
-        <div className='mt-3'>
+
+        <div className='mt-4'>
           <Button type="submit" label="Submit" />
         </div>
       </form>

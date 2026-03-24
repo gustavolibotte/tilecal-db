@@ -3,6 +3,7 @@ import { Button } from 'primereact/button';
 import { Id, toast } from 'react-toastify';
 import FormText from '../form_text/FormText';
 import FormDropdown from '../form_dropdown/FormDropdown';
+import { InputTextarea } from 'primereact/inputtextarea';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import {
@@ -19,7 +20,6 @@ import {
   serialRules,
 } from '../../utils/validation_rules';
 import * as Yup from 'yup';
-
 
 interface PMTFormSchema {
   id: string;
@@ -71,7 +71,6 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
   } = useQuery({
     queryKey: ['equipment', 'get', { id: equipId }],
     queryFn: defaultQueryFunction,
-    // This query will only run if equipId is provided
     enabled: !!equipId,
   });
 
@@ -111,19 +110,16 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
         toast.success('Equipment registered with success.');
       }
 
-      // This calls the parent function which closes the dialog
       if (onSuccess) {
         onSuccess();
       }
 
-      // Only reset the form if it was NOT an edit operation
       if (!equipId) {
         formik.resetForm();
       }
     },
     onError: (error: AxiosError) => {
       toast.dismiss(toastId.current);
-      // The following "?" fields are guaranteed with the app
       const responseData: any = error?.response?.data;
       if (responseData.message == __INVALID_DATA_MSG__) {
         Object.keys(responseData.data).forEach((key: string) => {
@@ -163,29 +159,24 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     validationSchema: Yup.object(validationSchema)
   });
 
-  // Use an effect to populate the form once the equipment data is fetched.
   useEffect(() => {
     const responseData: any = equipData?.data || [];
     const equipArray = (!Array.isArray(responseData) && responseData.data !== undefined) 
       ? responseData.data 
       : responseData;
 
-    // The API returns an array, so we take the first element.
     const equipment = equipArray[0];
 
     if (equipment) {
-      // Use setValues to populate the form with the fetched data.
       formik.setValues({
-        ...initialValues, // Ensures all fields from the schema are present
-        ...equipment, // Overwrites with values from the API response
-        // Ensure null values from the API don't break the components
+        ...initialValues,
+        ...equipment,
         comments: equipment.comments || '',
         owner_mne: equipment.owner_mne || '',
         location_name: equipment.location_name || '',
         status_name: equipment.status_name || '',
         serial: equipment.serial || '',
         detector_location_name: equipment.detector_location_name || '',
-        // Nested parameters need to be unpacked from 'type_params'
         beta: equipment.type_params?.beta || null,
         qe: equipment.type_params?.qe || null,
         nominal_hv: equipment.type_params?.nominal_hv || null,
@@ -193,13 +184,12 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
         phase1_position: equipment.type_params?.phase1_position || ''
       });
     }
-  }, [equipData]); // This effect runs whenever equipData changes.
+  }, [equipData]);
 
   const getFormErrorMessage = (name: keyof PMTFormSchema): string | null => {
     return !!(formik.touched[name] && formik.errors[name]) ? String(formik.errors[name]) : null;
   };
   
-  // Add the new query's pending state to the overall loading check.
   const isPending = (
     locationQuery.isPending
     || instituteQuery.isPending
@@ -262,7 +252,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     'R5900MOD'
   ].map((i: string) => {
     return { name: i, value: i };
-  });;
+  });
 
   return (
     <div className="card flex justify-content-center flex-column gap-2">
@@ -387,18 +377,29 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
             }}
             errorText={getFormErrorMessage('phase1_position')} />
         </div>
-        <div className='mt-3'>
-          <FormText
+
+        <div className='mt-3 flex flex-column gap-2'>
+          <label htmlFor='comments' className='font-bold text-600'>Comments</label>
+          <InputTextarea
             id='comments'
-            name='Comments'
             value={formik.values.comments}
-            help='Remarks about the equipment'
             onChange={(e) => {
               formik.setFieldValue('comments', e.target.value);
             }}
-            errorText={getFormErrorMessage('comments')} />
+            rows={4}
+            autoResize
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.stopPropagation();
+              }
+            }}
+            className={getFormErrorMessage('comments') ? 'p-invalid' : ''}
+          />
+          <small className="text-500">Remarks about the equipment</small>
+          {getFormErrorMessage('comments') && <small className="p-error">{getFormErrorMessage('comments')}</small>}
         </div>
-        <div className='mt-3'>
+
+        <div className='mt-4'>
           <Button type="submit" label="Submit" />
         </div>
       </form>
