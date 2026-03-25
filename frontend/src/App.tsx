@@ -20,6 +20,8 @@ import ErrorPage from './routes/error_page/ErrorPage.tsx';
 import { StatisticsDashboard } from './routes/statistics/StatisticsDashboard.tsx';
 import { ROUTES } from './utils/routes.tsx';
 
+import TileCal3D from './components/detector_3d/TileCal3D.tsx';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -84,6 +86,10 @@ export default function App(){
     {
       path: ROUTES.STATISTICS,
       element: <StatisticsDashboard/>,
+    },
+    {
+      path: "test-3d",
+      element: <TileCal3D/>,
     }
   ]
   const router = createBrowserRouter([

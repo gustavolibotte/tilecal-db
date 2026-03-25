@@ -1,27 +1,23 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { json } from 'stream/consumers';
 
 // https://vitejs.dev/config/
-export default defineConfig(() => {
-  return {
-    plugins: [react()],
-    build: {
-      outDir: '../backend/public/dist'
-    },
-    define: {
-      __APP_BASEURL__: JSON.stringify(process.env.app_baseURL),
-      __MAX_FILE_SIZE__: 5000000,
-      __INVALID_DATA_MSG__: JSON.stringify('Invalid data'),
-      __DEFAULT_ERROR_MSG__: JSON.stringify('Error, something went wrong'),
-      __ENV__: JSON.stringify(process.env.ENVIRONMENT),
-      __CLIENTID__: JSON.stringify(process.env.frontend_clientId),
-      __AUTHURL__: JSON.stringify(process.env.sso_auth),
-      __BACKEND_CLIENTID__: JSON.stringify(process.env.sso_clientId),
-      __KEYCLOAK_REFRESH_TIME__: JSON.stringify(process.env.keycloak_refresh_time),
-      __FIELD_REQUIRED_MSG__: JSON.stringify("The field is required"),
-      __MYSQL_MAX_TEXT_SIZE__: 65535,
-      __FIELD_POSITIVE_MSG__: JSON.stringify("The value must be positive"),
+export default defineConfig({
+  plugins: [react()],
+  base: '/dist/', 
+  define: {
+    __MYSQL_MAX_TEXT_SIZE__: 65535, 
+    __DETECTOR_STYLE__: JSON.stringify('industrial'),
+  },
+  build: {
+    outDir: '../backend/public/dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        entryFileNames: `assets/[name].js`,
+        chunkFileNames: `assets/[name].js`,
+        assetFileNames: `assets/[name].[ext]`
+      }
     }
-  };
+  }
 })
