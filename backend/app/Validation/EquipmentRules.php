@@ -813,26 +813,4 @@ class EquipmentRules
         
         return array_merge(self::getDefaultEditRule(), $daughterboardRules);
     }
-
-    public static function buildHvdId(string $fieldName, array &$data, string &$error, array $params): bool
-    {
-        if (isset($data['serial']) && !empty($data['serial'])) {
-            $data['id'] = $data['serial'];
-        }
-        return true;
-    }
-
-    public static function getActiveHvDividerShortCableRegisterRule(): array
-    {
-        $rules = self::getDefaultRegisterRule();
-        $rules['serial']['\App\Validation\EquipmentRules::buildHvdId'] = [];
-        return $rules;
-    }
-
-    public static function getActiveHvDividerLongCableRegisterRule(): array
-    {
-        $rules = self::getDefaultRegisterRule();
-        $rules['serial']['\App\Validation\EquipmentRules::buildHvdId'] = [];
-        return $rules;
-    }
 }

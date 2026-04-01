@@ -162,6 +162,14 @@ class Equipments extends APIController
         $typeName = $validationRes['validatedData']['type_name'];
         $registerRules = EquipmentRules::getRegisterRulesFromTypeName($typeName);
         $inputData = $this->request->getVar(array_keys($registerRules));
+
+        // Auto-map serial to id if id is not provided by the frontend.
+        // This serves as a global fallback for equipment types where the ID is 
+        // identical to the serial number (e.g., FENICS, Mainboards, HVDs).
+        if (empty($inputData['id']) && !empty($inputData['serial'])) {
+            $inputData['id'] = $inputData['serial'];
+        }
+        
         $validationRes = Validator::validate($inputData, $registerRules);
         if (!$validationRes['valid']) {
             return failValidationErrors($validationRes['errors'], $inputData);
