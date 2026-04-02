@@ -102,22 +102,37 @@ class Equipments extends APIController
 
             if (!empty($validInput['sortParams'])) {
                 $sortParams = is_string($validInput['sortParams']) ? json_decode($validInput['sortParams'], true) : $validInput['sortParams'];
-                
                 if (is_array($sortParams)) {
+                    
                     $fieldMap = [
-                        'id'         => 'equipments.id',
-                        'comments'   => 'equipments.comments',
-                        'created_at' => 'equipments.created_at',
-                        'updated_at' => 'equipments.updated_at',
+                        'id'                     => 'equipments.id',
+                        'serial'                 => 'equipments.serial',
+                        'comments'               => 'equipments.comments',
+                        'type_name'              => 'equipment_types.name',
+                        'location_name'          => 'locations.name',
+                        'status_name'            => 'statuses.name',
+                        'owner_mne'              => 'institutes.mne',
+                        'owner_name'             => 'institutes.name',
+                        'detector_location_name' => 'detector_locations.name',
+                        'created_at'             => 'equipments.created_at',
+                        'updated_at'             => 'equipments.updated_at',
                     ];
-
+                    
                     foreach ($sortParams as $sort) {
                         if (isset($sort['field']) && isset($sort['order'])) {
                             $field = preg_replace('/[^a-zA-Z0-9_]/', '', $sort['field']);
-                            $dbField = $fieldMap[$field] ?? $field;
-                            $direction = ((int)$sort['order'] === 1) ? 'ASC' : 'DESC';
                             
-                            $queryModel->orderBy($dbField, $direction);
+                            if (array_key_exists($field, $fieldMap)) {
+                                $dbField = $fieldMap[$field];
+                                $direction = ((int)$sort['order'] === 1) ? 'ASC' : 'DESC';
+                                
+                                if ($direction === 'ASC') {
+                                    $queryModel->orderBy("{$dbField} IS NULL", 'ASC', false);
+                                    $queryModel->orderBy($dbField, 'ASC');
+                                } else {
+                                    $queryModel->orderBy($dbField, 'DESC');
+                                }
+                            }
                         }
                     }
                 }
