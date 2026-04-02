@@ -63,7 +63,8 @@ class Equipments extends APIController
             ],
             'onlyDeleted' => ['\App\Validation\GeneralRules::permitEmpty' => []],
             'limit' => ['\App\Validation\GeneralRules::permitEmpty' => []],
-            'offset' => ['\App\Validation\GeneralRules::permitEmpty' => []]
+            'offset' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'sortParams' => ['\App\Validation\GeneralRules::permitEmpty' => []]
         ];
 
         $inputData = $this->request->getVar(array_keys($inputRules));
@@ -98,6 +99,29 @@ class Equipments extends APIController
             $queryModel = $equipmentModel->fullQuery();
             
             $totalRecords = $queryModel->countAllResults(false);
+
+            if (!empty($validInput['sortParams'])) {
+                $sortParams = is_string($validInput['sortParams']) ? json_decode($validInput['sortParams'], true) : $validInput['sortParams'];
+                
+                if (is_array($sortParams)) {
+                    $fieldMap = [
+                        'id'         => 'equipments.id',
+                        'comments'   => 'equipments.comments',
+                        'created_at' => 'equipments.created_at',
+                        'updated_at' => 'equipments.updated_at',
+                    ];
+
+                    foreach ($sortParams as $sort) {
+                        if (isset($sort['field']) && isset($sort['order'])) {
+                            $field = preg_replace('/[^a-zA-Z0-9_]/', '', $sort['field']);
+                            $dbField = $fieldMap[$field] ?? $field;
+                            $direction = ((int)$sort['order'] === 1) ? 'ASC' : 'DESC';
+                            
+                            $queryModel->orderBy($dbField, $direction);
+                        }
+                    }
+                }
+            }
 
             $limit = (isset($validInput['limit']) && $validInput['limit'] !== '') ? (int)$validInput['limit'] : 0;
             $offset = (isset($validInput['offset']) && $validInput['offset'] !== '') ? (int)$validInput['offset'] : 0;
