@@ -120,17 +120,27 @@ class Equipments extends APIController
                     
                     foreach ($sortParams as $sort) {
                         if (isset($sort['field']) && isset($sort['order'])) {
-                            $field = preg_replace('/[^a-zA-Z0-9_]/', '', $sort['field']);
+                            $field = preg_replace('/[^a-zA-Z0-9_\-\s]/', '', $sort['field']);
+                            $direction = ((int)$sort['order'] === 1) ? 'ASC' : 'DESC';
                             
                             if (array_key_exists($field, $fieldMap)) {
                                 $dbField = $fieldMap[$field];
-                                $direction = ((int)$sort['order'] === 1) ? 'ASC' : 'DESC';
                                 
                                 if ($direction === 'ASC') {
                                     $queryModel->orderBy("{$dbField} IS NULL", 'ASC', false);
                                     $queryModel->orderBy($dbField, 'ASC');
                                 } else {
                                     $queryModel->orderBy($dbField, 'DESC');
+                                }
+                            } 
+                            else {
+                                $dbField = "equipments.type_params->'$.\"{$field}\"'";
+                                
+                                if ($direction === 'ASC') {
+                                    $queryModel->orderBy("{$dbField} IS NULL", 'ASC', false);
+                                    $queryModel->orderBy($dbField, 'ASC', false);
+                                } else {
+                                    $queryModel->orderBy($dbField, 'DESC', false);
                                 }
                             }
                         }
