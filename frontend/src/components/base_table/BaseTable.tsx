@@ -100,6 +100,8 @@ export function BaseTable(props: TableProps){
     page: 0,
   });
 
+  const [multiSortMeta, setMultiSortMeta] = useState<any>(props.multiSortMeta);
+
   const activeFilters = useMemo(() => {
     const parsedFilters: Record<string, any> = {};
     Object.keys(filters).forEach(key => {
@@ -116,7 +118,8 @@ export function BaseTable(props: TableProps){
     ...props.queryKey[2], 
     limit: lazyParams.rows, 
     offset: lazyParams.first,
-    ...activeFilters 
+    ...activeFilters,
+    sortParams: multiSortMeta 
   };
   
   const paginatedQueryKey = [props.queryKey[0], props.queryKey[1], queryParams];
@@ -131,6 +134,11 @@ export function BaseTable(props: TableProps){
 
   const onFilter = (event: DataTableFilterEvent) => {
     setFilters(event.filters);
+    setLazyParams(prev => ({ ...prev, first: 0, page: 0 }));
+  };
+
+  const onSort = (event: any) => {
+    setMultiSortMeta(event.multiSortMeta);
     setLazyParams(prev => ({ ...prev, first: 0, page: 0 }));
   };
 
@@ -160,6 +168,7 @@ export function BaseTable(props: TableProps){
       rows={lazyParams.rows}
       onPage={onPage}
       onFilter={onFilter}
+      onSort={onSort}
       filters={filters}
       filterDisplay="menu"
       tableStyle={{ minWidth: '50rem' }}
@@ -169,7 +178,7 @@ export function BaseTable(props: TableProps){
       reorderableColumns
       rowsPerPageOptions={[5, 10, 25, 50, 100, 250, 500]} 
       sortMode={props.sortMode}
-      multiSortMeta={props.multiSortMeta}
+      multiSortMeta={multiSortMeta}
       removableSort
       expandedRows={props.expandedRows}
       onRowToggle={props.onRowToggle}
