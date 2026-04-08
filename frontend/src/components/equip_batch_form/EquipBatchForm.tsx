@@ -348,8 +348,6 @@ export default function EquipBatchForm() {
 
   return (
     <div className="card p-4 shadow-2 border-round">
-      <h2 className="text-2xl font-bold mb-4 text-primary">Batch Equipment Manager</h2>
-      
       <div className="mb-4">
         <label className="font-bold block mb-2 text-700">1. Select Equipment Category</label>
         <Dropdown value={selectedType} options={equipTypesQuery.data?.data?.map((t:any)=>({label:t.name, value:t.name})) || []} 
