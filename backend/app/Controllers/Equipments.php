@@ -421,17 +421,20 @@ class Equipments extends APIController
 
     public function batchValidate(): ResponseInterface
     {
+        ini_set('memory_limit', '512M');
         try {
             return $this->__batchValidate__();
         } catch (Throwable $e) {
-            return $this->failInternalError($e);
+            return $this->response->setStatusCode(500)->setJSON([
+                'messages' => [
+                    'error' => "CRITICAL PHP ERROR: " . $e->getMessage() . " | File: " . basename($e->getFile()) . " | Line: " . $e->getLine()
+                ]
+            ]);
         }
     }
 
     protected function __batchValidate__(): ResponseInterface
     {
-        ini_set('memory_limit', '512M');
-
         $feature = model('FeatureModel')->findName('equipment_batch_register');
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
@@ -514,17 +517,20 @@ class Equipments extends APIController
 
     public function batchCreate(): ResponseInterface
     {
+        ini_set('memory_limit', '512M');
         try {
             return $this->__batchCreate__();
         } catch (Throwable $e) {
-            return $this->failInternalError($e);
+            return $this->response->setStatusCode(500)->setJSON([
+                'messages' => [
+                    'error' => "CRITICAL DB ERROR: " . $e->getMessage() . " | File: " . basename($e->getFile()) . " | Line: " . $e->getLine()
+                ]
+            ]);
         }
     }
 
     protected function __batchCreate__(): ResponseInterface
     {
-        ini_set('memory_limit', '512M');
-        
         $feature = model('FeatureModel')->findName('equipment_batch_register');
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
@@ -576,7 +582,7 @@ class Equipments extends APIController
             return $this->respondCreated();
         } catch (Throwable $e) {
             $db->transRollback();
-            return $this->failInternalError("Database transaction failed: " . $e->getMessage());
+            throw $e; 
         }
     }
 
