@@ -8,7 +8,7 @@ import { TabView, TabPanel } from 'primereact/tabview';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
+import { Column, ColumnEditorOptions } from 'primereact/column';
 import { Message } from 'primereact/message';
 import { Checkbox } from 'primereact/checkbox';
 import ExcelJS from 'exceljs';
@@ -40,18 +40,26 @@ interface ValidationResult {
 
 export default function EquipBatchForm() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  
+  // Staging Data is now the absolute truth for the editable table
   const [stagingData, setStagingData] = useState<EquipmentRow[]>([]);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  
   const [isValidating, setIsValidating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [forceCommitWarnings, setForceCommitWarnings] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Range Params for Generation
   const [rangeParams, setRangeParams] = useState({ prefix: '', start: 1, end: 10, padding: 3, suffix: '' });
+  const [copyIdToSerial, setCopyIdToSerial] = useState(true); // NOVO: Resolve o bug do Serial vazio
   const [commonFields, setCommonFields] = useState<Record<string, string>>({});
+  
   const [smartHint, setSmartHint] = useState<string>("Select an equipment type to load smart formatting rules.");
   const [currentRegex, setCurrentRegex] = useState<RegExp | null>(null);
 
+  // --- 1. Queries ---
   const equipTypesQuery: any = useQuery({ queryKey: ['equipment_type', 'get', {}] });
   const locationsQuery: any = useQuery({ queryKey: ['location', 'get', {}] });
   const statusesQuery: any = useQuery({ queryKey: ['status', 'get', {}] });
@@ -70,8 +78,6 @@ export default function EquipBatchForm() {
     return typeof selectedTypeObj.params === 'string' ? JSON.parse(selectedTypeObj.params) : selectedTypeObj.params;
   }, [selectedTypeObj]);
 
-  const standardFields = ['location_name', 'status_name', 'owner_name', 'comments'];
-
   const recentEquipQuery: any = useQuery({
     queryKey: ['equipment', 'get', { type_name: selectedType, limit: 10, sortParams: JSON.stringify([{ field: 'created_at', order: -1 }]) }],
     enabled: !!selectedType
@@ -84,6 +90,8 @@ export default function EquipBatchForm() {
       return;
     }
     
+    // Changing type clears the staging table to prevent mixing DB constraints
+    setStagingData([]);
     setCommonFields({});
     setForceCommitWarnings(false);
 
@@ -102,27 +110,20 @@ export default function EquipBatchForm() {
           const suf = match[3] || '';
           const pad = match[2].length;
           
-          setRangeParams({
-            prefix: pre,
-            start: parseInt(match[2], 10) + 1 || 1,
-            end: parseInt(match[2], 10) + 10 || 10,
-            padding: pad,
-            suffix: suf
-          });
-
+          setRangeParams({ prefix: pre, start: parseInt(match[2], 10) + 1 || 1, end: parseInt(match[2], 10) + 10 || 10, padding: pad, suffix: suf });
           const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           setCurrentRegex(new RegExp(`^${escapeRegExp(pre)}\\d{${pad}}${escapeRegExp(suf)}$`));
 
           let hintParts = [];
           if (pre) hintParts.push(`Prefix "${pre}"`);
-          hintParts.push(`${pad} padding digits`);
+          hintParts.push(`${pad} digits`);
           if (suf) hintParts.push(`Suffix "${suf}"`);
 
-          setSmartHint(`Smart Hint: Based on recent entries, the standard format uses ${hintParts.join(', ')}. (Examples: ${recentExamples})`);
+          setSmartHint(`💡 Smart Hint: The standard format uses ${hintParts.join(' and ')}. (Recent examples: ${recentExamples})`);
         } else {
           setRangeParams({ prefix: '', start: 1, end: 10, padding: 3, suffix: '' });
           setCurrentRegex(null);
-          setSmartHint(`Smart Hint: Recent entries look like Barcodes or Serials (e.g., ${recentExamples}). Proceed manually.`);
+          setSmartHint(`💡 Smart Hint: Recent entries look like Barcodes/Serials (e.g., ${recentExamples}). Proceed manually.`);
         }
       } else {
         setRangeParams({ prefix: '', start: 1, end: 10, padding: 3, suffix: '' });
@@ -140,9 +141,9 @@ export default function EquipBatchForm() {
     mutationFn: makeMutationFunction('post', getEndpoint('equipment_batch'))
   });
 
+  // --- 2. Handlers ---
   const downloadExcelTemplate = async () => {
     if (!selectedType) return;
-
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Template');
     const listSheet = workbook.addWorksheet('Hidden_Lists', { state: 'hidden' }); 
@@ -165,32 +166,16 @@ export default function EquipBatchForm() {
     sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
     sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00549F' } }; 
     
-    if (smartHint) {
-      sheet.getCell('A1').note = smartHint.replace('Smart Hint: ', 'Format Expectation:\n');
-    }
+    if (smartHint) sheet.getCell('A1').note = smartHint.replace('💡 Smart Hint: ', 'Format Expectation:\n');
 
     for (let i = 2; i <= 1000; i++) {
-      sheet.getCell(`C${i}`).dataValidation = {
-        type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$A$1:$A$${locations.length}`]
-      };
-      sheet.getCell(`D${i}`).dataValidation = {
-        type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$B$1:$B$${statuses.length}`]
-      };
-      sheet.getCell(`E${i}`).dataValidation = {
-        type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$C$1:$C$${institutes.length}`]
-      };
-      
-      sheet.getRow(i).eachCell({ includeEmpty: true }, (cell) => {
-        cell.protection = { locked: false };
-      });
+      sheet.getCell(`C${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$A$1:$A$${locations.length}`] };
+      sheet.getCell(`D${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$B$1:$B$${statuses.length}`] };
+      sheet.getCell(`E${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$C$1:$C$${institutes.length}`] };
+      sheet.getRow(i).eachCell({ includeEmpty: true }, (cell) => { cell.protection = { locked: false }; });
     }
 
-    await sheet.protect('atlas_db_protection', {
-      selectLockedCells: true,
-      selectUnlockedCells: true,
-      formatColumns: true,
-      formatRows: true,
-    });
+    await sheet.protect('atlas_db_protection', { selectLockedCells: true, selectUnlockedCells: true, formatColumns: true, formatRows: true });
 
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -205,23 +190,19 @@ export default function EquipBatchForm() {
   const handleFileUpload = (e: any) => {
     const file = e.target.files[0];
     if (!file || !selectedType) return;
-
     const reader = new FileReader();
     reader.onload = async (ev) => {
       const buffer = ev.target?.result;
       if (!buffer) return;
-
       try {
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.load(buffer as ArrayBuffer);
         const worksheet = workbook.getWorksheet('Template') || workbook.worksheets[0];
-        
         const headers = worksheet.getRow(1).values as string[];
         const parsedData: any[] = [];
 
         worksheet.eachRow((row, rowNumber) => {
           if (rowNumber === 1) return; 
-          
           const rowData: any = { type_name: selectedType };
           row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
             const headerKey = headers[colNumber];
@@ -231,18 +212,21 @@ export default function EquipBatchForm() {
               rowData[headerKey] = val !== undefined && val !== null ? String(val).trim() : '';
             }
           });
+          
+          // Bug Fix: If one is missing, try to map the other to prevent backend failure
+          if (rowData.id && !rowData.serial) rowData.serial = rowData.id;
+          if (rowData.serial && !rowData.id) rowData.id = rowData.serial;
 
-          if (rowData.id || rowData.serial) {
-            parsedData.push(rowData);
-          }
+          if (rowData.id || rowData.serial) parsedData.push(rowData);
         });
 
+        // Apendar (substituir) na Staging Area
         setStagingData(parsedData);
         setValidationResult(null);
         setForceCommitWarnings(false);
-        toast.info(`${parsedData.length} rows loaded from Excel.`);
+        toast.info(`${parsedData.length} rows loaded into Staging Area.`);
       } catch (err) {
-        toast.error("Failed to parse Excel file. Ensure you are using the provided template.");
+        toast.error("Failed to parse Excel. Ensure it is the provided template.");
       }
     };
     reader.readAsArrayBuffer(file);
@@ -251,18 +235,28 @@ export default function EquipBatchForm() {
 
   const generateRange = () => {
     if (!selectedType) return;
-    const batch = [];
+    const batch: EquipmentRow[] = [];
     for (let i = rangeParams.start; i <= rangeParams.end; i++) {
-      const id = `${rangeParams.prefix}${i.toString().padStart(rangeParams.padding, '0')}${rangeParams.suffix}`;
-      batch.push({ id, type_name: selectedType, ...commonFields });
+      const generatedId = `${rangeParams.prefix}${i.toString().padStart(rangeParams.padding, '0')}${rangeParams.suffix}`;
+      batch.push({ 
+        id: generatedId, 
+        serial: copyIdToSerial ? generatedId : '', // BUG FIX: O Backend precisava do serial!
+        type_name: selectedType, 
+        ...commonFields 
+      });
     }
-    setStagingData(batch);
+    // Append to existing staging data so users don't lose their Excel data if they switch tabs
+    setStagingData(prev => [...prev, ...batch]);
     setValidationResult(null);
     setForceCommitWarnings(false);
-    toast.info(`Generated batch of ${batch.length} items.`);
+    toast.info(`Appended ${batch.length} items to Staging Area.`);
   };
 
   const runValidation = () => {
+    if (stagingData.length === 0) {
+      toast.warn("Staging area is empty.");
+      return;
+    }
     setIsValidating(true);
     setForceCommitWarnings(false);
     
@@ -277,15 +271,15 @@ export default function EquipBatchForm() {
 
           if (row.location_name && !locations.includes(row.location_name)) {
             rowStatus.valid = false;
-            rowStatus.errors['location_name'] = `'${row.location_name}' is not a registered Location.`;
+            rowStatus.errors['location_name'] = `'${row.location_name}' is invalid.`;
           }
           if (row.status_name && !statuses.includes(row.status_name)) {
             rowStatus.valid = false;
-            rowStatus.errors['status_name'] = `'${row.status_name}' is not a registered Status.`;
+            rowStatus.errors['status_name'] = `'${row.status_name}' is invalid.`;
           }
           if (row.owner_name && !institutes.includes(row.owner_name)) {
             rowStatus.valid = false;
-            rowStatus.errors['owner_name'] = `'${row.owner_name}' is not a registered Institute.`;
+            rowStatus.errors['owner_name'] = `'${row.owner_name}' is invalid.`;
           }
 
           if (rowStatus.valid && currentRegex && row.id && !currentRegex.test(row.id)) {
@@ -298,19 +292,15 @@ export default function EquipBatchForm() {
 
         const finalValid = enrichedDetails.every((d:any) => d.valid);
 
-        setValidationResult({
-          valid: finalValid,
-          hasWarnings: globalHasWarnings,
-          details: enrichedDetails
-        });
+        setValidationResult({ valid: finalValid, hasWarnings: globalHasWarnings, details: enrichedDetails });
 
         if (finalValid && !globalHasWarnings) toast.success("All records valid and follow standard patterns!");
-        else if (finalValid && globalHasWarnings) toast.warn("Data is valid, but some IDs deviate from the standard pattern.");
+        else if (finalValid && globalHasWarnings) toast.warn("Data valid, but some IDs deviate from pattern.");
         else toast.error("Validation failed. Check rows in red.");
         
         setIsValidating(false);
       },
-      onError: () => { toast.error("Validation request failed."); setIsValidating(false); }
+      onError: () => { toast.error("Validation request failed. Check server logs."); setIsValidating(false); }
     });
   };
 
@@ -319,6 +309,7 @@ export default function EquipBatchForm() {
     commitMutation.mutate({ equipments: stagingData }, {
       onSuccess: () => {
         toast.success("Batch registration completed successfully!");
+        // ZERAR TUDO APÓS COMMIT
         setStagingData([]);
         setValidationResult(null);
         setIsSubmitting(false);
@@ -332,9 +323,38 @@ export default function EquipBatchForm() {
     });
   };
 
-  if (equipTypesQuery.isPending) return <p>Loading system components...</p>;
+  // --- 3. Editable Table Handlers ---
+  const onCellEditComplete = (e: any) => {
+    let { rowData, newValue, field, originalEvent: event } = e;
+    
+    // Dropdown fields validation
+    if (field === 'location_name' && newValue && !locations.includes(newValue)) event.preventDefault();
+    else if (field === 'status_name' && newValue && !statuses.includes(newValue)) event.preventDefault();
+    else if (field === 'owner_name' && newValue && !institutes.includes(newValue)) event.preventDefault();
+    else {
+      rowData[field] = newValue;
+      // Invalidate the current validation status because data changed
+      setValidationResult(null);
+    }
+  };
 
-  const previewColumns = ['id', 'serial', ...standardFields, ...dynamicParams];
+  const textEditor = (options: ColumnEditorOptions) => {
+    return <InputText type="text" value={options.value || ''} onChange={(e: any) => options.editorCallback!(e.target.value)} onKeyDown={(e) => e.stopPropagation()} />;
+  };
+
+  const dropdownEditor = (options: ColumnEditorOptions, dataList: string[]) => {
+    return (
+      <Dropdown 
+        value={options.value} 
+        options={dataList} 
+        onChange={(e: any) => options.editorCallback!(e.value)} 
+        placeholder="Select a value"
+        className="w-full" 
+      />
+    );
+  };
+
+  if (equipTypesQuery.isPending) return <p>Loading system components...</p>;
 
   const getRowClass = (rowData: any) => {
     if (!validationResult) return '';
@@ -351,7 +371,7 @@ export default function EquipBatchForm() {
       <div className="mb-4">
         <label className="font-bold block mb-2 text-700">1. Select Equipment Category</label>
         <Dropdown value={selectedType} options={equipTypesQuery.data?.data?.map((t:any)=>({label:t.name, value:t.name})) || []} 
-          onChange={(e) => {setSelectedType(e.value); setStagingData([]); setValidationResult(null);}} 
+          onChange={(e) => {setSelectedType(e.value);}} 
           placeholder="Choose the Equipment Type" className="w-full md:w-30rem" />
         {selectedType && <Message severity="info" text={smartHint} className="mt-3 w-full justify-content-start" />}
       </div>
@@ -359,7 +379,7 @@ export default function EquipBatchForm() {
       <TabView className="mb-4">
         <TabPanel header="Method A: Excel Upload" disabled={!selectedType}>
           <div className="flex flex-column gap-3">
-            <p className="m-0 text-600">The template below includes locked headers, dropdown menus, and validation rules for <b>{selectedType}</b>.</p>
+            <p className="m-0 text-600">The template includes locked headers, dropdown menus, and validation rules for <b>{selectedType}</b>.</p>
             <div className="flex gap-3">
               <Button label="1. Download Excel Template" icon="pi pi-file-excel" severity="info" outlined onClick={downloadExcelTemplate} type="button" />
               <input type="file" accept=".xlsx" ref={fileInputRef} onChange={handleFileUpload} className="hidden" id="excel-upload" />
@@ -378,71 +398,65 @@ export default function EquipBatchForm() {
               <div className="col-12 md:col-2"><label className="text-sm">Zero Padding</label><InputNumber value={rangeParams.padding} onValueChange={(e)=>setRangeParams({...rangeParams, padding: e.value || 0})} useGrouping={false} placeholder="e.g. 3" /></div>
               <div className="col-12 md:col-2"><label className="text-sm">Suffix</label><InputText value={rangeParams.suffix} onChange={(e)=>setRangeParams({...rangeParams, suffix: e.target.value})} placeholder="e.g. -v2" /></div>
             </div>
+            <div className="mt-2 flex align-items-center">
+              <Checkbox inputId="copySerial" checked={copyIdToSerial} onChange={e => setCopyIdToSerial(e.checked || false)} />
+              <label htmlFor="copySerial" className="ml-2 text-sm text-600">Automatically copy ID to Serial Number</label>
+            </div>
           </div>
 
           <h4 className="mb-2 text-700">Replicated Data (Applied to all items)</h4>
           <div className="grid p-fluid">
-            <div className="col-12 md:col-3">
-              <label className="text-sm">Location</label>
-              <Dropdown value={commonFields['location_name']} options={locations} onChange={(e)=>setCommonFields({...commonFields, location_name: e.value})} showClear placeholder="Select Location" />
-            </div>
-            <div className="col-12 md:col-3">
-              <label className="text-sm">Status</label>
-              <Dropdown value={commonFields['status_name']} options={statuses} onChange={(e)=>setCommonFields({...commonFields, status_name: e.value})} showClear placeholder="Select Status" />
-            </div>
-            <div className="col-12 md:col-3">
-              <label className="text-sm">Owner Institute</label>
-              <Dropdown value={commonFields['owner_name']} options={institutes} onChange={(e)=>setCommonFields({...commonFields, owner_name: e.value})} showClear placeholder="Select Institute" />
-            </div>
-            <div className="col-12 md:col-3">
-              <label className="text-sm">Comments</label>
-              <InputText value={commonFields['comments'] || ''} onChange={(e)=>setCommonFields({...commonFields, comments: e.target.value})} />
-            </div>
+            <div className="col-12 md:col-3"><label className="text-sm">Location</label><Dropdown value={commonFields['location_name']} options={locations} onChange={(e)=>setCommonFields({...commonFields, location_name: e.value})} showClear placeholder="Select Location" /></div>
+            <div className="col-12 md:col-3"><label className="text-sm">Status</label><Dropdown value={commonFields['status_name']} options={statuses} onChange={(e)=>setCommonFields({...commonFields, status_name: e.value})} showClear placeholder="Select Status" /></div>
+            <div className="col-12 md:col-3"><label className="text-sm">Owner Institute</label><Dropdown value={commonFields['owner_name']} options={institutes} onChange={(e)=>setCommonFields({...commonFields, owner_name: e.value})} showClear placeholder="Select Institute" /></div>
+            <div className="col-12 md:col-3"><label className="text-sm">Comments</label><InputText value={commonFields['comments'] || ''} onChange={(e)=>setCommonFields({...commonFields, comments: e.target.value})} /></div>
 
             {dynamicParams.map(field => (
-              <div className="col-12 md:col-3" key={field}>
-                <label className="text-sm capitalize text-blue-600 font-semibold">{snakeToSpaced(field)}</label>
-                <InputText value={commonFields[field] || ''} onChange={(e)=>setCommonFields({...commonFields, [field]: e.target.value})} />
-              </div>
+              <div className="col-12 md:col-3" key={field}><label className="text-sm capitalize text-blue-600 font-semibold">{snakeToSpaced(field)}</label><InputText value={commonFields[field] || ''} onChange={(e)=>setCommonFields({...commonFields, [field]: e.target.value})} /></div>
             ))}
             
             <div className="col-12 flex justify-content-end mt-2">
-              <Button label="Generate Batch" icon="pi pi-bolt" onClick={generateRange} type="button" />
+              <Button label="Add to Staging Area" icon="pi pi-plus" onClick={generateRange} type="button" severity="secondary" />
             </div>
           </div>
         </TabPanel>
       </TabView>
 
+      {/* EDITABLE STAGING AREA */}
       {stagingData.length > 0 && (
         <div className="mt-5 border-top-1 border-300 pt-4">
           <div className="flex justify-content-between align-items-center mb-3">
             <div>
-              <h3 className="m-0 text-800">2. Staging Area: Verify Data</h3>
-              <span className="text-500 text-sm">{stagingData.length} records ready for inspection.</span>
+              <h3 className="m-0 text-800">2. Staging Area: Verify & Edit Data</h3>
+              <span className="text-500 text-sm">Click on any cell to edit. Re-run validation after changes.</span>
             </div>
             <Button label="Run Rigorous Validation" icon="pi pi-shield" severity="warning" onClick={runValidation} loading={isValidating} type="button" />
           </div>
 
           {validationResult?.hasWarnings && (
-            <Message severity="warn" text="Warning: Some IDs deviate from the recent historical pattern. Please review the yellow rows carefully." className="mb-3 w-full justify-content-start" />
+             <Message severity="warn" text="Warning: Some IDs deviate from the recent historical pattern. Please review the yellow rows carefully." className="mb-3 w-full justify-content-start" />
           )}
 
-          <DataTable value={stagingData} showGridlines size="small" scrollHeight="400px" scrollable rowClassName={getRowClass}>
-            <Column header="Validation" body={(d) => {
+          <DataTable value={stagingData} editMode="cell" showGridlines size="small" scrollHeight="400px" scrollable rowClassName={getRowClass}>
+            <Column header="Status" body={(d) => {
               const res = validationResult?.details[stagingData.indexOf(d)];
               if (!res) return <i className="pi pi-circle text-gray-300" />;
-              
-              if (!res.valid) {
-                return <i className="pi pi-times-circle text-red-600 text-xl" title={Object.values(res.errors).join(" | ")} />;
-              }
-              if (Object.keys(res.warnings).length > 0) {
-                return <i className="pi pi-exclamation-triangle text-yellow-600 text-xl" title={Object.values(res.warnings).join(" | ")} />;
-              }
+              if (!res.valid) return <i className="pi pi-times-circle text-red-600 text-xl" title={Object.values(res.errors).join(" | ")} />;
+              if (Object.keys(res.warnings).length > 0) return <i className="pi pi-exclamation-triangle text-yellow-600 text-xl" title={Object.values(res.warnings).join(" | ")} />;
               return <i className="pi pi-check-circle text-green-600 text-xl" title="Perfect" />;
-            }} style={{width: '5rem', textAlign: 'center'}} />
+            }} style={{width: '4rem', textAlign: 'center'}} />
             
-            {previewColumns.map(col => (
-              <Column key={col} field={col} header={snakeToSpaced(col)} style={{ minWidth: '150px' }} />
+            {/* Editable Columns */}
+            <Column field="id" header="ID / Barcode" editor={(options) => textEditor(options)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '150px' }} />
+            <Column field="serial" header="Serial No." editor={(options) => textEditor(options)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '150px' }} />
+            <Column field="location_name" header="Location" editor={(options) => dropdownEditor(options, locations)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '150px' }} />
+            <Column field="status_name" header="Status" editor={(options) => dropdownEditor(options, statuses)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '150px' }} />
+            <Column field="owner_name" header="Owner" editor={(options) => dropdownEditor(options, institutes)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '150px' }} />
+            <Column field="comments" header="Comments" editor={(options) => textEditor(options)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '200px' }} />
+            
+            {/* Dynamic Custom Parameters (also editable) */}
+            {dynamicParams.map(col => (
+              <Column key={col} field={col} header={snakeToSpaced(col)} editor={(options) => textEditor(options)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '120px' }} />
             ))}
           </DataTable>
 
