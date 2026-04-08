@@ -11,7 +11,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Message } from 'primereact/message';
 import { Checkbox } from 'primereact/checkbox';
-import Papa from 'papaparse';
+import ExcelJS from 'exceljs';
 import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
 import { snakeToSpaced } from '../../utils/string';
 
@@ -47,13 +47,11 @@ export default function EquipBatchForm() {
   const [forceCommitWarnings, setForceCommitWarnings] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Range & Smart Pattern State
   const [rangeParams, setRangeParams] = useState({ prefix: '', start: 1, end: 10, padding: 3, suffix: '' });
   const [commonFields, setCommonFields] = useState<Record<string, string>>({});
   const [smartHint, setSmartHint] = useState<string>("Select an equipment type to load smart formatting rules.");
   const [currentRegex, setCurrentRegex] = useState<RegExp | null>(null);
 
-  // --- 1. Fetch System Dictionaries via Global Query Client ---
   const equipTypesQuery: any = useQuery({ queryKey: ['equipment_type', 'get', {}] });
   const locationsQuery: any = useQuery({ queryKey: ['location', 'get', {}] });
   const statusesQuery: any = useQuery({ queryKey: ['status', 'get', {}] });
@@ -74,7 +72,6 @@ export default function EquipBatchForm() {
 
   const standardFields = ['location_name', 'status_name', 'owner_name', 'comments'];
 
-  // --- 2. Fetch Recent Samples & Build Smart Hint ---
   const recentEquipQuery: any = useQuery({
     queryKey: ['equipment', 'get', { type_name: selectedType, limit: 10, sortParams: JSON.stringify([{ field: 'created_at', order: -1 }]) }],
     enabled: !!selectedType
@@ -98,7 +95,6 @@ export default function EquipBatchForm() {
       if (ids.length > 0) {
         const sampleId = ids[0];
         const match = sampleId.match(/^([^0-9]*)(\d+)([^0-9]*)$/);
-        
         let recentExamples = ids.slice(0, 3).join(', ');
 
         if (match) {
@@ -122,11 +118,11 @@ export default function EquipBatchForm() {
           hintParts.push(`${pad} padding digits`);
           if (suf) hintParts.push(`Suffix "${suf}"`);
 
-          setSmartHint(`💡 Smart Hint: The standard format uses ${hintParts.join(' and ')}. (Recent examples: ${recentExamples})`);
+          setSmartHint(`Smart Hint: Based on recent entries, the standard format uses ${hintParts.join(', ')}. (Examples: ${recentExamples})`);
         } else {
           setRangeParams({ prefix: '', start: 1, end: 10, padding: 3, suffix: '' });
           setCurrentRegex(null);
-          setSmartHint(`💡 Smart Hint: Recent entries look like Barcodes or Serials (e.g., ${recentExamples}). Proceed manually.`);
+          setSmartHint(`Smart Hint: Recent entries look like Barcodes or Serials (e.g., ${recentExamples}). Proceed manually.`);
         }
       } else {
         setRangeParams({ prefix: '', start: 1, end: 10, padding: 3, suffix: '' });
@@ -136,7 +132,6 @@ export default function EquipBatchForm() {
     }
   }, [selectedType, recentEquipQuery.isSuccess, recentEquipQuery.data]);
 
-  // --- 3. Mutations ---
   const validateMutation = useMutation({
     mutationFn: makeMutationFunction('post', getEndpoint('equipment') + '/batch-validate')
   });
@@ -145,41 +140,112 @@ export default function EquipBatchForm() {
     mutationFn: makeMutationFunction('post', getEndpoint('equipment_batch'))
   });
 
-  // --- 4. Handlers ---
-  const downloadCSVTemplate = () => {
+  const downloadExcelTemplate = async () => {
     if (!selectedType) return;
-    const headers = ['id', 'serial', ...standardFields, ...dynamicParams];
-    const hintRow = [
-      'Fill ID', 'Fill Serial', 
-      `Must be: ${locations.slice(0,3).join('|')}...`, 
-      `Must be: ${statuses.slice(0,3).join('|')}...`, 
-      `Must be: ${institutes.slice(0,3).join('|')}...`, 
-      'Free text', ...dynamicParams.map(()=>'Value')
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Template');
+    const listSheet = workbook.addWorksheet('Hidden_Lists', { state: 'hidden' }); 
+
+    locations.forEach((loc: string, i: number) => listSheet.getCell(`A${i + 1}`).value = loc);
+    statuses.forEach((stat: string, i: number) => listSheet.getCell(`B${i + 1}`).value = stat);
+    institutes.forEach((inst: string, i: number) => listSheet.getCell(`C${i + 1}`).value = inst);
+
+    const columns = [
+      { header: 'id', key: 'id', width: 25 },
+      { header: 'serial', key: 'serial', width: 25 },
+      { header: 'location_name', key: 'location_name', width: 30 },
+      { header: 'status_name', key: 'status_name', width: 25 },
+      { header: 'owner_name', key: 'owner_name', width: 30 },
+      { header: 'comments', key: 'comments', width: 40 },
+      ...dynamicParams.map(p => ({ header: p, key: p, width: 25 }))
     ];
+    sheet.columns = columns;
+
+    sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00549F' } }; 
     
-    const csvContent = headers.join(',') + "\n" + hintRow.join(','); 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    if (smartHint) {
+      sheet.getCell('A1').note = smartHint.replace('Smart Hint: ', 'Format Expectation:\n');
+    }
+
+    for (let i = 2; i <= 1000; i++) {
+      sheet.getCell(`C${i}`).dataValidation = {
+        type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$A$1:$A$${locations.length}`]
+      };
+      sheet.getCell(`D${i}`).dataValidation = {
+        type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$B$1:$B$${statuses.length}`]
+      };
+      sheet.getCell(`E${i}`).dataValidation = {
+        type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$C$1:$C$${institutes.length}`]
+      };
+      
+      sheet.getRow(i).eachCell({ includeEmpty: true }, (cell) => {
+        cell.protection = { locked: false };
+      });
+    }
+
+    await sheet.protect('atlas_db_protection', {
+      selectLockedCells: true,
+      selectUnlockedCells: true,
+      formatColumns: true,
+      formatRows: true,
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", URL.createObjectURL(blob));
-    link.setAttribute("download", `${selectedType.replace(/\s+/g, '_').toLowerCase()}_template.csv`);
-    document.body.appendChild(link);
+    link.href = url;
+    link.download = `${selectedType.replace(/\s+/g, '_')}_Template.xlsx`;
     link.click();
-    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleFileUpload = (e: any) => {
     const file = e.target.files[0];
     if (!file || !selectedType) return;
-    Papa.parse(file, {
-      header: true, skipEmptyLines: true,
-      complete: (res: any) => {
-        let validRows = res.data.filter((r:any) => !r.id?.includes('Fill ID'));
-        setStagingData(validRows.map((r: any) => ({ ...r, type_name: selectedType })));
+
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const buffer = ev.target?.result;
+      if (!buffer) return;
+
+      try {
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(buffer as ArrayBuffer);
+        const worksheet = workbook.getWorksheet('Template') || workbook.worksheets[0];
+        
+        const headers = worksheet.getRow(1).values as string[];
+        const parsedData: any[] = [];
+
+        worksheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) return; 
+          
+          const rowData: any = { type_name: selectedType };
+          row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+            const headerKey = headers[colNumber];
+            if (headerKey) {
+              let val = cell.value;
+              if (val && typeof val === 'object' && 'result' in val) val = val.result;
+              rowData[headerKey] = val !== undefined && val !== null ? String(val).trim() : '';
+            }
+          });
+
+          if (rowData.id || rowData.serial) {
+            parsedData.push(rowData);
+          }
+        });
+
+        setStagingData(parsedData);
         setValidationResult(null);
         setForceCommitWarnings(false);
-        toast.info(`${validRows.length} rows loaded from CSV.`);
+        toast.info(`${parsedData.length} rows loaded from Excel.`);
+      } catch (err) {
+        toast.error("Failed to parse Excel file. Ensure you are using the provided template.");
       }
-    });
+    };
+    reader.readAsArrayBuffer(file);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -293,13 +359,13 @@ export default function EquipBatchForm() {
       </div>
 
       <TabView className="mb-4">
-        <TabPanel header="Method A: Import CSV" disabled={!selectedType}>
+        <TabPanel header="Method A: Excel Upload" disabled={!selectedType}>
           <div className="flex flex-column gap-3">
-            <p className="m-0 text-600">The template below includes all mandatory and specific columns for <b>{selectedType}</b>.</p>
+            <p className="m-0 text-600">The template below includes locked headers, dropdown menus, and validation rules for <b>{selectedType}</b>.</p>
             <div className="flex gap-3">
-              <Button label="1. Download CSV Template" icon="pi pi-download" severity="info" outlined onClick={downloadCSVTemplate} type="button" />
-              <input type="file" accept=".csv" ref={fileInputRef} onChange={handleFileUpload} className="hidden" id="csv-upload" />
-              <Button label="2. Upload Filled CSV" icon="pi pi-upload" severity="secondary" onClick={()=>document.getElementById('csv-upload')?.click()} type="button" />
+              <Button label="1. Download Excel Template" icon="pi pi-file-excel" severity="info" outlined onClick={downloadExcelTemplate} type="button" />
+              <input type="file" accept=".xlsx" ref={fileInputRef} onChange={handleFileUpload} className="hidden" id="excel-upload" />
+              <Button label="2. Upload Filled Excel" icon="pi pi-upload" severity="secondary" onClick={()=>document.getElementById('excel-upload')?.click()} type="button" />
             </div>
           </div>
         </TabPanel>

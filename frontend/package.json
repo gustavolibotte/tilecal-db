@@ -12,11 +12,11 @@
   "dependencies": {
     "@tanstack/react-query": "^5.17.19",
     "axios": "^1.6.5",
+    "exceljs": "^4.4.0",
     "formik": "^2.4.5",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.1",
     "keycloak-js": "^23.0.7",
-    "papaparse": "^5.5.3",
     "primeflex": "^3.3.1",
     "primeicons": "^6.0.1",
     "primereact": "^10.3.1",
@@ -29,7 +29,6 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.15",
-    "@types/papaparse": "^5.5.2",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@types/toastr": "^2.1.43",
