@@ -455,7 +455,7 @@ export default function EquipBatchForm() {
 
           <DataTable value={stagingData} editMode="cell" showGridlines size="small" scrollHeight="400px" scrollable rowClassName={getRowClass}>
             
-            <Column header="Status" body={(rowData, options) => {
+            <Column header="Status" body={(_, options) => {
               const res = validationResult?.details[options.rowIndex];
               if (!res) return <i className="pi pi-circle text-gray-300" title="Pending validation" />;
               
