@@ -5,7 +5,6 @@ namespace App\Controllers;
 use App\Entities\Equipment;
 use App\Validation\EquipmentRules;
 use App\Validation\Validator;
-use App\Library\Readers\CSVFileReader;
 use CodeIgniter\HTTP\ResponseInterface;
 use Throwable;
 
@@ -215,9 +214,6 @@ class Equipments extends APIController
         $registerRules = EquipmentRules::getRegisterRulesFromTypeName($typeName);
         $inputData = $this->request->getVar(array_keys($registerRules));
 
-        // Auto-map serial to id if id is not provided by the frontend.
-        // This serves as a global fallback for equipment types where the ID is 
-        // identical to the serial number (e.g., FENICS, Mainboards, HVDs).
         if (empty($inputData['id']) && !empty($inputData['serial'])) {
             $inputData['id'] = $inputData['serial'];
         }
@@ -330,7 +326,6 @@ class Equipments extends APIController
                 $validInput['type_params'][$param] = remove_value($param, $validInput);
             }
         }
-        echo json_encode($validInput);
         $equip = new Equipment($validInput);
         model('EquipmentModel')->update($equip->id, $equip);
         return respondUpdated($id, $inputData, $validInput);
@@ -424,6 +419,97 @@ class Equipments extends APIController
         return $this->respondRestored($validInput['id']);
     }
 
+    public function batchValidate(): ResponseInterface
+    {
+        try {
+            return $this->__batchValidate__();
+        } catch (Throwable $e) {
+            return $this->failInternalError($e);
+        }
+    }
+
+    protected function __batchValidate__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('equipment_batch_register');
+        if (!$feature->isActive()) {
+            return $this->failServiceUnavailable();
+        }
+
+        $inputData = $this->request->getJSON(true);
+        if (!isset($inputData['equipments']) || !is_array($inputData['equipments'])) {
+            return $this->failValidationErrors(['equipments' => 'Invalid payload format. Expected an array of equipments.']);
+        }
+
+        $results = [];
+        $hasErrors = false;
+        
+        foreach ($inputData['equipments'] as &$row) {
+            if (empty($row['id']) && !empty($row['serial'])) {
+                $row['id'] = $row['serial'];
+            }
+        }
+        
+        $incomingIds = array_filter(array_column($inputData['equipments'], 'id'));
+        $existingIds = [];
+        
+        if (!empty($incomingIds)) {
+            $existingEquips = model('EquipmentModel')->select('id')->whereIn('id', $incomingIds)->findAll();
+            foreach ($existingEquips as $e) {
+                $existingIds[] = is_array($e) ? $e['id'] : $e->id;
+            }
+        }
+
+        $seenIdsInBatch = [];
+
+        foreach ($inputData['equipments'] as $index => $row) {
+            $rowStatus = [
+                'rowIndex' => $index,
+                'valid' => true,
+                'errors' => []
+            ];
+
+            $idToUse = $row['id'] ?? null;
+
+            if (!$idToUse) {
+                 $rowStatus['valid'] = false;
+                 $rowStatus['errors']['id'] = "Missing ID (or Serial for auto-mapping).";
+            } else {
+                 if (in_array($idToUse, $existingIds)) {
+                     $rowStatus['valid'] = false;
+                     $rowStatus['errors']['id'] = "ID '{$idToUse}' already exists in the database.";
+                 }
+                 if (in_array($idToUse, $seenIdsInBatch)) {
+                     $rowStatus['valid'] = false;
+                     $rowStatus['errors']['id'] = "ID '{$idToUse}' is duplicated within this batch.";
+                 }
+                 $seenIdsInBatch[] = $idToUse;
+            }
+
+            if (!empty($row['type_name'])) {
+                $registerRules = EquipmentRules::getRegisterRulesFromTypeName($row['type_name']);
+                $validationRes = Validator::validate($row, $registerRules);
+                if (!$validationRes['valid']) {
+                    $rowStatus['valid'] = false;
+                    $rowStatus['errors'] = array_merge($rowStatus['errors'], $validationRes['errors']);
+                }
+            } else {
+                 $rowStatus['valid'] = false;
+                 $rowStatus['errors']['type_name'] = "Missing equipment type.";
+            }
+
+            if (!$rowStatus['valid']) {
+                $hasErrors = true;
+            }
+            
+            $results[] = $rowStatus;
+        }
+
+        return $this->response->setJSON([
+            'valid' => !$hasErrors,
+            'details' => $results
+        ]);
+    }
+
     public function batchCreate(): ResponseInterface
     {
         try {
@@ -439,44 +525,55 @@ class Equipments extends APIController
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
-        $inputRules = [
-            'file' => [
-                '\App\Validation\GeneralRules::required' => [],
-                '\App\Validation\FileRules::maxSize' => [
-                    'maxSize' => 50 * 1024  // 50 kB
-                ],
-                '\App\Validation\FileRules::mimeIn' => [
-                    'mimeTypes' =>['text/csv']
-                ],
-                '\App\Validation\FileRules::extIn' => [
-                    'exts' => ['csv']
-                ]
-            ]
-        ];
-        $inputData = $this->request->getVar(array_keys($inputRules));
-        $validationRes = Validator::validate($inputData, $inputRules);
-        if (!$validationRes['valid']) {
-            return $this->failValidationErrors($validationRes['errors']);
+        
+        $inputData = $this->request->getJSON(true);
+        if (!isset($inputData['equipments']) || !is_array($inputData['equipments'])) {
+            return $this->failValidationErrors(['equipments' => 'Invalid payload format. Expected JSON array.']);
         }
-        $validInput = $validationRes['validatedData'];
 
-        $inputFile = new CSVFileReader($validInput->getTempName());
         $db = db_connect();
         $db->transException(true)->transBegin();
-        foreach ($inputFile as $iRow=>$row){
-            $registerRules = EquipmentRules::getRegisterRulesFromTypeName($row['type_name']);
-            $validationRes = Validator::validate($inputData, $registerRules);
-            if (!$validationRes['valid']) {
-                $errors = $validationRes['errors'];
-                $errors['row_number'] = $iRow;
-                return $this->failValidationErrors($errors);
+        
+        try {
+            foreach ($inputData['equipments'] as $iRow => $row) {
+                if (empty($row['id']) && !empty($row['serial'])) {
+                    $row['id'] = $row['serial'];
+                }
+
+                $registerRules = EquipmentRules::getRegisterRulesFromTypeName($row['type_name']);
+                $validationRes = Validator::validate($row, $registerRules);
+                
+                if (!$validationRes['valid']) {
+                    $errors = $validationRes['errors'];
+                    $errors['row_number'] = $iRow;
+                    return $this->failValidationErrors($errors);
+                }
+                
+                $validInput = $validationRes['validatedData'];
+
+                $equipType = model('EquipmentTypeModel')
+                    ->select('params')
+                    ->where('name', $row['type_name'])
+                    ->first();
+                    
+                $validInput['type_params'] = [];
+                if ($equipType && $equipType->params) {
+                    $paramsList = is_string($equipType->params) ? json_decode($equipType->params, true) : $equipType->params;
+                    foreach($paramsList as $param) {
+                        $validInput['type_params'][$param] = remove_value($param, $validInput, false);
+                    }
+                }
+
+                $equipment = new Equipment($validInput);
+                model('EquipmentModel')->insert($equipment);
             }
-            $validInput = $validationRes['validatedData'];
-            $equipment = new Equipment($validInput);
-            model('EquipmentModel')->insert($equipment);
+            
+            $db->transCommit();
+            return $this->respondCreated();
+        } catch (Throwable $e) {
+            $db->transRollback();
+            return $this->failInternalError("Database transaction failed: " . $e->getMessage());
         }
-        $db->transCommit();
-        return $this->respondCreated();
     }
 
     public function disassemble(): ResponseInterface

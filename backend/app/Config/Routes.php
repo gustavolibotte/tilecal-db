@@ -47,10 +47,16 @@ $routes->group('api', static function ($routes){
         'filter' =>['api_auth', 'action:view'],
         'as' => 'api_equipment_hist_get'
     ]);
+    
+    $routes->post('equipment/batch-validate', 'Equipments::batchValidate', [
+        'filter' =>['api_auth', 'action:register'],
+        'as' => 'api_equipment_batch_validate'
+    ]);
     $routes->post('equipment/batch-register', 'Equipments::batchCreate', [
         'filter' =>['api_auth', 'action:register'],
         'as' => 'api_equipment_batch_register'
     ]);
+    
     $routes->post('equipment', 'Equipments::post', [
         'filter' =>['api_auth', 'action:register'],
         'as' => 'api_equipment_post'
