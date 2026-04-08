@@ -130,7 +130,7 @@ export default function EquipBatchForm() {
   });
 
   const commitMutation = useMutation({
-    mutationFn: makeMutationFunction('post', getEndpoint('equipment_batch'))
+    mutationFn: makeMutationFunction('post', getEndpoint('equipment') + '/batch-create')
   });
 
   const prepareDataForBackend = (data: EquipmentRow[]) => {
@@ -260,14 +260,24 @@ export default function EquipBatchForm() {
     
     validateMutation.mutate({ equipments: enrichedData }, {
       onSuccess: (res: any) => {
-        processValidationPayload(res.data);
+        const payload = res?.data?.details ? res.data : (res?.details ? res : null);
+        
+        if (payload) {
+          processValidationPayload(payload);
+        } else {
+          toast.error("Servidor respondeu, mas o pacote de validação estava vazio.");
+          setIsValidating(false);
+        }
       },
       onError: (error: any) => {
-        if (error.response && error.response.data && error.response.data.details) {
-            processValidationPayload(error.response.data);
+        const payload = error.response?.data;
+        if (payload && payload.details) {
+            processValidationPayload(payload);
             return;
         }
-        toast.error("Validation failed. Check the row errors.");
+        
+        const errMsg = error.response?.data?.messages?.error || error.message || "Erro desconhecido";
+        toast.error(`Falha no Pedido: ${errMsg}`);
         setIsValidating(false);
       }
     });
@@ -276,8 +286,7 @@ export default function EquipBatchForm() {
   const processValidationPayload = (backendData: any) => {
     let globalHasWarnings = false;
 
-    // Garante que mesmo que falhe, criamos os detalhes vazios para a tabela não quebrar
-    const apiDetails = backendData.details || stagingData.map((_, i) => ({ rowIndex: i, valid: true, errors: {} }));
+    const apiDetails = backendData.details || stagingData.map((_, i) => ({ rowIndex: i, valid: false, errors: { system: "Validation payload missing" } }));
 
     const enrichedDetails = apiDetails.map((rowStatus: any) => {
       const row = stagingData[rowStatus.rowIndex];
@@ -287,14 +296,17 @@ export default function EquipBatchForm() {
 
       if (row.location_name && !locations.includes(row.location_name)) {
         rowStatus.valid = false;
+        rowStatus.errors = rowStatus.errors || {};
         rowStatus.errors['location_name'] = `'${row.location_name}' is invalid.`;
       }
       if (row.status_name && !statuses.includes(row.status_name)) {
         rowStatus.valid = false;
+        rowStatus.errors = rowStatus.errors || {};
         rowStatus.errors['status_name'] = `'${row.status_name}' is invalid.`;
       }
       if (row.owner_name && !institutes.includes(row.owner_name)) {
         rowStatus.valid = false;
+        rowStatus.errors = rowStatus.errors || {};
         rowStatus.errors['owner_name'] = `'${row.owner_name}' is invalid.`;
       }
 
@@ -310,9 +322,15 @@ export default function EquipBatchForm() {
 
     setValidationResult({ valid: finalValid, hasWarnings: globalHasWarnings, details: enrichedDetails });
 
-    if (finalValid && !globalHasWarnings) toast.success("All records valid and ready to commit!");
-    else if (finalValid && globalHasWarnings) toast.warn("Data valid, but review ID pattern warnings.");
-    else toast.error("Validation failed. Check the rows highlighted in red.");
+    if (finalValid && !globalHasWarnings) {
+       toast.success("All records valid and ready to commit!");
+    } else if (finalValid && globalHasWarnings) {
+       toast.warn("Data valid, but review ID pattern warnings.");
+    } else {
+       const firstErrorRow = enrichedDetails.find((d: any) => !d.valid);
+       const firstErrorMsg = firstErrorRow ? Object.values(firstErrorRow.errors || {})[0] : "Check rows highlighted in red.";
+       toast.error(`Validation Failed (Row ${firstErrorRow?.rowIndex + 1}): ${firstErrorMsg}`);
+    }
     
     setIsValidating(false);
   };
@@ -436,8 +454,9 @@ export default function EquipBatchForm() {
           </div>
 
           <DataTable value={stagingData} editMode="cell" showGridlines size="small" scrollHeight="400px" scrollable rowClassName={getRowClass}>
-            <Column header="Status" body={(d) => {
-              const res = validationResult?.details[stagingData.indexOf(d)];
+            
+            <Column header="Status" body={(rowData, options) => {
+              const res = validationResult?.details[options.rowIndex];
               if (!res) return <i className="pi pi-circle text-gray-300" title="Pending validation" />;
               
               if (!res.valid) {
