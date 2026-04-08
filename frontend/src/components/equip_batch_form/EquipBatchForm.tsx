@@ -22,6 +22,7 @@ interface EquipmentRow {
   location_name?: string;
   status_name?: string;
   owner_name?: string;
+  owner_mne?: string;
   comments?: string;
   _pattern_warning?: boolean;
   [key: string]: any;
@@ -40,14 +41,12 @@ interface ValidationResult {
 
 export default function EquipBatchForm() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  
   const [stagingData, setStagingData] = useState<EquipmentRow[]>([]);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   
   const [isValidating, setIsValidating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [forceCommitWarnings, setForceCommitWarnings] = useState(false);
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [rangeParams, setRangeParams] = useState({ prefix: '', start: 1, end: 10, padding: 3, suffix: '' });
@@ -86,7 +85,6 @@ export default function EquipBatchForm() {
       setCurrentRegex(null);
       return;
     }
-    
     setStagingData([]);
     setCommonFields({});
     setForceCommitWarnings(false);
@@ -105,7 +103,6 @@ export default function EquipBatchForm() {
           const pre = match[1] || '';
           const suf = match[3] || '';
           const pad = match[2].length;
-          
           setRangeParams({ prefix: pre, start: parseInt(match[2], 10) + 1 || 1, end: parseInt(match[2], 10) + 10 || 10, padding: pad, suffix: suf });
           const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           setCurrentRegex(new RegExp(`^${escapeRegExp(pre)}\\d{${pad}}${escapeRegExp(suf)}$`));
@@ -114,12 +111,11 @@ export default function EquipBatchForm() {
           if (pre) hintParts.push(`Prefix "${pre}"`);
           hintParts.push(`${pad} digits`);
           if (suf) hintParts.push(`Suffix "${suf}"`);
-
-          setSmartHint(`💡 Smart Hint: The standard format uses ${hintParts.join(' and ')}. (Recent examples: ${recentExamples})`);
+          setSmartHint(`Hint: The standard format uses ${hintParts.join(' and ')}. (Recent examples: ${recentExamples})`);
         } else {
           setRangeParams({ prefix: '', start: 1, end: 10, padding: 3, suffix: '' });
           setCurrentRegex(null);
-          setSmartHint(`💡 Smart Hint: Recent entries look like Barcodes/Serials (e.g., ${recentExamples}). Proceed manually.`);
+          setSmartHint(`Hint: Recent entries look like Barcodes/Serials (e.g., ${recentExamples}). Proceed manually.`);
         }
       } else {
         setRangeParams({ prefix: '', start: 1, end: 10, padding: 3, suffix: '' });
@@ -136,6 +132,17 @@ export default function EquipBatchForm() {
   const commitMutation = useMutation({
     mutationFn: makeMutationFunction('post', getEndpoint('equipment_batch'))
   });
+
+  const prepareDataForBackend = (data: EquipmentRow[]) => {
+    return data.map(row => {
+      let owner_mne = '';
+      if (row.owner_name) {
+        const inst = institutesQuery.data?.data?.find((i:any) => i.name === row.owner_name);
+        if (inst) owner_mne = inst.mne;
+      }
+      return { ...row, owner_mne };
+    });
+  };
 
   const downloadExcelTemplate = async () => {
     if (!selectedType) return;
@@ -160,8 +167,7 @@ export default function EquipBatchForm() {
 
     sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
     sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00549F' } }; 
-    
-    if (smartHint) sheet.getCell('A1').note = smartHint.replace('💡 Smart Hint: ', 'Format Expectation:\n');
+    if (smartHint) sheet.getCell('A1').note = smartHint.replace('Hint: ', 'Format Expectation:\n');
 
     for (let i = 2; i <= 1000; i++) {
       sheet.getCell(`C${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$A$1:$A$${locations.length}`] };
@@ -207,14 +213,12 @@ export default function EquipBatchForm() {
               rowData[headerKey] = val !== undefined && val !== null ? String(val).trim() : '';
             }
           });
-          
           if (rowData.id && !rowData.serial) rowData.serial = rowData.id;
           if (rowData.serial && !rowData.id) rowData.id = rowData.serial;
-
           if (rowData.id || rowData.serial) parsedData.push(rowData);
         });
 
-        setStagingData(parsedData);
+        setStagingData(prev => [...prev, ...parsedData]);
         setValidationResult(null);
         setForceCommitWarnings(false);
         toast.info(`${parsedData.length} rows loaded into Staging Area.`);
@@ -244,9 +248,6 @@ export default function EquipBatchForm() {
     toast.info(`Appended ${batch.length} items to Staging Area.`);
   };
 
-  // ============================================================================
-  // ROBUST VALIDATION ENGINE
-  // ============================================================================
   const runValidation = () => {
     if (stagingData.length === 0) {
       toast.warn("Staging area is empty.");
@@ -255,7 +256,9 @@ export default function EquipBatchForm() {
     setIsValidating(true);
     setForceCommitWarnings(false);
     
-    validateMutation.mutate({ equipments: stagingData }, {
+    const enrichedData = prepareDataForBackend(stagingData);
+    
+    validateMutation.mutate({ equipments: enrichedData }, {
       onSuccess: (res: any) => {
         processValidationPayload(res.data);
       },
@@ -264,8 +267,7 @@ export default function EquipBatchForm() {
             processValidationPayload(error.response.data);
             return;
         }
-        
-        toast.error("Critical server error during validation. Check backend logs.");
+        toast.error("Validation failed. Check the row errors.");
         setIsValidating(false);
       }
     });
@@ -274,11 +276,12 @@ export default function EquipBatchForm() {
   const processValidationPayload = (backendData: any) => {
     let globalHasWarnings = false;
 
+    // Garante que mesmo que falhe, criamos os detalhes vazios para a tabela não quebrar
     const apiDetails = backendData.details || stagingData.map((_, i) => ({ rowIndex: i, valid: true, errors: {} }));
 
     const enrichedDetails = apiDetails.map((rowStatus: any) => {
       const row = stagingData[rowStatus.rowIndex];
-      if (!row) return rowStatus; // Proteção contra desalinhamento de arrays
+      if (!row) return rowStatus; 
 
       const warnings: Record<string, string> = {};
 
@@ -295,9 +298,8 @@ export default function EquipBatchForm() {
         rowStatus.errors['owner_name'] = `'${row.owner_name}' is invalid.`;
       }
 
-      // 2. Pattern Matching
       if (rowStatus.valid && currentRegex && row.id && !currentRegex.test(row.id)) {
-        warnings['id'] = `ID '${row.id}' deviates from the usual format.`;
+        warnings['id'] = `ID '${row.id}' deviates from usual format.`;
         globalHasWarnings = true;
       }
 
@@ -308,16 +310,18 @@ export default function EquipBatchForm() {
 
     setValidationResult({ valid: finalValid, hasWarnings: globalHasWarnings, details: enrichedDetails });
 
-    if (finalValid && !globalHasWarnings) toast.success("All records valid and follow standard patterns!");
-    else if (finalValid && globalHasWarnings) toast.warn("Data valid, but some IDs deviate from pattern.");
-    else toast.error("Validation failed. Please check the rows highlighted in red.");
+    if (finalValid && !globalHasWarnings) toast.success("All records valid and ready to commit!");
+    else if (finalValid && globalHasWarnings) toast.warn("Data valid, but review ID pattern warnings.");
+    else toast.error("Validation failed. Check the rows highlighted in red.");
     
     setIsValidating(false);
   };
 
   const commitBatch = () => {
     setIsSubmitting(true);
-    commitMutation.mutate({ equipments: stagingData }, {
+    const enrichedData = prepareDataForBackend(stagingData);
+
+    commitMutation.mutate({ equipments: enrichedData }, {
       onSuccess: () => {
         toast.success("Batch registration completed successfully!");
         setStagingData([]);
@@ -350,9 +354,7 @@ export default function EquipBatchForm() {
   };
 
   const dropdownEditor = (options: ColumnEditorOptions, dataList: string[]) => {
-    return (
-      <Dropdown value={options.value} options={dataList} onChange={(e: any) => options.editorCallback!(e.value)} placeholder="Select a value" className="w-full" />
-    );
+    return <Dropdown value={options.value} options={dataList} onChange={(e: any) => options.editorCallback!(e.value)} placeholder="Select" className="w-full" />;
   };
 
   if (equipTypesQuery.isPending) return <p>Loading system components...</p>;
@@ -433,17 +435,12 @@ export default function EquipBatchForm() {
             <Button label="Run Validation" icon="pi pi-shield" severity="warning" onClick={runValidation} loading={isValidating} type="button" />
           </div>
 
-          {validationResult?.hasWarnings && (
-             <Message severity="warn" text="Warning: Some IDs deviate from the recent historical pattern. Please review the yellow rows carefully." className="mb-3 w-full justify-content-start" />
-          )}
-
           <DataTable value={stagingData} editMode="cell" showGridlines size="small" scrollHeight="400px" scrollable rowClassName={getRowClass}>
             <Column header="Status" body={(d) => {
               const res = validationResult?.details[stagingData.indexOf(d)];
               if (!res) return <i className="pi pi-circle text-gray-300" title="Pending validation" />;
               
               if (!res.valid) {
-                // Formata os erros numa lista limpa com quebras de linha para o tooltip
                 const errorMsg = Object.entries(res.errors || {}).map(([k, v]) => `${snakeToSpaced(k)}: ${v}`).join('\n');
                 return <i className="pi pi-times-circle text-red-600 text-xl cursor-help" title={`Errors:\n${errorMsg}`} />;
               }
@@ -470,7 +467,7 @@ export default function EquipBatchForm() {
             {validationResult?.valid && validationResult?.hasWarnings && (
                <div className="flex align-items-center">
                   <Checkbox inputId="forceAck" checked={forceCommitWarnings} onChange={e => setForceCommitWarnings(e.checked || false)} />
-                  <label htmlFor="forceAck" className="ml-2 text-yellow-700 font-bold">I confirm I want to store records that deviate from the standard ID format.</label>
+                  <label htmlFor="forceAck" className="ml-2 text-yellow-700 font-bold">I confirm I want to store records that deviate from standard patterns.</label>
                </div>
             )}
             
