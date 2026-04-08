@@ -73,7 +73,7 @@ export default function EquipBatchForm() {
     if (!file || !selectedType) return;
     Papa.parse(file, {
       header: true, skipEmptyLines: true,
-      complete: (res) => {
+      complete: (res: any) => {
         setStagingData(res.data.map((r: any) => ({ ...r, type_name: selectedType })));
         setValidationResult(null);
         toast.info(`${res.data.length} rows loaded from CSV.`);
