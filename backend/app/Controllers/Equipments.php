@@ -430,6 +430,8 @@ class Equipments extends APIController
 
     protected function __batchValidate__(): ResponseInterface
     {
+        ini_set('memory_limit', '512M');
+
         $feature = model('FeatureModel')->findName('equipment_batch_register');
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
@@ -521,6 +523,8 @@ class Equipments extends APIController
 
     protected function __batchCreate__(): ResponseInterface
     {
+        ini_set('memory_limit', '512M');
+        
         $feature = model('FeatureModel')->findName('equipment_batch_register');
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
