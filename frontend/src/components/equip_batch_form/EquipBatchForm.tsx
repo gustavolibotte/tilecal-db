@@ -41,7 +41,6 @@ interface ValidationResult {
 export default function EquipBatchForm() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   
-  // Staging Data is now the absolute truth for the editable table
   const [stagingData, setStagingData] = useState<EquipmentRow[]>([]);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   
@@ -51,15 +50,13 @@ export default function EquipBatchForm() {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Range Params for Generation
   const [rangeParams, setRangeParams] = useState({ prefix: '', start: 1, end: 10, padding: 3, suffix: '' });
-  const [copyIdToSerial, setCopyIdToSerial] = useState(true); // NOVO: Resolve o bug do Serial vazio
+  const [copyIdToSerial, setCopyIdToSerial] = useState(true); 
   const [commonFields, setCommonFields] = useState<Record<string, string>>({});
   
   const [smartHint, setSmartHint] = useState<string>("Select an equipment type to load smart formatting rules.");
   const [currentRegex, setCurrentRegex] = useState<RegExp | null>(null);
 
-  // --- 1. Queries ---
   const equipTypesQuery: any = useQuery({ queryKey: ['equipment_type', 'get', {}] });
   const locationsQuery: any = useQuery({ queryKey: ['location', 'get', {}] });
   const statusesQuery: any = useQuery({ queryKey: ['status', 'get', {}] });
@@ -90,7 +87,6 @@ export default function EquipBatchForm() {
       return;
     }
     
-    // Changing type clears the staging table to prevent mixing DB constraints
     setStagingData([]);
     setCommonFields({});
     setForceCommitWarnings(false);
@@ -141,7 +137,6 @@ export default function EquipBatchForm() {
     mutationFn: makeMutationFunction('post', getEndpoint('equipment_batch'))
   });
 
-  // --- 2. Handlers ---
   const downloadExcelTemplate = async () => {
     if (!selectedType) return;
     const workbook = new ExcelJS.Workbook();
@@ -213,14 +208,12 @@ export default function EquipBatchForm() {
             }
           });
           
-          // Bug Fix: If one is missing, try to map the other to prevent backend failure
           if (rowData.id && !rowData.serial) rowData.serial = rowData.id;
           if (rowData.serial && !rowData.id) rowData.id = rowData.serial;
 
           if (rowData.id || rowData.serial) parsedData.push(rowData);
         });
 
-        // Apendar (substituir) na Staging Area
         setStagingData(parsedData);
         setValidationResult(null);
         setForceCommitWarnings(false);
@@ -240,18 +233,20 @@ export default function EquipBatchForm() {
       const generatedId = `${rangeParams.prefix}${i.toString().padStart(rangeParams.padding, '0')}${rangeParams.suffix}`;
       batch.push({ 
         id: generatedId, 
-        serial: copyIdToSerial ? generatedId : '', // BUG FIX: O Backend precisava do serial!
+        serial: copyIdToSerial ? generatedId : '',
         type_name: selectedType, 
         ...commonFields 
       });
     }
-    // Append to existing staging data so users don't lose their Excel data if they switch tabs
     setStagingData(prev => [...prev, ...batch]);
     setValidationResult(null);
     setForceCommitWarnings(false);
     toast.info(`Appended ${batch.length} items to Staging Area.`);
   };
 
+  // ============================================================================
+  // ROBUST VALIDATION ENGINE
+  // ============================================================================
   const runValidation = () => {
     if (stagingData.length === 0) {
       toast.warn("Staging area is empty.");
@@ -262,46 +257,62 @@ export default function EquipBatchForm() {
     
     validateMutation.mutate({ equipments: stagingData }, {
       onSuccess: (res: any) => {
-        const backendData = res.data;
-        let globalHasWarnings = false;
-
-        const enrichedDetails = backendData.details.map((rowStatus: any) => {
-          const row = stagingData[rowStatus.rowIndex];
-          const warnings: Record<string, string> = {};
-
-          if (row.location_name && !locations.includes(row.location_name)) {
-            rowStatus.valid = false;
-            rowStatus.errors['location_name'] = `'${row.location_name}' is invalid.`;
-          }
-          if (row.status_name && !statuses.includes(row.status_name)) {
-            rowStatus.valid = false;
-            rowStatus.errors['status_name'] = `'${row.status_name}' is invalid.`;
-          }
-          if (row.owner_name && !institutes.includes(row.owner_name)) {
-            rowStatus.valid = false;
-            rowStatus.errors['owner_name'] = `'${row.owner_name}' is invalid.`;
-          }
-
-          if (rowStatus.valid && currentRegex && row.id && !currentRegex.test(row.id)) {
-            warnings['id'] = `ID '${row.id}' deviates from the usual format.`;
-            globalHasWarnings = true;
-          }
-
-          return { ...rowStatus, warnings };
-        });
-
-        const finalValid = enrichedDetails.every((d:any) => d.valid);
-
-        setValidationResult({ valid: finalValid, hasWarnings: globalHasWarnings, details: enrichedDetails });
-
-        if (finalValid && !globalHasWarnings) toast.success("All records valid and follow standard patterns!");
-        else if (finalValid && globalHasWarnings) toast.warn("Data valid, but some IDs deviate from pattern.");
-        else toast.error("Validation failed. Check rows in red.");
-        
-        setIsValidating(false);
+        processValidationPayload(res.data);
       },
-      onError: () => { toast.error("Validation request failed. Check server logs."); setIsValidating(false); }
+      onError: (error: any) => {
+        if (error.response && error.response.data && error.response.data.details) {
+            processValidationPayload(error.response.data);
+            return;
+        }
+        
+        toast.error("Critical server error during validation. Check backend logs.");
+        setIsValidating(false);
+      }
     });
+  };
+
+  const processValidationPayload = (backendData: any) => {
+    let globalHasWarnings = false;
+
+    const apiDetails = backendData.details || stagingData.map((_, i) => ({ rowIndex: i, valid: true, errors: {} }));
+
+    const enrichedDetails = apiDetails.map((rowStatus: any) => {
+      const row = stagingData[rowStatus.rowIndex];
+      if (!row) return rowStatus; // Proteção contra desalinhamento de arrays
+
+      const warnings: Record<string, string> = {};
+
+      if (row.location_name && !locations.includes(row.location_name)) {
+        rowStatus.valid = false;
+        rowStatus.errors['location_name'] = `'${row.location_name}' is invalid.`;
+      }
+      if (row.status_name && !statuses.includes(row.status_name)) {
+        rowStatus.valid = false;
+        rowStatus.errors['status_name'] = `'${row.status_name}' is invalid.`;
+      }
+      if (row.owner_name && !institutes.includes(row.owner_name)) {
+        rowStatus.valid = false;
+        rowStatus.errors['owner_name'] = `'${row.owner_name}' is invalid.`;
+      }
+
+      // 2. Pattern Matching
+      if (rowStatus.valid && currentRegex && row.id && !currentRegex.test(row.id)) {
+        warnings['id'] = `ID '${row.id}' deviates from the usual format.`;
+        globalHasWarnings = true;
+      }
+
+      return { ...rowStatus, warnings };
+    });
+
+    const finalValid = enrichedDetails.every((d:any) => d.valid);
+
+    setValidationResult({ valid: finalValid, hasWarnings: globalHasWarnings, details: enrichedDetails });
+
+    if (finalValid && !globalHasWarnings) toast.success("All records valid and follow standard patterns!");
+    else if (finalValid && globalHasWarnings) toast.warn("Data valid, but some IDs deviate from pattern.");
+    else toast.error("Validation failed. Please check the rows highlighted in red.");
+    
+    setIsValidating(false);
   };
 
   const commitBatch = () => {
@@ -309,7 +320,6 @@ export default function EquipBatchForm() {
     commitMutation.mutate({ equipments: stagingData }, {
       onSuccess: () => {
         toast.success("Batch registration completed successfully!");
-        // ZERAR TUDO APÓS COMMIT
         setStagingData([]);
         setValidationResult(null);
         setIsSubmitting(false);
@@ -317,23 +327,20 @@ export default function EquipBatchForm() {
         recentEquipQuery.refetch();
       },
       onError: (error: any) => {
-        toast.error(error.response?.data?.messages?.error || "An error occurred during submission.");
+        const errMsg = error.response?.data?.messages?.error || error.response?.data?.message || "An error occurred during submission.";
+        toast.error(`Submit failed: ${errMsg}`);
         setIsSubmitting(false);
       }
     });
   };
 
-  // --- 3. Editable Table Handlers ---
   const onCellEditComplete = (e: any) => {
     let { rowData, newValue, field, originalEvent: event } = e;
-    
-    // Dropdown fields validation
     if (field === 'location_name' && newValue && !locations.includes(newValue)) event.preventDefault();
     else if (field === 'status_name' && newValue && !statuses.includes(newValue)) event.preventDefault();
     else if (field === 'owner_name' && newValue && !institutes.includes(newValue)) event.preventDefault();
     else {
       rowData[field] = newValue;
-      // Invalidate the current validation status because data changed
       setValidationResult(null);
     }
   };
@@ -344,13 +351,7 @@ export default function EquipBatchForm() {
 
   const dropdownEditor = (options: ColumnEditorOptions, dataList: string[]) => {
     return (
-      <Dropdown 
-        value={options.value} 
-        options={dataList} 
-        onChange={(e: any) => options.editorCallback!(e.value)} 
-        placeholder="Select a value"
-        className="w-full" 
-      />
+      <Dropdown value={options.value} options={dataList} onChange={(e: any) => options.editorCallback!(e.value)} placeholder="Select a value" className="w-full" />
     );
   };
 
@@ -422,7 +423,6 @@ export default function EquipBatchForm() {
         </TabPanel>
       </TabView>
 
-      {/* EDITABLE STAGING AREA */}
       {stagingData.length > 0 && (
         <div className="mt-5 border-top-1 border-300 pt-4">
           <div className="flex justify-content-between align-items-center mb-3">
@@ -430,7 +430,7 @@ export default function EquipBatchForm() {
               <h3 className="m-0 text-800">2. Staging Area: Verify & Edit Data</h3>
               <span className="text-500 text-sm">Click on any cell to edit. Re-run validation after changes.</span>
             </div>
-            <Button label="Run Rigorous Validation" icon="pi pi-shield" severity="warning" onClick={runValidation} loading={isValidating} type="button" />
+            <Button label="Run Validation" icon="pi pi-shield" severity="warning" onClick={runValidation} loading={isValidating} type="button" />
           </div>
 
           {validationResult?.hasWarnings && (
@@ -440,13 +440,20 @@ export default function EquipBatchForm() {
           <DataTable value={stagingData} editMode="cell" showGridlines size="small" scrollHeight="400px" scrollable rowClassName={getRowClass}>
             <Column header="Status" body={(d) => {
               const res = validationResult?.details[stagingData.indexOf(d)];
-              if (!res) return <i className="pi pi-circle text-gray-300" />;
-              if (!res.valid) return <i className="pi pi-times-circle text-red-600 text-xl" title={Object.values(res.errors).join(" | ")} />;
-              if (Object.keys(res.warnings).length > 0) return <i className="pi pi-exclamation-triangle text-yellow-600 text-xl" title={Object.values(res.warnings).join(" | ")} />;
-              return <i className="pi pi-check-circle text-green-600 text-xl" title="Perfect" />;
-            }} style={{width: '4rem', textAlign: 'center'}} />
+              if (!res) return <i className="pi pi-circle text-gray-300" title="Pending validation" />;
+              
+              if (!res.valid) {
+                // Formata os erros numa lista limpa com quebras de linha para o tooltip
+                const errorMsg = Object.entries(res.errors || {}).map(([k, v]) => `${snakeToSpaced(k)}: ${v}`).join('\n');
+                return <i className="pi pi-times-circle text-red-600 text-xl cursor-help" title={`Errors:\n${errorMsg}`} />;
+              }
+              if (Object.keys(res.warnings).length > 0) {
+                const warnMsg = Object.entries(res.warnings).map(([k, v]) => `${snakeToSpaced(k)}: ${v}`).join('\n');
+                return <i className="pi pi-exclamation-triangle text-yellow-600 text-xl cursor-help" title={`Warnings:\n${warnMsg}`} />;
+              }
+              return <i className="pi pi-check-circle text-green-600 text-xl" title="Perfectly Valid" />;
+            }} style={{width: '5rem', textAlign: 'center'}} />
             
-            {/* Editable Columns */}
             <Column field="id" header="ID / Barcode" editor={(options) => textEditor(options)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '150px' }} />
             <Column field="serial" header="Serial No." editor={(options) => textEditor(options)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '150px' }} />
             <Column field="location_name" header="Location" editor={(options) => dropdownEditor(options, locations)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '150px' }} />
@@ -454,7 +461,6 @@ export default function EquipBatchForm() {
             <Column field="owner_name" header="Owner" editor={(options) => dropdownEditor(options, institutes)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '150px' }} />
             <Column field="comments" header="Comments" editor={(options) => textEditor(options)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '200px' }} />
             
-            {/* Dynamic Custom Parameters (also editable) */}
             {dynamicParams.map(col => (
               <Column key={col} field={col} header={snakeToSpaced(col)} editor={(options) => textEditor(options)} onCellEditComplete={onCellEditComplete} style={{ minWidth: '120px' }} />
             ))}
