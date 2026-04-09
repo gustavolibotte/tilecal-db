@@ -453,6 +453,8 @@ class Equipments extends APIController
                 $row['id'] = $row['serial'];
             }
         }
+
+        unset($row);
         
         $incomingIds = array_filter(array_column($inputData['equipments'], 'id'));
         $existingIds = [];
