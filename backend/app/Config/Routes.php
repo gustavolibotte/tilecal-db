@@ -43,6 +43,16 @@ $routes->group('api', static function ($routes){
         'filter' => ['api_auth', 'action:view'],
         'as' => 'api_equipment_get'
     ]);
+    
+    $routes->get('equipment/inconsistencies', 'Equipments::getInconsistencies', [
+        'filter' => ['api_auth', 'action:view'],
+        'as' => 'api_equipment_inconsistencies'
+    ]);
+    $routes->post('equipment/batch-update-locations', 'Equipments::batchUpdateLocations', [
+        'filter' => ['api_auth', 'action:edit'],
+        'as' => 'api_equipment_batch_update_locations'
+    ]);
+
     $routes->get('equipment-hist', 'Equipments::getHist', [
         'filter' =>['api_auth', 'action:view'],
         'as' => 'api_equipment_hist_get'
@@ -179,7 +189,6 @@ $routes->group('api', static function ($routes){
 
     // This first route was made to comply with the CORS protocol used
     //  by the browsers.
-    // https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe
     $routes->options('(:any)', 'CORS::index',[
         'filter' =>[],
         'as' => 'api_cors_option'
@@ -198,14 +207,6 @@ $routes->get('(:any)','WebApp::index', [
  * --------------------------------------------------------------------
  * Additional Routing
  * --------------------------------------------------------------------
- *
- * There will often be times that you need additional routing and you
- * need it to be able to override any defaults in this file. Environment
- * based routes is one such time. require() additional route files here
- * to make that happen.
- *
- * You will have access to the $routes object within that file without
- * needing to reload it.
  */
 if (is_file(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
     require APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';

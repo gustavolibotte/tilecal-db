@@ -835,4 +835,57 @@ class Equipments extends APIController
             message: 'Unrelated'
         );
     }
+
+    public function getInconsistencies(): ResponseInterface
+    {
+        try {
+            $feature = model('FeatureModel')->findName('api_equipment_get');
+            if (!$feature->isActive()) {
+                return $this->failServiceUnavailable();
+            }
+            
+            $data = model('EquipmentModel')->getInconsistentAssemblies('PMT Block');
+            
+            return $this->respond(['data' => $data]);
+        } catch (\Throwable $e) {
+            return $this->failInternalError($e);
+        }
+    }
+
+    public function batchUpdateLocations(): ResponseInterface
+    {
+        try {
+            $feature = model('FeatureModel')->findName('equipment_edit');
+            if (!$feature->isActive()) {
+                return $this->failServiceUnavailable();
+            }
+
+            $inputData = $this->request->getJSON(true);
+            if (!isset($inputData['updates']) || !is_array($inputData['updates'])) {
+                return $this->failValidationErrors(['updates' => 'Invalid payload format. Expected an array of updates.']);
+            }
+
+            $db = db_connect();
+            $db->transException(true)->transBegin();
+
+            $equipModel = model('EquipmentModel');
+            
+            foreach ($inputData['updates'] as $update) {
+                if (!isset($update['id']) || !isset($update['location_name'])) continue;
+                
+                $equip = new Equipment([
+                    'id' => $update['id'],
+                    'location_name' => $update['location_name']
+                ]);
+                $equipModel->update($update['id'], $equip);
+            }
+
+            $db->transCommit();
+            return $this->respondUpdated();
+        } catch (\Throwable $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'messages' => ['error' => "CRITICAL DB ERROR: " . $e->getMessage()]
+            ]);
+        }
+    }
 }

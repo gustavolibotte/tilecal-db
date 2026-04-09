@@ -20,6 +20,8 @@ import ErrorPage from './routes/error_page/ErrorPage.tsx';
 import { StatisticsDashboard } from './routes/statistics/StatisticsDashboard.tsx';
 import { ROUTES } from './utils/routes.tsx';
 
+import PmtConsistency from './routes/pmt_consistency/PmtConsistency.tsx';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -84,8 +86,13 @@ export default function App(){
     {
       path: ROUTES.STATISTICS,
       element: <StatisticsDashboard/>,
+    },
+    {
+      path: ROUTES.QC_PMT_CONSISTENCY,
+      element: <PmtConsistency/>,
     }
   ]
+  
   const router = createBrowserRouter([
     {
       path: "/",
