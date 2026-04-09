@@ -534,33 +534,36 @@ class EquipmentModel extends LogModel
     public function getInconsistentAssemblies(string $parentTypeName = 'PMT Block'): array
     {
         $db = db_connect();
-        $parents = $this->select('equipments.id, equipments.type_name, locations.name as location_name')
-                        ->join('locations', 'equipments.location_id = locations.id', 'left')
-                        ->join('equipment_types', 'equipments.type_id = equipment_types.id')
-                        ->where('equipment_types.name', $parentTypeName)
-                        ->where('equipments.deleted_at IS NULL')
-                        ->findAll();
+        
+        $parents = $db->table('equipments')
+            ->select('equipments.id, equipment_types.name as type_name, locations.name as location_name')
+            ->join('locations', 'equipments.location_id = locations.id', 'left')
+            ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
+            ->where('equipment_types.name', $parentTypeName)
+            ->where('equipments.deleted_at IS NULL')
+            ->get()->getResultArray();
 
         $inconsistentAssemblies = [];
 
         foreach ($parents as $parent) {
             $children = $db->table('parent_child_equips pce')
                            ->select('e.id, et.name as type_name, l.name as location_name, ts.name as slot_name')
-                           ->join('equipments e', 'pce.child_equip_id = e.id')
-                           ->join('equipment_types et', 'e.type_id = et.id')
+                           ->join('equipments e', 'pce.child_equip_id = e.id', 'left')
+                           ->join('equipment_types et', 'e.type_id = et.id', 'left')
                            ->join('locations l', 'e.location_id = l.id', 'left')
                            ->join('type_slots ts', 'pce.slot_id = ts.id', 'left')
-                           ->where('pce.parent_equip_id', $parent->id)
+                           ->where('pce.parent_equip_id', $parent['id'])
                            ->where('e.deleted_at IS NULL')
                            ->get()->getResultArray();
 
             if (empty($children)) continue;
 
             $isInconsistent = false;
-            $parentLoc = $parent->location_name;
+            $parentLoc = $parent['location_name'] ?? '';
 
             foreach ($children as $child) {
-                if ($child['location_name'] !== $parentLoc) {
+                $childLoc = $child['location_name'] ?? '';
+                if ($childLoc !== $parentLoc) {
                     $isInconsistent = true;
                     break;
                 }
@@ -568,7 +571,7 @@ class EquipmentModel extends LogModel
 
             if ($isInconsistent) {
                 $inconsistentAssemblies[] = [
-                    'parent' => $parent->toArray(),
+                    'parent' => $parent,
                     'children' => $children
                 ];
             }

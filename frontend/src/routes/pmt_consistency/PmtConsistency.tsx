@@ -31,46 +31,36 @@ interface InconsistencyData {
 export default function PmtConsistency() {
   const [expandedRows, setExpandedRows] = useState<any[] | DataTableRowData<any[]> | null>(null);
   
-  // Armazena as mudanças temporárias de localização antes de salvar
   const [pendingUpdates, setPendingUpdates] = useState<Record<string, string>>({});
   const toastId = useRef<Id>();
 
-  // Fetch locations for dropdowns
   const locationsQuery: any = useQuery({ queryKey: ['location', 'get', {}], queryFn: defaultQueryFunction });
   const locations = useMemo(() => locationsQuery.data?.data?.map((l: any) => l.name) || [], [locationsQuery.data]);
 
-  // Fetch inconsistencies
   const inconsistenciesQuery: any = useQuery({
     queryKey: ['equipment', 'inconsistencies', {}],
-    queryFn: async () => {
-        const res = await fetch(getEndpoint('equipment') + '/inconsistencies');
-        const json = await res.json();
-        return json.data;
-    }
+    queryFn: defaultQueryFunction
   });
 
   const dataset: InconsistencyData[] = inconsistenciesQuery.data?.data || [];
 
-  // Mutation to save fixes
   const saveMutation = useMutation({
     mutationFn: makeMutationFunction('post', getEndpoint('equipment') + '/batch-update-locations'),
     onMutate: () => { toastId.current = toast.loading('Applying location fixes...'); },
     onSuccess: () => {
       toast.update(toastId.current!, { render: "Inconsistencies fixed successfully!", type: "success", isLoading: false, autoClose: 3000 });
       setPendingUpdates({});
-      inconsistenciesQuery.refetch(); // Reload grid
+      inconsistenciesQuery.refetch(); 
     },
     onError: (err: any) => {
       toast.update(toastId.current!, { render: `Error: ${err.message}`, type: "error", isLoading: false, autoClose: 5000 });
     }
   });
 
-  // Calculate stats
   const totalInconsistentBlocks = dataset.length;
   const totalAffectedChildren = dataset.reduce((acc, curr) => acc + curr.children.length, 0);
   const pendingChangesCount = Object.keys(pendingUpdates).length;
 
-  // --- Handlers ---
   const handleLocationChange = (equipId: string, newLocation: string) => {
     setPendingUpdates(prev => ({ ...prev, [equipId]: newLocation }));
   };
@@ -108,7 +98,6 @@ export default function PmtConsistency() {
     }
   };
 
-  // --- Render Templates ---
   const locationDropdownTemplate = (id: string, currentLoc: string) => {
     const isModified = !!pendingUpdates[id] && pendingUpdates[id] !== currentLoc;
     const value = pendingUpdates[id] || currentLoc;
@@ -151,6 +140,10 @@ export default function PmtConsistency() {
   };
 
   if (inconsistenciesQuery.isPending || locationsQuery.isPending) return <p>Scanning database for inconsistencies...</p>;
+  
+  if (inconsistenciesQuery.isError) {
+    return <Message severity="error" text="Failed to fetch consistency data. Internal Server Error." className="w-full" />;
+  }
 
   return (
     <div className="flex flex-column gap-4">
