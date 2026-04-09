@@ -539,8 +539,8 @@ class EquipmentModel extends LogModel
             ->select('equipments.id, equipment_types.name as type_name, locations.name as location_name')
             ->join('locations', 'equipments.location_id = locations.id', 'left')
             ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
-            ->where('equipment_types.name', $parentTypeName)
-            ->where('equipments.deleted_at IS NULL')
+            ->like('equipment_types.name', $parentTypeName, 'after')
+            ->where('equipments.deleted_at', null)
             ->get()->getResultArray();
 
         $inconsistentAssemblies = [];
@@ -548,12 +548,12 @@ class EquipmentModel extends LogModel
         foreach ($parents as $parent) {
             $children = $db->table('parent_child_equips pce')
                            ->select('e.id, et.name as type_name, l.name as location_name, ts.name as slot_name')
-                           ->join('equipments e', 'pce.child_equip_id = e.id', 'left')
+                           ->join('equipments e', 'pce.child_equip_id = e.id', 'inner') // INNER join garante que a peça ainda existe
                            ->join('equipment_types et', 'e.type_id = et.id', 'left')
                            ->join('locations l', 'e.location_id = l.id', 'left')
                            ->join('type_slots ts', 'pce.slot_id = ts.id', 'left')
                            ->where('pce.parent_equip_id', $parent['id'])
-                           ->where('e.deleted_at IS NULL')
+                           ->where('e.deleted_at', null)
                            ->get()->getResultArray();
 
             if (empty($children)) continue;

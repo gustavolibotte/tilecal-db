@@ -846,7 +846,8 @@ class Equipments extends APIController
             
             $data = model('EquipmentModel')->getInconsistentAssemblies('PMT Block');
             
-            return $this->respond(['data' => $data]);
+            return $this->buildAPIResponse(200, $data);
+            
         } catch (\Throwable $e) {
             return $this->failInternalError($e);
         }
