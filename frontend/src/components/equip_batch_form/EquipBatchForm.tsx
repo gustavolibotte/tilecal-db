@@ -260,22 +260,42 @@ export default function EquipBatchForm() {
     
     validateMutation.mutate({ equipments: enrichedData }, {
       onSuccess: (res: any) => {
-        const payload = res?.data?.details ? res.data : (res?.details ? res : null);
-        
-        if (payload) {
-          processValidationPayload(payload);
+        let parsedData = res?.data ?? res;
+
+        if (typeof parsedData === 'string') {
+            try {
+                const match = parsedData.match(/\{[\s\S]*\}/); // Apanha apenas as chavetas {...}
+                if (match) parsedData = JSON.parse(match[0]);
+                else parsedData = JSON.parse(parsedData);
+            } catch (e) {
+                console.error("Failed to parse server string:", parsedData);
+            }
+        }
+
+        if (parsedData && Array.isArray(parsedData.details)) {
+          processValidationPayload(parsedData);
         } else {
-          toast.error("Servidor respondeu, mas o pacote de validação estava vazio.");
+          // SE FALHOU TUDO, MOSTRA NO ECRÃ EXATAMENTE O QUE VEIO DO SERVIDOR!
+          const debugStr = typeof parsedData === 'object' ? JSON.stringify(parsedData) : String(parsedData);
+          toast.error(`Falha: Resposta inesperada. Recebido: ${debugStr.substring(0, 150)}`);
           setIsValidating(false);
         }
       },
       onError: (error: any) => {
-        const payload = error.response?.data;
-        if (payload && payload.details) {
-            processValidationPayload(payload);
+        let parsedData = error.response?.data;
+
+        if (typeof parsedData === 'string') {
+            try {
+                const match = parsedData.match(/\{[\s\S]*\}/);
+                if (match) parsedData = JSON.parse(match[0]);
+            } catch(e) {}
+        }
+
+        if (parsedData && Array.isArray(parsedData.details)) {
+            processValidationPayload(parsedData);
             return;
         }
-        
+
         const errMsg = error.response?.data?.messages?.error || error.message || "Erro desconhecido";
         toast.error(`Falha no Pedido: ${errMsg}`);
         setIsValidating(false);
@@ -286,27 +306,25 @@ export default function EquipBatchForm() {
   const processValidationPayload = (backendData: any) => {
     let globalHasWarnings = false;
 
-    const apiDetails = backendData.details || stagingData.map((_, i) => ({ rowIndex: i, valid: false, errors: { system: "Validation payload missing" } }));
+    const apiDetails = backendData.details || stagingData.map((_, i) => ({ rowIndex: i, valid: false, errors: { system: "Payload Error" } }));
 
     const enrichedDetails = apiDetails.map((rowStatus: any) => {
       const row = stagingData[rowStatus.rowIndex];
       if (!row) return rowStatus; 
 
       const warnings: Record<string, string> = {};
+      rowStatus.errors = rowStatus.errors || {};
 
       if (row.location_name && !locations.includes(row.location_name)) {
         rowStatus.valid = false;
-        rowStatus.errors = rowStatus.errors || {};
         rowStatus.errors['location_name'] = `'${row.location_name}' is invalid.`;
       }
       if (row.status_name && !statuses.includes(row.status_name)) {
         rowStatus.valid = false;
-        rowStatus.errors = rowStatus.errors || {};
         rowStatus.errors['status_name'] = `'${row.status_name}' is invalid.`;
       }
       if (row.owner_name && !institutes.includes(row.owner_name)) {
         rowStatus.valid = false;
-        rowStatus.errors = rowStatus.errors || {};
         rowStatus.errors['owner_name'] = `'${row.owner_name}' is invalid.`;
       }
 
@@ -319,7 +337,6 @@ export default function EquipBatchForm() {
     });
 
     const finalValid = enrichedDetails.every((d:any) => d.valid);
-
     setValidationResult({ valid: finalValid, hasWarnings: globalHasWarnings, details: enrichedDetails });
 
     if (finalValid && !globalHasWarnings) {
