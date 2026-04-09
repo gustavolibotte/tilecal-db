@@ -328,6 +328,12 @@ class Equipments extends APIController
         }
         $equip = new Equipment($validInput);
         model('EquipmentModel')->update($equip->id, $equip);
+
+        // Cascade location update to all assembled child components
+        if (isset($validInput['location_name'])) {
+            model('EquipmentModel')->updateLocationCascade($equip->id, $validInput['location_name']);
+        }
+
         return respondUpdated($id, $inputData, $validInput);
     }
 

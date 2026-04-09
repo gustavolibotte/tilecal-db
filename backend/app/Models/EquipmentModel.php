@@ -201,7 +201,7 @@ class EquipmentModel extends LogModel
      * @param string $childId Child equipment id
      * @param string $parentId Parent equipment id
      * @param string $slotId Slot equipment id
-     *  
+     * 
      * @return bool Always true
      */
     public function addParent(string $childId,
@@ -479,5 +479,48 @@ class EquipmentModel extends LogModel
             model('DetectorLocationModel')
         );
         return $data;
+    }
+
+    /**
+     * Cascades a location update to all child equipments recursively.
+     * Ensures that if a parent (e.g. PMT Block) is moved, all assembled components 
+     * inherit the new location automatically.
+     *
+     * @param string $parentId The parent equipment ID
+     * @param string $locationName The new location name
+     * @return bool
+     */
+    public function updateLocationCascade(string $parentId, string $locationName): bool
+    {
+        $childrenIds = $this->getChildrenIDs($parentId);
+        if (empty($childrenIds)) {
+            return true;
+        }
+
+        $location = model('LocationModel')->where('name', $locationName)->first();
+        if (!$location) {
+            return false;
+        }
+
+        $this->db->transException(true)->transBegin();
+        try {
+            foreach ($childrenIds as $childId) {
+                // Check current location to avoid unnecessary updates and history logs
+                $childInfo = $this->select('location_id')->find($childId);
+                if ($childInfo && $childInfo->location_id !== $location->id) {
+                    $child = new Equipment([
+                        'id' => $childId,
+                        'location_name' => $locationName
+                    ]);
+                    // Update triggers beforeUpdate/afterUpdate events and History logging
+                    $this->update($childId, $child);
+                }
+            }
+            $this->db->transCommit();
+            return true;
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            throw $e;
+        }
     }
 }

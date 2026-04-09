@@ -11,13 +11,14 @@ import {
   getEndpoint,
   makeMutationFunction,
 } from '../../utils/DbClient';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
 import {
   commentsRules,
   serialRules,
 } from '../../utils/validation_rules';
 import * as Yup from 'yup';
+import { Message } from 'primereact/message';
 
 // This interface defines the fields for a generic equipment form.
 interface EquipFormSchema {
@@ -38,6 +39,9 @@ interface EquipFormProps {
 }
 
 export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: EquipFormProps) {
+
+  // State to track the original location before edits
+  const [originalLocation, setOriginalLocation] = useState<string>('');
 
   // Queries to populate dropdown options
   const locationQuery: any = useQuery({
@@ -65,6 +69,19 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     // This query will only run if equipId is provided
     enabled: !!equipId,
   });
+
+  // Fetch related equipments to determine if this component has assembled children
+  const relatedEquipQuery: any = useQuery({
+    queryKey: ['equipment', 'get', { relatedEquipmentId: equipId }],
+    queryFn: defaultQueryFunction,
+    enabled: !!equipId && isEdit,
+  });
+
+  const hasChildren = useMemo(() => {
+    if (!relatedEquipQuery.data?.data) return false;
+    const related = Array.isArray(relatedEquipQuery.data.data) ? relatedEquipQuery.data.data : relatedEquipQuery.data.data.data;
+    return related?.some((eq: any) => eq.relation_type === 'child');
+  }, [relatedEquipQuery.data]);
 
   let initialValues: EquipFormSchema = {
     id: '',
@@ -156,6 +173,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     const equipment = equipArray[0];
 
     if (equipment) {
+      setOriginalLocation(equipment.location_name || '');
       // Use setValues to populate the form with the fetched data
       formik.setValues({
         ...initialValues, // Ensures all fields from the schema are present
@@ -180,6 +198,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     || instituteQuery.isPending
     || statusQuery.isPending
     || (isEdit && isEquipPending)
+    || (isEdit && relatedEquipQuery.isPending)
   );
   if (isPending) {
     return 'Loading';
@@ -188,6 +207,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     locationQuery.isError
     || instituteQuery.isError
     || statusQuery.isError
+    || (isEdit && relatedEquipQuery.isError)
   );
   if (isError) {
     return 'Error';
@@ -242,6 +262,14 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
               formik.setFieldValue('location_name', e.value);
             }}
             errorText={getFormErrorMessage('location_name')} />
+
+            {isEdit && hasChildren && formik.values.location_name !== originalLocation && (
+              <Message 
+                severity="warn" 
+                text="Update alert: the location of all assembled components will also be automatically updated." 
+                className="mt-2 w-full justify-content-start" 
+              />
+            )}
         </div>
         <div className='mt-3'>
           <FormDropdown
