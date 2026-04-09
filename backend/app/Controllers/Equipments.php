@@ -510,8 +510,10 @@ class Equipments extends APIController
         }
 
         return $this->response->setJSON([
-            'valid' => !$hasErrors,
-            'details' => $results
+            'data' => [
+                'valid' => !$hasErrors,
+                'details' => $results
+            ]
         ]);
     }
 
