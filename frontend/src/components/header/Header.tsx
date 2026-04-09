@@ -147,6 +147,13 @@ export default function Header() {
       }
     },
     {
+      label: 'QC Consistency',
+      icon: 'pi pi-shield',
+      command: () => {
+        navigate(ROUTES.QC_PMT_CONSISTENCY)
+      },
+    },
+    {
       label: 'Help',
       items: helpItems
     }
