@@ -38,7 +38,7 @@ export default function PmtConsistency() {
   const locations = useMemo(() => locationsQuery.data?.data?.map((l: any) => l.name) || [], [locationsQuery.data]);
 
   const inconsistenciesQuery: any = useQuery({
-    queryKey: ['equipment', 'inconsistencies', {}],
+    queryKey: ['equipment_inconsistencies', 'get', {}],
     queryFn: defaultQueryFunction
   });
 

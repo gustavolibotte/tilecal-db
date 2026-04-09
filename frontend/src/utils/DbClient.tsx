@@ -15,6 +15,7 @@ interface EndpointType {
   equipment_batch: string;
   equipment_assemble: string;
   equipment_disassemble: string;
+  equipment_inconsistencies: string;
   file_download: string;
   file_download_hist: string;
   file_relation: string;
@@ -42,6 +43,7 @@ const ENDPOINT: EndpointType = {
   equipment_batch: 'api/equipment/batch-register',
   equipment_assemble: 'api/equipment/assemble',
   equipment_disassemble: 'api/equipment/disassemble',
+  equipment_inconsistencies: 'api/equipment/inconsistencies',
   file_download: 'api/file/download',
   file_download_hist: 'api/file/download-hist',
   file_relation: 'api/equipment/relate-file',
