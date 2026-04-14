@@ -169,15 +169,19 @@ export default function EquipBatchForm() {
     sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00549F' } }; 
     if (smartHint) sheet.getCell('A1').note = smartHint.replace('Hint: ', 'Format Expectation:\n');
 
-    for (let i = 2; i <= 1000; i++) {
-      sheet.getCell(`A${i}`).numFmt = '@'; 
-      sheet.getCell(`B${i}`).numFmt = '@';
+    for (let rowIdx = 2; rowIdx <= 1000; rowIdx++) {
+      // RESOLVIDO: O TS não reclama mais do "col", usando o _
+      columns.forEach((_, colIdx) => {
+        const cell = sheet.getCell(rowIdx, colIdx + 1);
+        cell.protection = { locked: false };
+      });
+
+      sheet.getCell(`A${rowIdx}`).numFmt = '@'; 
+      sheet.getCell(`B${rowIdx}`).numFmt = '@';
       
-      sheet.getCell(`C${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$A$1:$A$${locations.length}`] };
-      sheet.getCell(`D${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$B$1:$B$${statuses.length}`] };
-      sheet.getCell(`E${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$C$1:$C$${institutes.length}`] };
-      
-      sheet.getRow(i).eachCell({ includeEmpty: true }, (cell) => { cell.protection = { locked: false }; });
+      sheet.getCell(`C${rowIdx}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$A$1:$A$${locations.length}`] };
+      sheet.getCell(`D${rowIdx}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$B$1:$B$${statuses.length}`] };
+      sheet.getCell(`E${rowIdx}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$C$1:$C$${institutes.length}`] };
     }
 
     await sheet.protect('atlas_db_protection', { selectLockedCells: true, selectUnlockedCells: true, formatColumns: true, formatRows: true });
@@ -270,7 +274,7 @@ export default function EquipBatchForm() {
 
         if (typeof parsedData === 'string') {
             try {
-                const match = parsedData.match(/\{[\s\S]*\}/); // Apanha apenas as chavetas {...}
+                const match = parsedData.match(/\{[\s\S]*\}/); 
                 if (match) parsedData = JSON.parse(match[0]);
                 else parsedData = JSON.parse(parsedData);
             } catch (e) {
@@ -281,7 +285,6 @@ export default function EquipBatchForm() {
         if (parsedData && Array.isArray(parsedData.details)) {
           processValidationPayload(parsedData);
         } else {
-          // SE FALHOU TUDO, MOSTRA NO ECRÃ EXATAMENTE O QUE VEIO DO SERVIDOR!
           const debugStr = typeof parsedData === 'object' ? JSON.stringify(parsedData) : String(parsedData);
           toast.error(`Falha: Resposta inesperada. Recebido: ${debugStr.substring(0, 150)}`);
           setIsValidating(false);

@@ -176,6 +176,68 @@ class Equipments extends APIController
         );
     }
 
+    private function createEquipmentInstance(array $inputData): string
+    {
+        helper(['app_array']);
+        
+        if (empty($inputData['id']) && !empty($inputData['serial'])) {
+            $inputData['id'] = $inputData['serial'];
+        }
+
+        if (empty($inputData['type_name'])) {
+            throw new \Exception("Missing equipment type.");
+        }
+
+        $registerRules = EquipmentRules::getRegisterRulesFromTypeName($inputData['type_name']);
+        $validationRes = Validator::validate($inputData, $registerRules);
+
+        if (!$validationRes['valid']) {
+            throw new \Exception("Validation Error: " . json_encode($validationRes['errors']));
+        }
+
+        $validInput = $validationRes['validatedData'];
+
+        if (!empty($validInput['owner_mne'])) {
+            $inst = model('InstituteModel')->where('mne', $validInput['owner_mne'])->first();
+            if($inst) $validInput['owner_id'] = $inst->id;
+        } elseif (!empty($validInput['owner_name'])) {
+            $inst = model('InstituteModel')->where('name', $validInput['owner_name'])->first();
+            if($inst) $validInput['owner_id'] = $inst->id;
+        }
+        
+        if (!empty($validInput['location_name'])) {
+            $loc = model('LocationModel')->where('name', $validInput['location_name'])->first();
+            if($loc) $validInput['location_id'] = $loc->id;
+        }
+        if (!empty($validInput['status_name'])) {
+            $stat = model('StatusModel')->where('name', $validInput['status_name'])->first();
+            if($stat) $validInput['status_id'] = $stat->id;
+        }
+
+        $equipType = model('EquipmentTypeModel')
+            ->select('params')
+            ->where('name', $inputData['type_name'])
+            ->first();
+
+        $validInput['type_params'] = [];
+        if ($equipType && $equipType->params) {
+            $paramsList = is_string($equipType->params) ? json_decode($equipType->params, true) : $equipType->params;
+            foreach ($paramsList as $param) {
+                $validInput['type_params'][$param] = remove_value($param, $validInput, false);
+            }
+        }
+
+        $equipment = new Equipment($validInput);
+        $model = model('EquipmentModel');
+
+        if ($model->insert($equipment) === false) {
+            $dbErrors = $model->errors() ?? ['Unknown database error'];
+            throw new \Exception("Database Insert Failed: " . implode(", ", $dbErrors));
+        }
+
+        return $equipment->id;
+    }
+
     public function post(): ResponseInterface
     {
         try {
@@ -191,6 +253,7 @@ class Equipments extends APIController
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
+        
         $typeRules = [
             'type_name' => [
                 '\App\Validation\GeneralRules::required' => [],
@@ -203,226 +266,24 @@ class Equipments extends APIController
                 ]
             ]
         ];
-        $inputData = $this->request->getVar(array_keys($typeRules));
+
+        $inputData = $this->request->getJSON(true) ?? $this->request->getVar();
+        if (is_object($inputData)) {
+            $inputData = (array)$inputData;
+        }
+
         $validationRes = Validator::validate($inputData, $typeRules);
         helper(['response', 'app_array']);
         if (!$validationRes['valid']) {
             return failValidationErrors($validationRes['errors'], $inputData);
         }
 
-        $typeName = $validationRes['validatedData']['type_name'];
-        $registerRules = EquipmentRules::getRegisterRulesFromTypeName($typeName);
-        $inputData = $this->request->getVar(array_keys($registerRules));
-
-        if (empty($inputData['id']) && !empty($inputData['serial'])) {
-            $inputData['id'] = $inputData['serial'];
-        }
-        
-        $validationRes = Validator::validate($inputData, $registerRules);
-        if (!$validationRes['valid']) {
-            return failValidationErrors($validationRes['errors'], $inputData);
-        }
-
-        $equipType = model('EquipmentTypeModel')
-            ->select('params')
-            ->where('name', $typeName)
-            ->first();
-        $validInput = $validationRes['validatedData'];
-        $validInput['type_params'] = [];
-        foreach($equipType->params as $param) {
-            $validInput['type_params'][$param] = remove_value($param, $validInput, false);
-        }
-
-        $equipment = new Equipment($validInput);
-        model('EquipmentModel')->insert($equipment);
-        return $this->respondCreated($equipment->id);
-    }
-
-    public function getHist(): ResponseInterface
-    {
         try {
-            return $this->__getHist__();
-        } catch (Throwable $e) {
-            return $this->failInternalError($e);
+            $id = $this->createEquipmentInstance($inputData);
+            return $this->respondCreated($id);
+        } catch (\Exception $e) {
+            return $this->failValidationErrors(['error' => $e->getMessage()]);
         }
-    }
-
-    protected function __getHist__(): ResponseInterface
-    {
-        helper('response');
-        $inputRules = [
-            'id' => [
-                '\App\Validation\GeneralRules::required' => [],
-                '\App\Validation\EquipmentRules::idIsSanitized' => [],
-            ]
-        ];
-        $inputData = $this->request->getVar(array_keys($inputRules));
-        $validationRes = Validator::validate($inputData, $inputRules);
-        if (!$validationRes['valid']) {
-            return failValidationErrors($validationRes['errors'], $inputData);
-        }
-        $validInput = $validationRes['validatedData'];
-        $history = model('HistModel')
-            ->getEquipmentHist($validInput['id']);
-        helper('response');
-        return respondQueryResults(
-            $history,
-            $inputData,
-            $validInput
-        );
-    }
-
-    public function put(): ResponseInterface
-    {
-        try {
-            return $this->__put__();
-        } catch (Throwable $e) {
-            return $this->failInternalError($e);
-        }
-    }
-
-    protected function __put__(): ResponseInterface
-    {
-        $feature = model('FeatureModel')->findName('equipment_edit');
-        if (!$feature->isActive()) {
-            return $this->failServiceUnavailable();
-        }
-
-        $idRules = [
-            'id' => [
-                '\App\Validation\GeneralRules::required' => [],
-                '\App\Validation\EquipmentRules::idIsSanitized' => [],
-                '\App\Validation\DatabaseRules::isNotUnique' => [
-                    'params' => [
-                        'table' => 'equipments',
-                        'column' => 'id'
-                    ]
-                ]
-            ]
-        ];
-        $inputData = $this->request->getVar(array_keys($idRules));
-        $validationRes = Validator::validate($inputData, $idRules);
-        helper(['response', 'app_array']);
-        if (!$validationRes['valid']) {
-            return failValidationErrors($validationRes['errors'], $inputData);
-        }
-        $id = $validationRes['validatedData']['id'];
-        $queryData = model('EquipmentModel')
-            ->join('equipment_types et', 'equipments.type_id = et.id', 'left')
-            ->select('equipments.type_params as type_params')
-            ->select('et.name as type_name')
-            ->select('et.params as params')
-            ->find($id);
-        $equipRules = EquipmentRules::getEditRulesFromTypeName($queryData->type_name);
-        $inputData = $this->request->getVar(array_keys($equipRules));
-        $validationRes = Validator::validate($inputData, $equipRules);
-        if (!$validationRes['valid']) {
-            return failValidationErrors($validationRes['errors'], $inputData);
-        }
-        $validInput = $validationRes['validatedData'];
-        $validInput['type_params'] = $queryData->type_params;
-        foreach(json_decode($queryData->params, true) as $param) {
-            if (array_key_exists($param, $validInput)) {
-                $validInput['type_params'][$param] = remove_value($param, $validInput);
-            }
-        }
-        $equip = new Equipment($validInput);
-        model('EquipmentModel')->update($equip->id, $equip);
-
-        // Cascade location update to all assembled child components
-        if (isset($validInput['location_name'])) {
-            model('EquipmentModel')->updateLocationCascade($equip->id, $validInput['location_name']);
-        }
-
-        return respondUpdated($id, $inputData, $validInput);
-    }
-
-    public function delete(): ResponseInterface
-    {
-        try {
-            return $this->__delete__();
-        } catch (Throwable $e) {
-            return $this->failInternalError($e);
-        }
-    }
-
-    protected function __delete__(): ResponseInterface
-    {
-        $feature = model('FeatureModel')->findName('equipment_delete');
-        if (!$feature->isActive()) {
-            return $this->failServiceUnavailable();
-        }
-
-        $inputRules = [
-            'id' => [
-                '\App\Validation\GeneralRules::required' => [],
-                '\App\Validation\EquipmentRules::idIsSanitized' => [],
-                '\App\Validation\DatabaseRules::isNotDeleted' => [
-                    'params' => [
-                        'table' => 'equipments',
-                        'column' => 'id'
-                    ]
-                ]
-            ]
-        ];
-        $inputData = $this->request->getVar(array_keys($inputRules));
-        $validationRes = Validator::validate($inputData, $inputRules);
-        if (!$validationRes['valid']) {
-            return $this->failValidationErrors($validationRes['errors']);
-        }
-        $validInput = $validationRes['validatedData'];
-        model('EquipmentModel')->delete($validInput['id']);
-        return $this->respondDeleted($validInput['id']);
-    }
-
-    public function restore(): ResponseInterface
-    {
-        try {
-            return $this->__restore__();
-        } catch (Throwable $e) {
-            return $this->failInternalError($e);
-        }
-    }
-
-    public function __restore__(): ResponseInterface
-    {
-        helper('response');
-        $feature = model('FeatureModel')->findName('equipment_restore');
-        if (!$feature->isActive()) {
-            return $this->failServiceUnavailable();
-        }
-
-        $inputRules = [
-            'id' => [
-                '\App\Validation\GeneralRules::required' => [],
-                '\App\Validation\EquipmentRules::idIsSanitized' => [],
-                '\App\Validation\DatabaseRules::isDeleted' => [
-                    'params' => [
-                        'table' => 'equipments',
-                        'column' => 'id'
-                    ]
-                ]
-            ]
-        ];
-        $inputData = $this->request->getVar(array_keys($inputRules));
-        $validationRes = Validator::validate($inputData, $inputRules);
-        if (!$validationRes['valid']) {
-            return $this->failValidationErrors($validationRes['errors']);
-        }
-        $validInput = $validationRes['validatedData'];
-
-        $equipment = model('EquipmentModel')
-            ->onlyDeleted()
-            ->find($validInput['id']);
-        if (empty($equipment)) {
-            return $this->buildAPIResponse(
-                200,
-                [],
-                'Equipment is not deleted.'
-            );
-        }
-        model('EquipmentModel')->restore($validInput['id']);
-        return $this->respondRestored($validInput['id']);
     }
 
     public function batchValidate(): ResponseInterface
@@ -555,65 +416,209 @@ class Equipments extends APIController
         $db->transException(true)->transBegin();
         
         try {
-            $equipModel = model('EquipmentModel');
-            
             foreach ($inputData['equipments'] as $iRow => $row) {
-                if (empty($row['id']) && !empty($row['serial'])) {
-                    $row['id'] = $row['serial'];
-                }
-
-                $registerRules = EquipmentRules::getRegisterRulesFromTypeName($row['type_name']);
-                $validationRes = Validator::validate($row, $registerRules);
-                
-                if (!$validationRes['valid']) {
-                    $errors = $validationRes['errors'];
-                    $errors['row_number'] = $iRow;
-                    return $this->failValidationErrors($errors);
-                }
-                
-                $validInput = $validationRes['validatedData'];
-
-                $equipType = model('EquipmentTypeModel')
-                    ->select('params')
-                    ->where('name', $row['type_name'])
-                    ->first();
-                    
-                $validInput['type_params'] = [];
-                if ($equipType && $equipType->params) {
-                    $paramsList = is_string($equipType->params) ? json_decode($equipType->params, true) : $equipType->params;
-                    foreach($paramsList as $param) {
-                        $validInput['type_params'][$param] = remove_value($param, $validInput, false);
-                    }
-                }
-                
-                if (!empty($validInput['owner_mne'])) {
-                    $inst = model('InstituteModel')->where('mne', $validInput['owner_mne'])->first();
-                    if($inst) $validInput['owner_id'] = $inst->id;
-                }
-                if (!empty($validInput['location_name'])) {
-                    $loc = model('LocationModel')->where('name', $validInput['location_name'])->first();
-                    if($loc) $validInput['location_id'] = $loc->id;
-                }
-                if (!empty($validInput['status_name'])) {
-                    $stat = model('StatusModel')->where('name', $validInput['status_name'])->first();
-                    if($stat) $validInput['status_id'] = $stat->id;
-                }
-
-                $equipment = new Equipment($validInput);
-                
-                $equipModel->insert($equipment);
+                $this->createEquipmentInstance($row);
             }
             
             $db->transCommit();
             return $this->respondCreated();
-        } catch (Throwable $e) {
+            
+        } catch (\Exception $e) {
             $db->transRollback();
-            return $this->response->setStatusCode(500)->setJSON([
+            return $this->response->setStatusCode(400)->setJSON([
+                'status' => 400,
+                'error' => 400,
                 'messages' => [
-                    'error' => "COMMIT FAILED: " . $e->getMessage() . " | Line: " . $e->getLine()
+                    'error' => "Batch process failed at row " . ($iRow ?? 0) . ". Reason: " . $e->getMessage()
                 ]
             ]); 
         }
+    }
+
+    public function getHist(): ResponseInterface
+    {
+        try {
+            return $this->__getHist__();
+        } catch (Throwable $e) {
+            return $this->failInternalError($e);
+        }
+    }
+
+    protected function __getHist__(): ResponseInterface
+    {
+        helper('response');
+        $inputRules = [
+            'id' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+            ]
+        ];
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return failValidationErrors($validationRes['errors'], $inputData);
+        }
+        $validInput = $validationRes['validatedData'];
+        $history = model('HistModel')
+            ->getEquipmentHist($validInput['id']);
+        helper('response');
+        return respondQueryResults(
+            $history,
+            $inputData,
+            $validInput
+        );
+    }
+
+    public function put(): ResponseInterface
+    {
+        try {
+            return $this->__put__();
+        } catch (Throwable $e) {
+            return $this->failInternalError($e);
+        }
+    }
+
+    protected function __put__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('equipment_edit');
+        if (!$feature->isActive()) {
+            return $this->failServiceUnavailable();
+        }
+
+        $idRules = [
+            'id' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotUnique' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
+                    ]
+                ]
+            ]
+        ];
+        $inputData = $this->request->getVar(array_keys($idRules));
+        $validationRes = Validator::validate($inputData, $idRules);
+        helper(['response', 'app_array']);
+        if (!$validationRes['valid']) {
+            return failValidationErrors($validationRes['errors'], $inputData);
+        }
+        $id = $validationRes['validatedData']['id'];
+        $queryData = model('EquipmentModel')
+            ->join('equipment_types et', 'equipments.type_id = et.id', 'left')
+            ->select('equipments.type_params as type_params')
+            ->select('et.name as type_name')
+            ->select('et.params as params')
+            ->find($id);
+        $equipRules = EquipmentRules::getEditRulesFromTypeName($queryData->type_name);
+        $inputData = $this->request->getVar(array_keys($equipRules));
+        $validationRes = Validator::validate($inputData, $equipRules);
+        if (!$validationRes['valid']) {
+            return failValidationErrors($validationRes['errors'], $inputData);
+        }
+        $validInput = $validationRes['validatedData'];
+        $validInput['type_params'] = $queryData->type_params;
+        foreach(json_decode($queryData->params, true) as $param) {
+            if (array_key_exists($param, $validInput)) {
+                $validInput['type_params'][$param] = remove_value($param, $validInput);
+            }
+        }
+        $equip = new Equipment($validInput);
+        model('EquipmentModel')->update($equip->id, $equip);
+
+        if (isset($validInput['location_name'])) {
+            model('EquipmentModel')->updateLocationCascade($equip->id, $validInput['location_name']);
+        }
+
+        return respondUpdated($id, $inputData, $validInput);
+    }
+
+    public function delete(): ResponseInterface
+    {
+        try {
+            return $this->__delete__();
+        } catch (Throwable $e) {
+            return $this->failInternalError($e);
+        }
+    }
+
+    protected function __delete__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('equipment_delete');
+        if (!$feature->isActive()) {
+            return $this->failServiceUnavailable();
+        }
+
+        $inputRules = [
+            'id' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isNotDeleted' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
+                    ]
+                ]
+            ]
+        ];
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
+        }
+        $validInput = $validationRes['validatedData'];
+        model('EquipmentModel')->delete($validInput['id']);
+        return $this->respondDeleted($validInput['id']);
+    }
+
+    public function restore(): ResponseInterface
+    {
+        try {
+            return $this->__restore__();
+        } catch (Throwable $e) {
+            return $this->failInternalError($e);
+        }
+    }
+
+    public function __restore__(): ResponseInterface
+    {
+        helper('response');
+        $feature = model('FeatureModel')->findName('equipment_restore');
+        if (!$feature->isActive()) {
+            return $this->failServiceUnavailable();
+        }
+
+        $inputRules = [
+            'id' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\EquipmentRules::idIsSanitized' => [],
+                '\App\Validation\DatabaseRules::isDeleted' => [
+                    'params' => [
+                        'table' => 'equipments',
+                        'column' => 'id'
+                    ]
+                ]
+            ]
+        ];
+        $inputData = $this->request->getVar(array_keys($inputRules));
+        $validationRes = Validator::validate($inputData, $inputRules);
+        if (!$validationRes['valid']) {
+            return $this->failValidationErrors($validationRes['errors']);
+        }
+        $validInput = $validationRes['validatedData'];
+
+        $equipment = model('EquipmentModel')
+            ->onlyDeleted()
+            ->find($validInput['id']);
+        if (empty($equipment)) {
+            return $this->buildAPIResponse(
+                200,
+                [],
+                'Equipment is not deleted.'
+            );
+        }
+        model('EquipmentModel')->restore($validInput['id']);
+        return $this->respondRestored($validInput['id']);
     }
 
     public function disassemble(): ResponseInterface
