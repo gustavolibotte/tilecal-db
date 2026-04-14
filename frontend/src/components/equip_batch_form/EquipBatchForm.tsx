@@ -130,7 +130,7 @@ export default function EquipBatchForm() {
   });
 
   const commitMutation = useMutation({
-    mutationFn: makeMutationFunction('post', getEndpoint('equipment') + '/batch-create')
+    mutationFn: makeMutationFunction('post', getEndpoint('equipment_batch'))
   });
 
   const prepareDataForBackend = (data: EquipmentRow[]) => {
@@ -170,7 +170,6 @@ export default function EquipBatchForm() {
     if (smartHint) sheet.getCell('A1').note = smartHint.replace('Hint: ', 'Format Expectation:\n');
 
     for (let rowIdx = 2; rowIdx <= 1000; rowIdx++) {
-      // RESOLVIDO: O TS não reclama mais do "col", usando o _
       columns.forEach((_, colIdx) => {
         const cell = sheet.getCell(rowIdx, colIdx + 1);
         cell.protection = { locked: false };
