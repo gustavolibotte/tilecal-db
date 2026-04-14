@@ -555,6 +555,8 @@ class Equipments extends APIController
         $db->transException(true)->transBegin();
         
         try {
+            $equipModel = model('EquipmentModel');
+            
             foreach ($inputData['equipments'] as $iRow => $row) {
                 if (empty($row['id']) && !empty($row['serial'])) {
                     $row['id'] = $row['serial'];
@@ -583,16 +585,34 @@ class Equipments extends APIController
                         $validInput['type_params'][$param] = remove_value($param, $validInput, false);
                     }
                 }
+                
+                if (!empty($validInput['owner_mne'])) {
+                    $inst = model('InstituteModel')->where('mne', $validInput['owner_mne'])->first();
+                    if($inst) $validInput['owner_id'] = $inst->id;
+                }
+                if (!empty($validInput['location_name'])) {
+                    $loc = model('LocationModel')->where('name', $validInput['location_name'])->first();
+                    if($loc) $validInput['location_id'] = $loc->id;
+                }
+                if (!empty($validInput['status_name'])) {
+                    $stat = model('StatusModel')->where('name', $validInput['status_name'])->first();
+                    if($stat) $validInput['status_id'] = $stat->id;
+                }
 
                 $equipment = new Equipment($validInput);
-                model('EquipmentModel')->insert($equipment);
+                
+                $equipModel->insert($equipment);
             }
             
             $db->transCommit();
             return $this->respondCreated();
         } catch (Throwable $e) {
             $db->transRollback();
-            throw $e; 
+            return $this->response->setStatusCode(500)->setJSON([
+                'messages' => [
+                    'error' => "COMMIT FAILED: " . $e->getMessage() . " | Line: " . $e->getLine()
+                ]
+            ]); 
         }
     }
 

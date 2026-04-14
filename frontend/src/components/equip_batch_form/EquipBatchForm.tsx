@@ -170,9 +170,13 @@ export default function EquipBatchForm() {
     if (smartHint) sheet.getCell('A1').note = smartHint.replace('Hint: ', 'Format Expectation:\n');
 
     for (let i = 2; i <= 1000; i++) {
+      sheet.getCell(`A${i}`).numFmt = '@'; 
+      sheet.getCell(`B${i}`).numFmt = '@';
+      
       sheet.getCell(`C${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$A$1:$A$${locations.length}`] };
       sheet.getCell(`D${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$B$1:$B$${statuses.length}`] };
       sheet.getCell(`E${i}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`Hidden_Lists!$C$1:$C$${institutes.length}`] };
+      
       sheet.getRow(i).eachCell({ includeEmpty: true }, (cell) => { cell.protection = { locked: false }; });
     }
 
@@ -210,6 +214,8 @@ export default function EquipBatchForm() {
             if (headerKey) {
               let val = cell.value;
               if (val && typeof val === 'object' && 'result' in val) val = val.result;
+              if (val && typeof val === 'object' && 'text' in val) val = val.text;
+              
               rowData[headerKey] = val !== undefined && val !== null ? String(val).trim() : '';
             }
           });
