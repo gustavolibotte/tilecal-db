@@ -166,6 +166,11 @@ $routes->group('api', static function ($routes){
         'as' => 'api_user_get'
     ]);
 
+    $routes->get('search', 'Search::index', [
+        'filter' => ['api_auth', 'action:view'],
+        'as' => 'api_search_get'
+    ]);
+
     $routes->group('v1/statistics', ['filter' => ['api_auth', 'action:view']], static function ($routes) {
         $routes->get('inventory-by-type', 'Statistics::getInventoryByType');
         $routes->get('global-status', 'Statistics::getGlobalStatusDistribution');

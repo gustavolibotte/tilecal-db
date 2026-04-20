@@ -26,4 +26,5 @@ export function concatenateUrlParams(url: string, params: any): string{
 export const ROUTES = {
     STATISTICS: '/statistics',
     QC_PMT_CONSISTENCY: '/qc-pmt-consistency',
+    SEARCH: '/search',
 };

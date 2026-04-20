@@ -26,6 +26,7 @@ interface EndpointType {
   statistics_institute: string;
   statistics_orphaned: string;
   statistics_location_equipments: string;
+  search: string;
 }
 
 const ENDPOINT: EndpointType = {
@@ -53,7 +54,8 @@ const ENDPOINT: EndpointType = {
   statistics_location: 'api/v1/statistics/location-distribution',
   statistics_institute: 'api/v1/statistics/institute-distribution',
   statistics_orphaned: 'api/v1/statistics/orphaned-components',
-  statistics_location_equipments: 'api/v1/statistics/location-equipments'
+  statistics_location_equipments: 'api/v1/statistics/location-equipments',
+  search: 'api/search'
 };
 
 export function getEndpoint(name: keyof EndpointType): string{

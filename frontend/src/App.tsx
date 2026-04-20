@@ -9,6 +9,7 @@ import EquipRegister from './routes/equip_register/EquipRegister.tsx';
 import EquipView from './routes/equip_view/EquipView.tsx';
 import FileView from './routes/file_view/FileView.tsx';
 import { defaultQueryFunction } from './utils/DbClient.tsx';
+import SearchResults from './routes/search_results/SearchResults.tsx';
 
 import 'primeicons/primeicons.css';
 import "primereact/resources/themes/md-light-indigo/theme.css";
@@ -86,6 +87,10 @@ export default function App(){
     {
       path: ROUTES.STATISTICS,
       element: <StatisticsDashboard/>,
+    },
+    {
+      path: ROUTES.SEARCH,
+      element: <SearchResults/>,
     },
     {
       path: ROUTES.QC_PMT_CONSISTENCY,

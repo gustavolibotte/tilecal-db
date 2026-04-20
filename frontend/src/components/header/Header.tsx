@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import './header.css'
 import HomeButton from '../home_button/HomeButton';
 import { useNavigate } from 'react-router-dom';
+import GlobalSearch from '../global_search/GlobalSearch';
 
 // Define constants for external URLs
 const GITLAB_ISSUES_URL = 'https://gitlab.cern.ch/tilecal-p2-db/tilecal-db/-/issues';
@@ -162,7 +163,15 @@ export default function Header() {
   // User Display Logic
   let end;
   if (user) {
-    end = <span className="p-menuitem-text text-s">{user.username} - {user.highestRole}</span>;
+    end = (
+        <div className="flex align-items-center gap-4">
+            <GlobalSearch />
+            <div className="flex flex-column align-items-end">
+                <span className="font-bold text-700">{user.username}</span>
+                <span className="text-xs text-500 capitalize">{user.highestRole}</span>
+            </div>
+        </div>
+    );
   } else {
     end = <span className="p-menuitem-text text-s">Loading</span>;
   }
