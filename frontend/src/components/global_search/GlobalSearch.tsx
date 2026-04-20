@@ -1,8 +1,7 @@
 import { useState, useRef } from 'react';
 import { AutoComplete, AutoCompleteCompleteEvent } from 'primereact/autocomplete';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { getEndpoint } from '../../utils/DbClient';
+import { defaultQueryFunction } from '../../utils/DbClient';
 import { ROUTES } from '../../utils/routes';
 
 interface SearchResult {
@@ -32,12 +31,10 @@ export default function GlobalSearch() {
         timeoutRef.current = setTimeout(async () => {
             setLoading(true);
             try {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token'); 
-                const res = await axios.get(getEndpoint('search'), {
-                    params: { q: q },
-                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                const res = await defaultQueryFunction({
+                    queryKey: ['search', 'get', { q: q }]
                 });
-                setItems(res.data.data || []);
+                setItems(res.data || []);
             } catch (error) {
                 console.error("Search error", error);
                 setItems([]);

@@ -1,7 +1,6 @@
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
-import { getEndpoint } from '../../utils/DbClient';
+import { defaultQueryFunction } from '../../utils/DbClient';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 
@@ -10,22 +9,17 @@ export default function SearchResults() {
     const query = searchParams.get('q') || '';
     const navigate = useNavigate();
 
-    const fetchSearchResults = async () => {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const res = await axios.get(getEndpoint('search'), { 
-            params: { q: query },
-            headers: token ? { Authorization: `Bearer ${token}` } : {} 
-        });
-        return res.data.data;
-    };
-
-    const { data: results, isPending } = useQuery({
-        queryKey: ['search', query],
-        queryFn: fetchSearchResults,
+    const searchQuery: any = useQuery({
+        queryKey: ['search', 'get', { q: query }],
+        queryFn: defaultQueryFunction,
         enabled: query.length > 1
     });
 
-    if (isPending) return <div className="p-4 text-center"><i className="pi pi-spin pi-spinner text-4xl text-blue-500"></i></div>;
+    if (searchQuery.isPending && query.length > 1) {
+        return <div className="p-4 text-center"><i className="pi pi-spin pi-spinner text-4xl text-blue-500"></i></div>;
+    }
+
+    const results = searchQuery.data?.data || [];
 
     if (!results || results.length === 0) {
         return (
