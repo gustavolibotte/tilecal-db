@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import './header.css'
 import { useNavigate } from 'react-router-dom';
 import GlobalSearch from '../global_search/GlobalSearch';
-import logoImg from '../../assets/tilecal_scheme.png';
+import logoImg from '../../assets/tilecal_scheme.png'; 
 
 // Define constants for external URLs
 const GITLAB_ISSUES_URL = 'https://gitlab.cern.ch/tilecal-p2-db/tilecal-db/-/issues';
@@ -116,21 +116,22 @@ export default function Header() {
     }
   ];
 
+  // Main Menu Structure
   const items = [
     {
       label: 'Equipment',
-      icon: 'pi pi-server',
+      icon: 'pi pi-server', 
       items: equipItems
     },
     {
       label: 'Register',
-      icon: 'pi pi-plus-circle',
+      icon: 'pi pi-plus-circle', 
       items: registerItems,
       visible: registerItems.length > 0 
     },
     {
       label: 'Files',
-      icon: 'pi pi-folder-open',
+      icon: 'pi pi-folder-open', 
       items: fileItems
     },
     {
@@ -156,7 +157,7 @@ export default function Header() {
     },
     {
       label: 'Help',
-      icon: 'pi pi-question-circle',
+      icon: 'pi pi-question-circle', 
       items: helpItems
     }
   ];
@@ -172,13 +173,14 @@ export default function Header() {
     </div>
   );
 
-  // User Display Logic
   let end;
   if (user) {
     end = (
-        <div className="flex align-items-center gap-4">
-            <GlobalSearch />
-            <div className="flex flex-column align-items-end">
+        <div className="header-end-container flex align-items-center gap-4">
+            <div className="search-wrapper">
+                <GlobalSearch />
+            </div>
+            <div className="flex flex-column align-items-end text-right">
                 <span className="font-bold text-700">{user.username}</span>
                 <span className="text-xs text-500 capitalize">{user.highestRole}</span>
             </div>
