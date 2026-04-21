@@ -3,9 +3,9 @@ import { getEquipRegisterRoute, getSpecEquipRoute, ROUTES } from '../../utils/ro
 import { useUser } from '../../utils/user';
 import { useQuery } from '@tanstack/react-query';
 import './header.css'
-import HomeButton from '../home_button/HomeButton';
 import { useNavigate } from 'react-router-dom';
 import GlobalSearch from '../global_search/GlobalSearch';
+import logoImg from '../../assets/tilecal_scheme.png';
 
 // Define constants for external URLs
 const GITLAB_ISSUES_URL = 'https://gitlab.cern.ch/tilecal-p2-db/tilecal-db/-/issues';
@@ -34,8 +34,6 @@ export default function Header() {
     equipTypes = [];
   }
 
-  // --- Menu Construction ---
-
   // 1. Equipment Menu
   const equipItems: any = [{
     label: 'Index',
@@ -59,7 +57,7 @@ export default function Header() {
 
   // 2. Register Menu (Conditional)
   const registerItems = [];
-  if (user.canRegister()) {
+  if (user?.canRegister()) {
     registerItems.push({
       label: 'Batch Register',
       icon: 'pi pi-table',
@@ -90,7 +88,7 @@ export default function Header() {
     }
   }];
   
-  if (user.canUpload()) {
+  if (user?.canUpload()) {
     fileItems.push({
       label: 'Upload',
       icon: 'pi pi-upload',
@@ -118,19 +116,21 @@ export default function Header() {
     }
   ];
 
-  // Main Menu Structure
   const items = [
     {
       label: 'Equipment',
+      icon: 'pi pi-server',
       items: equipItems
     },
     {
       label: 'Register',
+      icon: 'pi pi-plus-circle',
       items: registerItems,
       visible: registerItems.length > 0 
     },
     {
       label: 'Files',
+      icon: 'pi pi-folder-open',
       items: fileItems
     },
     {
@@ -156,9 +156,21 @@ export default function Header() {
     },
     {
       label: 'Help',
+      icon: 'pi pi-question-circle',
       items: helpItems
     }
   ];
+
+  const start = (
+    <div className="logo-section cursor-pointer" onClick={() => navigate('/')}>
+      <img src={logoImg} alt="Tilecal Logo" className="header-logo" />
+      <div className="logo-text">
+        <span>Tilecal</span>
+        <span>Electronics</span>
+        <span>Database</span>
+      </div>
+    </div>
+  );
 
   // User Display Logic
   let end;
@@ -180,9 +192,9 @@ export default function Header() {
     <div className="w-full sticky top-0" style={{ zIndex: 1000 }}>
       <Menubar 
         model={items} 
-        start={<HomeButton />} 
+        start={start} 
         end={end}
-        className='shadow-2 border-none border-noround w-full' 
+        className='surface-0 shadow-2 border-none border-noround w-full app-header-menubar' 
       />
     </div>
   )
