@@ -18,31 +18,39 @@ class Search extends APIController
 
             $results = [];
             $limitPerCategory = 5;
+            
+            $db = db_connect();
 
-            $equipModel = model('EquipmentModel');
-            $equipments = $equipModel->builder()
-                ->select('id, serial, type_name')
+            $equipments = $db->table('equipments e')
+                ->select('e.id, e.serial, et.name as type_name')
+                ->join('equipment_types et', 'e.type_id = et.id', 'left')
                 ->groupStart()
-                    ->like('id', $query)
-                    ->orLike('serial', $query)
+                    ->like('e.id', $query)
+                    ->orLike('e.serial', $query)
+                    ->orLike('et.name', $query)
                 ->groupEnd()
-                ->where('deleted_at', null)
+                ->where('e.deleted_at', null)
+                ->orderBy('e.updated_at', 'DESC')
                 ->limit($limitPerCategory * 2)
                 ->get()->getResultArray();
 
             foreach ($equipments as $eq) {
+                $serialStr = (!empty($eq['serial']) && $eq['serial'] !== $eq['id']) ? " (Serial: {$eq['serial']})" : "";
                 $results[] = [
                     'type' => 'equipment',
                     'label' => $eq['id'],
-                    'description' => $eq['type_name'] . ($eq['serial'] ? " (Serial: {$eq['serial']})" : ""),
+                    'description' => $eq['type_name'] . $serialStr,
                     'icon' => 'pi-box',
-                    'url' => '/equipment/' . $eq['id']
+                    'url' => '/equipment/' . urlencode($eq['id'])
                 ];
             }
 
-            $locations = model('LocationModel')->builder()
+            $locations = $db->table('locations')
                 ->select('name, description')
-                ->like('name', $query)
+                ->groupStart()
+                    ->like('name', $query)
+                    ->orLike('description', $query)
+                ->groupEnd()
                 ->where('deleted_at', null)
                 ->limit($limitPerCategory)
                 ->get()->getResultArray();
@@ -51,13 +59,13 @@ class Search extends APIController
                 $results[] = [
                     'type' => 'location',
                     'label' => $loc['name'],
-                    'description' => 'Location: ' . $loc['description'],
+                    'description' => 'Location: ' . ($loc['description'] ?? ''),
                     'icon' => 'pi-map-marker',
                     'url' => '/equipment?location_name=' . urlencode($loc['name'])
                 ];
             }
 
-            $institutes = model('InstituteModel')->builder()
+            $institutes = $db->table('institutes')
                 ->select('mne, name')
                 ->groupStart()
                     ->like('mne', $query)
@@ -77,9 +85,12 @@ class Search extends APIController
                 ];
             }
 
-            $statuses = model('StatusModel')->builder()
+            $statuses = $db->table('statuses')
                 ->select('name, description')
-                ->like('name', $query)
+                ->groupStart()
+                    ->like('name', $query)
+                    ->orLike('description', $query)
+                ->groupEnd()
                 ->where('deleted_at', null)
                 ->limit($limitPerCategory)
                 ->get()->getResultArray();
@@ -88,7 +99,7 @@ class Search extends APIController
                 $results[] = [
                     'type' => 'status',
                     'label' => $st['name'],
-                    'description' => 'Status: ' . $st['description'],
+                    'description' => 'Status: ' . ($st['description'] ?? ''),
                     'icon' => 'pi-tag',
                     'url' => '/equipment?status_name=' . urlencode($st['name'])
                 ];
@@ -97,7 +108,11 @@ class Search extends APIController
             return $this->buildAPIResponse(200, $results);
 
         } catch (Throwable $e) {
-            return $this->failInternalError($e);
+            return $this->response->setStatusCode(500)->setJSON([
+                'status' => 500,
+                'message' => 'SQL ERROR: ' . $e->getMessage() . ' at line ' . $e->getLine() . ' in ' . basename($e->getFile()),
+                'data' => null
+            ]);
         }
     }
 }
