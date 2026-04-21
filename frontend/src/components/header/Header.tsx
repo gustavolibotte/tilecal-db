@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import GlobalSearch from '../global_search/GlobalSearch';
 import logoImg from '../../assets/tilecal_scheme.png'; 
 
-// Define constants for external URLs
 const GITLAB_ISSUES_URL = 'https://gitlab.cern.ch/tilecal-p2-db/tilecal-db/-/issues';
 const DOCS_URL = 'https://tilecal-p2-db.docs.cern.ch/';
 
@@ -25,8 +24,6 @@ export default function Header() {
 
   let equipTypes: EquipType[];
   if (equipTypeQuery.isError) {
-    console.log(equipTypeQuery.data);
-    console.log(equipTypeQuery.error);
     equipTypes = [];
   } else if (equipTypeQuery.isSuccess) {
     equipTypes = equipTypeQuery.data.data;
@@ -34,13 +31,10 @@ export default function Header() {
     equipTypes = [];
   }
 
-  // 1. Equipment Menu
   const equipItems: any = [{
     label: 'Index',
     icon: 'pi pi-list',
-    command: () => {
-      navigate('equipment')
-    }
+    command: () => navigate('equipment')
   }];
   
   if (equipTypes.length > 0) {
@@ -48,22 +42,17 @@ export default function Header() {
     equipTypes.forEach((et: EquipType) => {
       equipItems.push({
         label: et.name,
-        command: () => {
-          navigate(getSpecEquipRoute(et.name))
-        }
+        command: () => navigate(getSpecEquipRoute(et.name))
       });
     });
   }
 
-  // 2. Register Menu (Conditional)
   const registerItems = [];
   if (user?.canRegister()) {
     registerItems.push({
       label: 'Batch Register',
       icon: 'pi pi-table',
-      command: () => {
-        navigate('equipment/batch-register')
-      }
+      command: () => navigate('equipment/batch-register')
     });
     
     if (equipTypes.length > 0) {
@@ -71,95 +60,47 @@ export default function Header() {
       equipTypes.forEach((et: EquipType) => {
         registerItems.push({
           label: et.name,
-          command: () => {
-            navigate(getEquipRegisterRoute(et.name))
-          }
+          command: () => navigate(getEquipRegisterRoute(et.name))
         });
       });
     }
   }
 
-  // 3. Files Menu
   const fileItems = [{
     label: 'Index',
     icon: 'pi pi-file',
-    command: () => {
-      navigate('file')
-    }
+    command: () => navigate('file')
   }];
   
   if (user?.canUpload()) {
     fileItems.push({
       label: 'Upload',
       icon: 'pi pi-upload',
-      command: () => {
-        navigate('file/upload')
-      }
+      command: () => navigate('file/upload')
     });
   }
 
-  // 4. Help Menu
   const helpItems = [
     {
       label: 'Documentation',
       icon: 'pi pi-book',
-      command: () => {
-        window.open(DOCS_URL, '_blank');
-      }
+      command: () => window.open(DOCS_URL, '_blank')
     },
     {
       label: 'Report Issue',
       icon: 'pi pi-github', 
-      command: () => {
-        window.open(GITLAB_ISSUES_URL, '_blank');
-      }
+      command: () => window.open(GITLAB_ISSUES_URL, '_blank')
     }
   ];
 
-  // Main Menu Structure
   const items = [
-    {
-      label: 'Equipment',
-      icon: 'pi pi-server', 
-      items: equipItems
-    },
-    {
-      label: 'Register',
-      icon: 'pi pi-plus-circle', 
-      items: registerItems,
-      visible: registerItems.length > 0 
-    },
-    {
-      label: 'Files',
-      icon: 'pi pi-folder-open', 
-      items: fileItems
-    },
-    {
-      label: 'Assemble',
-      icon: 'pi pi-wrench',
-      command: () => {
-        navigate('equipment/assemble')
-      }
-    },
-    {
-      label: 'Statistics',
-      icon: 'pi pi-chart-bar',
-      command: () => {
-        navigate(ROUTES.STATISTICS)
-      }
-    },
-    {
-      label: 'QC Consistency',
-      icon: 'pi pi-shield',
-      command: () => {
-        navigate(ROUTES.QC_PMT_CONSISTENCY)
-      },
-    },
-    {
-      label: 'Help',
-      icon: 'pi pi-question-circle', 
-      items: helpItems
-    }
+    { label: 'Equipment', icon: 'pi pi-server', items: equipItems },
+    { label: 'Register', icon: 'pi pi-plus-circle', items: registerItems, visible: registerItems.length > 0 },
+    { label: 'Files', icon: 'pi pi-folder-open', items: fileItems },
+    { label: 'Assemble', icon: 'pi pi-wrench', command: () => navigate('equipment/assemble') },
+    { label: 'Statistics', icon: 'pi pi-chart-bar', command: () => navigate(ROUTES.STATISTICS) },
+    { label: 'QC Consistency', icon: 'pi pi-shield', command: () => navigate(ROUTES.QC_PMT_CONSISTENCY) },
+    { label: 'Help', icon: 'pi pi-question-circle', items: helpItems }
   ];
 
   const start = (
