@@ -126,7 +126,11 @@ class Equipments extends APIController
                                 $dbField = $fieldMap[$field];
                                 
                                 if ($direction === 'ASC') {
-                                    $queryModel->orderBy("({$dbField} IS NULL OR {$dbField} = '')", 'ASC', false);
+                                    if (in_array($field, ['created_at', 'updated_at'])) {
+                                        $queryModel->orderBy("({$dbField} IS NULL)", 'ASC', false);
+                                    } else {
+                                        $queryModel->orderBy("({$dbField} IS NULL OR {$dbField} = '')", 'ASC', false);
+                                    }
                                     $queryModel->orderBy($dbField, 'ASC', false);
                                 } else {
                                     $queryModel->orderBy($dbField, 'DESC', false);
