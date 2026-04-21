@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { AutoComplete, AutoCompleteCompleteEvent } from 'primereact/autocomplete';
 import { useNavigate } from 'react-router-dom';
 import { defaultQueryFunction } from '../../utils/DbClient';
@@ -15,7 +15,6 @@ interface SearchResult {
 export default function GlobalSearch() {
     const [query, setQuery] = useState<string>('');
     const [items, setItems] = useState<SearchResult[]>([]);
-    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const timeoutRef = useRef<any>(null);
 
@@ -29,7 +28,6 @@ export default function GlobalSearch() {
         }
 
         timeoutRef.current = setTimeout(async () => {
-            setLoading(true);
             try {
                 const res = await defaultQueryFunction({
                     queryKey: ['search', 'get', { q: q }]
@@ -38,8 +36,6 @@ export default function GlobalSearch() {
             } catch (error) {
                 console.error("Search error", error);
                 setItems([]);
-            } finally {
-                setLoading(false);
             }
         }, 300);
     };
@@ -90,7 +86,6 @@ export default function GlobalSearch() {
                 emptyMessage="No results found"
                 autoHighlight
             />
-            {loading && <i className="pi pi-spin pi-spinner text-blue-500 ml-2"></i>}
         </div>
     );
 }
