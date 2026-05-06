@@ -139,20 +139,20 @@ class Statistics extends ResourceController
      * @return \CodeIgniter\HTTP\ResponseInterface
      */
     public function ownerDistribution()
-{
-    $db = \Config\Database::connect();
-    $builder = $db->table('equipments');
-    
-    $builder->select('institutes.name as owner_name, COUNT(equipments.id) as total_count');
-    $builder->join('institutes', 'institutes.id = equipments.owner_id', 'left');
-    $builder->groupBy('equipments.owner_id');
-    $builder->orderBy('total_count', 'DESC');
-    
-    $query = $builder->get();
+    {
+        $db = \Config\Database::connect();
+        $builder = $db->table('equipments');
+        
+        $builder->select('institutes.name as owner_name, COUNT(equipments.id) as total_count');
+        $builder->join('institutes', 'institutes.id = equipments.owner_id', 'left');
+        $builder->groupBy('equipments.owner_id');
+        $builder->orderBy('total_count', 'DESC');
+        
+        $query = $builder->get();
 
-    return $this->response->setJSON([
-        'status' => 200,
-        'data'   => $query->getResult()
-    ]);
-}
+        return $this->response->setJSON([
+            'status' => 200,
+            'data'   => $query->getResult()
+        ]);
+    }
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { PieChart, Pie, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
 import { Button } from 'primereact/button';
 import { SelectButton } from 'primereact/selectbutton';
 import { Dialog } from 'primereact/dialog';
@@ -10,13 +10,12 @@ import { getEquipviewRoute } from '../../../utils/routes';
 import DbClient from '../../../utils/DbClient';
 import { exportChartAsImage } from '../../../utils/exportUtils';
 
-const COLORS = ['#0073e6', '#3399ff', '#66b2ff', '#99ccff', '#cce5ff'];
+const COLORS = ['#0053a1', '#3399ff', '#ff9900', '#33cc33', '#ff6666', '#99ccff', '#cce5ff'];
 
 export const OwnerDistributionWidget: React.FC = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [scale, setScale] = useState<'auto' | 'log'>('auto');
   const [exportFormat, setExportFormat] = useState<'PNG' | 'PDF' | 'CSV'>('PNG');
   const exportOptions = ['PNG', 'PDF', 'CSV'];
 
@@ -29,17 +28,20 @@ export const OwnerDistributionWidget: React.FC = () => {
     DbClient.getOwnerDistribution()
       .then(res => {
         if (res && res.data && Array.isArray(res.data)) {
-          setData(res.data.map((d: any) => ({ ...d, total_count: Number(d.total_count) })));
+          setData(res.data.map((d: any) => ({ 
+            ...d, 
+            total_count: Number(d.total_count) 
+          })));
         }
       })
-      .catch(err => console.error(err))
+      .catch(err => console.error("Error fetching owner data:", err))
       .finally(() => setLoading(false));
   }, []);
 
   const handleExport = () => {
     if (exportFormat === 'CSV') {
-        const csv = ['Owner,Quantity\n' + data.map(d => `"${d.owner_name}",${d.total_count}`).join('\n')];
-        const blob = new Blob(csv, { type: 'text/csv;charset=utf-8;' });
+        const csvString = 'Owner,Quantity\n' + data.map(d => `"${d.owner_name}",${d.total_count}`).join('\n');
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = 'owner_distribution.csv';
@@ -49,19 +51,18 @@ export const OwnerDistributionWidget: React.FC = () => {
     }
   };
 
-  const onBarClick = (barData: any) => {
-    const ownerName = barData?.payload?.owner_name || barData?.owner_name;
+  const onPieClick = (pieData: any) => {
+    const ownerName = pieData?.name || pieData?.payload?.owner_name;
     if (!ownerName) return;
 
     setSelectedOwner(ownerName);
     setShowModal(true);
     setLoadingEquipments(true);
 
-    DbClient.get(`/api/equipment?owner_name=${encodeURIComponent(ownerName)}`)
+    DbClient.get(`api/equipment?owner_name=${encodeURIComponent(ownerName)}`)
       .then(res => {
-        if (res && res.data) {
-          setOwnerEquipments(res.data.data || res.data);
-        }
+        const equipments = res?.data?.data || res?.data || [];
+        setOwnerEquipments(equipments);
       })
       .catch(err => console.error("Failed to load details", err))
       .finally(() => setLoadingEquipments(false));
@@ -96,8 +97,6 @@ export const OwnerDistributionWidget: React.FC = () => {
       <div className="flex justify-content-between align-items-start mb-3">
         <h3 style={{ color: '#0053a1', margin: 0 }}>Distribution by Owner</h3>
         <div className="flex align-items-center gap-2">
-          <Button icon="pi pi-chart-bar" className={`p-button-sm p-button-rounded p-button-text ${scale === 'auto' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('auto')} />
-          <Button icon="pi pi-chart-line" className={`p-button-sm p-button-rounded p-button-text ${scale === 'log' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('log')} />
           <SelectButton value={exportFormat} options={exportOptions} onChange={(e) => { if(e.value) setExportFormat(e.value) }} className="p-button-sm ml-3" style={{transform: 'scale(0.85)', transformOrigin: 'right'}} />
           <Button icon="pi pi-download" className="p-button-rounded p-button-success" onClick={handleExport} />
         </div>
@@ -109,24 +108,32 @@ export const OwnerDistributionWidget: React.FC = () => {
         <div style={{ width: '100%', height: 350, position: 'relative' }}>
           <div id="owner-chart" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart layout="vertical" data={data} margin={{ top: 10, right: 30, left: 40, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                <XAxis type="number" scale={scale} domain={scale === 'log' ? [1, 'auto'] : [0, 'auto']} />
-                <YAxis dataKey="owner_name" type="category" width={150} tick={{fontSize: 10}} />
-                <Tooltip cursor={{fill: '#f5f5f5'}} />
-                <Bar dataKey="total_count" name="Quantity" radius={[0, 4, 4, 0]} onClick={onBarClick} style={{ cursor: 'pointer' }}>
+              <PieChart>
+                <Pie
+                  data={data}
+                  dataKey="total_count"
+                  nameKey="owner_name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  onClick={onPieClick}
+                  style={{ cursor: 'pointer' }}
+                  label={(props: any) => `${props.name} (${((props.percent || 0) * 100).toFixed(1)}%)`}
+                >
                   {data.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
-                </Bar>
-              </BarChart>
+                </Pie>
+                <Tooltip formatter={(value) => [value, 'Quantity']} />
+                <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+              </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
       )}
 
       <Dialog header={renderModalHeader()} visible={showModal} style={{ width: '80vw' }} onHide={() => setShowModal(false)} maximizable>
-        <DataTable value={ownerEquipments} loading={loadingEquipments} paginator rows={10} size="small" stripedRows>
+        <DataTable value={ownerEquipments} loading={loadingEquipments} paginator rows={10} emptyMessage="No equipments found." size="small" stripedRows>
           <Column field="id" header="ID" body={idBodyTemplate} sortable />
           <Column field="type_name" header="Type" sortable />
           <Column field="status_name" header="Status" sortable />
