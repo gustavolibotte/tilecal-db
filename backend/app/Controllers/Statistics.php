@@ -133,4 +133,23 @@ class Statistics extends ResourceController
         
         return $this->respond(['status' => 200, 'data' => $data]);
     }
+
+    /**
+     * Get the distribution of equipments by Owner.
+     * @return \CodeIgniter\HTTP\ResponseInterface
+     */
+    public function ownerDistribution()
+    {
+        $db = \Config\Database::connect();
+        $builder = $db->table('equipments');
+        
+        $builder->select('institutes.name as owner_name, COUNT(equipments.id) as count');
+        $builder->join('institutes', 'institutes.id = equipments.owner_id', 'left');
+        $builder->groupBy('equipments.owner_id');
+        $builder->orderBy('count', 'DESC');
+        
+        $query = $builder->get();
+        
+        return $this->respond($query->getResult());
+    }
 }
