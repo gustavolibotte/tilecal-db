@@ -145,7 +145,7 @@ class Statistics extends ResourceController
         
         $builder->select('institutes.name as owner_name, COUNT(equipments.id) as total_count');
         $builder->join('institutes', 'institutes.id = equipments.owner_id', 'left');
-        $builder->groupBy('equipments.owner_id');
+        $builder->groupBy('institutes.name'); 
         $builder->orderBy('total_count', 'DESC');
         
         $query = $builder->get();
