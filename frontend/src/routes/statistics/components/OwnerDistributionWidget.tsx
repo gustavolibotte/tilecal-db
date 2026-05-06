@@ -16,14 +16,40 @@ export const OwnerDistributionWidget: React.FC = () => {
   useEffect(() => {
     DbClient.getOwnerDistribution()
       .then(res => {
-        const responseData = res?.data ? res.data : (Array.isArray(res) ? res : []);
+        let extractedArray: any[] = [];
 
-        if (Array.isArray(responseData)) {
-          setData(responseData.map((d: any) => ({
-            ...d,
-            owner_name: d.owner_name || d.name || 'Unknown',
-            total_count: Number(d.total_count || d.count || 0)
-          })));
+        if (Array.isArray(res)) {
+            extractedArray = res;
+        } else if (res && res.data) {
+            if (Array.isArray(res.data)) {
+                extractedArray = res.data;
+            } else if (res.data.data && Array.isArray(res.data.data)) {
+                extractedArray = res.data.data;
+            } else if (typeof res.data === 'object') {
+                const arrayValue = Object.values(res.data).find(Array.isArray);
+                if (arrayValue) {
+                    extractedArray = arrayValue as any[];
+                } else {
+                    extractedArray = Object.keys(res.data).map(key => ({
+                        owner_name: key,
+                        total_count: res.data[key]
+                    }));
+                }
+            }
+        }
+
+        if (extractedArray.length > 0) {
+          const normalizedData = extractedArray.map((d: any) => {
+            const name = d.owner_name || d.institute_name || d.owner || d.name || d.institute || d.owner_id || 'Unknown';
+            const count = d.total_count !== undefined ? d.total_count : (d.count !== undefined ? d.count : (d.quantity !== undefined ? d.quantity : 0));
+            
+            return {
+              ...d,
+              owner_name: name,
+              total_count: Number(count)
+            };
+          });
+          setData(normalizedData);
         }
       })
       .catch(err => console.error("Error fetching Owner Distribution:", err))
@@ -33,7 +59,6 @@ export const OwnerDistributionWidget: React.FC = () => {
   const handleExport = () => {
     if (exportFormat === 'CSV') {
         const csvString = 'Owner,Quantity\n' + data.map(d => `"${d.owner_name}",${d.total_count}`).join('\n');
-        
         const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
