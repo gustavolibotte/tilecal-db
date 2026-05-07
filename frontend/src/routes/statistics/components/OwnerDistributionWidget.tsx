@@ -7,13 +7,13 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { useNavigate } from 'react-router-dom';
 import { getEquipviewRoute } from '../../../utils/routes';
-import DbClient from '../../../utils/DbClient';
+import DbClient, { defaultQueryFunction } from '../../../utils/DbClient';
 import { exportChartAsImage } from '../../../utils/exportUtils';
 
 const OWNER_COLORS = ['#0053a1', '#e85c0f', '#008000', '#f4b400', '#6050dc', '#dc3545', '#17a2b8', '#6c757d'];
 
 const PieGradient = (props: any) => {
-  const { cx, cy, outerRadius, index, fill, isActive, onClick } = props; 
+  const { cx, cy, outerRadius, index, fill, isActive } = props; 
   return (
     <>
       <defs>
@@ -29,7 +29,6 @@ const PieGradient = (props: any) => {
         fill={`url(#fillGradOwn${index})`} 
         stroke={fill} 
         strokeWidth={isActive ? 2 : 1} 
-        onClick={onClick} 
         style={{ cursor: 'pointer' }}
       />
     </>
@@ -73,19 +72,21 @@ export const OwnerDistributionWidget: React.FC = () => {
   };
 
   const onPieClick = (pieData: any) => {
-    const ownerName = pieData?.name || pieData?.payload?.owner_name || pieData?.owner_name;
+    const ownerName = pieData?.payload?.owner_name || pieData?.owner_name || pieData?.name;
     if (!ownerName) return;
 
     setSelectedOwner(ownerName);
     setShowModal(true);
     setLoadingEquipments(true);
 
-    DbClient.get(`api/equipment?owner_name=${encodeURIComponent(ownerName)}`)
-      .then(res => {
-        const equipments = res?.data?.data || res?.data || [];
-        setOwnerEquipments(equipments);
+    defaultQueryFunction({ 
+        queryKey: ['equipment', 'get', { owner_name: ownerName }] 
+    })
+      .then((res: any) => {
+        const fetchedData = res?.data?.data || res?.data || [];
+        setOwnerEquipments(Array.isArray(fetchedData) ? fetchedData : []);
       })
-      .catch(err => console.error(err))
+      .catch(err => console.error("Error fetching equipments by owner:", err))
       .finally(() => setLoadingEquipments(false));
   };
 
