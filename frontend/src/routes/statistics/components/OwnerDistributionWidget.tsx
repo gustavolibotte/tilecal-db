@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PieChart, Pie, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend, Sector } from 'recharts';
 import { Button } from 'primereact/button';
 import { SelectButton } from 'primereact/selectbutton';
 import { Dialog } from 'primereact/dialog';
@@ -10,7 +10,31 @@ import { getEquipviewRoute } from '../../../utils/routes';
 import DbClient from '../../../utils/DbClient';
 import { exportChartAsImage } from '../../../utils/exportUtils';
 
-const COLORS = ['#0053a1', '#3399ff', '#ff9900', '#33cc33', '#ff6666', '#99ccff', '#cce5ff'];
+const OWNER_COLORS = ['#0053a1', '#e85c0f', '#008000', '#f4b400', '#6050dc', '#dc3545', '#17a2b8', '#6c757d'];
+
+const PieGradient = (props: any) => {
+  const { cx, cy, outerRadius, index, fill, isActive, onClick } = props; 
+  return (
+    <>
+      <defs>
+        <radialGradient id={`fillGradOwn${index}`} cx={cx} cy={cy} r={outerRadius} gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor={fill} stopOpacity={0.1} />
+          <stop offset="100%" stopColor={fill} stopOpacity={0.8} />
+        </radialGradient>
+        <clipPath id={`clipOwn${index}`}><Sector {...props} /></clipPath>
+      </defs>
+      <Sector 
+        {...props} 
+        clipPath={`url(#clipOwn${index})`} 
+        fill={`url(#fillGradOwn${index})`} 
+        stroke={fill} 
+        strokeWidth={isActive ? 2 : 1} 
+        onClick={onClick} 
+        style={{ cursor: 'pointer' }}
+      />
+    </>
+  );
+};
 
 export const OwnerDistributionWidget: React.FC = () => {
   const navigate = useNavigate();
@@ -28,13 +52,10 @@ export const OwnerDistributionWidget: React.FC = () => {
     DbClient.getOwnerDistribution()
       .then(res => {
         if (res && res.data && Array.isArray(res.data)) {
-          setData(res.data.map((d: any) => ({ 
-            ...d, 
-            total_count: Number(d.total_count) 
-          })));
+          setData(res.data.map((d: any) => ({ ...d, total_count: Number(d.total_count) })));
         }
       })
-      .catch(err => console.error("Error fetching owner data:", err))
+      .catch(err => console.error("API Error:", err))
       .finally(() => setLoading(false));
   }, []);
 
@@ -52,7 +73,7 @@ export const OwnerDistributionWidget: React.FC = () => {
   };
 
   const onPieClick = (pieData: any) => {
-    const ownerName = pieData?.name || pieData?.payload?.owner_name;
+    const ownerName = pieData?.name || pieData?.payload?.owner_name || pieData?.owner_name;
     if (!ownerName) return;
 
     setSelectedOwner(ownerName);
@@ -64,9 +85,15 @@ export const OwnerDistributionWidget: React.FC = () => {
         const equipments = res?.data?.data || res?.data || [];
         setOwnerEquipments(equipments);
       })
-      .catch(err => console.error("Failed to load details", err))
+      .catch(err => console.error(err))
       .finally(() => setLoadingEquipments(false));
   };
+
+  const renderLegend = (value: string, entry: any) => (
+    <span title={`Owner: ${value} | Quantity: ${entry.payload.total_count}`} style={{ color: '#333', fontWeight: 500, marginRight: '10px', cursor: 'help' }}>
+      {value} ({entry.payload.total_count})
+    </span>
+  );
 
   const renderModalHeader = () => (
     <div className="flex justify-content-between align-items-center w-full pr-4">
@@ -98,7 +125,7 @@ export const OwnerDistributionWidget: React.FC = () => {
         <h3 style={{ color: '#0053a1', margin: 0 }}>Distribution by Owner</h3>
         <div className="flex align-items-center gap-2">
           <SelectButton value={exportFormat} options={exportOptions} onChange={(e) => { if(e.value) setExportFormat(e.value) }} className="p-button-sm ml-3" style={{transform: 'scale(0.85)', transformOrigin: 'right'}} />
-          <Button icon="pi pi-download" className="p-button-rounded p-button-success" onClick={handleExport} />
+          <Button icon="pi pi-download" className="p-button-rounded p-button-success" onClick={handleExport} tooltip={`Export as ${exportFormat}`} tooltipOptions={{position: 'top'}} />
         </div>
       </div>
 
@@ -109,23 +136,24 @@ export const OwnerDistributionWidget: React.FC = () => {
           <div id="owner-chart" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={data}
-                  dataKey="total_count"
-                  nameKey="owner_name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
+                <Pie 
+                  data={data} 
+                  dataKey="total_count" 
+                  nameKey="owner_name" 
+                  cx="50%" 
+                  cy="50%" 
+                  innerRadius="25%" 
+                  outerRadius="75%" 
+                  paddingAngle={2} 
+                  shape={PieGradient}
                   onClick={onPieClick}
-                  style={{ cursor: 'pointer' }}
-                  label={(props: any) => `${props.name} (${((props.percent || 0) * 100).toFixed(1)}%)`}
                 >
-                  {data.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {data.map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={OWNER_COLORS[index % OWNER_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [value, 'Quantity']} />
-                <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                <Tooltip formatter={(value, name) => [value, name]} />
+                <Legend formatter={renderLegend} verticalAlign="bottom" height={40}/>
               </PieChart>
             </ResponsiveContainer>
           </div>
