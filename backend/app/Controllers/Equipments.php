@@ -76,11 +76,11 @@ class Equipments extends APIController
         $equipmentModel = model('EquipmentModel')->asArray();
         
         $equipmentModel = $this->parseDynamicFilter($validInput['id'] ?? null, $validInput['id_matchMode'] ?? null, 'equipments.id', $equipmentModel);
-        $equipmentModel = $this->parseDynamicFilter($validInput['type_name'] ?? null, $validInput['type_name_matchMode'] ?? null, 'equipment_types.name', $equipmentModel);
-        $equipmentModel = $this->parseDynamicFilter($validInput['status_name'] ?? null, $validInput['status_name_matchMode'] ?? null, 'statuses.name', $equipmentModel);
-        $equipmentModel = $this->parseDynamicFilter($validInput['location_name'] ?? null, $validInput['location_name_matchMode'] ?? null, 'locations.name', $equipmentModel);
-        $equipmentModel = $this->parseDynamicFilter($validInput['owner_name'] ?? null, $validInput['owner_name_matchMode'] ?? null, 'institutes.name', $equipmentModel);
-        $equipmentModel = $this->parseDynamicFilter($validInput['detector_location_name'] ?? null, $validInput['detector_location_name_matchMode'] ?? null, 'detector_locations.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['type_name'] ?? null, $validInput['type_name_matchMode'] ?? 'equals', 'equipment_types.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['status_name'] ?? null, $validInput['status_name_matchMode'] ?? 'equals', 'statuses.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['location_name'] ?? null, $validInput['location_name_matchMode'] ?? 'equals', 'locations.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['owner_name'] ?? null, $validInput['owner_name_matchMode'] ?? 'equals', 'institutes.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['detector_location_name'] ?? null, $validInput['detector_location_name_matchMode'] ?? 'equals', 'detector_locations.name', $equipmentModel);
         $equipmentModel = $this->parseDynamicFilter($validInput['comments'] ?? null, $validInput['comments_matchMode'] ?? null, 'equipments.comments', $equipmentModel);
 
         if (!empty($validInput['relatedFileId'])) {
