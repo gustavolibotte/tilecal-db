@@ -52,6 +52,27 @@ class Search extends APIController
                 ->limit($limitPerCategory * 2)
                 ->get()->getResultArray();
 
+            foreach ($equipments as $eq) {
+                $serialStr = (!empty($eq['serial']) && $eq['serial'] !== $eq['id']) ? " (Serial: {$eq['serial']})" : "";
+                $results[] = [
+                    'type' => 'equipment',
+                    'label' => $eq['id'],
+                    'description' => $eq['type_name'] . $serialStr,
+                    'icon' => 'pi-box',
+                    'url' => '/equipment/' . urlencode($eq['id'])
+                ];
+            }
+
+            $locations = $db->table('locations')
+                ->select('name, description')
+                ->groupStart()
+                    ->like('name', $query, 'both', null, true)
+                    ->orLike('description', $query, 'both', null, true)
+                ->groupEnd()
+                ->where('deleted_at', null)
+                ->limit($limitPerCategory)
+                ->get()->getResultArray();
+
             foreach ($locations as $loc) {
                 $results[] = [
                     'type' => 'location',
