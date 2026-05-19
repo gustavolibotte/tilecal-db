@@ -75,7 +75,19 @@ class Equipments extends APIController
 
         $equipmentModel = model('EquipmentModel')->asArray();
         
-        $equipmentModel = $this->parseDynamicFilter($validInput['id'] ?? null, $validInput['id_matchMode'] ?? null, 'equipments.id', $equipmentModel);
+        $idFilter = $validInput['id'] ?? null;
+        $idMatchMode = $validInput['id_matchMode'] ?? null;
+
+        if ($idFilter && strlen($idFilter) === 14 && preg_match('/^[A-Za-z0-9]{14}$/', $idFilter)) {
+            $sequential = substr($idFilter, 7, 7);
+            
+            $equipmentModel->groupStart()
+                        ->like('equipments.id', $idFilter)
+                        ->orLike('equipments.id', $sequential)
+                        ->groupEnd();
+        } else {
+            $equipmentModel = $this->parseDynamicFilter($idFilter, $idMatchMode, 'equipments.id', $equipmentModel);
+        }
         $equipmentModel = $this->parseDynamicFilter($validInput['type_name'] ?? null, $validInput['type_name_matchMode'] ?? 'equals', 'equipment_types.name', $equipmentModel);
         $equipmentModel = $this->parseDynamicFilter($validInput['status_name'] ?? null, $validInput['status_name_matchMode'] ?? 'equals', 'statuses.name', $equipmentModel);
         $equipmentModel = $this->parseDynamicFilter($validInput['location_name'] ?? null, $validInput['location_name_matchMode'] ?? 'equals', 'locations.name', $equipmentModel);

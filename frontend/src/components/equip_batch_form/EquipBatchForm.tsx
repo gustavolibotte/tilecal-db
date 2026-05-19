@@ -13,7 +13,8 @@ import { Message } from 'primereact/message';
 import { Checkbox } from 'primereact/checkbox';
 import ExcelJS from 'exceljs';
 import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
-import { snakeToSpaced } from '../../utils/string';
+
+import { snakeToSpaced, applyAtlasBarcodeMask } from '../../utils/string'; 
 
 interface EquipmentRow {
   id?: string;
@@ -219,7 +220,12 @@ export default function EquipBatchForm() {
               if (val && typeof val === 'object' && 'result' in val) val = val.result;
               if (val && typeof val === 'object' && 'text' in val) val = val.text;
               
-              rowData[headerKey] = val !== undefined && val !== null ? String(val).trim() : '';
+              const rawStr = val !== undefined && val !== null ? String(val).trim() : '';
+              if (headerKey === 'id' && selectedTypeObj?.id_regex) {
+                rowData[headerKey] = applyAtlasBarcodeMask(rawStr, selectedTypeObj.id_regex);
+              } else {
+                rowData[headerKey] = rawStr;
+              }
             }
           });
           if (rowData.id && !rowData.serial) rowData.serial = rowData.id;
@@ -387,7 +393,11 @@ export default function EquipBatchForm() {
     else if (field === 'status_name' && newValue && !statuses.includes(newValue)) event.preventDefault();
     else if (field === 'owner_name' && newValue && !institutes.includes(newValue)) event.preventDefault();
     else {
-      rowData[field] = newValue;
+      if (field === 'id' && selectedTypeObj?.id_regex) {
+        rowData[field] = applyAtlasBarcodeMask(String(newValue), selectedTypeObj.id_regex);
+      } else {
+        rowData[field] = newValue;
+      }
       setValidationResult(null);
     }
   };

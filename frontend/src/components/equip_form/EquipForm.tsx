@@ -20,6 +20,8 @@ import {
 import * as Yup from 'yup';
 import { Message } from 'primereact/message';
 
+import { applyAtlasBarcodeMask } from '../../utils/string'; 
+
 // This interface defines the fields for a generic equipment form.
 interface EquipFormSchema {
   id: string;
@@ -43,7 +45,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
   // State to track the original location before edits
   const [originalLocation, setOriginalLocation] = useState<string>('');
 
-  // Queries to populate dropdown options
+  // Queries to populate dropdown options and get regex rules
   const locationQuery: any = useQuery({
     queryKey: ['location', 'get', {}],
     queryFn: defaultQueryFunction
@@ -56,6 +58,11 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
 
   const statusQuery: any = useQuery({
     queryKey: ['status', 'get', {}],
+    queryFn: defaultQueryFunction
+  });
+
+  const equipTypesQuery: any = useQuery({ 
+    queryKey: ['equipment_type', 'get', {}],
     queryFn: defaultQueryFunction
   });
 
@@ -151,6 +158,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     comments: commentsRules,
   }
   if (!isEdit) {
+    validationSchema['id'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['owner_mne'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['location_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['status_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
@@ -197,6 +205,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     locationQuery.isPending
     || instituteQuery.isPending
     || statusQuery.isPending
+    || equipTypesQuery.isPending
     || (isEdit && isEquipPending)
     || (isEdit && relatedEquipQuery.isPending)
   );
@@ -207,6 +216,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     locationQuery.isError
     || instituteQuery.isError
     || statusQuery.isError
+    || equipTypesQuery.isError
     || (isEdit && relatedEquipQuery.isError)
   );
   if (isError) {
@@ -237,6 +247,27 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
   return (
     <div className="card flex justify-content-center flex-column gap-2">
       <form onSubmit={formik.handleSubmit}>
+        
+        {!isEdit && (
+          <div className='mt-3'>
+            <FormText
+              id='id'
+              name='ID (Scan Barcode)'
+              required={true}
+              value={formik.values.id}
+              help='Scan ATLAS barcode or type manually'
+              onChange={(e) => {
+                const selectedType = equipTypesQuery.data?.data?.find((t: any) => t.name === typeName);
+                const regexPattern = selectedType ? selectedType.id_regex : null;
+                
+                const maskedId = applyAtlasBarcodeMask(e.target.value, regexPattern);
+                formik.setFieldValue('id', maskedId);
+              }}
+              errorText={getFormErrorMessage('id')} 
+            />
+          </div>
+        )}
+
         <div className='mt-3'>
           <FormDropdown
             id='owner_mne'
