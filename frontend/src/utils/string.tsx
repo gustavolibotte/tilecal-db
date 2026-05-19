@@ -18,20 +18,21 @@ export function makeSnakeCase(str: string): string{
 }
 
 export const applyAtlasBarcodeMask = (input: string, regexPattern?: string | null): string => {
-    if (!input || input.length < 14 || input.length > 15) return input;
+    if (!input || input.length < 14) return input;
     
-    const isAtlasBarcode = /^[A-Za-z0-9]{14,15}$/.test(input);
-    if (!isAtlasBarcode) return input;
-
-    const sequential = input.slice(-7);
+    const suffix = input.substring(7);
+    
+    const cleanSuffix = suffix.replace(/[^0-9]/g, '');
+    
+    if (cleanSuffix.length !== 7) return input;
 
     if (regexPattern) {
         try {
             const cleanPattern = regexPattern.replace(/^\/|\/$/g, '');
             const regex = new RegExp(`^${cleanPattern}$`);
             
-            if (!regex.test(input) && regex.test(sequential)) {
-                return sequential; 
+            if (!regex.test(input) && regex.test(cleanSuffix)) {
+                return cleanSuffix; 
             }
         } catch (e) {
             console.error("Erro ao ler regex do equipamento:", e);

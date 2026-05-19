@@ -78,13 +78,20 @@ class Equipments extends APIController
         $idFilter = $validInput['id'] ?? null;
         $idMatchMode = $validInput['id_matchMode'] ?? null;
 
-        if ($idFilter && preg_match('/^[A-Za-z0-9]{14,15}$/', $idFilter)) {
-            $sequential = substr($idFilter, -7);
-            
+        $sequential = null;
+        if ($idFilter && strlen($idFilter) >= 14) {
+            $suffix = substr($idFilter, 7);
+            $cleanSuffix = preg_replace('/[^0-9]/', '', $suffix);
+            if (strlen($cleanSuffix) === 7) {
+                $sequential = $cleanSuffix;
+            }
+        }
+
+        if ($sequential) {
             $equipmentModel->groupStart()
-                        ->like('equipments.id', $idFilter)
-                        ->orLike('equipments.id', $sequential)
-                        ->groupEnd();
+                           ->like('equipments.id', $idFilter)
+                           ->orLike('equipments.id', $sequential)
+                           ->groupEnd();
         } else {
             $equipmentModel = $this->parseDynamicFilter($idFilter, $idMatchMode, 'equipments.id', $equipmentModel);
         }

@@ -17,8 +17,15 @@ class Search extends APIController
             }
 
             $sequential = null;
-            if (preg_match('/^[A-Za-z0-9]{14,15}$/', $query)) {
-                $sequential = substr($query, -7);
+            $normalizedQuery = strtoupper($query);
+            
+            if (strlen($normalizedQuery) >= 14) {
+                $suffix = substr($normalizedQuery, 7);
+                $cleanSuffix = preg_replace('/[^0-9]/', '', $suffix);
+                
+                if (strlen($cleanSuffix) === 7) {
+                    $sequential = $cleanSuffix;
+                }
             }
 
             $results = [];
@@ -43,27 +50,6 @@ class Search extends APIController
                 ->where('e.deleted_at', null)
                 ->orderBy('e.updated_at', 'DESC')
                 ->limit($limitPerCategory * 2)
-                ->get()->getResultArray();
-
-            foreach ($equipments as $eq) {
-                $serialStr = (!empty($eq['serial']) && $eq['serial'] !== $eq['id']) ? " (Serial: {$eq['serial']})" : "";
-                $results[] = [
-                    'type' => 'equipment',
-                    'label' => $eq['id'],
-                    'description' => $eq['type_name'] . $serialStr,
-                    'icon' => 'pi-box',
-                    'url' => '/equipment/' . urlencode($eq['id'])
-                ];
-            }
-
-            $locations = $db->table('locations')
-                ->select('name, description')
-                ->groupStart()
-                    ->like('name', $query, 'both', null, true)
-                    ->orLike('description', $query, 'both', null, true)
-                ->groupEnd()
-                ->where('deleted_at', null)
-                ->limit($limitPerCategory)
                 ->get()->getResultArray();
 
             foreach ($locations as $loc) {
