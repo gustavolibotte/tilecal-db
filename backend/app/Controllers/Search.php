@@ -16,19 +16,30 @@ class Search extends APIController
                 return $this->buildAPIResponse(200, []);
             }
 
+            $sequential = null;
+            if (preg_match('/^[A-Za-z0-9]{14,15}$/', $query)) {
+                $sequential = substr($query, -7);
+            }
+
             $results = [];
             $limitPerCategory = 5;
             
             $db = db_connect();
 
-            $equipments = $db->table('equipments e')
+            $equipBuilder = $db->table('equipments e')
                 ->select('e.id, e.serial, et.name as type_name')
                 ->join('equipment_types et', 'e.type_id = et.id', 'left')
                 ->groupStart()
                     ->like('e.id', $query, 'both', null, true)
                     ->orLike('e.serial', $query, 'both', null, true)
-                    ->orLike('et.name', $query, 'both', null, true)
-                ->groupEnd()
+                    ->orLike('et.name', $query, 'both', null, true);
+            
+            if ($sequential) {
+                $equipBuilder->orLike('e.id', $sequential, 'both', null, true)
+                             ->orLike('e.serial', $sequential, 'both', null, true);
+            }
+            
+            $equipments = $equipBuilder->groupEnd()
                 ->where('e.deleted_at', null)
                 ->orderBy('e.updated_at', 'DESC')
                 ->limit($limitPerCategory * 2)

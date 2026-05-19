@@ -78,8 +78,8 @@ class Equipments extends APIController
         $idFilter = $validInput['id'] ?? null;
         $idMatchMode = $validInput['id_matchMode'] ?? null;
 
-        if ($idFilter && strlen($idFilter) === 14 && preg_match('/^[A-Za-z0-9]{14}$/', $idFilter)) {
-            $sequential = substr($idFilter, 7, 7);
+        if ($idFilter && preg_match('/^[A-Za-z0-9]{14,15}$/', $idFilter)) {
+            $sequential = substr($idFilter, -7);
             
             $equipmentModel->groupStart()
                         ->like('equipments.id', $idFilter)

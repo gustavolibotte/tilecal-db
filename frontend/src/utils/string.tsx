@@ -18,12 +18,12 @@ export function makeSnakeCase(str: string): string{
 }
 
 export const applyAtlasBarcodeMask = (input: string, regexPattern?: string | null): string => {
-    if (!input || input.length !== 14) return input;
+    if (!input || input.length < 14 || input.length > 15) return input;
     
-    const isAtlasBarcode = /^[A-Za-z0-9]{14}$/.test(input);
+    const isAtlasBarcode = /^[A-Za-z0-9]{14,15}$/.test(input);
     if (!isAtlasBarcode) return input;
 
-    const sequential = input.substring(7, 14);
+    const sequential = input.slice(-7);
 
     if (regexPattern) {
         try {
