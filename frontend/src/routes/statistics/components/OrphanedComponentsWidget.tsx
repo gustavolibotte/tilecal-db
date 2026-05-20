@@ -31,14 +31,14 @@ export const OrphanedComponentsWidget: React.FC = () => {
       const blob = new Blob(csv, { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'orphaned_components.csv';
+      link.download = 'ready_for_assembly.csv';
       link.click();
     } else {
-      exportChartAsImage('orphaned-chart', 'orphaned_components', exportFormat);
+      exportChartAsImage('orphaned-chart', 'ready_for_assembly', exportFormat);
     }
   };
 
-  if (loading) return <div className="p-4">Loading orphaned components...</div>;
+  if (loading) return <div className="p-4">Loading components...</div>;
 
   return (
     <div style={{ minWidth: 0, width: '100%', background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', borderTop: '4px solid #e85c0f' }}>
@@ -48,20 +48,20 @@ export const OrphanedComponentsWidget: React.FC = () => {
           <span style={{ fontSize: '0.85rem', color: '#666' }}>Tested or Stored components currently available for assembly.</span>
         </div>
         <div className="flex align-items-center gap-2">
-          <Button icon="pi pi-chart-bar" className={`p-button-sm p-button-rounded p-button-text ${scale === 'auto' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('auto')} tooltip="Linear Scale" tooltipOptions={{position: 'top'}} />
-          <Button icon="pi pi-chart-line" className={`p-button-sm p-button-rounded p-button-text ${scale === 'log' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('log')} tooltip="Logarithmic Scale" tooltipOptions={{position: 'top'}} />
+          <Button icon="pi pi-chart-bar" className={`p-button-sm p-button-rounded p-button-text ${scale === 'auto' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('auto')} tooltip="Linear Scale" />
+          <Button icon="pi pi-chart-line" className={`p-button-sm p-button-rounded p-button-text ${scale === 'log' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('log')} tooltip="Logarithmic Scale" />
           
           <SelectButton value={exportFormat} options={exportOptions} onChange={(e) => { if(e.value) setExportFormat(e.value) }} className="p-button-sm ml-3" style={{transform: 'scale(0.85)', transformOrigin: 'right'}} />
-          <Button icon="pi pi-download" className="p-button-rounded p-button-success" onClick={handleExport} tooltip={`Export as ${exportFormat}`} tooltipOptions={{position: 'top'}} />
+          <Button icon="pi pi-download" className="p-button-rounded p-button-success" onClick={handleExport} tooltip={`Export as ${exportFormat}`} />
         </div>
       </div>
       
       {data.length === 0 ? (
-        <div style={{ height: 350, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>
+        <div style={{ height: 450, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>
           No components ready for assembly found.
         </div>
       ) : (
-        <div style={{ width: '100%', height: 400, position: 'relative' }}> 
+        <div style={{ width: '100%', height: 450, position: 'relative' }}> 
           <ResponsiveContainer width="100%" height="100%">
             <BarChart 
               data={data} 
@@ -77,7 +77,9 @@ export const OrphanedComponentsWidget: React.FC = () => {
                 height={100} 
               />
               <YAxis 
-                domain={[0, 'auto']} 
+                scale={scale === 'log' ? 'log' : 'linear'} 
+                domain={scale === 'log' ? [1, 'auto'] : [0, 'auto']} 
+                allowDataOverflow
                 label={{ value: 'Quantity', angle: -90, position: 'insideLeft', offset: 0 }}
               />
               <Tooltip cursor={{fill: '#fff3e6'}} formatter={(value) => [value, 'Quantity']} />
