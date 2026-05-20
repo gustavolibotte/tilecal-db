@@ -62,7 +62,7 @@ export const OrphanedComponentsWidget: React.FC = () => {
         <div style={{ width: '100%', height: 350, position: 'relative' }}>
           <div id="orphaned-chart" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 120 }}>
+              <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 120 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis 
                   dataKey="type_name" 
@@ -70,12 +70,11 @@ export const OrphanedComponentsWidget: React.FC = () => {
                   interval={0} 
                   angle={-45} 
                   textAnchor="end" 
-                  height={100}
+                  height={100} 
                 />
                 <YAxis 
-                  scale={scale} 
-                  domain={scale === 'log' ? [1, 'auto'] : [0, 'auto']} 
-                  allowDataOverflow 
+                  domain={[0, 'auto']} 
+                  label={{ value: 'Quantity', angle: -90, position: 'insideLeft', offset: -10 }}
                 />
                 <Tooltip cursor={{fill: '#fff3e6'}} formatter={(value) => [value, 'Quantity']} />
                 <Bar dataKey="total_count" name="Quantity" radius={[4, 4, 0, 0]}>
