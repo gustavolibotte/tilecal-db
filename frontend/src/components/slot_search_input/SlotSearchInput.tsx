@@ -4,7 +4,7 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { defaultQueryFunction } from '../../utils/DbClient';
 
 interface SlotSearchInputProps {
@@ -22,7 +22,6 @@ const processSearchTerm = (term: string) => {
     if (!term) return term;
     
     const chunks = term.split(/[^a-zA-Z0-9]+/);
-    
     const validChunks = chunks.filter(c => c.length >= 3);
     
     if (validChunks.length > 1) {
@@ -35,35 +34,77 @@ const processSearchTerm = (term: string) => {
 export default function SlotSearchInput({ id, label, value, onChange, allowedTypes, errorText, required, help }: SlotSearchInputProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState(value);
+    const [results, setResults] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    
+    const queryClient = useQueryClient();
 
-    const queryParams: any = {
-        id: processSearchTerm(searchTerm),
-        id_matchMode: 'contains',
+    const focusNextField = () => {
+        const currentInput = document.getElementById(id);
+        if (currentInput) {
+            const form = currentInput.closest('form');
+            if (form) {
+                const interactables = Array.from(
+                    form.querySelectorAll('input:not([disabled]), button[type="submit"]:not([disabled])')
+                ) as HTMLElement[];
+                const currentIndex = interactables.indexOf(currentInput);
+                if (currentIndex > -1 && currentIndex < interactables.length - 1) {
+                    interactables[currentIndex + 1].focus();
+                }
+            }
+        }
     };
 
-    if (allowedTypes && allowedTypes.length > 0) {
-        queryParams.type_name = allowedTypes;
-    }
+    const performSearch = async (isBackground: boolean, termToSearch: string) => {
+        if (!termToSearch) return;
+        setIsSearching(true);
+        
+        try {
+            const queryParams: any = {
+                id: processSearchTerm(termToSearch),
+                id_matchMode: 'contains',
+            };
 
-    const { data, isFetching } = useQuery({
-        queryKey: ['equipment', 'get', queryParams],
-        queryFn: defaultQueryFunction,
-        enabled: isModalOpen 
-    });
+            if (allowedTypes && allowedTypes.length > 0) {
+                queryParams.type_name = allowedTypes;
+            }
 
-    const responseData: any = data?.data || [];
-    const results = (!Array.isArray(responseData) && responseData.data !== undefined) 
-        ? responseData.data 
-        : responseData;
+            const response = await queryClient.fetchQuery({
+                queryKey: ['equipment', 'get', queryParams],
+                queryFn: defaultQueryFunction
+            });
+
+            const responseData: any = response?.data || [];
+            const fetchedResults = (!Array.isArray(responseData) && responseData.data !== undefined) 
+                ? responseData.data 
+                : responseData;
+
+            setResults(fetchedResults);
+
+            if (isBackground && fetchedResults.length === 1) {
+                const exactMatchId = fetchedResults[0].id;
+                onChange(exactMatchId);
+                setSearchTerm(exactMatchId);
+                focusNextField();
+            } else {
+                setIsModalOpen(true);
+            }
+        } catch (error) {
+            console.error("Erro na busca de montagem:", error);
+        } finally {
+            setIsSearching(false);
+        }
+    };
 
     const onRowSelect = (e: any) => {
         onChange(e.data.id);
         setSearchTerm(e.data.id);
         setIsModalOpen(false);
+        focusNextField();
     };
 
     const handleSearchClick = () => {
-        setIsModalOpen(true);
+        performSearch(false, searchTerm);
     };
 
     return (
@@ -82,13 +123,18 @@ export default function SlotSearchInput({ id, label, value, onChange, allowedTyp
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             e.preventDefault();
-                            handleSearchClick();
+                            performSearch(true, e.currentTarget.value);
                         }
                     }}
                     placeholder="Type partial ID and search..."
                     className={errorText ? 'p-invalid' : ''}
                 />
-                <Button icon="pi pi-search" type="button" onClick={handleSearchClick} />
+                <Button 
+                    icon="pi pi-search" 
+                    type="button" 
+                    onClick={handleSearchClick} 
+                    loading={isSearching} 
+                />
             </div>
             {help && <small className="block mt-1 text-500">{help}</small>}
             {errorText && <small className="p-error block mt-1">{errorText}</small>}
@@ -106,7 +152,7 @@ export default function SlotSearchInput({ id, label, value, onChange, allowedTyp
                 </div>
                 <DataTable 
                     value={results} 
-                    loading={isFetching} 
+                    loading={isSearching} 
                     selectionMode="single" 
                     onRowSelect={onRowSelect} 
                     emptyMessage="No equipments found matching your search." 
