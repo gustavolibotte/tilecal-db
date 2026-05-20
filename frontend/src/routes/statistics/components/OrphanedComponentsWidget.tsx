@@ -44,8 +44,8 @@ export const OrphanedComponentsWidget: React.FC = () => {
     <div style={{ minWidth: 0, width: '100%', background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', borderTop: '4px solid #e85c0f' }}>
       <div className="flex justify-content-between align-items-start mb-3">
         <div>
-          <h3 style={{ color: '#e85c0f', marginTop: 0, marginBottom: '4px' }}>Orphaned Components (Bottlenecks)</h3>
-          <span style={{ fontSize: '0.85rem', color: '#666' }}>Components with 'Good' status not yet assembled.</span>
+          <h3 style={{ color: '#e85c0f', marginTop: 0, marginBottom: '4px' }}>Ready for Assembly</h3>
+          <span style={{ fontSize: '0.85rem', color: '#666' }}>Tested or Stored components currently available for assembly.</span>
         </div>
         <div className="flex align-items-center gap-2">
           <Button icon="pi pi-chart-bar" className={`p-button-sm p-button-rounded p-button-text ${scale === 'auto' ? 'p-button-info' : 'p-button-plain'}`} onClick={() => setScale('auto')} tooltip="Linear Scale" tooltipOptions={{position: 'top'}} />
