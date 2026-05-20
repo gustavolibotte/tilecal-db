@@ -94,8 +94,9 @@ class Statistics extends ResourceController
         $builder->join('statuses s', 'e.status_id = s.id', 'left');
         
         $builder->where('e.deleted_at', null);
-        $builder->where('pce.id', null); 
-        $builder->where('s.name', 'Good'); 
+        $builder->where('pce.child_equip_id', null); 
+        
+        $builder->whereIn('s.name', ['Tested', 'Stored']); 
         
         $builder->groupBy('et.id, et.name');
         $builder->orderBy('total_count', 'DESC');
