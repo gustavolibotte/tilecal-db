@@ -26,7 +26,7 @@
     "react-router-dom": "^6.21.2",
     "react-toastify": "^10.0.3",
     "recharts": "^3.8.0",
-    "three": "^0.158.0",
+    "three": "^0.183.0",
     "yup": "^1.4.0"
   },
   "devDependencies": {
@@ -42,7 +42,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.2.2",
-    "vite": "^8.0.2",
+    "vite": "^5.0.0",
     "vite-bundle-visualizer": "^1.0.1"
   }
 }
