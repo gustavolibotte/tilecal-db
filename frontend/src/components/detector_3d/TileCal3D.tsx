@@ -1,8 +1,9 @@
-import { useState, useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { useState, useRef, useEffect } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Grid, Edges, Billboard, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { ModuleCells3D } from './ModuleCells3D';
+// import DbClient from '../../utils/DbClient'; // <-- Uncomment to use real backend
 
 const BARRELS = [
   { id: 'EBA', zOffset: -3.35, label: 'EXTENDED BARREL A' },
@@ -27,6 +28,34 @@ function generateMockData() {
   return data;
 }
 
+// ---------------------------------------------------------------------
+// CAMERA CONTROLLER
+// ---------------------------------------------------------------------
+function CameraController({ selectedModule }: { selectedModule: any }) {
+  const { camera, controls } = useThree();
+
+  useEffect(() => {
+    if (controls) {
+      const orbitControls = controls as any;
+      if (selectedModule) {
+        camera.position.set(0, 0, 30);
+        orbitControls.target.set(0, 0, 0);
+        orbitControls.enableRotate = false;
+      } else {
+        camera.position.set(22, 12, 22);
+        orbitControls.target.set(0, 0, 0);
+        orbitControls.enableRotate = true;
+      }
+      orbitControls.update();
+    }
+  }, [selectedModule, camera, controls]);
+
+  return null;
+}
+
+// ---------------------------------------------------------------------
+// MACRO COMPONENTS
+// ---------------------------------------------------------------------
 function IndustrialSlice({ barrelId, sliceIndex, thetaStart, thetaLength, zOffset, setHoverData, diagnosticMode, moduleData, onModuleClick }: any) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const [hovered, setHover] = useState(false);
@@ -35,7 +64,7 @@ function IndustrialSlice({ barrelId, sliceIndex, thetaStart, thetaLength, zOffse
   let color = hovered ? '#ffbb00' : technicalColor; 
 
   if (diagnosticMode && !hovered) {
-    color = moduleData.status === 'NOMINAL' ? '#4ade80' : '#f87171'; // Verde ou Vermelho
+    color = moduleData?.status === 'NOMINAL' ? '#4ade80' : '#f87171';
   }
 
   useFrame(() => {
@@ -47,11 +76,7 @@ function IndustrialSlice({ barrelId, sliceIndex, thetaStart, thetaLength, zOffse
   const handlePointerOver = (e: any) => {
     e.stopPropagation();
     setHover(true);
-    setHoverData({
-      barrelId,
-      sliceIndex,
-      ...moduleData
-    });
+    setHoverData({ barrelId, sliceIndex, ...moduleData });
   };
 
   const handlePointerOut = (e: any) => {
@@ -111,10 +136,9 @@ function BarrelAssembly({ id, zOffset, setHoverData, diagnosticMode, mockData, o
               zOffset={zOffset}
               setHoverData={setHoverData}
               diagnosticMode={diagnosticMode}
-              moduleData={mockData[id][i]}
+              moduleData={mockData?.[id]?.[i]}
               onModuleClick={onModuleClick}
             />
-            
             {isLabel && (
               <Billboard position={[x, zOffset, z]}>
                 <Text fontSize={0.18} color="#0277bd" fontWeight="bold">
@@ -125,22 +149,38 @@ function BarrelAssembly({ id, zOffset, setHoverData, diagnosticMode, mockData, o
           </group>
         );
       })}
-      
       <Billboard position={[4.0, zOffset, 2.0]}>
-        <Text fontSize={0.35} color="#1e88e5" fontWeight="bold" anchorX="center" anchorY="bottom">
-          {id}
-        </Text>
+        <Text fontSize={0.35} color="#1e88e5" fontWeight="bold" anchorX="center" anchorY="bottom">{id}</Text>
       </Billboard>
     </group>
   );
 }
 
+// ---------------------------------------------------------------------
+// MAIN APP COMPONENT
+// ---------------------------------------------------------------------
 export default function TileCal3D() {
   const [hoverData, setHoverData] = useState<any>(null);
   const [diagnosticMode, setDiagnosticMode] = useState(false);
   const [selectedModule, setSelectedModule] = useState<{ barrel: string; number: string } | null>(null);
   
-  const mockData = useMemo(() => generateMockData(), []);
+  const [detectorData, setDetectorData] = useState<Record<string, any[]> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const mock = generateMockData();
+        setDetectorData(mock);
+      } catch (e) {
+        console.error("Failed to load DB:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
   const handleModuleClick = (barrel: string, moduleNumber: string) => {
     setSelectedModule({ barrel, number: moduleNumber });
@@ -152,9 +192,37 @@ export default function TileCal3D() {
     setHoverData(null);
   };
 
+  if (isLoading || !detectorData) {
+    return (
+      <div className="w-full h-full min-h-[500px] flex items-center justify-center bg-gray-100 text-blue-900 font-bold font-mono">
+        LOADING DATA...
+      </div>
+    );
+  }
+
   return (
     <div style={{ height: '100%', width: '100%', minHeight: '500px', backgroundColor: '#ffffff', borderRadius: '8px', position: 'relative', overflow: 'hidden' }}>
-      
+            
+      {selectedModule && hoverData && hoverData.clientX && (
+        <div style={{
+          position: 'fixed',
+          left: hoverData.clientX + 15,
+          top: hoverData.clientY + 15,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          color: '#ffffff',
+          padding: '4px 10px',
+          borderRadius: '4px',
+          fontFamily: 'monospace',
+          fontSize: '14px',
+          fontWeight: 'bold',
+          pointerEvents: 'none',
+          zIndex: 100,
+          boxShadow: '0 2px 5px rgba(0,0,0,0.3)'
+        }}>
+          {hoverData.id}
+        </div>
+      )}
+
       <div style={{ position: 'absolute', top: '15px', left: '15px', color: '#01579b', fontFamily: 'monospace', fontSize: '11px', zIndex: 1, background: 'rgba(255,255,255,0.9)', padding: '15px', border: '1px solid #b3e5fc', borderRadius: '6px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', pointerEvents: 'none' }}>
         <b style={{ fontSize: '13px', color: '#000' }}>ATLAS TILECAL SYS</b><br/><br/>
         
@@ -207,11 +275,15 @@ export default function TileCal3D() {
       </div>
 
       <Canvas camera={{ position: [22, 12, 22], fov: 20 }}>
+        <CameraController selectedModule={selectedModule} />
+
         <ambientLight intensity={1.5} />
         <directionalLight position={[10, 15, 10]} intensity={2} color="#ffffff" />
         <directionalLight position={[-10, -10, -10]} intensity={0.5} color="#90caf9" />
 
-        <Grid position={[0, -3.5, 0]} args={[40, 40]} sectionColor="#e0e0e0" cellColor="#f5f5f5" infiniteGrid />
+        {!selectedModule && (
+          <Grid position={[0, -3.5, 0]} args={[40, 40]} sectionColor="#e0e0e0" cellColor="#f5f5f5" infiniteGrid />
+        )}
 
         {selectedModule ? (
           <group scale={0.08} position={[0, -1.5, 0]}>
@@ -231,14 +303,14 @@ export default function TileCal3D() {
                 zOffset={b.zOffset} 
                 setHoverData={setHoverData}
                 diagnosticMode={diagnosticMode}
-                mockData={mockData}
+                mockData={detectorData}
                 onModuleClick={handleModuleClick}
               />
             ))}
           </group>
         )}
 
-        <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
+        <OrbitControls enablePan={true} enableZoom={true} />
       </Canvas>
 
       {hoverData && (
@@ -260,7 +332,7 @@ export default function TileCal3D() {
           zIndex: 10
         }}>
           <div style={{ borderBottom: '1px solid #0277bd', paddingBottom: '10px', marginBottom: '15px', fontSize: '16px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
-            <span>{selectedModule ? 'CELL DIAGNOSTIC' : 'MODULE DIAGNOSTIC'}</span>
+            <span>{selectedModule ? 'CELL DETAILS' : 'MODULE DIAGNOSTIC'}</span>
             <span style={{ color: hoverData.status === 'NOMINAL' ? '#43a047' : '#e53935', fontWeight: 'bold' }}>{hoverData.status}</span>
           </div>
           

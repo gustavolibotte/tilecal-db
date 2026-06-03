@@ -4,8 +4,8 @@ import * as THREE from 'three';
 import { LBA_CELLS, EBA_CELLS, EXTRUDE_SETTINGS } from './cellGeometry';
 
 interface ModuleCells3DProps {
-  barrel: string;
-  moduleNumber: string;
+  barrel: string; // 'LBA', 'LBC', 'EBA', 'EBC'
+  moduleNumber: string; // '01' to '64'
   onHoverCell: (cellData: any) => void;
 }
 
@@ -41,7 +41,11 @@ export const ModuleCells3D: React.FC<ModuleCells3DProps> = ({ barrel, moduleNumb
             onPointerOver={(e) => {
               e.stopPropagation();
               setHoveredCell(cell.id);
-              onHoverCell({ barrel, moduleNumber, ...cell });
+              onHoverCell({ barrel, moduleNumber, ...cell, clientX: e.clientX, clientY: e.clientY });
+            }}
+            onPointerMove={(e) => {
+              e.stopPropagation();
+              onHoverCell({ barrel, moduleNumber, ...cell, clientX: e.clientX, clientY: e.clientY });
             }}
             onPointerOut={(e) => {
               e.stopPropagation();
