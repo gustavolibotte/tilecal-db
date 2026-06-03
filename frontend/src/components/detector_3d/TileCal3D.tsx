@@ -49,8 +49,8 @@ function CameraManager({ selectedModule, controlsRef }: { selectedModule: any, c
       macroState.current.position.copy(camera.position);
       macroState.current.target.copy(controls.target);
 
-      // Transition to micro view (fixed front view, Z=35 frames the SVG nicely)
-      camera.position.set(0, 0, 35);
+      // Transition to micro view (fixed front view, Z=45 frames the SVG nicely)
+      camera.position.set(0, 0, 50);
       controls.target.set(0, 0, 0);
     } else {
       // Transition back to macro view (restore saved state)
