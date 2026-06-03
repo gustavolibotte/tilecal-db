@@ -12,6 +12,7 @@ interface ModuleCells3DProps {
 export const ModuleCells3D: React.FC<ModuleCells3DProps> = ({ barrel, moduleNumber, onHoverCell }) => {
   const [hoveredCell, setHoveredCell] = useState<string | null>(null);
 
+  // Selects and generates data (synthetic for now, until endpoint is ready)
   const cellData = useMemo(() => {
     const isLongBarrel = barrel === 'LBA' || barrel === 'LBC';
     const shapes = isLongBarrel ? LBA_CELLS : EBA_CELLS;
@@ -24,11 +25,13 @@ export const ModuleCells3D: React.FC<ModuleCells3DProps> = ({ barrel, moduleNumb
         status: isNominal ? 'NOMINAL' : 'ALERT',
         color: isNominal ? '#37c871' : '#e02f1f',
         temp: (20 + Math.random() * 15).toFixed(1) + ' °C',
-        pmtHV: isNominal ? '800V' : '0V (Falha)'
+        pmtHV: isNominal ? '800V' : '0V (Fail)'
       };
     });
   }, [barrel]);
 
+  // Mirroring logic: SVG Y-axis grows downwards, ThreeJS grows upwards (-1)
+  // LBC and EBC must also be mirrored on the X-axis (-1)
   const isC_Side = barrel === 'LBC' || barrel === 'EBC';
   const scale: [number, number, number] = [isC_Side ? -1 : 1, -1, 1];
 

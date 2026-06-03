@@ -31,24 +31,35 @@ function generateMockData() {
 // ---------------------------------------------------------------------
 // CAMERA CONTROLLER
 // ---------------------------------------------------------------------
-function CameraController({ selectedModule }: { selectedModule: any }) {
-  const { camera, controls } = useThree();
+function CameraManager({ selectedModule, controlsRef }: { selectedModule: any, controlsRef: any }) {
+  const { camera } = useThree();
+  
+  // Cache the macro view state to restore it perfectly
+  const macroState = useRef({
+    position: new THREE.Vector3(22, 12, 22),
+    target: new THREE.Vector3(0, 0, 0)
+  });
 
   useEffect(() => {
-    if (controls) {
-      const orbitControls = controls as any;
-      if (selectedModule) {
-        camera.position.set(0, 0, 30);
-        orbitControls.target.set(0, 0, 0);
-        orbitControls.enableRotate = false;
-      } else {
-        camera.position.set(22, 12, 22);
-        orbitControls.target.set(0, 0, 0);
-        orbitControls.enableRotate = true;
-      }
-      orbitControls.update();
+    if (!controlsRef.current) return;
+    const controls = controlsRef.current;
+
+    if (selectedModule) {
+      // Save exact macro state before transitioning
+      macroState.current.position.copy(camera.position);
+      macroState.current.target.copy(controls.target);
+
+      // Transition to micro view (fixed front view, Z=35 frames the SVG nicely)
+      camera.position.set(0, 0, 35);
+      controls.target.set(0, 0, 0);
+    } else {
+      // Transition back to macro view (restore saved state)
+      camera.position.copy(macroState.current.position);
+      controls.target.copy(macroState.current.target);
     }
-  }, [selectedModule, camera, controls]);
+    
+    controls.update();
+  }, [selectedModule, camera, controlsRef]);
 
   return null;
 }
@@ -166,11 +177,14 @@ export default function TileCal3D() {
   
   const [detectorData, setDetectorData] = useState<Record<string, any[]> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const controlsRef = useRef<any>(null); // Shared ref for OrbitControls
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
+        // Replace generateMockData with DbClient call when backend is ready
         const mock = generateMockData();
         setDetectorData(mock);
       } catch (e) {
@@ -203,6 +217,7 @@ export default function TileCal3D() {
   return (
     <div style={{ height: '100%', width: '100%', minHeight: '500px', backgroundColor: '#ffffff', borderRadius: '8px', position: 'relative', overflow: 'hidden' }}>
             
+      {/* FLOATING CELL IDENTIFIER TOOLTIP */}
       {selectedModule && hoverData && hoverData.clientX && (
         <div style={{
           position: 'fixed',
@@ -223,6 +238,7 @@ export default function TileCal3D() {
         </div>
       )}
 
+      {/* TOP LEFT PANEL: View controls */}
       <div style={{ position: 'absolute', top: '15px', left: '15px', color: '#01579b', fontFamily: 'monospace', fontSize: '11px', zIndex: 1, background: 'rgba(255,255,255,0.9)', padding: '15px', border: '1px solid #b3e5fc', borderRadius: '6px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', pointerEvents: 'none' }}>
         <b style={{ fontSize: '13px', color: '#000' }}>ATLAS TILECAL SYS</b><br/><br/>
         
@@ -263,6 +279,7 @@ export default function TileCal3D() {
         )}
       </div>
 
+      {/* BOTTOM LEFT LEGEND */}
       <div style={{ position: 'absolute', bottom: '15px', left: '15px', color: '#546e7a', fontFamily: 'monospace', fontSize: '10px', zIndex: 1, pointerEvents: 'none' }}>
         LEGEND:<br/>
         {selectedModule ? (
@@ -274,19 +291,22 @@ export default function TileCal3D() {
         )}
       </div>
 
+      {/* ---------------- CANVAS 3D ---------------- */}
       <Canvas camera={{ position: [22, 12, 22], fov: 20 }}>
-        <CameraController selectedModule={selectedModule} />
+        <CameraManager selectedModule={selectedModule} controlsRef={controlsRef} />
 
         <ambientLight intensity={1.5} />
         <directionalLight position={[10, 15, 10]} intensity={2} color="#ffffff" />
         <directionalLight position={[-10, -10, -10]} intensity={0.5} color="#90caf9" />
 
+        {/* Global Grid */}
         {!selectedModule && (
           <Grid position={[0, -3.5, 0]} args={[40, 40]} sectionColor="#e0e0e0" cellColor="#f5f5f5" infiniteGrid />
         )}
 
         {selectedModule ? (
-          <group scale={0.08} position={[0, -1.5, 0]}>
+          /* MICRO VIEW */
+          <group scale={0.08}>
             <ModuleCells3D 
               barrel={selectedModule.barrel} 
               moduleNumber={selectedModule.number} 
@@ -294,6 +314,7 @@ export default function TileCal3D() {
             />
           </group>
         ) : (
+          /* MACRO VIEW */
           <group>
             {BARRELS.map(b => (
               <BarrelAssembly 
@@ -310,9 +331,15 @@ export default function TileCal3D() {
           </group>
         )}
 
-        <OrbitControls enablePan={true} enableZoom={true} />
+        <OrbitControls 
+          ref={controlsRef}
+          enablePan={true} 
+          enableZoom={true} 
+          enableRotate={!selectedModule} // Locks rotation dynamically
+        />
       </Canvas>
 
+      {/* STATIC HOVER DATA PANEL (BOTTOM RIGHT) */}
       {hoverData && (
         <div style={{
           position: 'absolute',
