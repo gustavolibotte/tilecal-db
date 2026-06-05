@@ -181,6 +181,17 @@ $routes->group('api', static function ($routes){
         $routes->get('owner-distribution', 'Statistics::ownerDistribution');
     });
 
+    // TileCal 3D Status APIs
+    $routes->get('calorimeter/status', 'APIController::getCalorimeterStatus', [
+        'filter' => ['api_auth', 'action:view'],
+        'as' => 'api_calorimeter_status'
+    ]);
+    
+    $routes->get('calorimeter/module/(:segment)', 'APIController::getModuleDetails/$1', [
+        'filter' => ['api_auth', 'action:view'],
+        'as' => 'api_calorimeter_module_details'
+    ]);
+
     $env = Services::environment();
     if (!$env->isSafe()){
         return null;

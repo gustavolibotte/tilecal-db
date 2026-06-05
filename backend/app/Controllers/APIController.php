@@ -267,4 +267,125 @@ class APIController extends BaseController
         }
         return $queryBuilder;
     }
+
+    /**
+     * Retrieves the global status of all 256 calorimeter modules.
+     * Used for the Macro 3D View.
+     */
+    public function getCalorimeterStatus(): ResponseInterface
+    {
+        $db = \Config\Database::connect();
+        
+        $sql = "
+            SELECT 
+                dl.name as location_name,
+                e.id as equipment_id,
+                e.status_id,
+                e.features,
+                s.name as status_name
+            FROM detector_locations dl
+            LEFT JOIN equipments e ON e.detector_location_id = dl.id AND e.deleted_at IS NULL
+            LEFT JOIN statuses s ON e.status_id = s.id
+            WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$'
+              AND dl.name NOT LIKE '%00'
+        ";
+        
+        $query = $db->query($sql);
+        $results = $query->getResultArray();
+
+        // Standard structure expected by the frontend (64 slices per barrel)
+        $data = [
+            'EBA' => array_fill(0, 64, null),
+            'LBA' => array_fill(0, 64, null),
+            'LBC' => array_fill(0, 64, null),
+            'EBC' => array_fill(0, 64, null),
+        ];
+        
+        foreach ($results as $row) {
+            $barrel = substr($row['location_name'], 0, 3);
+            $moduleIndex = (int)substr($row['location_name'], 3, 2) - 1; 
+            
+            $features = json_decode($row['features'], true) ?? [];
+            
+            $currentStatus = $data[$barrel][$moduleIndex]['status'] ?? 'NOMINAL';
+            $dbStatus = strtoupper($row['status_name'] ?? 'NOMINAL');
+            
+            // If any sub-component is not nominal, the whole module is flagged as ALERT
+            if (!in_array($dbStatus, ['NOMINAL', 'GOOD', 'OK', 'WORKING', 'INSTALLED', 'TESTED', 'DELIVERED'])) {
+                $currentStatus = 'ALERT';
+            }
+
+            $data[$barrel][$moduleIndex] = [
+                'status'      => $currentStatus,
+                'temperature' => $features['temperature'] ?? 24.5,
+                'powerDraw'   => $features['powerDraw'] ?? 4.2,    
+                'serial'      => $row['equipment_id'] ?? 'N/A'
+            ];
+        }
+        
+        // Handle empty modules
+        foreach ($data as $barrel => &$modules) {
+            foreach ($modules as $index => &$mod) {
+                if ($mod === null) {
+                    $mod = [
+                        'status' => 'UNKNOWN',
+                        'temperature' => 0,
+                        'powerDraw' => 0,
+                        'serial' => 'EMPTY'
+                    ];
+                }
+            }
+        }
+
+        return $this->respondQueryResults($data);
+    }
+
+    /**
+     * Retrieves the specific PMTs and components for a given module.
+     * Used for the Micro (Cell) 3D View.
+     */
+    public function getModuleDetails(string $locationName): ResponseInterface
+    {
+        $db = \Config\Database::connect();
+        
+        // Fetches all PMTs directly associated with this module
+        $sql = "
+            SELECT 
+                e.id as equipment_id,
+                e.status_id,
+                e.type_params,
+                s.name as status_name
+            FROM equipments e
+            JOIN detector_locations dl ON e.detector_location_id = dl.id
+            JOIN equipment_types et ON e.type_id = et.id
+            JOIN statuses s ON e.status_id = s.id
+            WHERE dl.name = ? 
+              AND e.deleted_at IS NULL
+              AND et.name LIKE '%PMT%'
+        ";
+        
+        $query = $db->query($sql, [$locationName]);
+        $pmts = $query->getResultArray();
+
+        $channels = [];
+        
+        foreach ($pmts as $pmt) {
+            $params = json_decode($pmt['type_params'], true) ?? [];
+            
+            // phase1_position indicates the physical channel (1 to 48)
+            $channel = $params['phase1_position'] ?? null;
+            
+            if ($channel !== null) {
+                $channels[$channel] = [
+                    'serial' => $pmt['equipment_id'],
+                    'status' => $pmt['status_name'],
+                    'qe'     => $params['qe'] ?? 'N/A',
+                    'hv'     => $params['nominal_hv'] ?? 'N/A',
+                    'model'  => $params['model'] ?? 'N/A'
+                ];
+            }
+        }
+
+        return $this->respondQueryResults($channels);
+    }
 }
