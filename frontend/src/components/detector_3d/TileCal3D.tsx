@@ -12,29 +12,19 @@ const BARRELS = [
   { id: 'EBC', zOffset:  3.35, label: 'EXTENDED BARREL C' },
 ];
 
-// TileCal Optics Dictionary: Maps Cell ID to physical PMT channels (1 to 48)
-// NOTE: Placeholder mapping. Update with official ATLAS optics mapping later.
 const TILECAL_OPTICS_MAPPING: Record<string, number[]> = {
-  'A1': [1, 4],
-  'A2': [5, 8],
-  'A3': [9, 12],
-  'B1': [2, 3],
-  'B2': [6, 7],
-  'D0': [13, 14],
+  'A1': [1, 4], 'A2': [5, 8], 'A3': [9, 12],
+  'B1': [2, 3], 'B2': [6, 7], 'D0': [13, 14],
 };
 
-// Helper to define base color depending on DB official status
 const getStatusColor = (statusName: string) => {
   const s = statusName?.toUpperCase() || '';
-  if (['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL'].includes(s)) return '#4ade80'; // Green (Good)
-  if (['TESTING', 'DEVELOPMENT', 'PREPRODUCTION'].includes(s)) return '#fbbf24'; // Yellow (Warning/Progress)
-  if (['FAILURE', 'BROKEN', 'LOST', 'ALERT'].includes(s)) return '#f87171'; // Red (Error)
-  return '#9ca3af'; // Gray (Unknown/Empty)
+  if (['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL'].includes(s)) return '#4ade80'; 
+  if (['TESTING', 'DEVELOPMENT', 'PREPRODUCTION'].includes(s)) return '#fbbf24'; 
+  if (['FAILURE', 'BROKEN', 'LOST', 'ALERT'].includes(s)) return '#f87171'; 
+  return '#9ca3af'; 
 };
 
-// ---------------------------------------------------------------------
-// CAMERA CONTROLLER
-// ---------------------------------------------------------------------
 function CameraManager({ selectedModule, controlsRef }: { selectedModule: any, controlsRef: any }) {
   const { camera } = useThree();
   const macroState = useRef({ position: new THREE.Vector3(22, 12, 22), target: new THREE.Vector3(0, 0, 0) });
@@ -42,17 +32,12 @@ function CameraManager({ selectedModule, controlsRef }: { selectedModule: any, c
   useEffect(() => {
     if (!controlsRef.current) return;
     const controls = controlsRef.current;
-
     if (selectedModule) {
-      // Save global view state
       macroState.current.position.copy(camera.position);
       macroState.current.target.copy(controls.target);
-      
-      // Transition to Micro view
-      camera.position.set(0, 0, 48); // Adjusted zoom level
+      camera.position.set(0, 0, 48);
       controls.target.set(0, 0, 0);
     } else {
-      // Restore Global view
       camera.position.copy(macroState.current.position);
       controls.target.copy(macroState.current.target);
     }
@@ -61,19 +46,13 @@ function CameraManager({ selectedModule, controlsRef }: { selectedModule: any, c
   return null;
 }
 
-// ---------------------------------------------------------------------
-// MACRO COMPONENTS
-// ---------------------------------------------------------------------
 function IndustrialSlice({ barrelId, sliceIndex, thetaStart, thetaLength, zOffset, setHoverData, diagnosticMode, moduleData, onModuleClick }: any) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const [hovered, setHover] = useState(false);
-  
   const technicalColor = sliceIndex % 2 === 0 ? '#b3e5fc' : '#e1f5fe';
   let color = hovered ? '#ffbb00' : technicalColor; 
 
-  if (diagnosticMode && !hovered) {
-    color = getStatusColor(moduleData?.status);
-  }
+  if (diagnosticMode && !hovered) color = getStatusColor(moduleData?.status);
 
   useFrame(() => {
     if (!meshRef.current) return;
@@ -83,9 +62,7 @@ function IndustrialSlice({ barrelId, sliceIndex, thetaStart, thetaLength, zOffse
 
   return (
     <mesh
-      ref={meshRef}
-      position={[0, zOffset, 0]}
-      rotation={[0, thetaStart, 0]}
+      ref={meshRef} position={[0, zOffset, 0]} rotation={[0, thetaStart, 0]}
       onPointerOver={(e) => { e.stopPropagation(); setHover(true); setHoverData({ barrelId, sliceIndex, ...moduleData }); }}
       onPointerOut={(e) => { e.stopPropagation(); setHover(false); setHoverData(null); }}
       onClick={(e) => { e.stopPropagation(); onModuleClick(barrelId, String(sliceIndex + 1).padStart(2, '0')); }}
@@ -100,7 +77,6 @@ function IndustrialSlice({ barrelId, sliceIndex, thetaStart, thetaLength, zOffse
 function BarrelAssembly({ id, zOffset, setHoverData, diagnosticMode, mockData, onModuleClick }: any) {
   const slices = 64;
   const thetaLength = (Math.PI * 2) / slices;
-
   return (
     <group rotation={[Math.PI / 2, 0, 0]}>
       {Array.from({ length: slices }).map((_, i) => (
@@ -113,28 +89,21 @@ function BarrelAssembly({ id, zOffset, setHoverData, diagnosticMode, mockData, o
           )}
         </group>
       ))}
-      <Billboard position={[4.0, zOffset, 2.0]}>
-        <Text fontSize={0.35} color="#1e88e5" fontWeight="bold" anchorX="center" anchorY="bottom">{id}</Text>
-      </Billboard>
+      <Billboard position={[4.0, zOffset, 2.0]}><Text fontSize={0.35} color="#1e88e5" fontWeight="bold" anchorX="center" anchorY="bottom">{id}</Text></Billboard>
     </group>
   );
 }
 
-// ---------------------------------------------------------------------
-// MAIN APP COMPONENT
-// ---------------------------------------------------------------------
 export default function TileCal3D() {
   const [hoverData, setHoverData] = useState<any>(null);
   const [diagnosticMode, setDiagnosticMode] = useState(false);
   const [selectedModule, setSelectedModule] = useState<{ barrel: string; number: string } | null>(null);
   
   const [detectorData, setDetectorData] = useState<Record<string, any[]> | null>(null);
-  const [pmtData, setPmtData] = useState<Record<string, any>>({}); // Detailed PMT data for micro view
+  const [pmtData, setPmtData] = useState<Record<string, any>>({}); 
   const [isLoading, setIsLoading] = useState(true);
-  
   const controlsRef = useRef<any>(null);
 
-  // Fetch Global Module Status
   useEffect(() => {
     const loadGlobalData = async () => {
       try {
@@ -143,7 +112,7 @@ export default function TileCal3D() {
         setDetectorData(response.data?.data || response.data);
       } catch (e) {
         console.error("Failed to load global DB data:", e);
-        setDetectorData({});
+        setDetectorData({}); 
       } finally {
         setIsLoading(false);
       }
@@ -151,27 +120,17 @@ export default function TileCal3D() {
     loadGlobalData();
   }, []);
 
-  // Fetch PMT status when a specific module is selected
   useEffect(() => {
     if (selectedModule) {
-      setPmtData({}); // Clear previous data
+      setPmtData({}); 
       DbClient.get(`calorimeter/module/${selectedModule.barrel}${selectedModule.number}`)
-        .then(response => {
-          setPmtData(response.data?.data || response.data);
-        })
+        .then(response => { setPmtData(response.data?.data || response.data); })
         .catch(e => console.error("Failed to load PMT data:", e));
     }
   }, [selectedModule]);
 
-  const handleModuleClick = (barrel: string, moduleNumber: string) => {
-    setSelectedModule({ barrel, number: moduleNumber });
-    setHoverData(null);
-  };
-
-  const handleBackToGlobal = () => {
-    setSelectedModule(null);
-    setHoverData(null);
-  };
+  const handleModuleClick = (barrel: string, moduleNumber: string) => { setSelectedModule({ barrel, number: moduleNumber }); setHoverData(null); };
+  const handleBackToGlobal = () => { setSelectedModule(null); setHoverData(null); };
 
   if (isLoading || !detectorData) {
     return (
@@ -182,31 +141,25 @@ export default function TileCal3D() {
     );
   }
 
-  // Renders the Cell detail panel using live PMT data from DB
   const renderCellDetails = () => {
-    const channels = TILECAL_OPTICS_MAPPING[hoverData.id] || [1, 2]; // Fallback if cell is not mapped yet
-    
+    const channels = TILECAL_OPTICS_MAPPING[hoverData.id] || [1, 2]; 
     return (
       <div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
           <div><b>MODULE</b><br/>{hoverData.barrel}-{hoverData.moduleNumber}</div>
           <div><b>CELL ID</b><br/>{hoverData.id}</div>
         </div>
-        
         {channels.map(ch => {
           const pmt = pmtData[ch];
           return (
             <div key={ch} style={{ borderTop: '1px dashed #b3e5fc', paddingTop: '10px', marginTop: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                 <b>CHANNEL {ch}</b>
-                <span style={{ color: getStatusColor(pmt?.status), fontWeight: 'bold' }}>
-                  {pmt ? pmt.status : 'EMPTY'}
-                </span>
+                <span style={{ color: getStatusColor(pmt?.status), fontWeight: 'bold' }}>{pmt ? pmt.status : 'EMPTY'}</span>
               </div>
               {pmt ? (
                 <div style={{ fontSize: '11px', color: '#546e7a' }}>
-                  S/N: {pmt.serial} | Model: {pmt.model}<br/>
-                  QE: {pmt.qe}% | HV: {pmt.hv}V
+                  S/N: {pmt.serial} | Model: {pmt.model}<br/>QE: {pmt.qe}% | HV: {pmt.hv}V
                 </div>
               ) : (
                 <div style={{ fontSize: '11px', color: '#9ca3af' }}>No PMT registered in DB</div>
@@ -220,18 +173,13 @@ export default function TileCal3D() {
 
   return (
     <div style={{ height: '100%', width: '100%', minHeight: '500px', backgroundColor: '#ffffff', borderRadius: '8px', position: 'relative', overflow: 'hidden' }}>
-            
-      {/* FLOATING MOUSE TOOLTIP */}
       {selectedModule && hoverData && hoverData.clientX && (
         <div style={{ position: 'fixed', left: hoverData.clientX + 15, top: hoverData.clientY + 15, backgroundColor: 'rgba(0, 0, 0, 0.8)', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', fontFamily: 'monospace', fontSize: '14px', fontWeight: 'bold', pointerEvents: 'none', zIndex: 100 }}>
           {hoverData.id}
         </div>
       )}
-
-      {/* TOP LEFT CONTROL PANEL */}
       <div style={{ position: 'absolute', top: '15px', left: '15px', color: '#01579b', fontFamily: 'monospace', fontSize: '11px', zIndex: 1, background: 'rgba(255,255,255,0.9)', padding: '15px', border: '1px solid #b3e5fc', borderRadius: '6px', pointerEvents: 'none' }}>
         <b style={{ fontSize: '13px', color: '#000' }}>ATLAS TILECAL SYS</b><br/><br/>
-        
         {selectedModule ? (
           <div style={{ pointerEvents: 'auto' }}>
             VIEW: <span style={{ color: '#0277bd', fontWeight: 'bold' }}>CELL DIAGNOSTIC</span><br/>
@@ -242,10 +190,7 @@ export default function TileCal3D() {
           </div>
         ) : (
           <div style={{ pointerEvents: 'auto' }}>
-            STATUS: <span style={{ color: '#43a047' }}>LIVE DATA</span><br/>
-            DATA SYNC: API CONNECTED<br/>
-            MODULES: 256 / 256<br/><br/>
-            
+            STATUS: <span style={{ color: '#43a047' }}>LIVE DATA</span><br/>DATA SYNC: API CONNECTED<br/>MODULES: 256 / 256<br/><br/>
             <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', borderTop: '1px dashed #b3e5fc', paddingTop: '10px' }} onClick={() => setDiagnosticMode(!diagnosticMode)}>
               <div style={{ width: '36px', height: '18px', backgroundColor: diagnosticMode ? '#43a047' : '#cfd8dc', borderRadius: '18px', position: 'relative', marginRight: '10px' }}>
                 <div style={{ width: '14px', height: '14px', backgroundColor: '#fff', borderRadius: '50%', position: 'absolute', top: '2px', left: diagnosticMode ? '20px' : '2px' }}/>
@@ -255,17 +200,11 @@ export default function TileCal3D() {
           </div>
         )}
       </div>
-
-      {/* BOTTOM LEFT LEGEND */}
       <div style={{ position: 'absolute', bottom: '15px', left: '15px', color: '#546e7a', fontFamily: 'monospace', fontSize: '10px', zIndex: 1, pointerEvents: 'none' }}>
         LEGEND:<br/>
-        {selectedModule ? (
-           <><span style={{ color: '#ffffff' }}>██</span> Hovered / <span style={{ color: '#37c871' }}>██</span> Nominal / <span style={{ color: '#e02f1f' }}>██</span> Alert</>
-        ) : diagnosticMode ? (
-           <><span style={{ color: '#ffbb00' }}>██</span> Hovered / <span style={{ color: '#4ade80' }}>██</span> Nominal / <span style={{ color: '#f87171' }}>██</span> Alert / <span style={{ color: '#9ca3af' }}>██</span> Empty</>
-        ) : (
-           <><span style={{ color: '#ffbb00' }}>██</span> Hovered / <span style={{ color: '#b3e5fc' }}>██</span> Module A / <span style={{ color: '#e1f5fe' }}>██</span> Module B</>
-        )}
+        {selectedModule ? (<><span style={{ color: '#ffffff' }}>██</span> Hovered / <span style={{ color: '#37c871' }}>██</span> Nominal / <span style={{ color: '#e02f1f' }}>██</span> Alert</>) 
+        : diagnosticMode ? (<><span style={{ color: '#ffbb00' }}>██</span> Hovered / <span style={{ color: '#4ade80' }}>██</span> Nominal / <span style={{ color: '#f87171' }}>██</span> Alert / <span style={{ color: '#9ca3af' }}>██</span> Empty</>) 
+        : (<><span style={{ color: '#ffbb00' }}>██</span> Hovered / <span style={{ color: '#b3e5fc' }}>██</span> Module A / <span style={{ color: '#e1f5fe' }}>██</span> Module B</>)}
       </div>
 
       <Canvas camera={{ position: [22, 12, 22], fov: 20 }}>
@@ -275,7 +214,6 @@ export default function TileCal3D() {
         <directionalLight position={[-10, -10, -10]} intensity={0.5} color="#90caf9" />
 
         {!selectedModule && <Grid position={[0, -3.5, 0]} args={[40, 40]} sectionColor="#e0e0e0" cellColor="#f5f5f5" infiniteGrid />}
-
         {selectedModule ? (
           <group scale={0.08} position={[0, -1.5, 0]}>
             <ModuleCells3D barrel={selectedModule.barrel} moduleNumber={selectedModule.number} onHoverCell={setHoverData} />
@@ -285,17 +223,14 @@ export default function TileCal3D() {
             {BARRELS.map(b => <BarrelAssembly key={b.id} id={b.id} zOffset={b.zOffset} setHoverData={setHoverData} diagnosticMode={diagnosticMode} mockData={detectorData} onModuleClick={handleModuleClick} />)}
           </group>
         )}
-
         <OrbitControls ref={controlsRef} enablePan={true} enableZoom={true} enableRotate={!selectedModule} />
       </Canvas>
 
-      {/* BOTTOM RIGHT HOVER DATA PANEL */}
       {hoverData && (
         <div style={{ position: 'absolute', bottom: '20px', right: '20px', backgroundColor: 'rgba(255, 255, 255, 0.95)', color: '#01579b', padding: '20px', borderRadius: '8px', fontFamily: 'monospace', fontSize: '13px', border: '1px solid #0277bd', width: '320px', pointerEvents: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
           <div style={{ borderBottom: '1px solid #0277bd', paddingBottom: '10px', marginBottom: '15px', fontSize: '16px', fontWeight: 'bold' }}>
             {selectedModule ? 'CELL DIAGNOSTIC' : 'MODULE OVERVIEW'}
           </div>
-          
           {selectedModule ? renderCellDetails() : (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
