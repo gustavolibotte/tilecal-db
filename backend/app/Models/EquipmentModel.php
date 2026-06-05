@@ -201,7 +201,7 @@ class EquipmentModel extends LogModel
      * @param string $childId Child equipment id
      * @param string $parentId Parent equipment id
      * @param string $slotId Slot equipment id
-     *  
+     * 
      * @return bool Always true
      */
     public function addParent(string $childId,
@@ -479,5 +479,103 @@ class EquipmentModel extends LogModel
             model('DetectorLocationModel')
         );
         return $data;
+    }
+
+    /**
+     * Cascades a location update to all child equipments recursively.
+     * Ensures that if a parent (e.g. PMT Block) is moved, all assembled components 
+     * inherit the new location automatically.
+     *
+     * @param string $parentId The parent equipment ID
+     * @param string $locationName The new location name
+     * @return bool
+     */
+    public function updateLocationCascade(string $parentId, string $locationName): bool
+    {
+        $childrenIds = $this->getChildrenIDs($parentId);
+        if (empty($childrenIds)) {
+            return true;
+        }
+
+        $location = model('LocationModel')->where('name', $locationName)->first();
+        if (!$location) {
+            return false;
+        }
+
+        $this->db->transException(true)->transBegin();
+        try {
+            foreach ($childrenIds as $childId) {
+                // Check current location to avoid unnecessary updates and history logs
+                $childInfo = $this->select('location_id')->find($childId);
+                if ($childInfo && $childInfo->location_id !== $location->id) {
+                    $child = new Equipment([
+                        'id' => $childId,
+                        'location_name' => $locationName
+                    ]);
+                    // Update triggers beforeUpdate/afterUpdate events and History logging
+                    $this->update($childId, $child);
+                }
+            }
+            $this->db->transCommit();
+            return true;
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            throw $e;
+        }
+    }
+
+    /**
+     * Identifies assembled groups (e.g., PMT Blocks) where the parent and 
+     * its children do not share the exact same location.
+     *
+     * @param string $parentTypeName Standard is 'PMT Block'
+     * @return array
+     */
+    public function getInconsistentAssemblies(string $parentTypeName = 'PMT Block'): array
+    {
+        $db = db_connect();
+        
+        $parents = $db->table('equipments')
+            ->select('equipments.id, equipment_types.name as type_name, locations.name as location_name')
+            ->join('locations', 'equipments.location_id = locations.id', 'left')
+            ->join('equipment_types', 'equipments.type_id = equipment_types.id', 'left')
+            ->like('equipment_types.name', $parentTypeName, 'after')
+            ->where('equipments.deleted_at', null)
+            ->get()->getResultArray();
+
+        $inconsistentAssemblies = [];
+
+        foreach ($parents as $parent) {
+            $children = $db->table('parent_child_equips pce')
+                           ->select('e.id, et.name as type_name, l.name as location_name, ts.name as slot_name')
+                           ->join('equipments e', 'pce.child_equip_id = e.id', 'inner') // INNER join garante que a peça ainda existe
+                           ->join('equipment_types et', 'e.type_id = et.id', 'left')
+                           ->join('locations l', 'e.location_id = l.id', 'left')
+                           ->join('type_slots ts', 'pce.slot_id = ts.id', 'left')
+                           ->where('pce.parent_equip_id', $parent['id'])
+                           ->where('e.deleted_at', null)
+                           ->get()->getResultArray();
+
+            if (empty($children)) continue;
+
+            $isInconsistent = false;
+            $parentLoc = $parent['location_name'] ?? '';
+
+            foreach ($children as $child) {
+                $childLoc = $child['location_name'] ?? '';
+                if ($childLoc !== $parentLoc) {
+                    $isInconsistent = true;
+                    break;
+                }
+            }
+
+            if ($isInconsistent) {
+                $inconsistentAssemblies[] = [
+                    'parent' => $parent,
+                    'children' => $children
+                ];
+            }
+        }
+        return $inconsistentAssemblies;
     }
 }

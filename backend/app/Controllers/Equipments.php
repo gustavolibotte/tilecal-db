@@ -5,7 +5,6 @@ namespace App\Controllers;
 use App\Entities\Equipment;
 use App\Validation\EquipmentRules;
 use App\Validation\Validator;
-use App\Library\Readers\CSVFileReader;
 use CodeIgniter\HTTP\ResponseInterface;
 use Throwable;
 
@@ -63,7 +62,8 @@ class Equipments extends APIController
             ],
             'onlyDeleted' => ['\App\Validation\GeneralRules::permitEmpty' => []],
             'limit' => ['\App\Validation\GeneralRules::permitEmpty' => []],
-            'offset' => ['\App\Validation\GeneralRules::permitEmpty' => []]
+            'offset' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'sortParams' => ['\App\Validation\GeneralRules::permitEmpty' => []]
         ];
 
         $inputData = $this->request->getVar(array_keys($inputRules));
@@ -75,12 +75,31 @@ class Equipments extends APIController
 
         $equipmentModel = model('EquipmentModel')->asArray();
         
-        $equipmentModel = $this->parseDynamicFilter($validInput['id'] ?? null, $validInput['id_matchMode'] ?? null, 'equipments.id', $equipmentModel);
-        $equipmentModel = $this->parseDynamicFilter($validInput['type_name'] ?? null, $validInput['type_name_matchMode'] ?? null, 'equipment_types.name', $equipmentModel);
-        $equipmentModel = $this->parseDynamicFilter($validInput['status_name'] ?? null, $validInput['status_name_matchMode'] ?? null, 'statuses.name', $equipmentModel);
-        $equipmentModel = $this->parseDynamicFilter($validInput['location_name'] ?? null, $validInput['location_name_matchMode'] ?? null, 'locations.name', $equipmentModel);
-        $equipmentModel = $this->parseDynamicFilter($validInput['owner_name'] ?? null, $validInput['owner_name_matchMode'] ?? null, 'institutes.name', $equipmentModel);
-        $equipmentModel = $this->parseDynamicFilter($validInput['detector_location_name'] ?? null, $validInput['detector_location_name_matchMode'] ?? null, 'detector_locations.name', $equipmentModel);
+        $idFilter = $validInput['id'] ?? null;
+        $idMatchMode = $validInput['id_matchMode'] ?? null;
+
+        $sequential = null;
+        if ($idFilter && strlen($idFilter) >= 14) {
+            $suffix = substr($idFilter, 7);
+            $cleanSuffix = preg_replace('/[^0-9]/', '', $suffix);
+            if (strlen($cleanSuffix) === 7) {
+                $sequential = $cleanSuffix;
+            }
+        }
+
+        if ($sequential) {
+            $equipmentModel->groupStart()
+                           ->like('equipments.id', $idFilter)
+                           ->orLike('equipments.id', $sequential)
+                           ->groupEnd();
+        } else {
+            $equipmentModel = $this->parseDynamicFilter($idFilter, $idMatchMode, 'equipments.id', $equipmentModel);
+        }
+        $equipmentModel = $this->parseDynamicFilter($validInput['type_name'] ?? null, $validInput['type_name_matchMode'] ?? 'equals', 'equipment_types.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['status_name'] ?? null, $validInput['status_name_matchMode'] ?? 'equals', 'statuses.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['location_name'] ?? null, $validInput['location_name_matchMode'] ?? 'equals', 'locations.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['owner_name'] ?? null, $validInput['owner_name_matchMode'] ?? 'equals', 'institutes.name', $equipmentModel);
+        $equipmentModel = $this->parseDynamicFilter($validInput['detector_location_name'] ?? null, $validInput['detector_location_name_matchMode'] ?? 'equals', 'detector_locations.name', $equipmentModel);
         $equipmentModel = $this->parseDynamicFilter($validInput['comments'] ?? null, $validInput['comments_matchMode'] ?? null, 'equipments.comments', $equipmentModel);
 
         if (!empty($validInput['relatedFileId'])) {
@@ -98,6 +117,61 @@ class Equipments extends APIController
             $queryModel = $equipmentModel->fullQuery();
             
             $totalRecords = $queryModel->countAllResults(false);
+
+            if (!empty($validInput['sortParams'])) {
+                $sortParams = is_string($validInput['sortParams']) ? json_decode($validInput['sortParams'], true) : $validInput['sortParams'];
+                if (is_array($sortParams)) {
+                    
+                    $fieldMap = [
+                        'id'                     => 'equipments.id',
+                        'serial'                 => 'equipments.serial',
+                        'comments'               => 'equipments.comments',
+                        'type_name'              => 'equipment_types.name',
+                        'location_name'          => 'locations.name',
+                        'status_name'            => 'statuses.name',
+                        'owner_mne'              => 'institutes.mne',
+                        'owner_name'             => 'institutes.name',
+                        'detector_location_name' => 'detector_locations.name',
+                        'created_at'             => 'equipments.created_at',
+                        'updated_at'             => 'equipments.updated_at',
+                    ];
+                    
+                    foreach ($sortParams as $sort) {
+                        if (isset($sort['field']) && isset($sort['order'])) {
+                            $field = preg_replace('/[^a-zA-Z0-9_.]/', '', $sort['field']);
+                            $direction = ((int)$sort['order'] === 1) ? 'ASC' : 'DESC';
+                            
+                            if (array_key_exists($field, $fieldMap)) {
+                                $dbField = $fieldMap[$field];
+                                
+                                if ($direction === 'ASC') {
+                                    if (in_array($field, ['created_at', 'updated_at'])) {
+                                        $queryModel->orderBy("({$dbField} IS NULL)", 'ASC', false);
+                                    } else {
+                                        $queryModel->orderBy("({$dbField} IS NULL OR {$dbField} = '')", 'ASC', false);
+                                    }
+                                    $queryModel->orderBy($dbField, 'ASC', false);
+                                } else {
+                                    $queryModel->orderBy($dbField, 'DESC', false);
+                                }
+                            } 
+                            else {
+                                $jsonKey = str_replace('type_params.', '', $field);
+                                $unquotedField = "JSON_UNQUOTE(JSON_EXTRACT(equipments.type_params, '$.{$jsonKey}'))";
+
+                                if ($direction === 'ASC') {
+                                    $queryModel->orderBy("({$unquotedField} IS NULL OR {$unquotedField} = '')", 'ASC', false);
+                                    $queryModel->orderBy("({$unquotedField} + 0)", 'ASC', false);
+                                    $queryModel->orderBy($unquotedField, 'ASC', false);
+                                } else {
+                                    $queryModel->orderBy("({$unquotedField} + 0)", 'DESC', false);
+                                    $queryModel->orderBy($unquotedField, 'DESC', false);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             $limit = (isset($validInput['limit']) && $validInput['limit'] !== '') ? (int)$validInput['limit'] : 0;
             $offset = (isset($validInput['offset']) && $validInput['offset'] !== '') ? (int)$validInput['offset'] : 0;
@@ -125,6 +199,68 @@ class Equipments extends APIController
         );
     }
 
+    private function createEquipmentInstance(array $inputData): string
+    {
+        helper(['app_array']);
+        
+        if (empty($inputData['id']) && !empty($inputData['serial'])) {
+            $inputData['id'] = $inputData['serial'];
+        }
+
+        if (empty($inputData['type_name'])) {
+            throw new \Exception("Missing equipment type.");
+        }
+
+        $registerRules = EquipmentRules::getRegisterRulesFromTypeName($inputData['type_name']);
+        $validationRes = Validator::validate($inputData, $registerRules);
+
+        if (!$validationRes['valid']) {
+            throw new \Exception("Validation Error: " . json_encode($validationRes['errors']));
+        }
+
+        $validInput = $validationRes['validatedData'];
+
+        if (!empty($validInput['owner_mne'])) {
+            $inst = model('InstituteModel')->where('mne', $validInput['owner_mne'])->first();
+            if($inst) $validInput['owner_id'] = $inst->id;
+        } elseif (!empty($validInput['owner_name'])) {
+            $inst = model('InstituteModel')->where('name', $validInput['owner_name'])->first();
+            if($inst) $validInput['owner_id'] = $inst->id;
+        }
+        
+        if (!empty($validInput['location_name'])) {
+            $loc = model('LocationModel')->where('name', $validInput['location_name'])->first();
+            if($loc) $validInput['location_id'] = $loc->id;
+        }
+        if (!empty($validInput['status_name'])) {
+            $stat = model('StatusModel')->where('name', $validInput['status_name'])->first();
+            if($stat) $validInput['status_id'] = $stat->id;
+        }
+
+        $equipType = model('EquipmentTypeModel')
+            ->select('params')
+            ->where('name', $inputData['type_name'])
+            ->first();
+
+        $validInput['type_params'] = [];
+        if ($equipType && $equipType->params) {
+            $paramsList = is_string($equipType->params) ? json_decode($equipType->params, true) : $equipType->params;
+            foreach ($paramsList as $param) {
+                $validInput['type_params'][$param] = remove_value($param, $validInput, false);
+            }
+        }
+
+        $equipment = new Equipment($validInput);
+        $model = model('EquipmentModel');
+
+        if ($model->insert($equipment) === false) {
+            $dbErrors = $model->errors() ?? ['Unknown database error'];
+            throw new \Exception("Database Insert Failed: " . implode(", ", $dbErrors));
+        }
+
+        return $equipment->id;
+    }
+
     public function post(): ResponseInterface
     {
         try {
@@ -140,6 +276,7 @@ class Equipments extends APIController
         if (!$feature->isActive()) {
             return $this->failServiceUnavailable();
         }
+        
         $typeRules = [
             'type_name' => [
                 '\App\Validation\GeneralRules::required' => [],
@@ -152,34 +289,173 @@ class Equipments extends APIController
                 ]
             ]
         ];
-        $inputData = $this->request->getVar(array_keys($typeRules));
+
+        $inputData = $this->request->getJSON(true) ?? $this->request->getVar();
+        if (is_object($inputData)) {
+            $inputData = (array)$inputData;
+        }
+
         $validationRes = Validator::validate($inputData, $typeRules);
         helper(['response', 'app_array']);
         if (!$validationRes['valid']) {
             return failValidationErrors($validationRes['errors'], $inputData);
         }
 
-        $typeName = $validationRes['validatedData']['type_name'];
-        $registerRules = EquipmentRules::getRegisterRulesFromTypeName($typeName);
-        $inputData = $this->request->getVar(array_keys($registerRules));
-        $validationRes = Validator::validate($inputData, $registerRules);
-        if (!$validationRes['valid']) {
-            return failValidationErrors($validationRes['errors'], $inputData);
+        try {
+            $id = $this->createEquipmentInstance($inputData);
+            return $this->respondCreated($id);
+        } catch (\Exception $e) {
+            return $this->failValidationErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function batchValidate(): ResponseInterface
+    {
+        ini_set('memory_limit', '512M');
+        try {
+            return $this->__batchValidate__();
+        } catch (Throwable $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'messages' => [
+                    'error' => "CRITICAL PHP ERROR: " . $e->getMessage() . " | File: " . basename($e->getFile()) . " | Line: " . $e->getLine()
+                ]
+            ]);
+        }
+    }
+
+    protected function __batchValidate__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('equipment_batch_register');
+        if (!$feature->isActive()) {
+            return $this->failServiceUnavailable();
         }
 
-        $equipType = model('EquipmentTypeModel')
-            ->select('params')
-            ->where('name', $typeName)
-            ->first();
-        $validInput = $validationRes['validatedData'];
-        $validInput['type_params'] = [];
-        foreach($equipType->params as $param) {
-            $validInput['type_params'][$param] = remove_value($param, $validInput, false);
+        $inputData = $this->request->getJSON(true);
+        if (!isset($inputData['equipments']) || !is_array($inputData['equipments'])) {
+            return $this->failValidationErrors(['equipments' => 'Invalid payload format. Expected an array of equipments.']);
         }
 
-        $equipment = new Equipment($validInput);
-        model('EquipmentModel')->insert($equipment);
-        return $this->respondCreated($equipment->id);
+        $results = [];
+        $hasErrors = false;
+        
+        foreach ($inputData['equipments'] as &$row) {
+            if (empty($row['id']) && !empty($row['serial'])) {
+                $row['id'] = $row['serial'];
+            }
+        }
+
+        unset($row);
+        
+        $incomingIds = array_filter(array_column($inputData['equipments'], 'id'));
+        $existingIds = [];
+        
+        if (!empty($incomingIds)) {
+            $existingEquips = model('EquipmentModel')->select('id')->whereIn('id', $incomingIds)->findAll();
+            foreach ($existingEquips as $e) {
+                $existingIds[] = is_array($e) ? $e['id'] : $e->id;
+            }
+        }
+
+        $seenIdsInBatch = [];
+
+        foreach ($inputData['equipments'] as $index => $row) {
+            $rowStatus = [
+                'rowIndex' => $index,
+                'valid' => true,
+                'errors' => []
+            ];
+
+            $idToUse = $row['id'] ?? null;
+
+            if (!$idToUse) {
+                 $rowStatus['valid'] = false;
+                 $rowStatus['errors']['id'] = "Missing ID (or Serial for auto-mapping).";
+            } else {
+                 if (in_array($idToUse, $existingIds)) {
+                     $rowStatus['valid'] = false;
+                     $rowStatus['errors']['id'] = "ID '{$idToUse}' already exists in the database.";
+                 }
+                 if (in_array($idToUse, $seenIdsInBatch)) {
+                     $rowStatus['valid'] = false;
+                     $rowStatus['errors']['id'] = "ID '{$idToUse}' is duplicated within this batch.";
+                 }
+                 $seenIdsInBatch[] = $idToUse;
+            }
+
+            if (!empty($row['type_name'])) {
+                $registerRules = EquipmentRules::getRegisterRulesFromTypeName($row['type_name']);
+                $validationRes = Validator::validate($row, $registerRules);
+                if (!$validationRes['valid']) {
+                    $rowStatus['valid'] = false;
+                    $rowStatus['errors'] = array_merge($rowStatus['errors'], $validationRes['errors']);
+                }
+            } else {
+                 $rowStatus['valid'] = false;
+                 $rowStatus['errors']['type_name'] = "Missing equipment type.";
+            }
+
+            if (!$rowStatus['valid']) {
+                $hasErrors = true;
+            }
+            
+            $results[] = $rowStatus;
+        }
+
+        return $this->response->setJSON([
+            'data' => [
+                'valid' => !$hasErrors,
+                'details' => $results
+            ]
+        ]);
+    }
+
+    public function batchCreate(): ResponseInterface
+    {
+        ini_set('memory_limit', '512M');
+        try {
+            return $this->__batchCreate__();
+        } catch (Throwable $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'messages' => [
+                    'error' => "CRITICAL DB ERROR: " . $e->getMessage() . " | File: " . basename($e->getFile()) . " | Line: " . $e->getLine()
+                ]
+            ]);
+        }
+    }
+
+    protected function __batchCreate__(): ResponseInterface
+    {
+        $feature = model('FeatureModel')->findName('equipment_batch_register');
+        if (!$feature->isActive()) {
+            return $this->failServiceUnavailable();
+        }
+        
+        $inputData = $this->request->getJSON(true);
+        if (!isset($inputData['equipments']) || !is_array($inputData['equipments'])) {
+            return $this->failValidationErrors(['equipments' => 'Invalid payload format. Expected JSON array.']);
+        }
+
+        $db = db_connect();
+        $db->transException(true)->transBegin();
+        
+        try {
+            foreach ($inputData['equipments'] as $iRow => $row) {
+                $this->createEquipmentInstance($row);
+            }
+            
+            $db->transCommit();
+            return $this->respondCreated();
+            
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return $this->response->setStatusCode(400)->setJSON([
+                'status' => 400,
+                'error' => 400,
+                'messages' => [
+                    'error' => "Batch process failed at row " . ($iRow ?? 0) . ". Reason: " . $e->getMessage()
+                ]
+            ]); 
+        }
     }
 
     public function getHist(): ResponseInterface
@@ -270,9 +546,13 @@ class Equipments extends APIController
                 $validInput['type_params'][$param] = remove_value($param, $validInput);
             }
         }
-        echo json_encode($validInput);
         $equip = new Equipment($validInput);
         model('EquipmentModel')->update($equip->id, $equip);
+
+        if (isset($validInput['location_name'])) {
+            model('EquipmentModel')->updateLocationCascade($equip->id, $validInput['location_name']);
+        }
+
         return respondUpdated($id, $inputData, $validInput);
     }
 
@@ -362,61 +642,6 @@ class Equipments extends APIController
         }
         model('EquipmentModel')->restore($validInput['id']);
         return $this->respondRestored($validInput['id']);
-    }
-
-    public function batchCreate(): ResponseInterface
-    {
-        try {
-            return $this->__batchCreate__();
-        } catch (Throwable $e) {
-            return $this->failInternalError($e);
-        }
-    }
-
-    protected function __batchCreate__(): ResponseInterface
-    {
-        $feature = model('FeatureModel')->findName('equipment_batch_register');
-        if (!$feature->isActive()) {
-            return $this->failServiceUnavailable();
-        }
-        $inputRules = [
-            'file' => [
-                '\App\Validation\GeneralRules::required' => [],
-                '\App\Validation\FileRules::maxSize' => [
-                    'maxSize' => 50 * 1024  // 50 kB
-                ],
-                '\App\Validation\FileRules::mimeIn' => [
-                    'mimeTypes' =>['text/csv']
-                ],
-                '\App\Validation\FileRules::extIn' => [
-                    'exts' => ['csv']
-                ]
-            ]
-        ];
-        $inputData = $this->request->getVar(array_keys($inputRules));
-        $validationRes = Validator::validate($inputData, $inputRules);
-        if (!$validationRes['valid']) {
-            return $this->failValidationErrors($validationRes['errors']);
-        }
-        $validInput = $validationRes['validatedData'];
-
-        $inputFile = new CSVFileReader($validInput->getTempName());
-        $db = db_connect();
-        $db->transException(true)->transBegin();
-        foreach ($inputFile as $iRow=>$row){
-            $registerRules = EquipmentRules::getRegisterRulesFromTypeName($row['type_name']);
-            $validationRes = Validator::validate($inputData, $registerRules);
-            if (!$validationRes['valid']) {
-                $errors = $validationRes['errors'];
-                $errors['row_number'] = $iRow;
-                return $this->failValidationErrors($errors);
-            }
-            $validInput = $validationRes['validatedData'];
-            $equipment = new Equipment($validInput);
-            model('EquipmentModel')->insert($equipment);
-        }
-        $db->transCommit();
-        return $this->respondCreated();
     }
 
     public function disassemble(): ResponseInterface
@@ -657,5 +882,59 @@ class Equipments extends APIController
             200,
             message: 'Unrelated'
         );
+    }
+
+    public function getInconsistencies(): ResponseInterface
+    {
+        try {
+            $feature = model('FeatureModel')->findName('api_equipment_get');
+            if (!$feature->isActive()) {
+                return $this->failServiceUnavailable();
+            }
+            
+            $data = model('EquipmentModel')->getInconsistentAssemblies('PMT Block');
+            
+            return $this->buildAPIResponse(200, $data);
+            
+        } catch (\Throwable $e) {
+            return $this->failInternalError($e);
+        }
+    }
+
+    public function batchUpdateLocations(): ResponseInterface
+    {
+        try {
+            $feature = model('FeatureModel')->findName('equipment_edit');
+            if (!$feature->isActive()) {
+                return $this->failServiceUnavailable();
+            }
+
+            $inputData = $this->request->getJSON(true);
+            if (!isset($inputData['updates']) || !is_array($inputData['updates'])) {
+                return $this->failValidationErrors(['updates' => 'Invalid payload format. Expected an array of updates.']);
+            }
+
+            $db = db_connect();
+            $db->transException(true)->transBegin();
+
+            $equipModel = model('EquipmentModel');
+            
+            foreach ($inputData['updates'] as $update) {
+                if (!isset($update['id']) || !isset($update['location_name'])) continue;
+                
+                $equip = new Equipment([
+                    'id' => $update['id'],
+                    'location_name' => $update['location_name']
+                ]);
+                $equipModel->update($update['id'], $equip);
+            }
+
+            $db->transCommit();
+            return $this->respondUpdated();
+        } catch (\Throwable $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'messages' => ['error' => "CRITICAL DB ERROR: " . $e->getMessage()]
+            ]);
+        }
     }
 }

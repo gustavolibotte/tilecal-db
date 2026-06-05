@@ -15,6 +15,7 @@ interface EndpointType {
   equipment_batch: string;
   equipment_assemble: string;
   equipment_disassemble: string;
+  equipment_inconsistencies: string;
   file_download: string;
   file_download_hist: string;
   file_relation: string;
@@ -25,6 +26,8 @@ interface EndpointType {
   statistics_institute: string;
   statistics_orphaned: string;
   statistics_location_equipments: string;
+  statistics_owner: string; // Nova rota de estatísticas adicionada
+  search: string;
 }
 
 const ENDPOINT: EndpointType = {
@@ -42,6 +45,7 @@ const ENDPOINT: EndpointType = {
   equipment_batch: 'api/equipment/batch-register',
   equipment_assemble: 'api/equipment/assemble',
   equipment_disassemble: 'api/equipment/disassemble',
+  equipment_inconsistencies: 'api/equipment/inconsistencies',
   file_download: 'api/file/download',
   file_download_hist: 'api/file/download-hist',
   file_relation: 'api/equipment/relate-file',
@@ -51,7 +55,9 @@ const ENDPOINT: EndpointType = {
   statistics_location: 'api/v1/statistics/location-distribution',
   statistics_institute: 'api/v1/statistics/institute-distribution',
   statistics_orphaned: 'api/v1/statistics/orphaned-components',
-  statistics_location_equipments: 'api/v1/statistics/location-equipments'
+  statistics_location_equipments: 'api/v1/statistics/location-equipments',
+  statistics_owner: 'api/v1/statistics/owner-distribution', // Mapeamento da nova rota
+  search: 'api/search'
 };
 
 export function getEndpoint(name: keyof EndpointType): string{
@@ -129,9 +135,27 @@ function getRequestHeaders(extraHeaders: any = {}) {
 }
 
 /**
- * STATISTICS API CLIENT
+ * STATISTICS API CLIENT & GENERIC METHODS
  */
 const DbClient = {
+  // --- MÉTODOS GENÉRICOS DE CRUD ---
+  get: async function(path: string) {
+    // Garante que o path use a baseUrl (útil para o EquipInfo.tsx)
+    const url = path.startsWith('http') ? path : `${__APP_BASEURL__}${path.startsWith('/') ? '' : '/'}${path}`;
+    return axios.get(url, { headers: getRequestHeaders() });
+  },
+
+  patch: async function(path: string, data: any) {
+    const url = path.startsWith('http') ? path : `${__APP_BASEURL__}${path.startsWith('/') ? '' : '/'}${path}`;
+    return axios.patch(url, data, { headers: getRequestHeaders() });
+  },
+
+  put: async function(path: string, data: any) {
+    const url = path.startsWith('http') ? path : `${__APP_BASEURL__}${path.startsWith('/') ? '' : '/'}${path}`;
+    return axios.put(url, data, { headers: getRequestHeaders() });
+  },
+
+  // --- MÉTODOS ESPECÍFICOS DE ESTATÍSTICAS ---
   getInventoryByType: async function() {
     try {
       const url = getEndpoint('statistics_inventory');
@@ -172,6 +196,17 @@ const DbClient = {
       return response.data;
     } catch (error) {
       console.error("Error fetching institute statistics:", error);
+      throw error;
+    }
+  },
+
+  getOwnerDistribution: async function() {
+    try {
+      const url = getEndpoint('statistics_owner');
+      const response = await axios.get(url, { headers: getRequestHeaders() });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching owner statistics:", error);
       throw error;
     }
   },

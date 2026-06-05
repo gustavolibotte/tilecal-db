@@ -43,14 +43,30 @@ $routes->group('api', static function ($routes){
         'filter' => ['api_auth', 'action:view'],
         'as' => 'api_equipment_get'
     ]);
+    
+    $routes->get('equipment/inconsistencies', 'Equipments::getInconsistencies', [
+        'filter' => ['api_auth', 'action:view'],
+        'as' => 'api_equipment_inconsistencies'
+    ]);
+    $routes->post('equipment/batch-update-locations', 'Equipments::batchUpdateLocations', [
+        'filter' => ['api_auth', 'action:edit'],
+        'as' => 'api_equipment_batch_update_locations'
+    ]);
+
     $routes->get('equipment-hist', 'Equipments::getHist', [
         'filter' =>['api_auth', 'action:view'],
         'as' => 'api_equipment_hist_get'
+    ]);
+    
+    $routes->post('equipment/batch-validate', 'Equipments::batchValidate', [
+        'filter' =>['api_auth', 'action:register'],
+        'as' => 'api_equipment_batch_validate'
     ]);
     $routes->post('equipment/batch-register', 'Equipments::batchCreate', [
         'filter' =>['api_auth', 'action:register'],
         'as' => 'api_equipment_batch_register'
     ]);
+    
     $routes->post('equipment', 'Equipments::post', [
         'filter' =>['api_auth', 'action:register'],
         'as' => 'api_equipment_post'
@@ -150,6 +166,11 @@ $routes->group('api', static function ($routes){
         'as' => 'api_user_get'
     ]);
 
+    $routes->get('search', 'Search::index', [
+        'filter' => ['api_auth', 'action:view'],
+        'as' => 'api_search_get'
+    ]);
+
     $routes->group('v1/statistics', ['filter' => ['api_auth', 'action:view']], static function ($routes) {
         $routes->get('inventory-by-type', 'Statistics::getInventoryByType');
         $routes->get('global-status', 'Statistics::getGlobalStatusDistribution');
@@ -157,6 +178,7 @@ $routes->group('api', static function ($routes){
         $routes->get('institute-distribution', 'Statistics::getInstituteDistribution');
         $routes->get('orphaned-components', 'Statistics::getOrphanedComponents');
         $routes->get('location-equipments', 'Statistics::getEquipmentsByLocation');
+        $routes->get('owner-distribution', 'Statistics::ownerDistribution');
     });
 
     $env = Services::environment();
@@ -173,7 +195,6 @@ $routes->group('api', static function ($routes){
 
     // This first route was made to comply with the CORS protocol used
     //  by the browsers.
-    // https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe
     $routes->options('(:any)', 'CORS::index',[
         'filter' =>[],
         'as' => 'api_cors_option'
@@ -192,14 +213,6 @@ $routes->get('(:any)','WebApp::index', [
  * --------------------------------------------------------------------
  * Additional Routing
  * --------------------------------------------------------------------
- *
- * There will often be times that you need additional routing and you
- * need it to be able to override any defaults in this file. Environment
- * based routes is one such time. require() additional route files here
- * to make that happen.
- *
- * You will have access to the $routes object within that file without
- * needing to reload it.
  */
 if (is_file(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
     require APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';

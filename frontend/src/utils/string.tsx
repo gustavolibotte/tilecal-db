@@ -16,3 +16,28 @@ export function capitalize(str: string): string{
 export function makeSnakeCase(str: string): string{
     return str.toLowerCase().replace(' ', '_');
 }
+
+export const applyAtlasBarcodeMask = (input: string, regexPattern?: string | null): string => {
+    if (!input || input.length < 14) return input;
+    
+    const suffix = input.substring(7);
+    
+    const cleanSuffix = suffix.replace(/[^0-9]/g, '');
+    
+    if (cleanSuffix.length !== 7) return input;
+
+    if (regexPattern) {
+        try {
+            const cleanPattern = regexPattern.replace(/^\/|\/$/g, '');
+            const regex = new RegExp(`^${cleanPattern}$`);
+            
+            if (!regex.test(input) && regex.test(cleanSuffix)) {
+                return cleanSuffix; 
+            }
+        } catch (e) {
+            console.error("Erro ao ler regex do equipamento:", e);
+        }
+    }
+
+    return input;
+};

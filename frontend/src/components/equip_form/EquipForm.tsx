@@ -11,13 +11,16 @@ import {
   getEndpoint,
   makeMutationFunction,
 } from '../../utils/DbClient';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
 import {
   commentsRules,
   serialRules,
 } from '../../utils/validation_rules';
 import * as Yup from 'yup';
+import { Message } from 'primereact/message';
+
+import { applyAtlasBarcodeMask } from '../../utils/string'; 
 
 // This interface defines the fields for a generic equipment form.
 interface EquipFormSchema {
@@ -39,7 +42,10 @@ interface EquipFormProps {
 
 export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: EquipFormProps) {
 
-  // Queries to populate dropdown options
+  // State to track the original location before edits
+  const [originalLocation, setOriginalLocation] = useState<string>('');
+
+  // Queries to populate dropdown options and get regex rules
   const locationQuery: any = useQuery({
     queryKey: ['location', 'get', {}],
     queryFn: defaultQueryFunction
@@ -55,6 +61,11 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     queryFn: defaultQueryFunction
   });
 
+  const equipTypesQuery: any = useQuery({ 
+    queryKey: ['equipment_type', 'get', {}],
+    queryFn: defaultQueryFunction
+  });
+
   // Fetch equipment data when in edit mode
   const {
     data: equipData,
@@ -65,6 +76,19 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     // This query will only run if equipId is provided
     enabled: !!equipId,
   });
+
+  // Fetch related equipments to determine if this component has assembled children
+  const relatedEquipQuery: any = useQuery({
+    queryKey: ['equipment', 'get', { relatedEquipmentId: equipId }],
+    queryFn: defaultQueryFunction,
+    enabled: !!equipId && isEdit,
+  });
+
+  const hasChildren = useMemo(() => {
+    if (!relatedEquipQuery.data?.data) return false;
+    const related = Array.isArray(relatedEquipQuery.data.data) ? relatedEquipQuery.data.data : relatedEquipQuery.data.data.data;
+    return related?.some((eq: any) => eq.relation_type === 'child');
+  }, [relatedEquipQuery.data]);
 
   let initialValues: EquipFormSchema = {
     id: '',
@@ -134,6 +158,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     comments: commentsRules,
   }
   if (!isEdit) {
+    validationSchema['id'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['owner_mne'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['location_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['status_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
@@ -156,6 +181,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     const equipment = equipArray[0];
 
     if (equipment) {
+      setOriginalLocation(equipment.location_name || '');
       // Use setValues to populate the form with the fetched data
       formik.setValues({
         ...initialValues, // Ensures all fields from the schema are present
@@ -179,7 +205,9 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     locationQuery.isPending
     || instituteQuery.isPending
     || statusQuery.isPending
+    || equipTypesQuery.isPending
     || (isEdit && isEquipPending)
+    || (isEdit && relatedEquipQuery.isPending)
   );
   if (isPending) {
     return 'Loading';
@@ -188,6 +216,8 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     locationQuery.isError
     || instituteQuery.isError
     || statusQuery.isError
+    || equipTypesQuery.isError
+    || (isEdit && relatedEquipQuery.isError)
   );
   if (isError) {
     return 'Error';
@@ -217,6 +247,27 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
   return (
     <div className="card flex justify-content-center flex-column gap-2">
       <form onSubmit={formik.handleSubmit}>
+        
+        {!isEdit && (
+          <div className='mt-3'>
+            <FormText
+              id='id'
+              name='ID (Scan Barcode)'
+              required={true}
+              value={formik.values.id}
+              help='Scan ATLAS barcode or type manually'
+              onChange={(e) => {
+                const selectedType = equipTypesQuery.data?.data?.find((t: any) => t.name === typeName);
+                const regexPattern = selectedType ? selectedType.id_regex : null;
+                
+                const maskedId = applyAtlasBarcodeMask(e.target.value, regexPattern);
+                formik.setFieldValue('id', maskedId);
+              }}
+              errorText={getFormErrorMessage('id')} 
+            />
+          </div>
+        )}
+
         <div className='mt-3'>
           <FormDropdown
             id='owner_mne'
@@ -242,6 +293,14 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
               formik.setFieldValue('location_name', e.value);
             }}
             errorText={getFormErrorMessage('location_name')} />
+
+            {isEdit && hasChildren && formik.values.location_name !== originalLocation && (
+              <Message 
+                severity="warn" 
+                text="Update alert: the location of all assembled components will also be automatically updated." 
+                className="mt-2 w-full justify-content-start" 
+              />
+            )}
         </div>
         <div className='mt-3'>
           <FormDropdown

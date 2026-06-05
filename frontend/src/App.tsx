@@ -9,6 +9,7 @@ import EquipRegister from './routes/equip_register/EquipRegister.tsx';
 import EquipView from './routes/equip_view/EquipView.tsx';
 import FileView from './routes/file_view/FileView.tsx';
 import { defaultQueryFunction } from './utils/DbClient.tsx';
+import SearchResults from './routes/search_results/SearchResults.tsx';
 
 import 'primeicons/primeicons.css';
 import "primereact/resources/themes/md-light-indigo/theme.css";
@@ -20,6 +21,10 @@ import ErrorPage from './routes/error_page/ErrorPage.tsx';
 import { StatisticsDashboard } from './routes/statistics/StatisticsDashboard.tsx';
 import { ROUTES } from './utils/routes.tsx';
 
+// Imports da Master
+import PmtConsistency from './routes/pmt_consistency/PmtConsistency.tsx';
+
+// Imports da Feature
 import TileCal3D from './components/detector_3d/TileCal3D.tsx';
 
 const queryClient = new QueryClient({
@@ -88,10 +93,19 @@ export default function App(){
       element: <StatisticsDashboard/>,
     },
     {
+      path: ROUTES.SEARCH,
+      element: <SearchResults/>,
+    },
+    {
+      path: ROUTES.QC_PMT_CONSISTENCY,
+      element: <PmtConsistency/>,
+    },
+    {
       path: "test-3d",
       element: <TileCal3D/>,
     }
   ]
+  
   const router = createBrowserRouter([
     {
       path: "/",

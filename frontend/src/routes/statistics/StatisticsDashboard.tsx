@@ -1,28 +1,27 @@
 import React from 'react';
 import { InventoryByTypeWidget } from './components/InventoryByTypeWidget';
-import { StatusDistributionWidget } from './components/StatusDistributionWidget';
 import { LocationDistributionWidget } from './components/LocationDistributionWidget';
 import { InstituteDistributionWidget } from './components/InstituteDistributionWidget';
-// Importar o novo widget
+import { OwnerDistributionWidget } from './components/OwnerDistributionWidget';
+import { StatusDistributionWidget } from './components/StatusDistributionWidget';
 import { OrphanedComponentsWidget } from './components/OrphanedComponentsWidget';
 
 export const StatisticsDashboard: React.FC = () => {
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1 style={{ color: '#0053a1', marginBottom: '2rem' }}>Phase II Upgrade Dashboard</h1>
+    <div className="statistics-dashboard" style={{ padding: '2rem' }}>
+      <h2 style={{ marginBottom: '2rem' }}>Statistics Dashboard</h2>
       
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-          <InventoryByTypeWidget />
-          <StatusDistributionWidget />
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-          <LocationDistributionWidget />
-          <InstituteDistributionWidget />
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }}>
-          <OrphanedComponentsWidget />
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: '20px'
+      }}>
+        <InventoryByTypeWidget />
+        <LocationDistributionWidget />
+        <StatusDistributionWidget />
+        <InstituteDistributionWidget />
+        <OwnerDistributionWidget />
+        <OrphanedComponentsWidget />
       </div>
     </div>
   );

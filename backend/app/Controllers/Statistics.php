@@ -94,8 +94,9 @@ class Statistics extends ResourceController
         $builder->join('statuses s', 'e.status_id = s.id', 'left');
         
         $builder->where('e.deleted_at', null);
-        $builder->where('pce.id', null); 
-        $builder->where('s.name', 'Good'); 
+        $builder->where('pce.child_equip_id', null); 
+        
+        $builder->whereIn('s.name', ['Tested', 'Stored']); 
         
         $builder->groupBy('et.id, et.name');
         $builder->orderBy('total_count', 'DESC');
@@ -132,5 +133,27 @@ class Statistics extends ResourceController
         }
         
         return $this->respond(['status' => 200, 'data' => $data]);
+    }
+
+    /**
+     * Get the distribution of equipments by Owner.
+     * @return \CodeIgniter\HTTP\ResponseInterface
+     */
+    public function ownerDistribution()
+    {
+        $db = \Config\Database::connect();
+        $builder = $db->table('equipments');
+        
+        $builder->select('institutes.name as owner_name, COUNT(equipments.id) as total_count');
+        $builder->join('institutes', 'institutes.id = equipments.owner_id', 'left');
+        $builder->groupBy('institutes.name'); 
+        $builder->orderBy('total_count', 'DESC');
+        
+        $query = $builder->get();
+
+        return $this->response->setJSON([
+            'status' => 200,
+            'data'   => $query->getResult()
+        ]);
     }
 }
