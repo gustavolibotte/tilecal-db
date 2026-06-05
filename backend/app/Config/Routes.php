@@ -48,16 +48,6 @@ $routes->group('api', static function ($routes){
     $routes->get('user', 'User::get', ['filter' =>['api_auth', 'action:view'], 'as' => 'api_user_get']);
     $routes->get('search', 'Search::index', ['filter' => ['api_auth', 'action:view'], 'as' => 'api_search_get']);
 
-    // --- TILECAL 3D APIs ---
-    $routes->get('calorimeter/status', 'APIController::getCalorimeterStatus', [
-        'filter' => ['api_auth', 'action:view'],
-        'as' => 'api_calorimeter_status'
-    ]);
-    $routes->get('calorimeter/module/(:segment)', 'APIController::getModuleDetails/$1', [
-        'filter' => ['api_auth', 'action:view'],
-        'as' => 'api_calorimeter_module_details'
-    ]);
-
     $routes->group('v1/statistics', ['filter' => ['api_auth', 'action:view']], static function ($routes) {
         $routes->get('inventory-by-type', 'Statistics::getInventoryByType');
         $routes->get('global-status', 'Statistics::getGlobalStatusDistribution');
@@ -67,6 +57,16 @@ $routes->group('api', static function ($routes){
         $routes->get('location-equipments', 'Statistics::getEquipmentsByLocation');
         $routes->get('owner-distribution', 'Statistics::ownerDistribution');
     });
+
+    // --- TILECAL 3D APIs ---
+    $routes->get('calorimeter/status', 'TileCal3DController::getStatus', [
+        'filter' => ['api_auth', 'action:view'],
+        'as' => 'api_calorimeter_status'
+    ]);
+    $routes->get('calorimeter/module/(:segment)', 'TileCal3DController::getModule/$1', [
+        'filter' => ['api_auth', 'action:view'],
+        'as' => 'api_calorimeter_module_details'
+    ]);
 
     $env = Services::environment();
     if (!$env->isSafe()){

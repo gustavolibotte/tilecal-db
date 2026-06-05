@@ -108,7 +108,7 @@ export default function TileCal3D() {
     const loadGlobalData = async () => {
       try {
         setIsLoading(true);
-        const response = await DbClient.get('calorimeter/status');
+        const response = await DbClient.get('api/calorimeter/status');
         setDetectorData(response.data?.data || response.data);
       } catch (e) {
         console.error("Failed to load global DB data:", e);
@@ -123,7 +123,7 @@ export default function TileCal3D() {
   useEffect(() => {
     if (selectedModule) {
       setPmtData({}); 
-      DbClient.get(`calorimeter/module/${selectedModule.barrel}${selectedModule.number}`)
+      DbClient.get(`api/calorimeter/module/${selectedModule.barrel}${selectedModule.number}`)
         .then(response => { setPmtData(response.data?.data || response.data); })
         .catch(e => console.error("Failed to load PMT data:", e));
     }

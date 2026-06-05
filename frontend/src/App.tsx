@@ -35,71 +35,23 @@ const queryClient = new QueryClient({
 
 export default function App(){
   const children: RouteObject[] = [
-    {
-      path: "/",
-      element: <Home />,
-    },
-    {
-      path: "index.php",
-      element: <Home />,
-    },
-    {
-      path: "callback",
-      element: <Home />,
-    },
-    {
-      path: "equipment",
-      element: <EquipIndex/>,
-    },
-    {
-      path: "equipment/type/:typeName",
-      element: <SpecEquipIndex/>,
-    },
-    {
-      path: "equipment/batch-register",
-      element: <EquipBatchRegister/>,
-    },
-    {
-      path: 'equipment/register/:typeName',
-      element: <EquipRegister/>,
-    },
-    {
-      path: 'equipment/:equipId',
-      element: <EquipView/>,
-    },
-    {
-      path: 'equipment/assemble',
-      element: <EquipAssemble/>
-    },
-    {
-      path: 'file/upload',
-      element: <FileUpload/>,
-    },
-    {
-      path: 'file/:fileId',
-      element: <FileView/>,
-    },
-    {
-      path: "file",
-      element: <FileIndex/>,
-    },
-    {
-      path: ROUTES.STATISTICS,
-      element: <StatisticsDashboard/>,
-    },
-    {
-      path: ROUTES.SEARCH,
-      element: <SearchResults/>,
-    },
-    {
-      path: ROUTES.QC_PMT_CONSISTENCY,
-      element: <PmtConsistency/>,
-    },
-    {
-      path: "test-3d",
-      element: <TileCal3D/>,
-    }
-  ]
+    { path: "/", element: <Home /> },
+    { path: "index.php", element: <Home /> },
+    { path: "callback", element: <Home /> },
+    { path: "equipment", element: <EquipIndex/> },
+    { path: "equipment/type/:typeName", element: <SpecEquipIndex/> },
+    { path: "equipment/batch-register", element: <EquipBatchRegister/> },
+    { path: 'equipment/register/:typeName', element: <EquipRegister/> },
+    { path: 'equipment/:equipId', element: <EquipView/> },
+    { path: 'equipment/assemble', element: <EquipAssemble/> },
+    { path: 'file/upload', element: <FileUpload/> },
+    { path: 'file/:fileId', element: <FileView/> },
+    { path: "file", element: <FileIndex/> },
+    { path: ROUTES.STATISTICS, element: <StatisticsDashboard/> },
+    { path: ROUTES.SEARCH, element: <SearchResults/> },
+    { path: ROUTES.QC_PMT_CONSISTENCY, element: <PmtConsistency/> },
+    { path: "test-3d", element: <TileCal3D/> }
+  ];
   
   const router = createBrowserRouter([
     {
