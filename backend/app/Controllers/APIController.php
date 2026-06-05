@@ -276,12 +276,11 @@ class APIController extends BaseController
     {
         $db = \Config\Database::connect();
         
+        // Fast, optimized query targeting only the main modules
         $sql = "
             SELECT 
                 dl.name as location_name,
                 e.id as equipment_id,
-                e.status_id,
-                e.features,
                 s.name as status_name
             FROM detector_locations dl
             LEFT JOIN equipments e ON e.detector_location_id = dl.id AND e.deleted_at IS NULL
@@ -290,54 +289,53 @@ class APIController extends BaseController
               AND dl.name NOT LIKE '%00'
         ";
         
-        $query = $db->query($sql);
-        $results = $query->getResultArray();
+        try {
+            $query = $db->query($sql);
+            $results = $query->getResultArray();
 
-        // Standard structure expected by the frontend (64 slices per barrel)
-        $data = [
-            'EBA' => array_fill(0, 64, null),
-            'LBA' => array_fill(0, 64, null),
-            'LBC' => array_fill(0, 64, null),
-            'EBC' => array_fill(0, 64, null),
-        ];
-        
-        foreach ($results as $row) {
-            $barrel = substr($row['location_name'], 0, 3);
-            $moduleIndex = (int)substr($row['location_name'], 3, 2) - 1; 
-            
-            $features = json_decode($row['features'], true) ?? [];
-            
-            $currentStatus = $data[$barrel][$moduleIndex]['status'] ?? 'NOMINAL';
-            $dbStatus = strtoupper($row['status_name'] ?? 'NOMINAL');
-            
-            // If any sub-component is not nominal, the whole module is flagged as ALERT
-            if (!in_array($dbStatus, ['NOMINAL', 'GOOD', 'OK', 'WORKING', 'INSTALLED', 'TESTED', 'DELIVERED'])) {
-                $currentStatus = 'ALERT';
-            }
-
-            $data[$barrel][$moduleIndex] = [
-                'status'      => $currentStatus,
-                'temperature' => $features['temperature'] ?? 24.5,
-                'powerDraw'   => $features['powerDraw'] ?? 4.2,    
-                'serial'      => $row['equipment_id'] ?? 'N/A'
+            $data = [
+                'EBA' => array_fill(0, 64, null),
+                'LBA' => array_fill(0, 64, null),
+                'LBC' => array_fill(0, 64, null),
+                'EBC' => array_fill(0, 64, null),
             ];
-        }
-        
-        // Handle empty modules
-        foreach ($data as $barrel => &$modules) {
-            foreach ($modules as $index => &$mod) {
-                if ($mod === null) {
-                    $mod = [
-                        'status' => 'UNKNOWN',
-                        'temperature' => 0,
-                        'powerDraw' => 0,
-                        'serial' => 'EMPTY'
-                    ];
+            
+            foreach ($results as $row) {
+                $barrel = substr($row['location_name'], 0, 3);
+                $moduleIndex = (int)substr($row['location_name'], 3, 2) - 1; 
+                
+                $currentStatus = $data[$barrel][$moduleIndex]['status'] ?? 'NOMINAL';
+                $dbStatus = strtoupper($row['status_name'] ?? 'NOMINAL');
+                
+                if (!in_array($dbStatus, ['NOMINAL', 'GOOD', 'OK', 'WORKING', 'INSTALLED', 'TESTED', 'DELIVERED'])) {
+                    $currentStatus = 'ALERT';
+                }
+
+                $data[$barrel][$moduleIndex] = [
+                    'status'      => $currentStatus,
+                    'temperature' => 24.5, // Fixed mock until specific Temp sensor table is defined
+                    'powerDraw'   => 4.2,  // Fixed mock
+                    'serial'      => $row['equipment_id'] ?? 'N/A'
+                ];
+            }
+            
+            foreach ($data as $barrel => &$modules) {
+                foreach ($modules as $index => &$mod) {
+                    if ($mod === null) {
+                        $mod = [
+                            'status' => 'UNKNOWN',
+                            'temperature' => 0,
+                            'powerDraw' => 0,
+                            'serial' => 'EMPTY'
+                        ];
+                    }
                 }
             }
-        }
 
-        return $this->respondQueryResults($data);
+            return $this->respondQueryResults($data);
+        } catch (\Exception $e) {
+            return $this->failInternalError($e);
+        }
     }
 
     /**

@@ -139,10 +139,11 @@ export default function TileCal3D() {
     const loadGlobalData = async () => {
       try {
         setIsLoading(true);
-        const response = await DbClient.get('/api/calorimeter/status');
+        const response = await DbClient.get('calorimeter/status');
         setDetectorData(response.data?.data || response.data);
       } catch (e) {
         console.error("Failed to load global DB data:", e);
+        setDetectorData({});
       } finally {
         setIsLoading(false);
       }
@@ -154,7 +155,7 @@ export default function TileCal3D() {
   useEffect(() => {
     if (selectedModule) {
       setPmtData({}); // Clear previous data
-      DbClient.get(`/api/calorimeter/module/${selectedModule.barrel}${selectedModule.number}`)
+      DbClient.get(`calorimeter/module/${selectedModule.barrel}${selectedModule.number}`)
         .then(response => {
           setPmtData(response.data?.data || response.data);
         })
@@ -176,7 +177,7 @@ export default function TileCal3D() {
     return (
       <div className="w-full h-full min-h-[500px] flex items-center justify-center bg-gray-100 text-blue-900 font-bold font-mono">
         <i className="pi pi-spin pi-spinner mr-3" style={{ fontSize: '2rem' }}></i>
-        SYNCING WITH FENICS DB...
+        SYNCING WITH ELECTRONICS DB...
       </div>
     );
   }

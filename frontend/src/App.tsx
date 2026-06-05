@@ -21,10 +21,7 @@ import ErrorPage from './routes/error_page/ErrorPage.tsx';
 import { StatisticsDashboard } from './routes/statistics/StatisticsDashboard.tsx';
 import { ROUTES } from './utils/routes.tsx';
 
-// Imports da Master
 import PmtConsistency from './routes/pmt_consistency/PmtConsistency.tsx';
-
-// Imports da Feature
 import TileCal3D from './components/detector_3d/TileCal3D.tsx';
 
 const queryClient = new QueryClient({
@@ -42,12 +39,10 @@ export default function App(){
       path: "/",
       element: <Home />,
     },
-    // On deploy the server includes index.php sometimes
     {
       path: "index.php",
       element: <Home />,
     },
-    // OIDC callback
     {
       path: "callback",
       element: <Home />,
