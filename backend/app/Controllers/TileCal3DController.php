@@ -13,8 +13,6 @@ class TileCal3DController extends APIController
     {
         $db = \Config\Database::connect();
         
-        // 1. Fetches components mapped DIRECTLY to the location (e.g., PMTs)
-        // 2. UNION ALL: Fetches PARENT components of those items (e.g., PMT Blocks, Mini Drawers) via parent_child_equips
         $sql = "
             SELECT 
                 dl.name as location_name, et.name as type_name, s.name as status_name, COUNT(DISTINCT e.id) as qty
@@ -47,14 +45,15 @@ class TileCal3DController extends APIController
                 'LBC' => array_fill(0, 64, null), 'EBC' => array_fill(0, 64, null),
             ];
             
-            // Initialize modules with empty statistics
             foreach (['EBA', 'LBA', 'LBC', 'EBC'] as $b) {
                 for ($i = 0; $i < 64; $i++) {
                     $data[$b][$i] = [
                         'status' => 'EMPTY',
                         'stats'  => [],
                         'total'  => 0,
-                        'errors' => 0
+                        'errors' => 0,
+                        'warnings' => 0,
+                        'nominals' => 0
                     ];
                 }
             }
@@ -77,17 +76,28 @@ class TileCal3DController extends APIController
                 $data[$barrel][$moduleIndex]['stats'][$type][$status] += $qty;
                 $data[$barrel][$moduleIndex]['total'] += $qty;
 
-                if (in_array($status, ['FAILURE', 'BROKEN', 'LOST'])) {
+                if (in_array($status, ['FAILURE', 'BROKEN', 'LOST', 'ALERT'])) {
                     $data[$barrel][$moduleIndex]['errors'] += $qty;
+                } elseif (in_array($status, ['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL', 'GOOD', 'OK', 'WORKING'])) {
+                    $data[$barrel][$moduleIndex]['nominals'] += $qty;
+                } else {
+                    $data[$barrel][$moduleIndex]['warnings'] += $qty; // UNKNOWN, TESTING, DEVELOPMENT etc
                 }
             }
             
-            // Define macro color based on errors
             foreach (['EBA', 'LBA', 'LBC', 'EBC'] as $b) {
                 for ($i = 0; $i < 64; $i++) {
                     $mod = &$data[$b][$i];
                     if ($mod['total'] > 0) {
-                        $mod['status'] = $mod['errors'] > 0 ? 'ALERT' : 'NOMINAL';
+                        if ($mod['errors'] > 0) {
+                            $mod['status'] = 'ALERT';
+                        } elseif ($mod['warnings'] > 0) {
+                            $mod['status'] = 'WARNING';
+                        } else {
+                            $mod['status'] = 'NOMINAL';
+                        }
+                    } else {
+                        $mod['status'] = 'EMPTY';
                     }
                 }
             }
@@ -97,9 +107,6 @@ class TileCal3DController extends APIController
         }
     }
 
-    /**
-     * Retrieves the specific PMTs mapping for the Cell Grid 3D View.
-     */
     public function getModule(string $locationName): ResponseInterface
     {
         $db = \Config\Database::connect();
