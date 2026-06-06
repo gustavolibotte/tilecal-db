@@ -20,10 +20,10 @@ const TILECAL_OPTICS_MAPPING: Record<string, number[]> = {
 
 const getStatusColor = (statusName: string) => {
   const s = statusName?.toUpperCase() || '';
-  if (['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL', 'GOOD', 'OK', 'WORKING'].includes(s)) return '#4ade80'; // green
-  if (['TESTING', 'DEVELOPMENT', 'PREPRODUCTION', 'PRODUCED', 'REPAIRED', 'UNKNOWN', 'SPARE', 'WARNING'].includes(s)) return '#fbbf24'; // yellow
-  if (['FAILURE', 'BROKEN', 'LOST', 'ALERT'].includes(s)) return '#f87171'; // red
-  return '#9ca3af'; // gray
+  if (['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL', 'GOOD', 'OK', 'WORKING'].includes(s)) return '#4ade80'; 
+  if (['TESTING', 'DEVELOPMENT', 'PREPRODUCTION', 'PRODUCED', 'REPAIRED', 'UNKNOWN', 'SPARE', 'WARNING'].includes(s)) return '#fbbf24'; 
+  if (['FAILURE', 'BROKEN', 'LOST', 'ALERT'].includes(s)) return '#f87171'; 
+  return '#9ca3af'; 
 };
 
 function CameraManager({ selectedModule, controlsRef }: { selectedModule: any, controlsRef: any }) {
@@ -70,6 +70,7 @@ function IndustrialSlice({ barrelId, sliceIndex, thetaStart, thetaLength, zOffse
       onClick={(e) => { e.stopPropagation(); onModuleClick(barrelId, String(sliceIndex + 1).padStart(2, '0')); }}
       onContextMenu={(e) => {
         e.stopPropagation();
+        e.nativeEvent.preventDefault();
         onContextMenu(e, barrelId, String(sliceIndex + 1).padStart(2, '0'));
       }}
     >
@@ -106,7 +107,6 @@ export default function TileCal3D() {
   const [diagnosticMode, setDiagnosticMode] = useState(false);
   const [selectedModule, setSelectedModule] = useState<{ barrel: string; number: string } | null>(null);
   
-  // Right-Click & Modal States
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, barrel: string, number: string } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalModule, setModalModule] = useState<{ barrel: string, number: string } | null>(null);
@@ -390,7 +390,6 @@ export default function TileCal3D() {
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}><i className="pi pi-search mr-2" style={{color: '#0288d1'}}></i> Scroll: Zoom In/Out</div>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}><i className="pi pi-arrows-alt mr-2" style={{color: '#0288d1'}}></i> Right Drag: Pan View</div>
         
-        {/* Dynamic Legend */}
         {(selectedModule || diagnosticMode || hoverData) && (
           <div style={{ borderTop: '1px dashed #b3e5fc', paddingTop: '10px' }}>
             <b style={{color: '#000'}}>STATUS LEGEND:</b><br/>
