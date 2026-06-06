@@ -134,7 +134,7 @@ export default function TileCal3D() {
 
   if (isLoading || !detectorData) {
     return (
-      <div className="w-full h-full min-h-[500px] flex items-center justify-center bg-gray-100 text-blue-900 font-bold font-mono">
+      <div style={{ height: 'calc(100vh - 100px)' }} className="w-full flex items-center justify-center bg-gray-100 text-blue-900 font-bold font-mono border-round">
         <i className="pi pi-spin pi-spinner mr-3" style={{ fontSize: '2rem' }}></i>
         SYNCING WITH ELECTRONICS DB...
       </div>
@@ -172,7 +172,8 @@ export default function TileCal3D() {
   };
 
   return (
-    <div style={{ height: '100%', width: '100%', minHeight: '500px', backgroundColor: '#ffffff', borderRadius: '8px', position: 'relative', overflow: 'hidden' }}>
+    // Aqui está a MÁGICA: `height: calc(100vh - 100px)` obriga o 3D a usar a tela toda independentemente do pai.
+    <div style={{ height: 'calc(100vh - 100px)', width: '100%', backgroundColor: '#ffffff', borderRadius: '8px', position: 'relative', overflow: 'hidden', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
       {selectedModule && hoverData && hoverData.clientX && (
         <div style={{ position: 'fixed', left: hoverData.clientX + 15, top: hoverData.clientY + 15, backgroundColor: 'rgba(0, 0, 0, 0.8)', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', fontFamily: 'monospace', fontSize: '14px', fontWeight: 'bold', pointerEvents: 'none', zIndex: 100 }}>
           {hoverData.id}
@@ -207,7 +208,7 @@ export default function TileCal3D() {
         : (<><span style={{ color: '#ffbb00' }}>██</span> Hovered / <span style={{ color: '#b3e5fc' }}>██</span> Module A / <span style={{ color: '#e1f5fe' }}>██</span> Module B</>)}
       </div>
 
-      <Canvas camera={{ position: [22, 12, 22], fov: 20 }}>
+      <Canvas camera={{ position: [22, 12, 22], fov: 20 }} style={{ width: '100%', height: '100%', display: 'block' }}>
         <CameraManager selectedModule={selectedModule} controlsRef={controlsRef} />
         <ambientLight intensity={1.5} />
         <directionalLight position={[10, 15, 10]} intensity={2} color="#ffffff" />
