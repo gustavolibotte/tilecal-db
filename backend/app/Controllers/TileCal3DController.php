@@ -6,49 +6,88 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 class TileCal3DController extends APIController
 {
+    /**
+     * Retrieves the global status and component statistics of all 256 calorimeter modules.
+     */
     public function getStatus(): ResponseInterface
     {
         $db = \Config\Database::connect();
+        
+        // 1. Fetches components mapped DIRECTLY to the location (e.g., PMTs)
+        // 2. UNION ALL: Fetches PARENT components of those items (e.g., PMT Blocks, Mini Drawers) via parent_child_equips
         $sql = "
-            SELECT dl.name as location_name, e.id as equipment_id, s.name as status_name
+            SELECT 
+                dl.name as location_name, et.name as type_name, s.name as status_name, COUNT(DISTINCT e.id) as qty
             FROM detector_locations dl
-            LEFT JOIN equipments e ON e.detector_location_id = dl.id AND e.deleted_at IS NULL
-            LEFT JOIN statuses s ON e.status_id = s.id
+            JOIN equipments e ON e.detector_location_id = dl.id AND e.deleted_at IS NULL
+            JOIN equipment_types et ON e.type_id = et.id
+            JOIN statuses s ON e.status_id = s.id
             WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND dl.name NOT LIKE '%00'
+            GROUP BY dl.name, et.name, s.name
+            
+            UNION ALL
+            
+            SELECT 
+                dl.name as location_name, parent_et.name as type_name, parent_s.name as status_name, COUNT(DISTINCT parent.id) as qty
+            FROM detector_locations dl
+            JOIN equipments child ON child.detector_location_id = dl.id AND child.deleted_at IS NULL
+            JOIN parent_child_equips pce ON child.id = pce.child_equip_id
+            JOIN equipments parent ON pce.parent_equip_id = parent.id AND parent.deleted_at IS NULL
+            JOIN equipment_types parent_et ON parent.type_id = parent_et.id
+            JOIN statuses parent_s ON parent.status_id = parent_s.id
+            WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND dl.name NOT LIKE '%00'
+            GROUP BY dl.name, parent_et.name, parent_s.name
         ";
         
         try {
             $results = $db->query($sql)->getResultArray();
+            
             $data = [
-                'EBA' => array_fill(0, 64, null),
-                'LBA' => array_fill(0, 64, null),
-                'LBC' => array_fill(0, 64, null),
-                'EBC' => array_fill(0, 64, null),
+                'EBA' => array_fill(0, 64, null), 'LBA' => array_fill(0, 64, null),
+                'LBC' => array_fill(0, 64, null), 'EBC' => array_fill(0, 64, null),
             ];
             
+            // Initialize modules with empty statistics
+            foreach (['EBA', 'LBA', 'LBC', 'EBC'] as $b) {
+                for ($i = 0; $i < 64; $i++) {
+                    $data[$b][$i] = [
+                        'status' => 'EMPTY',
+                        'stats'  => [],
+                        'total'  => 0,
+                        'errors' => 0
+                    ];
+                }
+            }
+
             foreach ($results as $row) {
                 $barrel = substr($row['location_name'], 0, 3);
                 $moduleIndex = (int)substr($row['location_name'], 3, 2) - 1; 
                 
-                if ($data[$barrel][$moduleIndex] === null) {
-                    $data[$barrel][$moduleIndex] = [
-                        'status' => 'NOMINAL',
-                        'temperature' => 24.5,
-                        'powerDraw' => 4.2,
-                        'serial' => $row['equipment_id'] ?? 'N/A'
-                    ];
-                }
+                $type = $row['type_name'];
+                $status = strtoupper($row['status_name']);
+                $qty = (int)$row['qty'];
 
-                $dbStatus = strtoupper($row['status_name'] ?? 'NOMINAL');
-                if (!in_array($dbStatus, ['NOMINAL', 'GOOD', 'OK', 'WORKING', 'INSTALLED', 'TESTED', 'DELIVERED'])) {
-                    $data[$barrel][$moduleIndex]['status'] = 'ALERT';
+                if (!isset($data[$barrel][$moduleIndex]['stats'][$type])) {
+                    $data[$barrel][$moduleIndex]['stats'][$type] = [];
+                }
+                if (!isset($data[$barrel][$moduleIndex]['stats'][$type][$status])) {
+                    $data[$barrel][$moduleIndex]['stats'][$type][$status] = 0;
+                }
+                
+                $data[$barrel][$moduleIndex]['stats'][$type][$status] += $qty;
+                $data[$barrel][$moduleIndex]['total'] += $qty;
+
+                if (in_array($status, ['FAILURE', 'BROKEN', 'LOST'])) {
+                    $data[$barrel][$moduleIndex]['errors'] += $qty;
                 }
             }
             
-            foreach ($data as $barrel => &$modules) {
-                foreach ($modules as $index => &$mod) {
-                    if ($mod === null) {
-                        $mod = ['status' => 'UNKNOWN', 'temperature' => 0, 'powerDraw' => 0, 'serial' => 'EMPTY'];
+            // Define macro color based on errors
+            foreach (['EBA', 'LBA', 'LBC', 'EBC'] as $b) {
+                for ($i = 0; $i < 64; $i++) {
+                    $mod = &$data[$b][$i];
+                    if ($mod['total'] > 0) {
+                        $mod['status'] = $mod['errors'] > 0 ? 'ALERT' : 'NOMINAL';
                     }
                 }
             }
@@ -58,6 +97,9 @@ class TileCal3DController extends APIController
         }
     }
 
+    /**
+     * Retrieves the specific PMTs mapping for the Cell Grid 3D View.
+     */
     public function getModule(string $locationName): ResponseInterface
     {
         $db = \Config\Database::connect();
