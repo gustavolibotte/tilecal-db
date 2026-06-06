@@ -20,10 +20,10 @@ const TILECAL_OPTICS_MAPPING: Record<string, number[]> = {
 
 const getStatusColor = (statusName: string) => {
   const s = statusName?.toUpperCase() || '';
-  if (['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL', 'GOOD', 'OK', 'WORKING'].includes(s)) return '#4ade80'; 
-  if (['TESTING', 'DEVELOPMENT', 'PREPRODUCTION', 'PRODUCED', 'REPAIRED', 'UNKNOWN', 'SPARE', 'WARNING'].includes(s)) return '#fbbf24'; 
-  if (['FAILURE', 'BROKEN', 'LOST', 'ALERT'].includes(s)) return '#f87171'; 
-  return '#9ca3af'; 
+  if (['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL', 'GOOD', 'OK', 'WORKING'].includes(s)) return '#4ade80'; // Green
+  if (['TESTING', 'DEVELOPMENT', 'PREPRODUCTION', 'PRODUCED', 'REPAIRED', 'UNKNOWN', 'SPARE', 'WARNING'].includes(s)) return '#fbbf24'; // Yellow
+  if (['FAILURE', 'BROKEN', 'LOST', 'ALERT'].includes(s)) return '#f87171'; // Red
+  return '#9ca3af'; // Gray
 };
 
 function CameraManager({ selectedModule, controlsRef }: { selectedModule: any, controlsRef: any }) {
@@ -68,9 +68,12 @@ function IndustrialSlice({ barrelId, sliceIndex, thetaStart, thetaLength, zOffse
       onPointerOver={(e) => { e.stopPropagation(); setHover(true); setHoverData({ barrelId, sliceIndex, ...moduleData }); }}
       onPointerOut={(e) => { e.stopPropagation(); setHover(false); setHoverData(null); }}
       onClick={(e) => { e.stopPropagation(); onModuleClick(barrelId, String(sliceIndex + 1).padStart(2, '0')); }}
-      onContextMenu={(e) => {
+      onContextMenu={(e: any) => {
         e.stopPropagation();
-        e.nativeEvent.preventDefault();
+        // Safe TypeScript approach for R3F synthetic events
+        if (e.nativeEvent && typeof e.nativeEvent.preventDefault === 'function') {
+          e.nativeEvent.preventDefault();
+        }
         onContextMenu(e, barrelId, String(sliceIndex + 1).padStart(2, '0'));
       }}
     >
@@ -107,6 +110,7 @@ export default function TileCal3D() {
   const [diagnosticMode, setDiagnosticMode] = useState(false);
   const [selectedModule, setSelectedModule] = useState<{ barrel: string; number: string } | null>(null);
   
+  // Right-Click & Modal States
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, barrel: string, number: string } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalModule, setModalModule] = useState<{ barrel: string, number: string } | null>(null);
@@ -148,6 +152,7 @@ export default function TileCal3D() {
     }
   }, [selectedModule]);
 
+  // Load detailed modal data
   useEffect(() => {
     if (isModalOpen && modalModule) {
       setModalPmtData(null); 
@@ -157,8 +162,15 @@ export default function TileCal3D() {
     }
   }, [isModalOpen, modalModule]);
 
-  const handleModuleClick = (barrel: string, moduleNumber: string) => { setSelectedModule({ barrel, number: moduleNumber }); setHoverData(null); };
-  const handleBackToGlobal = () => { setSelectedModule(null); setHoverData(null); };
+  const handleModuleClick = (barrel: string, moduleNumber: string) => { 
+    setSelectedModule({ barrel, number: moduleNumber }); 
+    setHoverData(null); 
+  };
+  
+  const handleBackToGlobal = () => { 
+    setSelectedModule(null); 
+    setHoverData(null); 
+  };
 
   const handleRightClick = (e: any, barrel: string, number: string) => {
     setContextMenu({ x: e.clientX, y: e.clientY, barrel, number });
@@ -168,6 +180,7 @@ export default function TileCal3D() {
     if (contextMenu) {
       setModalModule({ barrel: contextMenu.barrel, number: contextMenu.number });
       setIsModalOpen(true);
+      setContextMenu(null);
     }
   };
 
@@ -275,8 +288,8 @@ export default function TileCal3D() {
           {hoverData.id}
         </div>
       )}
-      
-      {/* CONTEXT MENU */}
+
+      {/* CONTEXT MENU (RIGHT CLICK) */}
       {contextMenu && (
         <div style={{ position: 'fixed', left: contextMenu.x, top: contextMenu.y, backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '4px', padding: '5px 0', zIndex: 200, boxShadow: '0 2px 10px rgba(0,0,0,0.2)', width: '180px' }}>
           <div style={{ padding: '8px 15px', color: '#546e7a', fontWeight: 'bold', borderBottom: '1px solid #f0f0f0', fontSize: '12px' }}>
@@ -356,7 +369,7 @@ export default function TileCal3D() {
           </div>
         </div>
       )}
-
+      
       {/* TOP LEFT CONTROL PANEL */}
       <div style={{ position: 'absolute', top: '15px', left: '15px', color: '#01579b', fontFamily: 'monospace', fontSize: '11px', zIndex: 1, background: 'rgba(255,255,255,0.9)', padding: '15px', border: '1px solid #b3e5fc', borderRadius: '6px', pointerEvents: 'none' }}>
         <b style={{ fontSize: '13px', color: '#000' }}>ATLAS TILECAL SYS</b><br/><br/>
@@ -394,7 +407,7 @@ export default function TileCal3D() {
           <div style={{ borderTop: '1px dashed #b3e5fc', paddingTop: '10px' }}>
             <b style={{color: '#000'}}>STATUS LEGEND:</b><br/>
             <span style={{ color: '#4ade80' }}>██</span> Nominal (All OK)<br/>
-            <span style={{ color: '#fbbf24' }}>██</span> Warning (Unknown/Missing)<br/>
+            <span style={{ color: '#fbbf24' }}>██</span> Warning (Unknown/Testing)<br/>
             <span style={{ color: '#f87171' }}>██</span> Alert (Failed/Broken)<br/>
             <span style={{ color: '#9ca3af' }}>██</span> Empty
           </div>
