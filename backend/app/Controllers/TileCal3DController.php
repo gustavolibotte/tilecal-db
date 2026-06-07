@@ -6,59 +6,38 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 class TileCal3DController extends APIController
 {
-    /**
-     * Retrieves the global status and component statistics of all 256 calorimeter modules.
-     * Maps direct equipment and full hierarchical sub-components.
-     */
     public function getStatus(): ResponseInterface
     {
         $db = \Config\Database::connect();
         
-        // Comprehensive query using UNION ALL to grab:
-        // 1. Direct components (PMTs bound to detector locations)
-        // 2. Parents of those components (PMT Blocks)
-        // 3. Siblings under the same parents (FENICS and HV Dividers)
         $sql = "
-            SELECT 
-                dl.name as location_name, et.name as type_name, s.name as status_name, COUNT(DISTINCT e.id) as qty
-            FROM detector_locations dl
-            JOIN equipments e ON e.detector_location_id = dl.id AND e.deleted_at IS NULL
-            JOIN equipment_types et ON e.type_id = et.id
-            JOIN statuses s ON e.status_id = s.id
-            WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND dl.name NOT LIKE '%00'
-            GROUP BY dl.name, et.name, s.name
-            
-            UNION ALL
-            
-            SELECT 
-                dl.name as location_name, parent_et.name as type_name, parent_s.name as status_name, COUNT(DISTINCT parent.id) as qty
-            FROM detector_locations dl
-            JOIN equipments child ON child.detector_location_id = dl.id AND child.deleted_at IS NULL
-            JOIN parent_child_equips pce ON child.id = pce.child_equip_id AND pce.deleted_at IS NULL
-            JOIN equipments parent ON pce.parent_equip_id = parent.id AND parent.deleted_at IS NULL
-            JOIN equipment_types parent_et ON parent.type_id = parent_et.id
-            JOIN statuses parent_s ON parent.status_id = parent_s.id
-            WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND dl.name NOT LIKE '%00'
-            GROUP BY dl.name, parent_et.name, parent_s.name
-
-            UNION ALL
-
-            SELECT 
-                dl.name as location_name, sib_et.name as type_name, sib_s.name as status_name, COUNT(DISTINCT sib.id) as qty
-            FROM detector_locations dl
-            JOIN equipments child ON child.detector_location_id = dl.id AND child.deleted_at IS NULL
-            JOIN parent_child_equips pce1 ON child.id = pce1.child_equip_id AND pce1.deleted_at IS NULL
-            JOIN parent_child_equips pce2 ON pce1.parent_equip_id = pce2.parent_equip_id AND pce2.deleted_at IS NULL
-            JOIN equipments sib ON pce2.child_equip_id = sib.id AND sib.id <> child.id AND sib.deleted_at IS NULL
-            JOIN equipment_types sib_et ON sib.type_id = sib_et.id
-            JOIN statuses sib_s ON sib.status_id = sib_s.id
-            WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND dl.name NOT LIKE '%00'
-            GROUP BY dl.name, sib_et.name, sib_s.name
+            SELECT loc as location_name, type as type_name, status as status_name, COUNT(DISTINCT id) as qty
+            FROM (
+                SELECT dl.name as loc, et.name as type, s.name as status, e.id
+                FROM detector_locations dl JOIN equipments e ON e.detector_location_id = dl.id JOIN equipment_types et ON e.type_id = et.id JOIN statuses s ON e.status_id = s.id
+                WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND e.deleted_at IS NULL
+                UNION
+                SELECT dl.name as loc, et.name as type, s.name as status, p.id
+                FROM detector_locations dl JOIN equipments e ON e.detector_location_id = dl.id JOIN parent_child_equips pce ON e.id = pce.child_equip_id JOIN equipments p ON pce.parent_equip_id = p.id JOIN equipment_types et ON p.type_id = et.id JOIN statuses s ON p.status_id = s.id
+                WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND pce.deleted_at IS NULL AND p.deleted_at IS NULL
+                UNION
+                SELECT dl.name as loc, et.name as type, s.name as status, gp.id
+                FROM detector_locations dl JOIN equipments e ON e.detector_location_id = dl.id JOIN parent_child_equips pce1 ON e.id = pce1.child_equip_id JOIN parent_child_equips pce2 ON pce1.parent_equip_id = pce2.child_equip_id JOIN equipments gp ON pce2.parent_equip_id = gp.id JOIN equipment_types et ON gp.type_id = et.id JOIN statuses s ON gp.status_id = s.id
+                WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND pce1.deleted_at IS NULL AND pce2.deleted_at IS NULL AND gp.deleted_at IS NULL
+                UNION
+                SELECT dl.name as loc, et.name as type, s.name as status, c.id
+                FROM detector_locations dl JOIN equipments e ON e.detector_location_id = dl.id JOIN parent_child_equips pce ON e.id = pce.parent_equip_id JOIN equipments c ON pce.child_equip_id = c.id JOIN equipment_types et ON c.type_id = et.id JOIN statuses s ON c.status_id = s.id
+                WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND pce.deleted_at IS NULL AND c.deleted_at IS NULL
+                UNION
+                SELECT dl.name as loc, et.name as type, s.name as status, gc.id
+                FROM detector_locations dl JOIN equipments e ON e.detector_location_id = dl.id JOIN parent_child_equips pce1 ON e.id = pce1.parent_equip_id JOIN parent_child_equips pce2 ON pce1.child_equip_id = pce2.parent_equip_id JOIN equipments gc ON pce2.child_equip_id = gc.id JOIN equipment_types et ON gc.type_id = et.id JOIN statuses s ON gc.status_id = s.id
+                WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND pce1.deleted_at IS NULL AND pce2.deleted_at IS NULL AND gc.deleted_at IS NULL
+            ) as combined
+            GROUP BY loc, type, status
         ";
         
         try {
             $results = $db->query($sql)->getResultArray();
-            
             $data = [
                 'EBA' => array_fill(0, 64, null), 'LBA' => array_fill(0, 64, null),
                 'LBC' => array_fill(0, 64, null), 'EBC' => array_fill(0, 64, null),
@@ -66,58 +45,39 @@ class TileCal3DController extends APIController
             
             foreach (['EBA', 'LBA', 'LBC', 'EBC'] as $b) {
                 for ($i = 0; $i < 64; $i++) {
-                    $data[$b][$i] = [
-                        'status'   => 'EMPTY',
-                        'stats'    => [],
-                        'total'    => 0,
-                        'errors'   => 0,
-                        'warnings' => 0,
-                        'nominals' => 0
-                    ];
+                    $data[$b][$i] = ['status' => 'EMPTY', 'stats' => [], 'total' => 0, 'errors' => 0, 'warnings' => 0, 'nominals' => 0];
                 }
             }
 
             foreach ($results as $row) {
                 $barrel = substr($row['location_name'], 0, 3);
                 $moduleIndex = (int)substr($row['location_name'], 3, 2) - 1; 
-                
                 $type = $row['type_name'];
                 $status = strtoupper($row['status_name']);
                 $qty = (int)$row['qty'];
 
-                if (!isset($data[$barrel][$moduleIndex]['stats'][$type])) {
-                    $data[$barrel][$moduleIndex]['stats'][$type] = [];
-                }
-                if (!isset($data[$barrel][$moduleIndex]['stats'][$type][$status])) {
-                    $data[$barrel][$moduleIndex]['stats'][$type][$status] = 0;
-                }
+                if (!isset($data[$barrel][$moduleIndex]['stats'][$type])) $data[$barrel][$moduleIndex]['stats'][$type] = [];
+                if (!isset($data[$barrel][$moduleIndex]['stats'][$type][$status])) $data[$barrel][$moduleIndex]['stats'][$type][$status] = 0;
                 
                 $data[$barrel][$moduleIndex]['stats'][$type][$status] += $qty;
                 $data[$barrel][$moduleIndex]['total'] += $qty;
 
-                // Priority Color Mapping Logic
                 if (in_array($status, ['FAILURE', 'BROKEN', 'LOST', 'ALERT'])) {
                     $data[$barrel][$moduleIndex]['errors'] += $qty;
                 } elseif (in_array($status, ['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL', 'GOOD', 'OK', 'WORKING'])) {
                     $data[$barrel][$moduleIndex]['nominals'] += $qty;
                 } else {
-                    // Triggers warning for UNKNOWN, TESTING, DEVELOPMENT, etc.
                     $data[$barrel][$moduleIndex]['warnings'] += $qty;
                 }
             }
             
-            // Macro status calculation based on standard hierarchy
             foreach (['EBA', 'LBA', 'LBC', 'EBC'] as $b) {
                 for ($i = 0; $i < 64; $i++) {
                     $mod = &$data[$b][$i];
                     if ($mod['total'] > 0) {
-                        if ($mod['errors'] > 0) {
-                            $mod['status'] = 'ALERT'; // Red
-                        } elseif ($mod['warnings'] > 0) {
-                            $mod['status'] = 'WARNING'; // Yellow (Resolves the pure Unknown issue)
-                        } else {
-                            $mod['status'] = 'NOMINAL'; // Green
-                        }
+                        if ($mod['errors'] > 0) $mod['status'] = 'ALERT';
+                        elseif ($mod['warnings'] > 0) $mod['status'] = 'WARNING';
+                        else $mod['status'] = 'NOMINAL';
                     }
                 }
             }
@@ -127,59 +87,120 @@ class TileCal3DController extends APIController
         }
     }
 
-    /**
-     * Retrieves the complete electronics readout chain grouped by physical channel.
-     */
     public function getModule(string $locationName): ResponseInterface
     {
         $db = \Config\Database::connect();
         
-        // Tree traversal matching PMTs with their parent PMT Blocks and sister boards
-        $sql = "
-            SELECT 
-                e.id as pmt_id, s_pmt.name as pmt_status, e.type_params as pmt_params,
-                p_block.id as block_id, s_block.name as block_status,
-                e_fenics.id as fenics_id, s_fenics.name as fenics_status,
-                e_divider.id as divider_id, s_divider.name as divider_status
-            FROM equipments e
-            JOIN detector_locations dl ON e.detector_location_id = dl.id
-            JOIN equipment_types et ON e.type_id = et.id AND et.name = 'PMT'
-            JOIN statuses s_pmt ON e.status_id = s_pmt.id
-            LEFT JOIN parent_child_equips pce_block ON e.id = pce_block.child_equip_id AND pce_block.deleted_at IS NULL
-            LEFT JOIN equipments p_block ON pce_block.parent_equip_id = p_block.id AND p_block.deleted_at IS NULL
-            LEFT JOIN statuses s_block ON p_block.status_id = s_block.id
-            LEFT JOIN parent_child_equips pce_fenics ON p_block.id = pce_fenics.parent_equip_id AND pce_fenics.deleted_at IS NULL
-            LEFT JOIN equipments e_fenics ON pce_fenics.child_equip_id = e_fenics.id AND e_fenics.deleted_at IS NULL
-            LEFT JOIN equipment_types et_fenics ON e_fenics.type_id = et_fenics.id AND et_fenics.name LIKE 'FENICS%'
-            LEFT JOIN statuses s_fenics ON e_fenics.status_id = s_fenics.id
-            LEFT JOIN parent_child_equips pce_divider ON p_block.id = pce_divider.parent_equip_id AND pce_divider.deleted_at IS NULL
-            LEFT JOIN equipments e_divider ON pce_divider.child_equip_id = e_divider.id AND e_divider.deleted_at IS NULL
-            LEFT JOIN equipment_types et_divider ON e_divider.type_id = et_divider.id AND et_divider.name LIKE 'Active HV Divider%'
-            LEFT JOIN statuses s_divider ON e_divider.status_id = s_divider.id
-            WHERE dl.name = ? AND e.deleted_at IS NULL
-        ";
-        
         try {
-            $pmts = $db->query($sql, [$locationName])->getResultArray();
-            $channels = [];
+            $baseEquips = $db->query("
+                SELECT e.id, e.type_params, s.name as status, et.name as type
+                FROM equipments e JOIN detector_locations dl ON e.detector_location_id = dl.id
+                JOIN equipment_types et ON e.type_id = et.id JOIN statuses s ON e.status_id = s.id
+                WHERE dl.name = ? AND e.deleted_at IS NULL
+            ", [$locationName])->getResultArray();
+
+            $allEquips = [];
+            foreach($baseEquips as $e) $allEquips[$e['id']] = $e;
             
-            foreach ($pmts as $pmt) {
-                $params = json_decode($pmt['pmt_params'], true) ?? [];
-                $channel = $params['phase1_position'] ?? null;
+            $knownIds = array_column($baseEquips, 'id');
+            $allRelations = [];
+            
+            for ($i=0; $i<3; $i++) {
+                if (empty($knownIds)) break;
+                $in = "'".implode("','", $knownIds)."'";
                 
-                if ($channel !== null) {
-                    $channels[$channel] = [
-                        'pmt' => [
-                            'serial' => $pmt['pmt_id'], 'status' => $pmt['pmt_status'],
-                            'model'  => $params['model'] ?? 'N/A', 'qe' => $params['qe'] ?? 'N/A', 'hv' => $params['nominal_hv'] ?? 'N/A'
-                        ],
-                        'block'   => $pmt['block_id'] ? ['serial' => $pmt['block_id'], 'status' => $pmt['block_status']] : null,
-                        'fenics'  => $pmt['fenics_id'] ? ['serial' => $pmt['fenics_id'], 'status' => $pmt['fenics_status']] : null,
-                        'divider' => $pmt['divider_id'] ? ['serial' => $pmt['divider_id'], 'status' => $pmt['divider_status']] : null
-                    ];
+                $rels = $db->query("
+                    SELECT pce.parent_equip_id, pce.child_equip_id, c.type_params, s.name as status, et.name as type
+                    FROM parent_child_equips pce JOIN equipments c ON pce.child_equip_id = c.id AND c.deleted_at IS NULL
+                    JOIN equipment_types et ON c.type_id = et.id JOIN statuses s ON c.status_id = s.id
+                    WHERE pce.parent_equip_id IN ($in) AND pce.deleted_at IS NULL
+                ")->getResultArray();
+                
+                foreach($rels as $r) {
+                    if (!isset($allEquips[$r['child_equip_id']])) {
+                        $allEquips[$r['child_equip_id']] = ['id' => $r['child_equip_id'], 'type_params' => $r['type_params'], 'status' => $r['status'], 'type' => $r['type']];
+                        $knownIds[] = $r['child_equip_id'];
+                    }
+                    $allRelations[$r['parent_equip_id']][$r['child_equip_id']] = true;
+                }
+                
+                $rels = $db->query("
+                    SELECT pce.parent_equip_id, pce.child_equip_id, p.type_params, s.name as status, et.name as type
+                    FROM parent_child_equips pce JOIN equipments p ON pce.parent_equip_id = p.id AND p.deleted_at IS NULL
+                    JOIN equipment_types et ON p.type_id = et.id JOIN statuses s ON p.status_id = s.id
+                    WHERE pce.child_equip_id IN ($in) AND pce.deleted_at IS NULL
+                ")->getResultArray();
+                
+                foreach($rels as $r) {
+                    if (!isset($allEquips[$r['parent_equip_id']])) {
+                        $allEquips[$r['parent_equip_id']] = ['id' => $r['parent_equip_id'], 'type_params' => $r['type_params'], 'status' => $r['status'], 'type' => $r['type']];
+                        $knownIds[] = $r['parent_equip_id'];
+                    }
+                    $allRelations[$r['parent_equip_id']][$r['child_equip_id']] = true;
+                }
+                $knownIds = array_unique($knownIds);
+            }
+
+            $drawersMap = [];
+            $blocksMap = [];
+            $orphans = ['id' => 'N/A', 'type' => 'Unlinked Components / Bad DB Registration', 'status' => 'WARNING', 'boards' => [], 'blocks' => []];
+
+            $findParent = function($childId, $typeKeyword) use (&$allRelations, &$allEquips) {
+                foreach ($allRelations as $pId => $children) {
+                    if (isset($children[$childId]) && strpos($allEquips[$pId]['type'], $typeKeyword) !== false) return $pId;
+                }
+                return null;
+            };
+
+            foreach ($allEquips as $id => $e) {
+                if (strpos($e['type'], 'Drawer') !== false) {
+                    $drawersMap[$id] = ['id' => $id, 'type' => $e['type'], 'status' => $e['status'], 'boards' => [], 'blocks' => []];
                 }
             }
-            return $this->respondQueryResults($channels);
+
+            foreach ($allEquips as $id => $e) {
+                $type = $e['type'];
+                if (strpos($type, 'Block') !== false) {
+                    $dId = $findParent($id, 'Drawer');
+                    $blocksMap[$id] = ['id' => $id, 'type' => $type, 'status' => $e['status'], 'drawer_id' => $dId, 'channel' => null, 'components' => []];
+                } elseif (strpos($type, 'Mainboard') !== false || strpos($type, 'Daughterboard') !== false || strpos($type, 'Board') !== false) {
+                    $dId = $findParent($id, 'Drawer');
+                    $board = ['id' => $id, 'type' => $type, 'status' => $e['status']];
+                    if ($dId && isset($drawersMap[$dId])) $drawersMap[$dId]['boards'][] = $board;
+                    else $orphans['boards'][] = $board;
+                } elseif (in_array($type, ['PMT', 'FENICS (Short Cable)', 'FENICS (Long Cable)', 'Active HV Divider (Short Cable)', 'Active HV Divider (Long Cable)'])) {
+                    $params = json_decode($e['type_params'], true) ?? [];
+                    $ch = $params['phase1_position'] ?? null;
+                    $bId = $findParent($id, 'Block');
+                    
+                    $comp = ['id' => $id, 'type' => $type, 'status' => $e['status'], 'model' => $params['model'] ?? 'N/A', 'qe' => $params['qe'] ?? 'N/A', 'hv' => $params['nominal_hv'] ?? 'N/A', 'channel' => $ch];
+                    
+                    if ($bId) {
+                        if (!isset($blocksMap[$bId])) $blocksMap[$bId] = ['id' => $bId, 'type' => 'PMT Block', 'status' => 'UNKNOWN', 'drawer_id' => null, 'channel' => $ch, 'components' => []];
+                        $blocksMap[$bId]['components'][] = $comp;
+                        if ($ch) $blocksMap[$bId]['channel'] = $ch;
+                    } else {
+                        $vId = 'orphan_block_' . ($ch ?? 'X') . '_' . $id;
+                        $blocksMap[$vId] = ['id' => 'N/A', 'type' => 'Orphaned Channel', 'status' => 'WARNING', 'drawer_id' => null, 'channel' => $ch, 'components' => [$comp]];
+                    }
+                }
+            }
+
+            foreach ($blocksMap as $bId => $b) {
+                $dId = $b['drawer_id'];
+                if ($dId && isset($drawersMap[$dId])) $drawersMap[$dId]['blocks'][] = $b;
+                else $orphans['blocks'][] = $b;
+            }
+
+            if (!empty($orphans['blocks']) || !empty($orphans['boards'])) {
+                $drawersMap['orphans'] = $orphans;
+            }
+
+            foreach ($drawersMap as &$d) {
+                usort($d['blocks'], function($a, $b) { return ((int)($a['channel'] ?? 999)) <=> ((int)($b['channel'] ?? 999)); });
+            }
+
+            return $this->respondQueryResults(array_values($drawersMap));
         } catch (\Throwable $e) {
             return $this->failInternalError($e);
         }
