@@ -50,7 +50,6 @@ function CameraManager({ selectedModule, controlsRef }: { selectedModule: any, c
 function IndustrialSlice({ barrelId, sliceIndex, thetaStart, thetaLength, zOffset, setHoverData, diagnosticMode, moduleData, onModuleClick, onContextMenu }: any) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const [hovered, setHover] = useState(false);
-  
   const defaultColor = sliceIndex % 2 === 0 ? '#b3e5fc' : '#e1f5fe';
   let color = hovered ? '#ffbb00' : defaultColor; 
 
@@ -70,8 +69,8 @@ function IndustrialSlice({ barrelId, sliceIndex, thetaStart, thetaLength, zOffse
       onClick={(e) => { e.stopPropagation(); onModuleClick(barrelId, String(sliceIndex + 1).padStart(2, '0')); }}
       onContextMenu={(e: any) => {
         e.stopPropagation();
-        if (e.nativeEvent) {
-          (e.nativeEvent as Event).preventDefault();
+        if (e.nativeEvent && typeof e.nativeEvent.preventDefault === 'function') {
+          e.nativeEvent.preventDefault();
         }
         onContextMenu(e, barrelId, String(sliceIndex + 1).padStart(2, '0'));
       }}
@@ -109,7 +108,6 @@ export default function TileCal3D() {
   const [diagnosticMode, setDiagnosticMode] = useState(false);
   const [selectedModule, setSelectedModule] = useState<{ barrel: string; number: string } | null>(null);
   
-  // Right-Click Context Menu & Modal States
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, barrel: string, number: string } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalModule, setModalModule] = useState<{ barrel: string, number: string } | null>(null);
@@ -151,7 +149,6 @@ export default function TileCal3D() {
     }
   }, [selectedModule]);
 
-  // Load detailed PMT data when Modal opens
   useEffect(() => {
     if (isModalOpen && modalModule) {
       setModalPmtData(null); 
@@ -161,15 +158,8 @@ export default function TileCal3D() {
     }
   }, [isModalOpen, modalModule]);
 
-  const handleModuleClick = (barrel: string, moduleNumber: string) => { 
-    setSelectedModule({ barrel, number: moduleNumber }); 
-    setHoverData(null); 
-  };
-  
-  const handleBackToGlobal = () => { 
-    setSelectedModule(null); 
-    setHoverData(null); 
-  };
+  const handleModuleClick = (barrel: string, moduleNumber: string) => { setSelectedModule({ barrel, number: moduleNumber }); setHoverData(null); };
+  const handleBackToGlobal = () => { setSelectedModule(null); setHoverData(null); };
 
   const handleRightClick = (e: any, barrel: string, number: string) => {
     setContextMenu({ x: e.clientX, y: e.clientY, barrel, number });
@@ -185,17 +175,22 @@ export default function TileCal3D() {
 
   const exportToCSV = () => {
     if (!modalPmtData) return;
-    const rows = [['Channel', 'Serial', 'Model', 'QE', 'HV', 'Status']];
-    Object.keys(modalPmtData).sort((a,b) => Number(a)-Number(b)).forEach(ch => {
-      const pmt = modalPmtData[ch];
-      rows.push([ch, pmt.serial, pmt.model, pmt.qe, pmt.hv, pmt.status]);
-    });
+    const rows = [['Channel', 'PMT_Serial', 'PMT_Model', 'PMT_QE', 'PMT_HV', 'PMT_Status', 'Block_Serial', 'Block_Status', 'Fenics_Serial', 'Fenics_Status', 'Divider_Serial', 'Divider_Status']];
+    for (let ch = 1; ch <= 48; ch++) {
+      const c = modalPmtData[ch] || {};
+      rows.push([
+        ch, c.pmt?.serial || 'N/A', c.pmt?.model || 'N/A', c.pmt?.qe || 'N/A', c.pmt?.hv || 'N/A', c.pmt?.status || 'Empty',
+        c.block?.serial || 'N/A', c.block?.status || 'N/A',
+        c.fenics?.serial || 'N/A', c.fenics?.status || 'N/A',
+        c.divider?.serial || 'N/A', c.divider?.status || 'N/A'
+      ]);
+    }
     const csvString = rows.map(row => row.join(',')).join('\n');
     const blob = new Blob([csvString], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `tilecal_${modalModule?.barrel}${modalModule?.number}_pmts.csv`;
+    link.download = `tilecal_${modalModule?.barrel}${modalModule?.number}_readout_chain.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -219,16 +214,16 @@ export default function TileCal3D() {
           <div><b>CELL ID</b><br/>{hoverData.id}</div>
         </div>
         {channels.map(ch => {
-          const pmt = pmtData[ch];
+          const c = pmtData[ch] || {};
           return (
             <div key={ch} style={{ borderTop: '1px dashed #b3e5fc', paddingTop: '10px', marginTop: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                 <b>CHANNEL {ch}</b>
-                <span style={{ color: getStatusColor(pmt?.status), fontWeight: 'bold' }}>{pmt ? pmt.status : 'EMPTY'}</span>
+                <span style={{ color: getStatusColor(c.pmt?.status), fontWeight: 'bold' }}>{c.pmt ? c.pmt.status : 'EMPTY'}</span>
               </div>
-              {pmt ? (
+              {c.pmt ? (
                 <div style={{ fontSize: '11px', color: '#546e7a' }}>
-                  S/N: {pmt.serial} | Model: {pmt.model}<br/>QE: {pmt.qe}% | HV: {pmt.hv}V
+                  S/N: {c.pmt.serial} | Model: {c.pmt.model}<br/>QE: {c.pmt.qe}% | HV: {c.pmt.hv}V
                 </div>
               ) : (
                 <div style={{ fontSize: '11px', color: '#9ca3af' }}>No PMT registered in DB</div>
@@ -253,7 +248,6 @@ export default function TileCal3D() {
             {hoverData.status}
           </span>
         </div>
-        
         <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed #b3e5fc' }}>
           <b style={{color: '#000', fontSize: '12px'}}>MOUNTING STATISTICS</b>
           {types.length === 0 ? (
@@ -306,18 +300,18 @@ export default function TileCal3D() {
         </div>
       )}
 
-      {/* DETAILED DATA FLOATING WINDOW (MODAL) */}
+      {/* DETAILED DATA FLOATING MATRIX WINDOW (MODAL) */}
       {isModalOpen && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ width: '80%', maxWidth: '800px', backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)', borderRadius: '8px', padding: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', position: 'relative' }}>
+          <div style={{ width: '90%', maxWidth: '1050px', backgroundColor: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(10px)', borderRadius: '8px', padding: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', position: 'relative' }}>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #0277bd', paddingBottom: '10px', marginBottom: '15px' }}>
               <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#01579b' }}>
-                <i className="pi pi-list mr-2"></i> {modalModule?.barrel}-{modalModule?.number} PMT Details
+                <i className="pi pi-th-large mr-2"></i> {modalModule?.barrel}-{modalModule?.number} Full Electronics Readout Matrix
               </span>
               <div>
                 <button onClick={exportToCSV} disabled={!modalPmtData} style={{ padding: '8px 15px', backgroundColor: '#43a047', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginRight: '10px', opacity: !modalPmtData ? 0.5 : 1 }}>
-                  <i className="pi pi-download mr-2"></i> Export CSV
+                  <i className="pi pi-download mr-2"></i> Export Matrix CSV
                 </button>
                 <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 15px', backgroundColor: '#f87171', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
                   <i className="pi pi-times mr-2"></i> Close
@@ -325,43 +319,64 @@ export default function TileCal3D() {
               </div>
             </div>
 
-            <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+            <div style={{ maxHeight: '65vh', overflowY: 'auto' }}>
               {!modalPmtData ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#01579b', fontWeight: 'bold', fontSize: '16px' }}>
-                  <i className="pi pi-spin pi-spinner mr-3" style={{ fontSize: '1.5rem' }}></i> Loading Database Records...
+                  <i className="pi pi-spin pi-spinner mr-3" style={{ fontSize: '1.5rem' }}></i> Rebuilding Chain from Database Structures...
                 </div>
               ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', fontFamily: 'monospace' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', fontFamily: 'monospace' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#e1f5fe', color: '#01579b', textAlign: 'left' }}>
-                      <th style={{ padding: '12px 10px', borderBottom: '2px solid #b3e5fc' }}>Channel</th>
-                      <th style={{ padding: '12px 10px', borderBottom: '2px solid #b3e5fc' }}>Serial</th>
-                      <th style={{ padding: '12px 10px', borderBottom: '2px solid #b3e5fc' }}>Model</th>
-                      <th style={{ padding: '12px 10px', borderBottom: '2px solid #b3e5fc' }}>QE (%)</th>
-                      <th style={{ padding: '12px 10px', borderBottom: '2px solid #b3e5fc' }}>HV (V)</th>
-                      <th style={{ padding: '12px 10px', borderBottom: '2px solid #b3e5fc' }}>Status</th>
+                      <th style={{ padding: '10px', borderBottom: '2px solid #b3e5fc', width: '7%' }}>Channel</th>
+                      <th style={{ padding: '10px', borderBottom: '2px solid #b3e5fc', width: '28%' }}>PMT Component</th>
+                      <th style={{ padding: '10px', borderBottom: '2px solid #b3e5fc', width: '22%' }}>PMT Block</th>
+                      <th style={{ padding: '10px', borderBottom: '2px solid #b3e5fc', width: '22%' }}>FENICS Board</th>
+                      <th style={{ padding: '10px', borderBottom: '2px solid #b3e5fc', width: '21%' }}>HV Divider</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.keys(modalPmtData).sort((a,b) => Number(a)-Number(b)).map(ch => {
-                      const pmt = modalPmtData[ch];
+                    {Array.from({ length: 48 }).map((_, idx) => {
+                      const ch = idx + 1;
+                      const c = modalPmtData[ch] || {};
                       return (
-                        <tr key={ch} style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.2s' }} 
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f8ff'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                            onClick={() => navigate(`/equipment/${pmt.serial}`)}>
-                          <td style={{ padding: '10px' }}><b>{String(ch).padStart(2, '0')}</b></td>
-                          <td style={{ padding: '10px', color: '#0288d1', textDecoration: 'underline' }}>{pmt.serial} <i className="pi pi-external-link" style={{fontSize: '10px'}}></i></td>
-                          <td style={{ padding: '10px' }}>{pmt.model}</td>
-                          <td style={{ padding: '10px' }}>{pmt.qe}</td>
-                          <td style={{ padding: '10px' }}>{pmt.hv}</td>
-                          <td style={{ padding: '10px', color: getStatusColor(pmt.status), fontWeight: 'bold' }}>{pmt.status}</td>
+                        <tr key={ch} style={{ borderBottom: '1px solid #e2e8f0', transition: 'background 0.15s' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                          <td style={{ padding: '8px 10px' }}><b>{String(ch).padStart(2, '0')}</b></td>
+                          
+                          {/* PMT */}
+                          <td style={{ padding: '8px 10px' }}>
+                            {c.pmt ? (
+                              <div onClick={() => { setIsModalOpen(false); navigate(`/equipment/${c.pmt.serial}`); }} style={{ cursor: 'pointer', color: '#0288d1', textDecoration: 'underline' }}>
+                                S/N: {c.pmt.serial} ({c.pmt.model}) | <span style={{ color: getStatusColor(c.pmt.status), fontWeight: 'bold' }}>{c.pmt.status}</span>
+                              </div>
+                            ) : <span style={{ color: '#9ca3af' }}>Empty Channel</span>}
+                          </td>
+
+                          {/* PMT Block */}
+                          <td style={{ padding: '8px 10px' }}>
+                            {c.block ? (
+                              <div>S/N: {c.block.serial} | <span style={{ color: getStatusColor(c.block.status) }}>{c.block.status}</span></div>
+                            ) : <span style={{ color: '#cbd5e1' }}>--</span>}
+                          </td>
+
+                          {/* FENICS Board */}
+                          <td style={{ padding: '8px 10px' }}>
+                            {c.fenics ? (
+                              <div>S/N: {c.fenics.serial} | <span style={{ color: getStatusColor(c.fenics.status) }}>{c.fenics.status}</span></div>
+                            ) : <span style={{ color: '#cbd5e1' }}>--</span>}
+                          </td>
+
+                          {/* HV Divider */}
+                          <td style={{ padding: '8px 10px' }}>
+                            {c.divider ? (
+                              <div>S/N: {c.divider.serial} | <span style={{ color: getStatusColor(c.divider.status) }}>{c.divider.status}</span></div>
+                            ) : <span style={{ color: '#cbd5e1' }}>--</span>}
+                          </td>
                         </tr>
                       );
                     })}
-                    {Object.keys(modalPmtData).length === 0 && (
-                      <tr><td colSpan={6} style={{ padding: '30px', textAlign: 'center', color: '#9ca3af', fontStyle: 'italic' }}>No PMT data mapped to this module in the database.</td></tr>
-                    )}
                   </tbody>
                 </table>
               )}
@@ -369,7 +384,7 @@ export default function TileCal3D() {
           </div>
         </div>
       )}
-
+      
       {/* TOP LEFT CONTROL PANEL */}
       <div style={{ position: 'absolute', top: '15px', left: '15px', color: '#01579b', fontFamily: 'monospace', fontSize: '11px', zIndex: 1, background: 'rgba(255,255,255,0.9)', padding: '15px', border: '1px solid #b3e5fc', borderRadius: '6px', pointerEvents: 'none' }}>
         <b style={{ fontSize: '13px', color: '#000' }}>ATLAS TILECAL SYS</b><br/><br/>
