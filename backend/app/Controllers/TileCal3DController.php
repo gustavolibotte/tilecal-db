@@ -10,77 +10,114 @@ class TileCal3DController extends APIController
     {
         $db = \Config\Database::connect();
         
-        $sql = "
-            SELECT loc as location_name, type as type_name, status as status_name, COUNT(DISTINCT id) as qty
-            FROM (
-                SELECT dl.name as loc, et.name as type, s.name as status, e.id
-                FROM detector_locations dl JOIN equipments e ON e.detector_location_id = dl.id JOIN equipment_types et ON e.type_id = et.id JOIN statuses s ON e.status_id = s.id
-                WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND e.deleted_at IS NULL
-                UNION
-                SELECT dl.name as loc, et.name as type, s.name as status, p.id
-                FROM detector_locations dl JOIN equipments e ON e.detector_location_id = dl.id JOIN parent_child_equips pce ON e.id = pce.child_equip_id JOIN equipments p ON pce.parent_equip_id = p.id JOIN equipment_types et ON p.type_id = et.id JOIN statuses s ON p.status_id = s.id
-                WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND pce.deleted_at IS NULL AND p.deleted_at IS NULL
-                UNION
-                SELECT dl.name as loc, et.name as type, s.name as status, gp.id
-                FROM detector_locations dl JOIN equipments e ON e.detector_location_id = dl.id JOIN parent_child_equips pce1 ON e.id = pce1.child_equip_id JOIN parent_child_equips pce2 ON pce1.parent_equip_id = pce2.child_equip_id JOIN equipments gp ON pce2.parent_equip_id = gp.id JOIN equipment_types et ON gp.type_id = et.id JOIN statuses s ON gp.status_id = s.id
-                WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND pce1.deleted_at IS NULL AND pce2.deleted_at IS NULL AND gp.deleted_at IS NULL
-                UNION
-                SELECT dl.name as loc, et.name as type, s.name as status, c.id
-                FROM detector_locations dl JOIN equipments e ON e.detector_location_id = dl.id JOIN parent_child_equips pce ON e.id = pce.parent_equip_id JOIN equipments c ON pce.child_equip_id = c.id JOIN equipment_types et ON c.type_id = et.id JOIN statuses s ON c.status_id = s.id
-                WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND pce.deleted_at IS NULL AND c.deleted_at IS NULL
-                UNION
-                SELECT dl.name as loc, et.name as type, s.name as status, gc.id
-                FROM detector_locations dl JOIN equipments e ON e.detector_location_id = dl.id JOIN parent_child_equips pce1 ON e.id = pce1.parent_equip_id JOIN parent_child_equips pce2 ON pce1.child_equip_id = pce2.parent_equip_id JOIN equipments gc ON pce2.child_equip_id = gc.id JOIN equipment_types et ON gc.type_id = et.id JOIN statuses s ON gc.status_id = s.id
-                WHERE dl.name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND pce1.deleted_at IS NULL AND pce2.deleted_at IS NULL AND gc.deleted_at IS NULL
-            ) as combined
-            GROUP BY loc, type, status
-        ";
-        
         try {
-            $results = $db->query($sql)->getResultArray();
+            $locations = $db->query("
+                SELECT id, name FROM detector_locations 
+                WHERE name REGEXP '^(EBA|EBC|LBA|LBC)[0-6][0-9]$' AND name NOT LIKE '%00'
+            ")->getResultArray();
+            
+            $locMap = [];
+            foreach ($locations as $loc) {
+                $locMap[$loc['id']] = $loc['name'];
+            }
+
+            $equipments = $db->query("
+                SELECT e.id, e.detector_location_id, et.name as type, s.name as status
+                FROM equipments e
+                JOIN equipment_types et ON e.type_id = et.id
+                JOIN statuses s ON e.status_id = s.id
+                WHERE e.deleted_at IS NULL
+            ")->getResultArray();
+
+            $equipMap = [];
+            $locToEquips = [];
+            foreach ($equipments as $e) {
+                $equipMap[$e['id']] = $e;
+                if ($e['detector_location_id'] && isset($locMap[$e['detector_location_id']])) {
+                    $locToEquips[$e['detector_location_id']][] = $e['id'];
+                }
+            }
+
+            $relations = $db->query("
+                SELECT parent_equip_id as p, child_equip_id as c
+                FROM parent_child_equips
+                WHERE deleted_at IS NULL
+            ")->getResultArray();
+
+            $childrenOf = [];
+            $parentsOf = [];
+            foreach ($relations as $r) {
+                $childrenOf[$r['p']][] = $r['c'];
+                $parentsOf[$r['c']][] = $r['p'];
+            }
+
             $data = [
                 'EBA' => array_fill(0, 64, null), 'LBA' => array_fill(0, 64, null),
                 'LBC' => array_fill(0, 64, null), 'EBC' => array_fill(0, 64, null),
             ];
-            
             foreach (['EBA', 'LBA', 'LBC', 'EBC'] as $b) {
                 for ($i = 0; $i < 64; $i++) {
                     $data[$b][$i] = ['status' => 'EMPTY', 'stats' => [], 'total' => 0, 'errors' => 0, 'warnings' => 0, 'nominals' => 0];
                 }
             }
 
-            foreach ($results as $row) {
-                $barrel = substr($row['location_name'], 0, 3);
-                $moduleIndex = (int)substr($row['location_name'], 3, 2) - 1; 
-                $type = $row['type_name'];
-                $status = strtoupper($row['status_name']);
-                $qty = (int)$row['qty'];
-
-                if (!isset($data[$barrel][$moduleIndex]['stats'][$type])) $data[$barrel][$moduleIndex]['stats'][$type] = [];
-                if (!isset($data[$barrel][$moduleIndex]['stats'][$type][$status])) $data[$barrel][$moduleIndex]['stats'][$type][$status] = 0;
+            foreach ($locMap as $locId => $locName) {
+                $barrel = substr($locName, 0, 3);
+                $moduleIndex = (int)substr($locName, 3, 2) - 1;
                 
-                $data[$barrel][$moduleIndex]['stats'][$type][$status] += $qty;
-                $data[$barrel][$moduleIndex]['total'] += $qty;
-
-                if (in_array($status, ['FAILURE', 'BROKEN', 'LOST', 'ALERT'])) {
-                    $data[$barrel][$moduleIndex]['errors'] += $qty;
-                } elseif (in_array($status, ['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL', 'GOOD', 'OK', 'WORKING'])) {
-                    $data[$barrel][$moduleIndex]['nominals'] += $qty;
-                } else {
-                    $data[$barrel][$moduleIndex]['warnings'] += $qty;
+                $visited = [];
+                $queue = $locToEquips[$locId] ?? [];
+                
+                foreach ($queue as $q) { $visited[$q] = true; }
+                
+                while (!empty($queue)) {
+                    $curr = array_shift($queue);
+                    
+                    if (isset($parentsOf[$curr])) {
+                        foreach ($parentsOf[$curr] as $p) {
+                            if (!isset($visited[$p])) { $visited[$p] = true; $queue[] = $p; }
+                        }
+                    }
+                    if (isset($childrenOf[$curr])) {
+                        foreach ($childrenOf[$curr] as $c) {
+                            if (!isset($visited[$c])) { $visited[$c] = true; $queue[] = $c; }
+                        }
+                    }
+                }
+                
+                foreach ($visited as $eqId => $true) {
+                    if (!isset($equipMap[$eqId])) continue;
+                    $eq = $equipMap[$eqId];
+                    $type = $eq['type'];
+                    $status = strtoupper($eq['status']);
+                    
+                    if (!isset($data[$barrel][$moduleIndex]['stats'][$type])) {
+                        $data[$barrel][$moduleIndex]['stats'][$type] = [];
+                    }
+                    if (!isset($data[$barrel][$moduleIndex]['stats'][$type][$status])) {
+                        $data[$barrel][$moduleIndex]['stats'][$type][$status] = 0;
+                    }
+                    
+                    $data[$barrel][$moduleIndex]['stats'][$type][$status]++;
+                    $data[$barrel][$moduleIndex]['total']++;
+                    
+                    if (in_array($status, ['FAILURE', 'BROKEN', 'LOST', 'ALERT'])) {
+                        $data[$barrel][$moduleIndex]['errors']++;
+                    } elseif (in_array($status, ['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL', 'GOOD', 'OK', 'WORKING'])) {
+                        $data[$barrel][$moduleIndex]['nominals']++;
+                    } else {
+                        $data[$barrel][$moduleIndex]['warnings']++;
+                    }
+                }
+                
+                $mod = &$data[$barrel][$moduleIndex];
+                if ($mod['total'] > 0) {
+                    if ($mod['errors'] > 0) $mod['status'] = 'ALERT';
+                    elseif ($mod['warnings'] > 0) $mod['status'] = 'WARNING';
+                    else $mod['status'] = 'NOMINAL';
                 }
             }
             
-            foreach (['EBA', 'LBA', 'LBC', 'EBC'] as $b) {
-                for ($i = 0; $i < 64; $i++) {
-                    $mod = &$data[$b][$i];
-                    if ($mod['total'] > 0) {
-                        if ($mod['errors'] > 0) $mod['status'] = 'ALERT';
-                        elseif ($mod['warnings'] > 0) $mod['status'] = 'WARNING';
-                        else $mod['status'] = 'NOMINAL';
-                    }
-                }
-            }
             return $this->respondQueryResults($data);
         } catch (\Throwable $e) {
             return $this->failInternalError($e);

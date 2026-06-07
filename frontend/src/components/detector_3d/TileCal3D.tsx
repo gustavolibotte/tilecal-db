@@ -128,10 +128,11 @@ export default function TileCal3D() {
     const loadGlobalData = async () => {
       try {
         setIsLoading(true);
-        const response = await DbClient.get('calorimeter/status');
+        const response = await DbClient.get('api/calorimeter/status');
         setDetectorData(response.data?.data || response.data);
-      } catch (e) {
+      } catch (e: any) {
         console.error("Failed to load global DB data:", e);
+        alert("Erro ao buscar estatísticas do calorímetro: O banco de dados pode estar indisponível ou a operação excedeu o tempo limite.");
         setDetectorData({}); 
       } finally {
         setIsLoading(false);
@@ -144,9 +145,13 @@ export default function TileCal3D() {
     const target = selectedModule || (isModalOpen ? modalModule : null);
     if (target) {
       if (!selectedModule) setTreeData(null); 
-      DbClient.get(`calorimeter/module/${target.barrel}${target.number}`)
+      DbClient.get(`api/calorimeter/module/${target.barrel}${target.number}`)
         .then(response => { setTreeData(response.data?.data || response.data); })
-        .catch(e => { console.error("Failed to load hierarchical tree:", e); setTreeData([]); });
+        .catch(e => { 
+          console.error("Failed to load hierarchical tree:", e); 
+          alert("Falha ao buscar os detalhes da árvore de montagem do módulo.");
+          setTreeData([]); 
+        });
     }
   }, [selectedModule, isModalOpen, modalModule]);
 
