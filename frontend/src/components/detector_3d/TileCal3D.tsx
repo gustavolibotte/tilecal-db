@@ -70,9 +70,8 @@ function IndustrialSlice({ barrelId, sliceIndex, thetaStart, thetaLength, zOffse
       onClick={(e) => { e.stopPropagation(); onModuleClick(barrelId, String(sliceIndex + 1).padStart(2, '0')); }}
       onContextMenu={(e: any) => {
         e.stopPropagation();
-        // Safe TypeScript approach for R3F synthetic events
-        if (e.nativeEvent && typeof e.nativeEvent.preventDefault === 'function') {
-          e.nativeEvent.preventDefault();
+        if (e.nativeEvent) {
+          (e.nativeEvent as Event).preventDefault();
         }
         onContextMenu(e, barrelId, String(sliceIndex + 1).padStart(2, '0'));
       }}
@@ -110,7 +109,7 @@ export default function TileCal3D() {
   const [diagnosticMode, setDiagnosticMode] = useState(false);
   const [selectedModule, setSelectedModule] = useState<{ barrel: string; number: string } | null>(null);
   
-  // Right-Click & Modal States
+  // Right-Click Context Menu & Modal States
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, barrel: string, number: string } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalModule, setModalModule] = useState<{ barrel: string, number: string } | null>(null);
@@ -131,7 +130,7 @@ export default function TileCal3D() {
     const loadGlobalData = async () => {
       try {
         setIsLoading(true);
-        const response = await DbClient.get('calorimeter/status');
+        const response = await DbClient.get('api/calorimeter/status');
         setDetectorData(response.data?.data || response.data);
       } catch (e) {
         console.error("Failed to load global DB data:", e);
@@ -146,17 +145,17 @@ export default function TileCal3D() {
   useEffect(() => {
     if (selectedModule) {
       setPmtData({}); 
-      DbClient.get(`calorimeter/module/${selectedModule.barrel}${selectedModule.number}`)
+      DbClient.get(`api/calorimeter/module/${selectedModule.barrel}${selectedModule.number}`)
         .then(response => { setPmtData(response.data?.data || response.data); })
         .catch(e => console.error("Failed to load PMT data:", e));
     }
   }, [selectedModule]);
 
-  // Load detailed modal data
+  // Load detailed PMT data when Modal opens
   useEffect(() => {
     if (isModalOpen && modalModule) {
       setModalPmtData(null); 
-      DbClient.get(`calorimeter/module/${modalModule.barrel}${modalModule.number}`)
+      DbClient.get(`api/calorimeter/module/${modalModule.barrel}${modalModule.number}`)
         .then(response => { setModalPmtData(response.data?.data || response.data); })
         .catch(e => { console.error("Failed to load modal PMT data:", e); setModalPmtData({}); });
     }
@@ -254,6 +253,7 @@ export default function TileCal3D() {
             {hoverData.status}
           </span>
         </div>
+        
         <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed #b3e5fc' }}>
           <b style={{color: '#000', fontSize: '12px'}}>MOUNTING STATISTICS</b>
           {types.length === 0 ? (
@@ -288,7 +288,7 @@ export default function TileCal3D() {
           {hoverData.id}
         </div>
       )}
-
+      
       {/* CONTEXT MENU (RIGHT CLICK) */}
       {contextMenu && (
         <div style={{ position: 'fixed', left: contextMenu.x, top: contextMenu.y, backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '4px', padding: '5px 0', zIndex: 200, boxShadow: '0 2px 10px rgba(0,0,0,0.2)', width: '180px' }}>
@@ -308,7 +308,7 @@ export default function TileCal3D() {
 
       {/* DETAILED DATA FLOATING WINDOW (MODAL) */}
       {isModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <div style={{ width: '80%', maxWidth: '800px', backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)', borderRadius: '8px', padding: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', position: 'relative' }}>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #0277bd', paddingBottom: '10px', marginBottom: '15px' }}>
@@ -369,7 +369,7 @@ export default function TileCal3D() {
           </div>
         </div>
       )}
-      
+
       {/* TOP LEFT CONTROL PANEL */}
       <div style={{ position: 'absolute', top: '15px', left: '15px', color: '#01579b', fontFamily: 'monospace', fontSize: '11px', zIndex: 1, background: 'rgba(255,255,255,0.9)', padding: '15px', border: '1px solid #b3e5fc', borderRadius: '6px', pointerEvents: 'none' }}>
         <b style={{ fontSize: '13px', color: '#000' }}>ATLAS TILECAL SYS</b><br/><br/>
