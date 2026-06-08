@@ -13,8 +13,9 @@ class DatabaseRules	{
      * The structure of the $params array should be:
      * ```php
      * [
-     *     'table' => 'table_name',
-     *     'column' => 'column_name'
+     * 'table' => 'table_name',
+     * 'column' => 'column_name',
+     * 'ignore_id' => true // Optional: Ignores the record with the 'id' present in $data (useful for updates)
      * ]
      * ```
      * @return bool
@@ -30,10 +31,18 @@ class DatabaseRules	{
         $column = $params['column'];
         $value = $data[$fieldName];
         $db = db_connect();
-        $db->table($table)
+        
+        $builder = $db->table($table)
             ->select('1')
-            ->where($column, $value)
-            ->get(1)->getResultArray();
+            ->where($column, $value);
+
+        // Allow ignoring a specific row based on ID (for updates)
+        if (isset($params['ignore_id']) && $params['ignore_id'] === true && isset($data['id'])) {
+            $builder->where('id !=', $data['id']);
+        }
+        
+        $builder->get(1)->getResultArray();
+
         if ($db->affectedRows() !== 0){
             $error = sprintf(
                 '%s %s already exists in the database',
@@ -53,8 +62,8 @@ class DatabaseRules	{
      * The structure of the $params array should be:
      * ```php
      * [
-     *     'table' => 'table_name',
-     *     'column' => 'column_name'
+     * 'table' => 'table_name',
+     * 'column' => 'column_name'
      * ]
      * ```
      * @return bool
@@ -93,8 +102,8 @@ class DatabaseRules	{
      * The structure of the $params array should be:
      * ```php
      * [
-     *    'table' => 'table_name',
-     *   'column' => 'column_name'
+     * 'table' => 'table_name',
+     * 'column' => 'column_name'
      * ]
      * ```
      * @return bool
@@ -134,8 +143,8 @@ class DatabaseRules	{
      * The structure of the $params array should be:
      * ```php
      * [
-     *   'table' => 'table_name',
-     *  'column' => 'column_name'
+     * 'table' => 'table_name',
+     * 'column' => 'column_name'
      * ]
      * ```
      * @return bool

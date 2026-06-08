@@ -464,7 +464,8 @@ class EquipmentRules
                 '\App\Validation\DatabaseRules::isUnique' => [
                     'params' => [
                         'table' => 'equipments',
-                        'column' => 'serial'
+                        'column' => 'serial',
+                        'ignore_id' => true
                     ]
                 ]
             ],
