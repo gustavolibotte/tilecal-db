@@ -192,7 +192,7 @@ class TileCal3DController extends APIController
 
                 if (!$assigned) {
                     $vId = 'orphan_block_' . ($ch ?? 'X') . '_' . $comp['id'];
-                    $blocksMap[$vId] = ['id' => 'N/A', 'type' => 'Orphaned Channel', 'status' => 'WARNING', 'drawer_id' => null, 'channel' => $ch, 'components' => [$comp]];
+                    $blocksMap[$vId] = ['id' => 'N/A', 'type' => 'No PMT Block assigned', 'status' => 'WARNING', 'drawer_id' => null, 'channel' => $ch, 'components' => [$comp]];
                 }
             }
 
