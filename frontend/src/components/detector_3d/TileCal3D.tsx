@@ -130,9 +130,8 @@ export default function TileCal3D() {
         setIsLoading(true);
         const response = await DbClient.get('api/calorimeter/status');
         setDetectorData(response.data?.data || response.data);
-      } catch (e: any) {
+      } catch (e) {
         console.error("Failed to load global DB data:", e);
-        alert("Erro ao buscar estatísticas do calorímetro: O banco de dados pode estar indisponível ou a operação excedeu o tempo limite.");
         setDetectorData({}); 
       } finally {
         setIsLoading(false);
@@ -147,11 +146,7 @@ export default function TileCal3D() {
       if (!selectedModule) setTreeData(null); 
       DbClient.get(`api/calorimeter/module/${target.barrel}${target.number}`)
         .then(response => { setTreeData(response.data?.data || response.data); })
-        .catch(e => { 
-          console.error("Failed to load hierarchical tree:", e); 
-          alert("Falha ao buscar os detalhes da árvore de montagem do módulo.");
-          setTreeData([]); 
-        });
+        .catch(e => { console.error("Failed to load hierarchical tree:", e); setTreeData([]); });
     }
   }, [selectedModule, isModalOpen, modalModule]);
 
@@ -208,7 +203,7 @@ export default function TileCal3D() {
     const stats = hoverData.stats || {};
     const types = Object.keys(stats);
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '55vh' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', flexShrink: 0 }}>
           <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#000' }}>
             {hoverData.barrelId}-{String(hoverData.sliceIndex + 1).padStart(2, '0')}
@@ -221,7 +216,7 @@ export default function TileCal3D() {
         <div style={{ marginTop: '5px', paddingTop: '10px', borderTop: '1px dashed #b3e5fc', display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 }}>
           <b style={{color: '#000', fontSize: '12px', flexShrink: 0, paddingBottom: '10px'}}>MOUNTING STATISTICS</b>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto', paddingRight: '5px', flexGrow: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto', paddingRight: '5px', flexGrow: 1, pointerEvents: 'auto' }}>
             {types.length === 0 ? (
               <div style={{ color: '#9ca3af', fontStyle: 'italic' }}>No components registered.</div>
             ) : (
@@ -335,7 +330,7 @@ export default function TileCal3D() {
                   {treeData.map((drawer, i) => (
                     <li key={i} style={{ marginBottom: '20px', border: '1px solid #b3e5fc', borderRadius: '8px', overflow: 'hidden' }}>
                       
-                      {/* LEVEL 1: DRAWERS */}
+                      {/* LEVEL 1: DRAWERS / ORPHAN CONTAINER */}
                       <div style={{ backgroundColor: '#e1f5fe', padding: '10px 15px', borderBottom: '1px solid #b3e5fc', display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#01579b' }}>
                           <i className="pi pi-server mr-2"></i> {drawer.type} {drawer.id !== 'N/A' && `(S/N: ${drawer.id})`}
@@ -360,15 +355,15 @@ export default function TileCal3D() {
                           </div>
                         )}
                         
-                        {/* LEVEL 2: PMT BLOCKS */}
+                        {/* LEVEL 2: PMT BLOCKS / CHANNELS */}
                         <b style={{ color: '#0288d1' }}>Readout Channels:</b>
-                        <ul style={{ margin: '10px 0 0 0', paddingLeft: '20px', listStyleType: 'circle' }}>
+                        <ul style={{ margin: '10px 0 0 0', paddingLeft: '20px', listStyleType: 'none' }}>
                           {drawer.blocks?.map((block: any) => (
-                            <li key={block.id} style={{ marginBottom: '15px', borderLeft: '3px solid #0288d1', paddingLeft: '15px', backgroundColor: '#f8fafc', padding: '10px', borderRadius: '4px', listStyleType: 'none' }}>
+                            <li key={block.id} style={{ marginBottom: '15px', borderLeft: '3px solid #0288d1', paddingLeft: '15px', backgroundColor: '#f8fafc', padding: '10px', borderRadius: '4px' }}>
                               
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                <span style={{ fontSize: '14px', cursor: 'pointer', color: '#01579b', fontWeight: 'bold', textDecoration: block.id !== 'N/A' ? 'underline' : 'none' }} onClick={() => { if(block.id !== 'N/A') { setIsModalOpen(false); navigate(`/equipment/${block.id}`); } }}>
-                                  Channel {String(block.channel || '?').padStart(2, '0')} - {block.type} {block.id !== 'N/A' && `(S/N: ${block.id})`}
+                                <span style={{ fontSize: '14px', cursor: block.id !== 'N/A' ? 'pointer' : 'default', color: '#01579b', fontWeight: 'bold', textDecoration: block.id !== 'N/A' ? 'underline' : 'none' }} onClick={() => { if(block.id !== 'N/A') { setIsModalOpen(false); navigate(`/equipment/${block.id}`); } }}>
+                                  Channel {block.channel ? String(block.channel).padStart(2, '0') : '??'} - {block.type} {block.id !== 'N/A' && `(S/N: ${block.id})`}
                                 </span>
                                 <span style={{ color: getStatusColor(block.status), fontWeight: 'bold', fontSize: '12px' }}>{block.status}</span>
                               </div>
@@ -380,9 +375,9 @@ export default function TileCal3D() {
                                     <span style={{ cursor: 'pointer', color: '#0288d1', textDecoration: 'underline' }} onClick={() => { setIsModalOpen(false); navigate(`/equipment/${comp.id}`); }}>
                                       <b>{comp.type}</b> (S/N: {comp.id})
                                     </span>
-                                    {comp.model !== 'N/A' && ` | Model: ${comp.model}`}
-                                    {comp.qe !== 'N/A' && ` | QE: ${comp.qe}%`}
-                                    {comp.hv !== 'N/A' && ` | HV: ${comp.hv}V`}
+                                    {comp.model && comp.model !== 'N/A' && ` | Model: ${comp.model}`}
+                                    {comp.qe && comp.qe !== 'N/A' && ` | QE: ${comp.qe}%`}
+                                    {comp.hv && comp.hv !== 'N/A' && ` | HV: ${comp.hv}V`}
                                     {' '} - <span style={{ color: getStatusColor(comp.status) }}>{comp.status}</span>
                                   </li>
                                 )) : <li style={{ padding: '3px 0', color: '#94a3b8', listStyleType: 'none' }}><i>No sub-components mapped to this block</i></li>}

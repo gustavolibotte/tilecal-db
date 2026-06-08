@@ -142,7 +142,7 @@ class TileCal3DController extends APIController
             $knownIds = array_column($baseEquips, 'id');
             $allRelations = [];
             
-            for ($i=0; $i<3; $i++) {
+            for ($i=0; $i<5; $i++) {
                 if (empty($knownIds)) break;
                 $in = "'".implode("','", $knownIds)."'";
                 
@@ -205,7 +205,7 @@ class TileCal3DController extends APIController
                     $board = ['id' => $id, 'type' => $type, 'status' => $e['status']];
                     if ($dId && isset($drawersMap[$dId])) $drawersMap[$dId]['boards'][] = $board;
                     else $orphans['boards'][] = $board;
-                } elseif (in_array($type, ['PMT', 'FENICS (Short Cable)', 'FENICS (Long Cable)', 'Active HV Divider (Short Cable)', 'Active HV Divider (Long Cable)'])) {
+                } elseif (in_array(trim($type), ['PMT', 'FENICS (Short Cable)', 'FENICS (Long Cable)', 'Active HV Divider (Short Cable)', 'Active HV Divider (Long Cable)'])) {
                     $params = json_decode($e['type_params'], true) ?? [];
                     $ch = $params['phase1_position'] ?? null;
                     $bId = $findParent($id, 'Block');
