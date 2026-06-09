@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { Edges } from '@react-three/drei';
+import React, { useMemo, useState } from 'react';
+import { Center } from '@react-three/drei';
 import * as THREE from 'three';
+import { LBA_CELLS, EBA_CELLS, EXTRUDE_SETTINGS } from './cellGeometry';
 
-// Helper de conversão de cores consistente com o restante da UI
+// Helper de conversão de cores consistente
 const getStatusColor = (statusName: string) => {
   const s = statusName?.toUpperCase() || '';
   if (['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL', 'GOOD', 'OK', 'WORKING'].includes(s)) return '#4ade80'; 
@@ -12,89 +12,78 @@ const getStatusColor = (statusName: string) => {
   return '#9ca3af'; 
 };
 
-export function ModuleCells3D({ barrel, moduleNumber, onHoverCell, onClickCell, diagnosticMode, cellStatuses }: any) {
-  // Configuração neutra idêntica à casca do calorímetro
-  const NEUTRAL_COLOR = '#e1f5fe';
-  const HOVER_COLOR = '#ffbb00';
-
-  // Células baseadas nas chaves dinâmicas
-  const cells = Object.keys(cellStatuses || {});
-
-  return (
-    <group>
-      {cells.map((cellId, index) => {
-        // Distribuição simples em Z e X para visualização das fatias (adapte à sua topologia 3D)
-        const zPos = (index % 10) * 4 - 18;
-        const xPos = Math.floor(index / 10) * 4 - 6;
-        
-        return (
-          <CellMesh 
-            key={cellId} 
-            cellId={cellId} 
-            barrel={barrel}
-            moduleNumber={moduleNumber}
-            position={[xPos, 0, zPos]} 
-            status={cellStatuses[cellId]}
-            diagnosticMode={diagnosticMode}
-            onHover={onHoverCell}
-            onClick={onClickCell}
-            neutralColor={NEUTRAL_COLOR}
-            hoverColor={HOVER_COLOR}
-          />
-        );
-      })}
-    </group>
-  );
+interface ModuleCells3DProps {
+  barrel: string; // 'LBA', 'LBC', 'EBA', 'EBC'
+  moduleNumber: string; // '01' to '64'
+  onHoverCell: (cellData: any) => void;
+  onClickCell?: (cellId: string) => void;
+  diagnosticMode?: boolean;
+  cellStatuses?: Record<string, string>;
 }
 
-function CellMesh({ cellId, barrel, moduleNumber, position, status, diagnosticMode, onHover, onClick, neutralColor, hoverColor }: any) {
-  const meshRef = useRef<THREE.Mesh>(null!);
-  const [hovered, setHover] = useState(false);
+export const ModuleCells3D: React.FC<ModuleCells3DProps> = ({ barrel, moduleNumber, onHoverCell, onClickCell, diagnosticMode, cellStatuses = {} }) => {
+  const [hoveredCell, setHoveredCell] = useState<string | null>(null);
 
-  // Lógica Consistente de Cores: 
-  let currentColor = neutralColor;
-  if (hovered) currentColor = hoverColor;
-  else if (diagnosticMode) currentColor = getStatusColor(status);
-
-  useFrame(() => {
-    if (!meshRef.current) return;
-    const targetScale = hovered ? 1.05 : 1;
-    meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.2);
-  });
+  const isLongBarrel = barrel === 'LBA' || barrel === 'LBC';
+  const shapes = isLongBarrel ? LBA_CELLS : EBA_CELLS;
+  
+  // Mirroring logic: SVG Y-axis grows downwards, ThreeJS grows upwards (-1)
+  // LBC and EBC must also be mirrored on the X-axis (-1)
+  const isC_Side = barrel === 'LBC' || barrel === 'EBC';
+  const scale: [number, number, number] = [isC_Side ? -1 : 1, -1, 1];
 
   return (
-    <mesh
-      ref={meshRef}
-      position={position}
-      onPointerOver={(e: any) => {
-        e.stopPropagation();
-        setHover(true);
-        onHover({ id: cellId, barrel, moduleNumber, clientX: e.clientX, clientY: e.clientY });
-      }}
-      onPointerMove={(e: any) => {
-        e.stopPropagation();
-        // Permite que o tooltip acompanhe o rato de forma fluida
-        onHover({ id: cellId, barrel, moduleNumber, clientX: e.clientX, clientY: e.clientY });
-      }}
-      onPointerOut={(e: any) => {
-        e.stopPropagation();
-        setHover(false);
-        onHover(null);
-      }}
-      onClick={(e: any) => {
-        e.stopPropagation();
-        onClick(cellId);
-      }}
-    >
-      <boxGeometry args={[3.5, 3.5, 3.5]} />
-      <meshStandardMaterial 
-        color={currentColor} 
-        roughness={0.2} 
-        metalness={0.1}
-        transparent={true} 
-        opacity={diagnosticMode ? 0.9 : 0.7} 
-      />
-      <Edges linewidth={1} threshold={15} color="#546e7a" />
-    </mesh>
+    <Center>
+      <group scale={scale}>
+        {Object.entries(shapes).map(([cellId, shape]) => {
+          const status = cellStatuses[cellId];
+          
+          // Lógica Consistente de Cores
+          let currentColor = '#e1f5fe'; // Cor neutra base (igual ao calorímetro global)
+          if (hoveredCell === cellId) {
+            currentColor = '#ffbb00'; // Cor de Hover (amarelo igual ao calorímetro)
+          } else if (diagnosticMode) {
+            currentColor = getStatusColor(status); // Cor de Status se o modo Global Diagnostic estiver ativo
+          }
+
+          return (
+            <mesh
+              key={cellId}
+              onPointerOver={(e) => {
+                e.stopPropagation();
+                setHoveredCell(cellId);
+                onHoverCell({ barrel, moduleNumber, id: cellId, status, clientX: e.clientX, clientY: e.clientY });
+              }}
+              onPointerMove={(e) => {
+                e.stopPropagation();
+                onHoverCell({ barrel, moduleNumber, id: cellId, status, clientX: e.clientX, clientY: e.clientY });
+              }}
+              onPointerOut={(e) => {
+                e.stopPropagation();
+                setHoveredCell(null);
+                onHoverCell(null);
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onClickCell) onClickCell(cellId);
+              }}
+            >
+              <extrudeGeometry args={[shape as THREE.Shape, EXTRUDE_SETTINGS]} />
+              <meshStandardMaterial 
+                color={currentColor} 
+                roughness={0.3}
+                metalness={0.7}
+                opacity={0.9}
+                transparent
+              />
+              <lineSegments>
+                <edgesGeometry args={[new THREE.ExtrudeGeometry(shape as THREE.Shape, EXTRUDE_SETTINGS)]} />
+                <lineBasicMaterial color="#141415" linewidth={1} />
+              </lineSegments>
+            </mesh>
+          );
+        })}
+      </group>
+    </Center>
   );
-}
+};

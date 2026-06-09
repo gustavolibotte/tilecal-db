@@ -8,10 +8,32 @@ import DbClient from '../../utils/DbClient';
 
 const printStyles = `
   @media print {
-    body * { visibility: hidden; }
-    #cell-diagnostic-report, #cell-diagnostic-report * { visibility: visible; }
-    #cell-diagnostic-report { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; }
-    .no-print { display: none !important; }
+    body, html, #root {
+      height: auto !important;
+      overflow: visible !important;
+      background: white !important;
+    }
+    body * {
+      visibility: hidden;
+    }
+    #cell-diagnostic-report, #cell-diagnostic-report * {
+      visibility: visible;
+    }
+    #cell-diagnostic-report {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      margin: 0 !important;
+      padding: 20px !important;
+      box-shadow: none !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .no-print {
+      display: none !important;
+    }
   }
 `;
 
@@ -123,11 +145,11 @@ export default function TileCal3D() {
   const [selectedModule, setSelectedModule] = useState<{ barrel: string; number: string } | null>(null);
   
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, barrel: string, number: string } | null>(null);
-  const [isTreeModalOpen, setIsTreeModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalModule, setModalModule] = useState<{ barrel: string, number: string } | null>(null);
   const [treeData, setTreeData] = useState<any[] | null>(null);
 
-  const [selectedCell, setSelectedCell] = useState<string | null>(null);
+  const [selectedCell, setSelectedCell] = useState<string | null>(null); // Controller para o Diagnóstico por Célula
 
   const [detectorData, setDetectorData] = useState<Record<string, any[]> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -145,7 +167,7 @@ export default function TileCal3D() {
         setIsLoading(true);
         const response = await DbClient.get('api/calorimeter/status');
         setDetectorData(response.data?.data || response.data);
-      } catch (e: any) {
+      } catch (e) {
         console.error("Failed to load global DB data:", e);
         setDetectorData({}); 
       } finally {
@@ -156,15 +178,16 @@ export default function TileCal3D() {
   }, []);
 
   useEffect(() => {
-    const target = selectedModule || (isTreeModalOpen ? modalModule : null);
+    const target = selectedModule || (isModalOpen ? modalModule : null);
     if (target) {
       if (!selectedModule) setTreeData(null); 
       DbClient.get(`api/calorimeter/module/${target.barrel}${target.number}`)
         .then(response => { setTreeData(response.data?.data || response.data); })
         .catch(e => { console.error("Failed to load hierarchical tree:", e); setTreeData([]); });
     }
-  }, [selectedModule, isTreeModalOpen, modalModule]);
+  }, [selectedModule, isModalOpen, modalModule]);
 
+  // Inteligência de Análise de Status das Células (Deriva as cores)
   const cellStatuses = useMemo(() => {
     if (!treeData) return {};
     const statuses: Record<string, string> = {};
@@ -200,25 +223,50 @@ export default function TileCal3D() {
   const handleModuleClick = (barrel: string, moduleNumber: string) => { setSelectedModule({ barrel, number: moduleNumber }); setHoverData(null); };
   const handleBackToGlobal = () => { setSelectedModule(null); setHoverData(null); setSelectedCell(null); };
 
+  const handleCellClick = (cellId: string) => {
+    setSelectedCell(cellId);
+    setHoverData(null); 
+  };
+
   const handleRightClick = (e: any, barrel: string, number: string) => {
     setContextMenu({ x: e.clientX, y: e.clientY, barrel, number });
   };
 
-  const openTreeModal = () => {
+  const openDetailsModal = () => {
     if (contextMenu) {
       setModalModule({ barrel: contextMenu.barrel, number: contextMenu.number });
-      setIsTreeModalOpen(true);
+      setIsModalOpen(true);
       setContextMenu(null);
     }
   };
 
-  const handleCellClick = (cellId: string) => {
-    setSelectedCell(cellId);
-    setHoverData(null);
-  };
-
   const triggerPrint = () => {
     window.print();
+  };
+
+  const exportToCSV = () => {
+    if (!treeData) return;
+    const rows = [['Drawer_Type', 'Drawer_Serial', 'Drawer_Status', 'Sub_Type', 'Sub_Serial', 'Sub_Model', 'Channel', 'Sub_Status']];
+    
+    treeData.forEach(drawer => {
+      drawer.boards?.forEach((b: any) => rows.push([drawer.type, drawer.id, drawer.status, b.type, b.id, 'N/A', 'N/A', b.status]));
+      drawer.blocks?.forEach((blk: any) => {
+        rows.push([drawer.type, drawer.id, drawer.status, blk.type, blk.id, 'N/A', blk.channel || 'N/A', blk.status]);
+        blk.components?.forEach((comp: any) => {
+          rows.push([drawer.type, drawer.id, drawer.status, comp.type, comp.id, comp.model || 'N/A', blk.channel || 'N/A', comp.status]);
+        });
+      });
+    });
+    
+    const csvString = rows.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `tilecal_${modalModule?.barrel}${modalModule?.number}_readout_tree.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (isLoading || !detectorData) {
@@ -231,10 +279,10 @@ export default function TileCal3D() {
   }
 
   const renderModuleOverview = () => {
-    const stats = hoverData?.stats || {};
+    const stats = hoverData.stats || {};
     const types = Object.keys(stats);
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '55vh' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', flexShrink: 0 }}>
           <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#000' }}>
             {hoverData.barrelId}-{String(hoverData.sliceIndex + 1).padStart(2, '0')}
@@ -247,7 +295,7 @@ export default function TileCal3D() {
         <div style={{ marginTop: '5px', paddingTop: '10px', borderTop: '1px dashed #b3e5fc', display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 }}>
           <b style={{color: '#000', fontSize: '12px', flexShrink: 0, paddingBottom: '10px'}}>MOUNTING STATISTICS</b>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto', paddingRight: '5px', flexGrow: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto', paddingRight: '5px', flexGrow: 1, pointerEvents: 'auto' }}>
             {types.length === 0 ? (
               <div style={{ color: '#9ca3af', fontStyle: 'italic' }}>No components registered.</div>
             ) : (
@@ -268,6 +316,39 @@ export default function TileCal3D() {
             )}
           </div>
         </div>
+      </div>
+    );
+  };
+
+  const renderCellTooltip = () => {
+    const channels = TILECAL_OPTICS_MAPPING[hoverData.id] || [1, 2]; 
+    return (
+      <div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+          <div><b>MODULE</b><br/>{hoverData.barrel}-{hoverData.moduleNumber}</div>
+          <div><b>CELL ID</b><br/>{hoverData.id}</div>
+        </div>
+        {channels.map(ch => {
+          let blockFound: any = null;
+          treeData?.forEach(d => { d.blocks?.forEach((b: any) => { if (Number(b.channel) === ch) blockFound = b; }); });
+          
+          const pmt = blockFound?.components?.find((c:any) => c.type === 'PMT');
+          return (
+            <div key={ch} style={{ borderTop: '1px dashed #b3e5fc', paddingTop: '10px', marginTop: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                <b>CHANNEL {ch}</b>
+                <span style={{ color: getStatusColor(pmt?.status), fontWeight: 'bold' }}>{pmt ? pmt.status : 'EMPTY'}</span>
+              </div>
+              {pmt ? (
+                <div style={{ fontSize: '11px', color: '#546e7a' }}>
+                  S/N: {pmt.id} | Model: {pmt.model}<br/>QE: {pmt.qe}% | HV: {pmt.hv}V
+                </div>
+              ) : (
+                <div style={{ fontSize: '11px', color: '#9ca3af' }}>No PMT mapped to channel</div>
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -321,17 +402,17 @@ export default function TileCal3D() {
                         <ul style={{ paddingLeft: '20px', margin: 0, listStyleType: 'square', lineHeight: '1.8', color: '#475569' }}>
                           <li>
                             <b>PMT:</b> {pmt ? (
-                              <span><span style={{color: '#0288d1', cursor: 'pointer'}} onClick={() => { setSelectedCell(null); navigate(`/equipment/${pmt.id}`); }}>{pmt.id}</span> | {pmt.model} | QE: {pmt.qe}% | HV: {pmt.hv}V - <b style={{color: getStatusColor(pmt.status)}}>{pmt.status}</b></span>
+                              <span><span className="no-print" style={{color: '#0288d1', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => { setSelectedCell(null); navigate(`/equipment/${pmt.id}`); }}>{pmt.id}</span><span style={{display: 'none'}} className="print-only">{pmt.id}</span> | {pmt.model} | QE: {pmt.qe}% | HV: {pmt.hv}V - <b style={{color: getStatusColor(pmt.status)}}>{pmt.status}</b></span>
                             ) : <i style={{color: '#94a3b8'}}>Missing from DB</i>}
                           </li>
                           <li>
                             <b>FENICS:</b> {fenics ? (
-                              <span><span style={{color: '#0288d1', cursor: 'pointer'}} onClick={() => { setSelectedCell(null); navigate(`/equipment/${fenics.id}`); }}>{fenics.id}</span> - <b style={{color: getStatusColor(fenics.status)}}>{fenics.status}</b></span>
+                              <span><span className="no-print" style={{color: '#0288d1', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => { setSelectedCell(null); navigate(`/equipment/${fenics.id}`); }}>{fenics.id}</span><span style={{display: 'none'}} className="print-only">{fenics.id}</span> - <b style={{color: getStatusColor(fenics.status)}}>{fenics.status}</b></span>
                             ) : <i style={{color: '#94a3b8'}}>Missing from DB</i>}
                           </li>
                           <li>
                             <b>HV Divider:</b> {divider ? (
-                              <span><span style={{color: '#0288d1', cursor: 'pointer'}} onClick={() => { setSelectedCell(null); navigate(`/equipment/${divider.id}`); }}>{divider.id}</span> - <b style={{color: getStatusColor(divider.status)}}>{divider.status}</b></span>
+                              <span><span className="no-print" style={{color: '#0288d1', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => { setSelectedCell(null); navigate(`/equipment/${divider.id}`); }}>{divider.id}</span><span style={{display: 'none'}} className="print-only">{divider.id}</span> - <b style={{color: getStatusColor(divider.status)}}>{divider.status}</b></span>
                             ) : <i style={{color: '#94a3b8'}}>Missing from DB</i>}
                           </li>
                         </ul>
@@ -359,12 +440,105 @@ export default function TileCal3D() {
           <div style={{ padding: '8px 15px', color: '#546e7a', fontWeight: 'bold', borderBottom: '1px solid #f0f0f0', fontSize: '12px' }}>
             {contextMenu.barrel}-{contextMenu.number} OPTIONS
           </div>
-          <div onClick={openTreeModal} style={{ padding: '10px 15px', cursor: 'pointer', fontSize: '13px', color: '#01579b' }}>
+          <div 
+            onClick={openDetailsModal}
+            style={{ padding: '10px 15px', cursor: 'pointer', fontSize: '13px', color: '#01579b', transition: 'background 0.2s' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e1f5fe'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+          >
             <i className="pi pi-sitemap mr-2"></i> View Sub-Components Tree
           </div>
         </div>
       )}
 
+      {/* HIERARCHICAL TREE WINDOW (MODAL) */}
+      {isModalOpen && (
+        <div className="no-print" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ width: '90%', maxWidth: '900px', backgroundColor: '#fff', borderRadius: '8px', padding: '20px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', position: 'relative' }}>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #0277bd', paddingBottom: '10px', marginBottom: '15px' }}>
+              <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#01579b' }}>
+                <i className="pi pi-sitemap mr-2"></i> {modalModule?.barrel}-{modalModule?.number} Hierarchy Tree
+              </span>
+              <div>
+                <button onClick={exportToCSV} disabled={!treeData} style={{ padding: '8px 15px', backgroundColor: '#43a047', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginRight: '10px' }}>
+                  <i className="pi pi-download mr-2"></i> Export Tree CSV
+                </button>
+                <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 15px', backgroundColor: '#f87171', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                  <i className="pi pi-times mr-2"></i> Close
+                </button>
+              </div>
+            </div>
+
+            <div style={{ maxHeight: '65vh', overflowY: 'auto', paddingRight: '10px' }}>
+              {!treeData ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#01579b', fontWeight: 'bold', fontSize: '16px' }}>
+                  <i className="pi pi-spin pi-spinner mr-3" style={{ fontSize: '1.5rem' }}></i> Constructing Hierarchy Tree from Database...
+                </div>
+              ) : treeData.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af', fontStyle: 'italic' }}>No components mapped to this module.</div>
+              ) : (
+                <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
+                  {treeData.map((drawer, i) => (
+                    <li key={i} style={{ marginBottom: '20px', border: '1px solid #b3e5fc', borderRadius: '8px', overflow: 'hidden' }}>
+                      <div style={{ backgroundColor: '#e1f5fe', padding: '10px 15px', borderBottom: '1px solid #b3e5fc', display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#01579b' }}>
+                          <i className="pi pi-server mr-2"></i> {drawer.type} {drawer.id !== 'N/A' && `(S/N: ${drawer.id})`}
+                        </span>
+                        <span style={{ color: getStatusColor(drawer.status), fontWeight: 'bold' }}>{drawer.status}</span>
+                      </div>
+                      <div style={{ padding: '15px' }}>
+                        {drawer.boards?.length > 0 && (
+                          <div style={{ marginBottom: '15px' }}>
+                            <b style={{ color: '#0288d1' }}>Control Boards:</b>
+                            <ul style={{ margin: '5px 0', paddingLeft: '25px', listStyleType: 'disc' }}>
+                              {drawer.boards.map((board: any) => (
+                                <li key={board.id} style={{ padding: '4px 0' }}>
+                                  <span style={{ cursor: 'pointer', color: '#0288d1', textDecoration: 'underline' }} onClick={() => { setIsModalOpen(false); navigate(`/equipment/${board.id}`); }}>
+                                    {board.type} (S/N: <b>{board.id}</b>)
+                                  </span> - <span style={{ color: getStatusColor(board.status), fontWeight: 'bold' }}>{board.status}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        <b style={{ color: '#0288d1' }}>Readout Channels:</b>
+                        <ul style={{ margin: '10px 0 0 0', paddingLeft: '20px', listStyleType: 'none' }}>
+                          {drawer.blocks?.map((block: any) => (
+                            <li key={block.id} style={{ marginBottom: '15px', borderLeft: '3px solid #0288d1', paddingLeft: '15px', backgroundColor: '#f8fafc', padding: '10px', borderRadius: '4px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                <span style={{ fontSize: '14px', cursor: block.id !== 'N/A' ? 'pointer' : 'default', color: '#01579b', fontWeight: 'bold', textDecoration: block.id !== 'N/A' ? 'underline' : 'none' }} onClick={() => { if(block.id !== 'N/A') { setIsModalOpen(false); navigate(`/equipment/${block.id}`); } }}>
+                                  Channel {block.channel ? String(block.channel).padStart(2, '0') : '??'} - {block.type} {block.id !== 'N/A' && `(S/N: ${block.id})`}
+                                </span>
+                                <span style={{ color: getStatusColor(block.status), fontWeight: 'bold', fontSize: '12px' }}>{block.status}</span>
+                              </div>
+                              <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#334155', listStyleType: 'square' }}>
+                                {block.components?.length > 0 ? block.components.map((comp: any) => (
+                                  <li key={comp.id} style={{ padding: '3px 0' }}>
+                                    <span style={{ cursor: 'pointer', color: '#0288d1', textDecoration: 'underline' }} onClick={() => { setIsModalOpen(false); navigate(`/equipment/${comp.id}`); }}>
+                                      <b>{comp.type}</b> (S/N: {comp.id})
+                                    </span>
+                                    {comp.model && comp.model !== 'N/A' && ` | Model: ${comp.model}`}
+                                    {comp.qe && comp.qe !== 'N/A' && ` | QE: ${comp.qe}%`}
+                                    {comp.hv && comp.hv !== 'N/A' && ` | HV: ${comp.hv}V`}
+                                    {' '} - <span style={{ color: getStatusColor(comp.status) }}>{comp.status}</span>
+                                  </li>
+                                )) : <li style={{ padding: '3px 0', color: '#94a3b8', listStyleType: 'none' }}><i>No sub-components mapped to this block</i></li>}
+                              </ul>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TOP LEFT CONTROL PANEL */}
       <div className="no-print" style={{ position: 'absolute', top: '15px', left: '15px', color: '#01579b', fontFamily: 'monospace', fontSize: '11px', zIndex: 1, background: 'rgba(255,255,255,0.9)', padding: '15px', border: '1px solid #b3e5fc', borderRadius: '6px', pointerEvents: 'none' }}>
         <b style={{ fontSize: '13px', color: '#000' }}>ATLAS TILECAL SYS</b><br/><br/>
         {selectedModule ? (
@@ -388,20 +562,25 @@ export default function TileCal3D() {
         )}
       </div>
 
-      {selectedModule && hoverData && hoverData.clientX && !selectedCell && !isTreeModalOpen && (
-        <div className="no-print" style={{ position: 'fixed', left: hoverData.clientX + 15, top: hoverData.clientY + 15, backgroundColor: 'rgba(0, 0, 0, 0.8)', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', fontFamily: 'monospace', fontSize: '14px', fontWeight: 'bold', pointerEvents: 'none', zIndex: 100 }}>
-          CELL: {hoverData.id}
-        </div>
-      )}
-
-      {!selectedModule && hoverData && !isTreeModalOpen && !contextMenu && (
-        <div className="no-print" style={{ position: 'absolute', bottom: '20px', right: '20px', backgroundColor: 'rgba(255, 255, 255, 0.95)', color: '#01579b', padding: '20px', borderRadius: '8px', fontFamily: 'monospace', fontSize: '13px', border: '1px solid #0277bd', width: '320px', pointerEvents: 'auto', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 80px)' }}>
-          <div style={{ borderBottom: '1px solid #0277bd', paddingBottom: '10px', marginBottom: '15px', fontSize: '16px', fontWeight: 'bold', flexShrink: 0 }}>
-            MODULE OVERVIEW
+      {/* BOTTOM LEFT INSTRUCTIONS & LEGEND */}
+      <div className="no-print" style={{ position: 'absolute', bottom: '15px', left: '15px', color: '#546e7a', fontFamily: 'monospace', fontSize: '11px', zIndex: 1, pointerEvents: 'none', background: 'rgba(255,255,255,0.85)', padding: '12px', borderRadius: '6px', border: '1px solid #e0e0e0' }}>
+        <b style={{color: '#000'}}>NAVIGATION CONTROLS:</b><br/><br/>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}><i className="pi pi-window-minimize mr-2" style={{color: '#0288d1'}}></i> Left Click: Enter Module</div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}><i className="pi pi-list mr-2" style={{color: '#0288d1'}}></i> Right Click: Module Details</div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}><i className="pi pi-sync mr-2" style={{color: '#0288d1'}}></i> Left Drag: Rotate Camera</div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}><i className="pi pi-search mr-2" style={{color: '#0288d1'}}></i> Scroll: Zoom In/Out</div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}><i className="pi pi-arrows-alt mr-2" style={{color: '#0288d1'}}></i> Right Drag: Pan View</div>
+        
+        {(selectedModule || diagnosticMode || hoverData) && (
+          <div style={{ borderTop: '1px dashed #b3e5fc', paddingTop: '10px' }}>
+            <b style={{color: '#000'}}>STATUS LEGEND:</b><br/>
+            <span style={{ color: '#4ade80' }}>██</span> Nominal (All OK)<br/>
+            <span style={{ color: '#fbbf24' }}>██</span> Warning (Unknown/Testing)<br/>
+            <span style={{ color: '#f87171' }}>██</span> Alert (Failed/Broken)<br/>
+            <span style={{ color: '#9ca3af' }}>██</span> Empty
           </div>
-          {renderModuleOverview()}
-        </div>
-      )}
+        )}
+      </div>
 
       {/* CANVAS 3D */}
       <Canvas className="no-print" camera={{ position: [22, 12, 22], fov: 20 }} style={{ width: '100%', height: '100%', display: 'block' }}>
@@ -419,7 +598,7 @@ export default function TileCal3D() {
               onHoverCell={setHoverData}
               onClickCell={handleCellClick}
               diagnosticMode={diagnosticMode}
-              cellStatuses={cellStatuses}
+              cellStatuses={cellStatuses} 
             />
           </group>
         ) : (
@@ -429,6 +608,23 @@ export default function TileCal3D() {
         )}
         <OrbitControls ref={controlsRef} enablePan={true} enableZoom={true} enableRotate={!selectedModule} />
       </Canvas>
+
+      {/* DYNAMIC HOVER TOOLTIPS */}
+      {selectedModule && hoverData && hoverData.clientX && !selectedCell && !isModalOpen && (
+        <div className="no-print" style={{ position: 'fixed', left: hoverData.clientX + 15, top: hoverData.clientY + 15, backgroundColor: 'rgba(0, 0, 0, 0.8)', color: '#ffffff', padding: '4px 10px', borderRadius: '4px', fontFamily: 'monospace', fontSize: '14px', fontWeight: 'bold', pointerEvents: 'none', zIndex: 100 }}>
+          CELL: {hoverData.id}
+        </div>
+      )}
+
+      {/* BOTTOM RIGHT DYNAMIC PANEL (MODO MACRO OU MICRO SEM MODAL) */}
+      {hoverData && !isModalOpen && !contextMenu && !selectedCell && (
+        <div className="no-print" style={{ position: 'absolute', bottom: '20px', right: '20px', backgroundColor: 'rgba(255, 255, 255, 0.95)', color: '#01579b', padding: '20px', borderRadius: '8px', fontFamily: 'monospace', fontSize: '13px', border: '1px solid #0277bd', width: '320px', pointerEvents: 'auto', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 80px)' }}>
+          <div style={{ borderBottom: '1px solid #0277bd', paddingBottom: '10px', marginBottom: '15px', fontSize: '16px', fontWeight: 'bold', flexShrink: 0 }}>
+            {selectedModule ? 'CELL OVERVIEW' : 'MODULE OVERVIEW'}
+          </div>
+          {selectedModule ? renderCellTooltip() : renderModuleOverview()}
+        </div>
+      )}
     </div>
   );
 }
