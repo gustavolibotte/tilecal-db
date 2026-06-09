@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Center } from '@react-three/drei';
 import * as THREE from 'three';
 import { LBA_CELLS, EBA_CELLS, EXTRUDE_SETTINGS } from './cellGeometry';
 
-// Helper de conversão de cores consistente
+// Consistent status color conversion helper
 const getStatusColor = (statusName: string) => {
   const s = statusName?.toUpperCase() || '';
   if (['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL', 'GOOD', 'OK', 'WORKING'].includes(s)) return '#4ade80'; 
@@ -38,12 +38,12 @@ export const ModuleCells3D: React.FC<ModuleCells3DProps> = ({ barrel, moduleNumb
         {Object.entries(shapes).map(([cellId, shape]) => {
           const status = cellStatuses[cellId];
           
-          // Lógica Consistente de Cores
-          let currentColor = '#e1f5fe'; // Cor neutra base (igual ao calorímetro global)
+          // Consistent Color Logic Setup
+          let currentColor = '#e1f5fe'; // Base neutral color (matches the global calorimeter outer shell)
           if (hoveredCell === cellId) {
-            currentColor = '#ffbb00'; // Cor de Hover (amarelo igual ao calorímetro)
+            currentColor = '#ffbb00'; // Hover color (yellow highlight)
           } else if (diagnosticMode) {
-            currentColor = getStatusColor(status); // Cor de Status se o modo Global Diagnostic estiver ativo
+            currentColor = getStatusColor(status); // Apply actual DB status color if Global Diagnostic is toggled
           }
 
           return (
