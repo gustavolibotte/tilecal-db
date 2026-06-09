@@ -1,76 +1,100 @@
-import React, { useMemo, useState } from 'react';
-import { Center } from '@react-three/drei';
+import { useState, useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { Edges } from '@react-three/drei';
 import * as THREE from 'three';
-import { LBA_CELLS, EBA_CELLS, EXTRUDE_SETTINGS } from './cellGeometry';
 
-interface ModuleCells3DProps {
-  barrel: string; // 'LBA', 'LBC', 'EBA', 'EBC'
-  moduleNumber: string; // '01' to '64'
-  onHoverCell: (cellData: any) => void;
-}
+// Helper de conversão de cores consistente com o restante da UI
+const getStatusColor = (statusName: string) => {
+  const s = statusName?.toUpperCase() || '';
+  if (['INSTALLED', 'TESTED', 'DELIVERED', 'NOMINAL', 'GOOD', 'OK', 'WORKING'].includes(s)) return '#4ade80'; 
+  if (['TESTING', 'DEVELOPMENT', 'PREPRODUCTION', 'PRODUCED', 'REPAIRED', 'UNKNOWN', 'SPARE', 'WARNING'].includes(s)) return '#fbbf24'; 
+  if (['FAILURE', 'BROKEN', 'LOST', 'ALERT'].includes(s)) return '#f87171'; 
+  return '#9ca3af'; 
+};
 
-export const ModuleCells3D: React.FC<ModuleCells3DProps> = ({ barrel, moduleNumber, onHoverCell }) => {
-  const [hoveredCell, setHoveredCell] = useState<string | null>(null);
+export function ModuleCells3D({ barrel, moduleNumber, onHoverCell, onClickCell, diagnosticMode, cellStatuses }: any) {
+  // Configuração neutra idêntica à casca do calorímetro
+  const NEUTRAL_COLOR = '#e1f5fe';
+  const HOVER_COLOR = '#ffbb00';
 
-  // Selects and generates data (synthetic for now, until endpoint is ready)
-  const cellData = useMemo(() => {
-    const isLongBarrel = barrel === 'LBA' || barrel === 'LBC';
-    const shapes = isLongBarrel ? LBA_CELLS : EBA_CELLS;
-    
-    return Object.entries(shapes).map(([cellId, shape]) => {
-      const isNominal = Math.random() > 0.15;
-      return {
-        id: cellId,
-        shape: shape as THREE.Shape,
-        status: isNominal ? 'NOMINAL' : 'ALERT',
-        color: isNominal ? '#37c871' : '#e02f1f',
-        temp: (20 + Math.random() * 15).toFixed(1) + ' °C',
-        pmtHV: isNominal ? '800V' : '0V (Fail)'
-      };
-    });
-  }, [barrel]);
-
-  // Mirroring logic: SVG Y-axis grows downwards, ThreeJS grows upwards (-1)
-  // LBC and EBC must also be mirrored on the X-axis (-1)
-  const isC_Side = barrel === 'LBC' || barrel === 'EBC';
-  const scale: [number, number, number] = [isC_Side ? -1 : 1, -1, 1];
+  // Células baseadas nas chaves dinâmicas
+  const cells = Object.keys(cellStatuses || {});
 
   return (
-    <Center>
-      <group scale={scale}>
-        {cellData.map((cell) => (
-          <mesh
-            key={cell.id}
-            onPointerOver={(e) => {
-              e.stopPropagation();
-              setHoveredCell(cell.id);
-              onHoverCell({ barrel, moduleNumber, ...cell, clientX: e.clientX, clientY: e.clientY });
-            }}
-            onPointerMove={(e) => {
-              e.stopPropagation();
-              onHoverCell({ barrel, moduleNumber, ...cell, clientX: e.clientX, clientY: e.clientY });
-            }}
-            onPointerOut={(e) => {
-              e.stopPropagation();
-              setHoveredCell(null);
-              onHoverCell(null);
-            }}
-          >
-            <extrudeGeometry args={[cell.shape, EXTRUDE_SETTINGS]} />
-            <meshStandardMaterial 
-              color={hoveredCell === cell.id ? '#ffffff' : cell.color} 
-              roughness={0.3}
-              metalness={0.7}
-              opacity={0.9}
-              transparent
-            />
-            <lineSegments>
-              <edgesGeometry args={[new THREE.ExtrudeGeometry(cell.shape, EXTRUDE_SETTINGS)]} />
-              <lineBasicMaterial color="#141415" linewidth={1} />
-            </lineSegments>
-          </mesh>
-        ))}
-      </group>
-    </Center>
+    <group>
+      {cells.map((cellId, index) => {
+        // Distribuição simples em Z e X para visualização das fatias (adapte à sua topologia 3D)
+        const zPos = (index % 10) * 4 - 18;
+        const xPos = Math.floor(index / 10) * 4 - 6;
+        
+        return (
+          <CellMesh 
+            key={cellId} 
+            cellId={cellId} 
+            barrel={barrel}
+            moduleNumber={moduleNumber}
+            position={[xPos, 0, zPos]} 
+            status={cellStatuses[cellId]}
+            diagnosticMode={diagnosticMode}
+            onHover={onHoverCell}
+            onClick={onClickCell}
+            neutralColor={NEUTRAL_COLOR}
+            hoverColor={HOVER_COLOR}
+          />
+        );
+      })}
+    </group>
   );
-};
+}
+
+function CellMesh({ cellId, barrel, moduleNumber, position, status, diagnosticMode, onHover, onClick, neutralColor, hoverColor }: any) {
+  const meshRef = useRef<THREE.Mesh>(null!);
+  const [hovered, setHover] = useState(false);
+
+  // Lógica Consistente de Cores: 
+  let currentColor = neutralColor;
+  if (hovered) currentColor = hoverColor;
+  else if (diagnosticMode) currentColor = getStatusColor(status);
+
+  useFrame(() => {
+    if (!meshRef.current) return;
+    const targetScale = hovered ? 1.05 : 1;
+    meshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.2);
+  });
+
+  return (
+    <mesh
+      ref={meshRef}
+      position={position}
+      onPointerOver={(e: any) => {
+        e.stopPropagation();
+        setHover(true);
+        onHover({ id: cellId, barrel, moduleNumber, clientX: e.clientX, clientY: e.clientY });
+      }}
+      onPointerMove={(e: any) => {
+        e.stopPropagation();
+        // Permite que o tooltip acompanhe o rato de forma fluida
+        onHover({ id: cellId, barrel, moduleNumber, clientX: e.clientX, clientY: e.clientY });
+      }}
+      onPointerOut={(e: any) => {
+        e.stopPropagation();
+        setHover(false);
+        onHover(null);
+      }}
+      onClick={(e: any) => {
+        e.stopPropagation();
+        onClick(cellId);
+      }}
+    >
+      <boxGeometry args={[3.5, 3.5, 3.5]} />
+      <meshStandardMaterial 
+        color={currentColor} 
+        roughness={0.2} 
+        metalness={0.1}
+        transparent={true} 
+        opacity={diagnosticMode ? 0.9 : 0.7} 
+      />
+      <Edges linewidth={1} threshold={15} color="#546e7a" />
+    </mesh>
+  );
+}
