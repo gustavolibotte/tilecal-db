@@ -38,7 +38,7 @@ export const ModuleCells3D: React.FC<ModuleCells3DProps> = ({ barrel, moduleNumb
         {Object.entries(shapes).map(([cellId, shape]) => {
           const status = cellStatuses[cellId];
           
-          // Consistent Color Logic Setup
+          // Consistent Color Logic Setup (Neutral -> Hover -> Status)
           let currentColor = '#e1f5fe'; // Base neutral color (matches the global calorimeter outer shell)
           if (hoveredCell === cellId) {
             currentColor = '#ffbb00'; // Hover color (yellow highlight)
@@ -52,11 +52,11 @@ export const ModuleCells3D: React.FC<ModuleCells3DProps> = ({ barrel, moduleNumb
               onPointerOver={(e) => {
                 e.stopPropagation();
                 setHoveredCell(cellId);
-                onHoverCell({ barrel, moduleNumber, id: cellId, status, clientX: e.clientX, clientY: e.clientY });
+                onHoverCell({ barrel, moduleNumber, id: cellId, clientX: e.clientX, clientY: e.clientY });
               }}
               onPointerMove={(e) => {
                 e.stopPropagation();
-                onHoverCell({ barrel, moduleNumber, id: cellId, status, clientX: e.clientX, clientY: e.clientY });
+                onHoverCell({ barrel, moduleNumber, id: cellId, clientX: e.clientX, clientY: e.clientY });
               }}
               onPointerOut={(e) => {
                 e.stopPropagation();
