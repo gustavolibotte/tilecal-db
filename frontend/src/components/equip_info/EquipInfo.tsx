@@ -1,5 +1,5 @@
-import { DataInfo} from "../data_info/DataInfo";
-import { snakeToSpaced } from "../../utils/string";
+import { DataInfo } from "../data_info/DataInfo";
+import { snakeToSpaced, formatDateTime } from "../../utils/string";
 
 interface EquipInfoProps {
   equipData: any    // Any is there just to give a typing
@@ -43,9 +43,9 @@ export default function EquipInfo(props: EquipInfoProps) {
 
   if (!props.hist){
     fieldConfig = fieldConfig.concat([
-      { name: "Created At", field: 'created_at' },
-      { name: "Updated At", field: 'updated_at' },
-      { name: "Deleted At", field: 'deleted_at' }
+      { name: "Created At", field: 'created_at', template: (data: any) => formatDateTime(data.created_at) },
+      { name: "Updated At", field: 'updated_at', template: (data: any) => formatDateTime(data.updated_at) },
+      { name: "Deleted At", field: 'deleted_at', template: (data: any) => formatDateTime(data.deleted_at) }
     ]);
   }
 
