@@ -35,6 +35,7 @@ interface PMTFormSchema {
   nominal_hv: number | null;
   model: string;
   phase1_position: string;
+  box_position: number | null;
 }
 
 interface PmtFormProps {
@@ -86,7 +87,8 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     qe: null,
     nominal_hv: null,
     model: '',
-    phase1_position: ''
+    phase1_position: '',
+    box_position: null
   };
 
   const toastId = useRef<Id>();
@@ -145,7 +147,8 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     comments: commentsRules,
     beta: Yup.number().positive(__FIELD_POSITIVE_MSG__).nullable(),
     nominal_hv: Yup.number().positive(__FIELD_POSITIVE_MSG__).nullable(),
-    qe: Yup.number().positive(__FIELD_POSITIVE_MSG__).nullable()
+    qe: Yup.number().positive(__FIELD_POSITIVE_MSG__).nullable(),
+    box_position: Yup.number().positive(__FIELD_POSITIVE_MSG__).nullable()
   }
   if (!isEdit) {
     validationSchema['owner_mne'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
@@ -181,7 +184,8 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
         qe: equipment.type_params?.qe || null,
         nominal_hv: equipment.type_params?.nominal_hv || null,
         model: equipment.type_params?.model || '',
-        phase1_position: equipment.type_params?.phase1_position || ''
+        phase1_position: equipment.type_params?.phase1_position || '',
+        box_position: equipment.type_params?.box_position || null
       });
     }
   }, [equipData]);
@@ -376,6 +380,18 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
               formik.setFieldValue('phase1_position', e.value);
             }}
             errorText={getFormErrorMessage('phase1_position')} />
+        </div>
+        
+        <div className='mt-3'>
+          <FormNumber
+            id='box_position'
+            name='Box Position'
+            value={formik.values.box_position}
+            help='Position of the PMT in the Phase II upgrade box.'
+            onChange={(e) => {
+              formik.setFieldValue('box_position', e.value);
+            }}
+            errorText={getFormErrorMessage('box_position')} />
         </div>
 
         <div className='mt-3 flex flex-column gap-2'>

@@ -9,7 +9,8 @@
             "nominal_hv",
             "qe",
             "model",
-            "phase1_position"
+            "phase1_position",
+            "box_position"
         ],
         "in_detector": true,
         "description": null,
