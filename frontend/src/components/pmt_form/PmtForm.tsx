@@ -148,7 +148,11 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     beta: Yup.number().positive(__FIELD_POSITIVE_MSG__).nullable(),
     nominal_hv: Yup.number().positive(__FIELD_POSITIVE_MSG__).nullable(),
     qe: Yup.number().positive(__FIELD_POSITIVE_MSG__).nullable(),
-    box_position: Yup.number().positive(__FIELD_POSITIVE_MSG__).nullable()
+    // Modified to make box_position strictly required and between 0 and 48
+    box_position: Yup.number()
+      .min(0, 'Position must be at least 0')
+      .max(48, 'Position must be at most 48')
+      .required(__FIELD_REQUIRED_MSG__)
   }
   if (!isEdit) {
     validationSchema['owner_mne'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
@@ -244,6 +248,11 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
 
   const phase1Positions = range(49).map((i: number) => {
     return { name: String(i), value: String(i) };
+  });
+
+  // Generates dropdown options for box_position (0 to 48)
+  const boxPositions = range(49).map((i: number) => {
+    return { name: String(i), value: i };
   });
 
   const pmtModels = [
@@ -383,9 +392,12 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
         </div>
         
         <div className='mt-3'>
-          <FormNumber
+          {/* Modified to be a Dropdown and strictly required */}
+          <FormDropdown
             id='box_position'
             name='Box Position'
+            options={boxPositions}
+            required={true}
             value={formik.values.box_position}
             help='Position of the PMT in the Phase II upgrade box.'
             onChange={(e) => {

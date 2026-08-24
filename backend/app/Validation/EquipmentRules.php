@@ -626,6 +626,25 @@ class EquipmentRules
                         'value' => 50
                     ]
                 ],
+            ],
+            // Added rule making box_position required and bounded between 0 and 48
+            'box_position' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\GeneralRules::isInt' => [
+                    'params' => [
+                        'cast' => true
+                    ]
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'params' => [
+                        'value' => -1
+                    ]
+                ],
+                '\App\Validation\GeneralRules::smallerThan' => [
+                    'params' => [
+                        'value' => 49
+                    ]
+                ],
             ]
         ];
     }
@@ -745,6 +764,25 @@ class EquipmentRules
                 '\App\Validation\GeneralRules::smallerThan' => [
                     'params' => [
                         'value' => 50
+                    ]
+                ],
+            ],
+            // Added rule making box_position required even on edit and bounded between 0 and 48
+            'box_position' => [
+                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\GeneralRules::isInt' => [
+                    'params' => [
+                        'cast' => true
+                    ]
+                ],
+                '\App\Validation\GeneralRules::greaterThan' => [
+                    'params' => [
+                        'value' => -1
+                    ]
+                ],
+                '\App\Validation\GeneralRules::smallerThan' => [
+                    'params' => [
+                        'value' => 49
                     ]
                 ],
             ]
