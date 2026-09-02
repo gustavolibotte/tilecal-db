@@ -213,6 +213,19 @@ class EquipmentRules
     public static function validAssemblySlots(string $fieldName, array &$data, string &$error, array $params): bool
     {
         $parentId = $data[$params['parent_id_field']];
+        
+        // Fetch models once to be used in cable compatibility and regular checks
+        $equipmentModel = model('EquipmentModel');
+        $typeModel = model('EquipmentTypeModel');
+
+        // Fetch parent information for cable length compatibility check
+        $parentEquip = $equipmentModel->find($parentId);
+        $parentType = $typeModel->find($parentEquip['type_id']);
+        $parentTypeName = $parentType['name'];
+
+        // Parent requires long cables if it is a Patch-Panel Mini Drawer or a Long Cable PMT Block
+        $isLongCableParent = (strpos($parentTypeName, 'Patch-Panel') !== false) || (strpos($parentTypeName, 'Long Cable') !== false);
+
         foreach ($data[$fieldName] as $index => &$assemblySlot) {
             if (!GeneralRules::required('name', $assemblySlot, $error, [])) {
                 $error = self::processSlotError($error, $index);
@@ -242,7 +255,38 @@ class EquipmentRules
                 return false;
             }
 
-            $equipmentModel = model('EquipmentModel');
+            // Fetch child information for cable length compatibility check
+            $childEquip = $equipmentModel->find($assemblySlot['equipment_id']);
+            $childType = $typeModel->find($childEquip['type_id']);
+            $childTypeName = $childType['name'];
+
+            $isLongCableChild = (strpos($childTypeName, 'Long Cable') !== false);
+            // Treat standard PMT Blocks as short cable components
+            $isShortCableChild = (strpos($childTypeName, 'Short Cable') !== false) || in_array($childTypeName, ['PMT Block', 'PMT Block (Standard)']);
+
+            // Critical Hardware Constraint: Cable Length Match
+            if ($isLongCableParent && $isShortCableChild) {
+                $error = sprintf(
+                    '%s: Hardware mismatch. Parent "%s" requires Long Cable components, but "%s" is a Short Cable component.',
+                    $assemblySlot['name'],
+                    $parentTypeName,
+                    $childTypeName
+                );
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+
+            if (!$isLongCableParent && $isLongCableChild) {
+                $error = sprintf(
+                    '%s: Hardware mismatch. Parent "%s" requires Short Cable components, but "%s" is a Long Cable component.',
+                    $assemblySlot['name'],
+                    $parentTypeName,
+                    $childTypeName
+                );
+                $error = self::processSlotError($error, $index);
+                return false;
+            }
+
             if ($equipmentModel->equipIsAssembledInto($assemblySlot['equipment_id'])) {
                 $error = sprintf(
                     '%s: The equipment %s is already assembled into another one.',
@@ -273,7 +317,7 @@ class EquipmentRules
                 return false;
             }
     
-            if (!model('EquipmentTypeModel')->slotAllowsEquip($assemblySlot['name'], $assemblySlot['equipment_id'])) {
+            if (!$typeModel->slotAllowsEquip($assemblySlot['name'], $assemblySlot['equipment_id'])) {
                 $error = sprintf(
                     '%s: Slot is available but does not allow insertion of equipment %s.',
                     $assemblySlot['name'],
