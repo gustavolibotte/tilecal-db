@@ -12,6 +12,8 @@ interface SlotSearchInputProps {
     label: string;
     value: string;
     onChange: (val: string) => void;
+    // New prop to pass the full object back to the parent form for validation/UI purposes
+    onEquipmentSelect?: (equip: any) => void; 
     allowedTypes?: string[]; 
     errorText?: string | null;
     required?: boolean;
@@ -31,7 +33,7 @@ const processSearchTerm = (term: string) => {
     return term;
 };
 
-export default function SlotSearchInput({ id, label, value, onChange, allowedTypes, errorText, required, help }: SlotSearchInputProps) {
+export default function SlotSearchInput({ id, label, value, onChange, onEquipmentSelect, allowedTypes, errorText, required, help }: SlotSearchInputProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState(value);
     const [results, setResults] = useState<any[]>([]);
@@ -82,15 +84,17 @@ export default function SlotSearchInput({ id, label, value, onChange, allowedTyp
             setResults(fetchedResults);
 
             if (isBackground && fetchedResults.length === 1) {
-                const exactMatchId = fetchedResults[0].id;
-                onChange(exactMatchId);
-                setSearchTerm(exactMatchId);
+                const exactMatch = fetchedResults[0];
+                onChange(exactMatch.id);
+                // Propagate full object
+                if (onEquipmentSelect) onEquipmentSelect(exactMatch);
+                setSearchTerm(exactMatch.id);
                 focusNextField();
             } else {
                 setIsModalOpen(true);
             }
         } catch (error) {
-            console.error("Erro na busca de montagem:", error);
+            console.error("Error during assembly search:", error);
         } finally {
             setIsSearching(false);
         }
@@ -98,6 +102,8 @@ export default function SlotSearchInput({ id, label, value, onChange, allowedTyp
 
     const onRowSelect = (e: any) => {
         onChange(e.data.id);
+        // Propagate full object
+        if (onEquipmentSelect) onEquipmentSelect(e.data);
         setSearchTerm(e.data.id);
         setIsModalOpen(false);
         focusNextField();
