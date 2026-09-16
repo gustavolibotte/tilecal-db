@@ -27,7 +27,8 @@ type OmittedColumnProps = Omit<Omit<ColumnProps, 'header'>, 'field'>;
 export interface ColumnMeta extends OmittedColumnProps {
   header: string;
   field: string;
-  filterField?: string; // Explicitly add support for nested filtering fields
+  filterField?: string;
+  sortField?: string;
 };
 
 export function BaseTable(props: TableProps){

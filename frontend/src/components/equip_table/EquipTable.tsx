@@ -46,7 +46,8 @@ export default function EquipTable(props: EquipTableProps) {
       equipTypeData.params.forEach((field: string) => {
         extraColumns.push({
           field: `type_params.${field}`,
-          filterField: `type_params.${field}`,
+          filterField: field,
+          sortField: field,
           header: snakeToSpaced(field ? field : ''),
           filter: true, sortable: true, filterMatchMode: FilterMatchMode.CONTAINS,
           filterPlaceholder: 'Search'
