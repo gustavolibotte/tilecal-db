@@ -95,12 +95,30 @@ class Equipments extends APIController
         } else {
             $equipmentModel = $this->parseDynamicFilter($idFilter, $idMatchMode, 'equipments.id', $equipmentModel);
         }
+        
         $equipmentModel = $this->parseDynamicFilter($validInput['type_name'] ?? null, $validInput['type_name_matchMode'] ?? 'equals', 'equipment_types.name', $equipmentModel);
         $equipmentModel = $this->parseDynamicFilter($validInput['status_name'] ?? null, $validInput['status_name_matchMode'] ?? 'equals', 'statuses.name', $equipmentModel);
         $equipmentModel = $this->parseDynamicFilter($validInput['location_name'] ?? null, $validInput['location_name_matchMode'] ?? 'equals', 'locations.name', $equipmentModel);
         $equipmentModel = $this->parseDynamicFilter($validInput['owner_name'] ?? null, $validInput['owner_name_matchMode'] ?? 'equals', 'institutes.name', $equipmentModel);
         $equipmentModel = $this->parseDynamicFilter($validInput['detector_location_name'] ?? null, $validInput['detector_location_name_matchMode'] ?? 'equals', 'detector_locations.name', $equipmentModel);
         $equipmentModel = $this->parseDynamicFilter($validInput['comments'] ?? null, $validInput['comments_matchMode'] ?? null, 'equipments.comments', $equipmentModel);
+
+        $rawGetParams = $this->request->getGet();
+        if (is_array($rawGetParams)) {
+            foreach ($rawGetParams as $key => $value) {
+                if ((strpos($key, 'type_params->') === 0 || strpos($key, 'type_params_') === 0) && !str_ends_with($key, '_matchMode')) {
+                    $matchModeKey = $key . '_matchMode';
+                    $matchMode = $rawGetParams[$matchModeKey] ?? 'contains';
+                    
+                    $jsonKey = str_replace(['type_params->', 'type_params_'], '', $key);
+                    
+                    if (!empty($jsonKey)) {
+                        $jsonCol = "JSON_UNQUOTE(JSON_EXTRACT(equipments.type_params, '$.{$jsonKey}'))";
+                        $equipmentModel = $this->parseDynamicFilter($value, $matchMode, $jsonCol, $equipmentModel);
+                    }
+                }
+            }
+        }
 
         if (!empty($validInput['relatedFileId'])) {
             $equipmentModel->joinFiles();
@@ -138,7 +156,7 @@ class Equipments extends APIController
                     
                     foreach ($sortParams as $sort) {
                         if (isset($sort['field']) && isset($sort['order'])) {
-                            $field = preg_replace('/[^a-zA-Z0-9_.]/', '', $sort['field']);
+                            $field = preg_replace('/[^a-zA-Z0-9_.\->]/', '', $sort['field']);
                             $direction = ((int)$sort['order'] === 1) ? 'ASC' : 'DESC';
                             
                             if (array_key_exists($field, $fieldMap)) {
@@ -156,7 +174,7 @@ class Equipments extends APIController
                                 }
                             } 
                             else {
-                                $jsonKey = str_replace('type_params.', '', $field);
+                                $jsonKey = str_replace(['type_params.', 'type_params->', 'type_params_'], '', $field);
                                 $unquotedField = "JSON_UNQUOTE(JSON_EXTRACT(equipments.type_params, '$.{$jsonKey}'))";
 
                                 if ($direction === 'ASC') {
