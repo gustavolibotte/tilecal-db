@@ -27,6 +27,7 @@ type OmittedColumnProps = Omit<Omit<ColumnProps, 'header'>, 'field'>;
 export interface ColumnMeta extends OmittedColumnProps {
   header: string;
   field: string;
+  filterField?: string; // Explicitly add support for nested filtering fields
 };
 
 export function BaseTable(props: TableProps){
@@ -40,10 +41,11 @@ export function BaseTable(props: TableProps){
     filterableColumns.forEach(
         (colProps: any)  => {
             let initialValue = null;
-            if (routeLocation.state?.filters && routeLocation.state.filters[colProps.field]) {
-                initialValue = routeLocation.state.filters[colProps.field];
+            const targetField = colProps.filterField || colProps.field;
+            if (routeLocation.state?.filters && routeLocation.state.filters[targetField]) {
+                initialValue = routeLocation.state.filters[targetField];
             }
-            filters[colProps.field] = {value: initialValue, matchMode: FilterMatchMode.CONTAINS}
+            filters[targetField] = {value: initialValue, matchMode: FilterMatchMode.CONTAINS}
         }
     );
     return filters;
