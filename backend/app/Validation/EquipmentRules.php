@@ -671,7 +671,6 @@ class EquipmentRules
                     ]
                 ],
             ],
-            // Added rule making box_position required and bounded between 0 and 48
             'box_position' => [
                 '\App\Validation\GeneralRules::required' => [],
                 '\App\Validation\GeneralRules::isInt' => [
@@ -811,9 +810,8 @@ class EquipmentRules
                     ]
                 ],
             ],
-            // Added rule making box_position required even on edit and bounded between 0 and 48
             'box_position' => [
-                '\App\Validation\GeneralRules::required' => [],
+                '\App\Validation\GeneralRules::removeEmpty' => [],
                 '\App\Validation\GeneralRules::isInt' => [
                     'params' => [
                         'cast' => true
