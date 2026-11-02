@@ -553,11 +553,23 @@ class Equipments extends APIController
             ->find($id);
         $equipRules = EquipmentRules::getEditRulesFromTypeName($queryData->type_name);
         $inputData = $this->request->getVar(array_keys($equipRules));
+        $clearedFields = [];
+        if (in_array($queryData->type_name, ['PMT Block', 'PMT Block (Standard)', 'PMT Block (Long Cable)'], true)) {
+            $submitted = $this->request->getJSON(true);
+            if (is_array($submitted)) {
+                foreach (['detector_location_name', 'serial', 'comments'] as $field) {
+                    if (array_key_exists($field, $submitted) && ($submitted[$field] === null || $submitted[$field] === '')) {
+                        $clearedFields[$field === 'detector_location_name' ? 'detector_location_id' : $field] = null;
+                    }
+                }
+            }
+        }
         $validationRes = Validator::validate($inputData, $equipRules);
         if (!$validationRes['valid']) {
             return failValidationErrors($validationRes['errors'], $inputData);
         }
         $validInput = $validationRes['validatedData'];
+        $validInput = array_merge($validInput, $clearedFields);
         $validInput['type_params'] = $queryData->type_params;
         foreach(json_decode($queryData->params, true) as $param) {
             if (array_key_exists($param, $validInput)) {

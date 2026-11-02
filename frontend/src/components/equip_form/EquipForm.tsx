@@ -28,6 +28,7 @@ interface EquipFormSchema {
   owner_mne: string;
   location_name: string;
   status_name: string;
+  detector_location_name: string;
   serial: string;
   comments: string;
   type_name?: string;
@@ -44,6 +45,15 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
 
   // State to track the original location before edits
   const [originalLocation, setOriginalLocation] = useState<string>('');
+
+  const originalValues = useRef<Record<string, any>>({});
+  const detectorLocationQuery: any = useQuery({
+    queryKey: ['detector_location', 'get', {}], queryFn: defaultQueryFunction
+  });
+  const rows = (response: any): any[] => {
+    const data = response?.data;
+    return Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+  };
 
   // Queries to populate dropdown options and get regex rules
   const locationQuery: any = useQuery({
@@ -95,6 +105,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     owner_mne: '',
     location_name: '',
     status_name: '',
+    detector_location_name: '',
     serial: '',
     comments: 'Was tested at ',
   };
@@ -133,7 +144,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     onError: (error: AxiosError) => {
       toast.dismiss(toastId.current);
       const responseData: any = error?.response?.data;
-      if (responseData.message == __INVALID_DATA_MSG__) {
+      if (responseData?.message == __INVALID_DATA_MSG__) {
         Object.keys(responseData.data).forEach((key: string) => {
           formik.setFieldError(key as keyof EquipFormSchema, responseData.data[key]);
         });
@@ -145,15 +156,21 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
   });
 
   const submitData = async (data: EquipFormSchema) => {
-    // Use the typeName prop to set the equipment type dynamically
-    data['type_name'] = typeName;
-    if (equipId) {
-      data['id'] = equipId;
+    const editable = ['owner_mne', 'location_name', 'detector_location_name', 'status_name', 'serial', 'comments'] as const;
+    const payload: Record<string, any> = { id: equipId || data.id };
+    if (!equipId) payload.type_name = typeName;
+    for (const field of editable) {
+      const value = data[field] ?? '';
+      if (!equipId || value !== (originalValues.current[field] ?? '')) payload[field] = value;
     }
-    equipMutation.mutate(data);
+    if (equipId && Object.keys(payload).length === 1) { onSuccess?.(); return; }
+    equipMutation.mutate(payload);
   };
 
   const validationSchema: any = {
+    owner_mne: Yup.string().required(__FIELD_REQUIRED_MSG__),
+    location_name: Yup.string().required(__FIELD_REQUIRED_MSG__),
+    status_name: Yup.string().required(__FIELD_REQUIRED_MSG__),
     serial: serialRules,
     comments: commentsRules,
   }
@@ -181,6 +198,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     const equipment = equipArray[0];
 
     if (equipment) {
+      originalValues.current = equipment;
       setOriginalLocation(equipment.location_name || '');
       // Use setValues to populate the form with the fetched data
       formik.setValues({
@@ -192,6 +210,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
         location_name: equipment.location_name || '',
         status_name: equipment.status_name || '',
         serial: equipment.serial || '',
+        detector_location_name: equipment.detector_location_name || '',
       });
     }
   }, [equipData]); // This effect runs whenever equipData changes
@@ -202,7 +221,8 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
 
   // Add the new query's pending state to the overall loading check
   const isPending = (
-    locationQuery.isPending
+    detectorLocationQuery.isPending
+    || locationQuery.isPending
     || instituteQuery.isPending
     || statusQuery.isPending
     || equipTypesQuery.isPending
@@ -213,7 +233,9 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     return 'Loading';
   }
   const isError = (
-    locationQuery.isError
+    detectorLocationQuery.isError
+    || (isEdit && !!equipId && !equipData)
+    || locationQuery.isError
     || instituteQuery.isError
     || statusQuery.isError
     || equipTypesQuery.isError
@@ -223,27 +245,36 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     return 'Error';
   }
 
-  const locationNameOptions = locationQuery.data.data.map((location: any) => {
+  const locationNameOptions = rows(locationQuery.data).map((location: any) => {
     return {
-      name: location.name,
+      name: location.description ? `${location.name} - ${location.description}` : location.name,
       value: location.name
     };
   })
 
-  const ownerMneOptions = instituteQuery.data.data.map((institute: any) => {
+  const ownerMneOptions = rows(instituteQuery.data).map((institute: any) => {
     return {
       name: `${institute.mne} - ${institute.name}`,
       value: institute.mne
     };
   });
 
-  const statusNameOptions = statusQuery.data.data.map((status: any) => {
+  const statusNameOptions = rows(statusQuery.data).map((status: any) => {
     return {
       name: `${status.name} - ${status.description}`,
       value: status.name
     };
   });
 
+  const detectorOptions = rows(detectorLocationQuery.data).map(item => ({ name: item.name, value: item.name }));
+  // Keep an existing value visible even if its catalogue entry was retired.
+  for (const [field, options] of [
+    ['owner_mne', ownerMneOptions], ['location_name', locationNameOptions],
+    ['status_name', statusNameOptions], ['detector_location_name', detectorOptions],
+  ] as const) {
+    const value = formik.values[field];
+    if (value && !options.some(option => option.value === value)) options.push({ name: `${value} (current value)`, value });
+  }
   return (
     <div className="card flex justify-content-center flex-column gap-2">
       <form onSubmit={formik.handleSubmit}>
@@ -273,7 +304,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
             id='owner_mne'
             name='Owner'
             options={ownerMneOptions}
-            required={!isEdit}
+            required={true}
             value={formik.values.owner_mne}
             help='Institute that owns the equipment'
             onChange={(e) => {
@@ -286,7 +317,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
             id='location_name'
             name='Location'
             options={locationNameOptions}
-            required={!isEdit}
+            required={true}
             value={formik.values.location_name}
             help='Current equipment location'
             onChange={(e) => {
@@ -303,11 +334,18 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
             )}
         </div>
         <div className='mt-3'>
+          <FormDropdown id='detector_location_name' name='Detector Location'
+            options={detectorOptions} value={formik.values.detector_location_name}
+            help='Current detector position. Clear to remove the assignment.'
+            onChange={e => formik.setFieldValue('detector_location_name', e.value ?? '')}
+            errorText={getFormErrorMessage('detector_location_name')} />
+        </div>
+        <div className='mt-3'>
           <FormDropdown
             id='status_name'
             name='Status'
             options={statusNameOptions}
-            required={!isEdit}
+            required={true}
             value={formik.values.status_name}
             help='Current equipment status'
             onChange={(e) => {
@@ -350,7 +388,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
         </div>
 
         <div className='mt-4'>
-          <Button type="submit" label="Submit" />
+          <Button type="submit" label="Save equipment" loading={equipMutation.isPending} disabled={equipMutation.isPending} />
         </div>
       </form>
     </div>
