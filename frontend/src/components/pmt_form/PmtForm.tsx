@@ -410,7 +410,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
         <div className='mt-3'>
           <FormDropdown
             id='box_position'
-            name='Box Position'
+            name='Upgrade Position'
             options={boxPositions}
             required={!isEdit}
             value={formik.values.box_position}
@@ -421,7 +421,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
             errorText={getFormErrorMessage('box_position')} />
         </div>
         </>}
-        {isEdit && <p>Use Edit PMT positions in the Info page to edit Phase1 Position and Box Position.</p>}
+        {isEdit && <p>Use Edit PMT positions in the Info page to edit Phase1 Position and Upgrade Position.</p>}
 
         <div className='mt-3 flex flex-column gap-2'>
           <label htmlFor='comments' className='font-bold text-600'>Comments</label>
