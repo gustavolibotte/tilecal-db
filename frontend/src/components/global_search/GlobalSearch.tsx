@@ -75,7 +75,7 @@ export default function GlobalSearch() {
                 value={query} 
                 suggestions={items} 
                 completeMethod={search} 
-                onChange={(e) => setQuery(e.value)} 
+                onChange={(e) => setQuery(typeof e.value === 'string' ? e.value : '')}
                 onSelect={onSelect}
                 onKeyDown={onKeyDown}
                 itemTemplate={itemTemplate}

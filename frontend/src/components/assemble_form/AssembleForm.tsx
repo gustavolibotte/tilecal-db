@@ -17,6 +17,11 @@ interface AssembleFormValues {
   [key: string]: string;
 }
 
+interface AssemblyPayload {
+  id: string;
+  slots: Array<{ name: string; equipment_id: string }>;
+}
+
 interface AssembleFormProps {
   parentId: string;
   parentTypeName: string;
@@ -53,10 +58,11 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   // State for Pre-commit Popup
   const [selectedEquipments, setSelectedEquipments] = useState<Record<string, any>>({});
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [mutationDataPayload, setMutationDataPayload] = useState<any>(null);
+  const [mutationDataPayload, setMutationDataPayload] = useState<AssemblyPayload | null>(null);
 
   const queryClient = useQueryClient();
   const toastId = useRef<Id>('');
+  const savingRef = useRef(false);
 
   const equipTypeQuery: any = useQuery({
     queryKey: ['equipment_type', 'get', { type_name: parentTypeName }]
@@ -65,13 +71,16 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   const formik = useFormik<AssembleFormValues>({
     initialValues: {},
     onSubmit: (values) => {
-      const mutationData = {
+      const filledSlots = Object.entries(values).filter(([, id]) => id.trim() !== '');
+      if (savingRef.current || filledSlots.length === 0 ||
+          filledSlots.some(([name]) => !verifiedSlots[name])) return;
+      setEquipSlotErrors([]);
+      const mutationData: AssemblyPayload = {
         id: extractSequentialNumber(parentId),
-        slots: (Object.entries(values) as [string, string][])
-          .filter(([_, id]) => id.length > 0)
+        slots: filledSlots
           .map(([name, id]) => ({
             name,
-            equipment_id: extractSequentialNumber(id)
+            equipment_id: extractSequentialNumber(id.trim())
           }))
       };
       
@@ -83,10 +92,12 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
 
   const assembleMutation = useMutation({
     mutationFn: makeMutationFunction('post', getEndpoint('equipment_assemble')),
-    onMutate: () => { toastId.current = toast.info('Assembling...', midTransactionToastConfig); },
+    onMutate: () => { savingRef.current = true; toastId.current = toast.info('Assembling...', midTransactionToastConfig); },
     onSuccess: () => {
       toast.dismiss(toastId.current);
       toast.success('Assembled successfully');
+      setShowConfirmDialog(false);
+      setMutationDataPayload(null);
       formik.resetForm();
       setVerifiedSlots({});
       setSelectedEquipments({});
@@ -96,12 +107,17 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     onError: (error: AxiosError) => {
       toast.dismiss(toastId.current);
       const resp: any = error?.response?.data;
-      if (resp?.message === __INVALID_DATA_MSG__) {
+      setShowConfirmDialog(false);
+      setMutationDataPayload(null);
+      if (resp?.message === __INVALID_DATA_MSG__ && resp.data) {
         setEquipSlotErrors(Object.values(resp.data).map((v: any, i) => <p key={i}>{v}</p>));
       } else {
-        toast.error(__DEFAULT_ERROR_MSG__);
+        toast.error(error.response?.status === 500
+          ? 'Assembly failed on the server (HTTP 500). Check the backend logs.'
+          : __DEFAULT_ERROR_MSG__);
       }
-    }
+    },
+    onSettled: () => { savingRef.current = false; }
   });
 
   // Calculate if the submit button should be locked
@@ -112,7 +128,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   }).length;
   
   // Submit is disabled if NO slots are filled, or if the number of filled slots DOES NOT MATCH the verified checkboxes
-  const isSubmitDisabled = filledSlotsCount === 0 || filledSlotsCount !== verifiedCount;
+  const isSubmitDisabled = assembleMutation.isPending || filledSlotsCount === 0 || filledSlotsCount !== verifiedCount;
 
   if (equipTypeQuery.isPending) return <h4>Loading assembly slots...</h4>;
   if (equipTypeQuery.isError) return <h4>Error loading equipment metadata.</h4>;
@@ -140,10 +156,15 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   const sortedSlots = [...slotsToRender].sort((a, b) => a.name.localeCompare(b.name));
 
   const executeAssembly = () => {
-    setShowConfirmDialog(false);
-    if (mutationDataPayload) {
-      assembleMutation.mutate(mutationDataPayload);
-    }
+    if (savingRef.current || isSubmitDisabled || !mutationDataPayload) return;
+    // Save only the configuration that is still displayed and verified.
+    const currentSlots = Object.entries(formik.values).filter(([, id]) => id.trim() !== '');
+    if (mutationDataPayload.id !== extractSequentialNumber(parentId) ||
+        mutationDataPayload.slots.length !== currentSlots.length ||
+        mutationDataPayload.slots.some(slot => !verifiedSlots[slot.name] ||
+          slot.equipment_id !== extractSequentialNumber((formik.values[slot.name] || '').trim()))) return;
+    savingRef.current = true;
+    assembleMutation.mutate(mutationDataPayload);
   };
 
   const renderConfirmationTable = () => {
@@ -189,6 +210,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       {equipSlotErrors.length > 0 && <div className="p-message p-message-error mb-3">{equipSlotErrors}</div>}
       
       <form onSubmit={formik.handleSubmit} onKeyDown={barcodeReaderSafe ? preventEnterDefault : undefined}>
+        <fieldset disabled={assembleMutation.isPending} style={{ border: 0, padding: 0, margin: 0 }}>
         {sortedSlots.map((slot: any) => {
           const label = formatSlotLabel(slot.name);
           let allowedTypes: string[] | undefined = undefined;
@@ -215,8 +237,10 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
                 value={formik.values[slot.name] || ''}
                 onChange={(val: string) => {
                   formik.setFieldValue(slot.name, val);
-                  // If the user clears the field, reset verification and selected equipment
-                  if (!val) {
+                  // Any ID edit invalidates the physical check and the preview.
+                  if (val !== formik.values[slot.name]) {
+                    setMutationDataPayload(null);
+                    setShowConfirmDialog(false);
                     setVerifiedSlots(prev => ({...prev, [slot.name]: false}));
                     setSelectedEquipments(prev => {
                       const newObj = {...prev};
@@ -237,6 +261,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
               {isFilled && (
                 <div className="flex align-items-center mt-3 ml-1">
                   <Checkbox 
+                      disabled={assembleMutation.isPending}
                       inputId={`verify_${slot.name}`} 
                       checked={!!verifiedSlots[slot.name]} 
                       onChange={(e) => setVerifiedSlots(prev => ({...prev, [slot.name]: e.checked || false}))} 
@@ -265,6 +290,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
              </small>
           )}
         </div>
+        </fieldset>
       </form>
 
       {/* Pre-commit Validation Popup */}
@@ -273,11 +299,13 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
           visible={showConfirmDialog} 
           style={{ width: '60vw' }} 
           breakpoints={{ '960px': '85vw', '640px': '100vw' }}
-          onHide={() => setShowConfirmDialog(false)}
+          closable={!assembleMutation.isPending}
+          closeOnEscape={!assembleMutation.isPending}
+          onHide={() => { if (!savingRef.current) { setShowConfirmDialog(false); setMutationDataPayload(null); } }}
           footer={
               <div className="flex justify-content-end gap-2 mt-4">
-                  <Button label="Cancel / Edit" icon="pi pi-times" onClick={() => setShowConfirmDialog(false)} className="p-button-text p-button-secondary" />
-                  <Button label="Save Assembly" icon="pi pi-check" onClick={executeAssembly} autoFocus className="p-button-success" />
+                  <Button type="button" disabled={assembleMutation.isPending} label="Cancel / Edit" icon="pi pi-times" onClick={() => { setShowConfirmDialog(false); setMutationDataPayload(null); }} className="p-button-text p-button-secondary" />
+                  <Button type="button" loading={assembleMutation.isPending} disabled={isSubmitDisabled || !mutationDataPayload} label="Save Assembly" icon="pi pi-check" onClick={executeAssembly} autoFocus className="p-button-success" />
               </div>
           }
       >

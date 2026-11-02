@@ -212,7 +212,11 @@ class EquipmentRules
      */
     public static function validAssemblySlots(string $fieldName, array &$data, string &$error, array $params): bool
     {
-        $parentId = $data[$params['parent_id_field']];
+        $parentId = $data[$params['parent_id_field']] ?? null;
+        if (!is_string($parentId) || $parentId === '') {
+            $error = 'A valid parent equipment ID is required.';
+            return false;
+        }
         
         // Fetch models once to be used in cable compatibility and regular checks
         $equipmentModel = model('EquipmentModel');
@@ -220,8 +224,16 @@ class EquipmentRules
 
         // Fetch parent information for cable length compatibility check
         $parentEquip = $equipmentModel->find($parentId);
-        $parentType = $typeModel->find($parentEquip['type_id']);
-        $parentTypeName = $parentType['name'];
+        if ($parentEquip === null) {
+            $error = 'Parent equipment does not exist or has been deleted.';
+            return false;
+        }
+        $parentType = $typeModel->find($parentEquip->type_id);
+        if ($parentType === null) {
+            $error = 'Parent equipment type does not exist or has been deleted.';
+            return false;
+        }
+        $parentTypeName = $parentType->name;
 
         // Parent requires long cables if it is a Patch-Panel Mini Drawer or a Long Cable PMT Block
         $isLongCableParent = (strpos($parentTypeName, 'Patch-Panel') !== false) || (strpos($parentTypeName, 'Long Cable') !== false);
@@ -257,8 +269,16 @@ class EquipmentRules
 
             // Fetch child information for cable length compatibility check
             $childEquip = $equipmentModel->find($assemblySlot['equipment_id']);
-            $childType = $typeModel->find($childEquip['type_id']);
-            $childTypeName = $childType['name'];
+            if ($childEquip === null) {
+                $error = self::processSlotError('Equipment does not exist or has been deleted.', $index);
+                return false;
+            }
+            $childType = $typeModel->find($childEquip->type_id);
+            if ($childType === null) {
+                $error = self::processSlotError('Equipment type does not exist or has been deleted.', $index);
+                return false;
+            }
+            $childTypeName = $childType->name;
 
             $isLongCableChild = (strpos($childTypeName, 'Long Cable') !== false);
             // Treat standard PMT Blocks as short cable components
