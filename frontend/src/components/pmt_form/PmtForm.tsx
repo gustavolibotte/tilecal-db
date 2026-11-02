@@ -1,3 +1,4 @@
+// PMT positions integration v1
 import { useFormik } from 'formik';
 import { Button } from 'primereact/button';
 import { Id, toast } from 'react-toastify';
@@ -139,7 +140,14 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     if (equipId) {
       data['id'] = equipId;
     }
-    equipMutation.mutate(data);
+    // Positions are edited in the version-checked editor on the Info page.
+    // Do not resubmit stale values when editing other PMT attributes.
+    const payload: Record<string, any> = { ...data };
+    if (equipId) {
+      delete payload.phase1_position;
+      delete payload.box_position;
+    }
+    equipMutation.mutate(payload);
   };
 
   const validationSchema: any = {
@@ -155,6 +163,8 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
       .nullable()
   }
   
+  if (isEdit) delete validationSchema.box_position;
+
   if (!isEdit) {
     validationSchema['owner_mne'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['location_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
@@ -195,7 +205,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
         nominal_hv: equipment.type_params?.nominal_hv || null,
         model: equipment.type_params?.model || '',
         phase1_position: equipment.type_params?.phase1_position || '',
-        box_position: equipment.type_params?.box_position || null
+        box_position: equipment.type_params?.box_position ?? null
       });
     }
   }, [equipData]);
@@ -383,6 +393,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
             }}
             errorText={getFormErrorMessage('model')} />
         </div>
+        {!isEdit && <>
         <div className='mt-3'>
           <FormDropdown
             id='phase1_position'
@@ -409,6 +420,8 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
             }}
             errorText={getFormErrorMessage('box_position')} />
         </div>
+        </>}
+        {isEdit && <p>Use Edit PMT positions in the Info page to edit Phase1 Position and Box Position.</p>}
 
         <div className='mt-3 flex flex-column gap-2'>
           <label htmlFor='comments' className='font-bold text-600'>Comments</label>

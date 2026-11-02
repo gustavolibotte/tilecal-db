@@ -1,6 +1,8 @@
 import axios from 'axios';
 
 interface EndpointType {
+  // PMT positions integration v1
+  pmt_positions: string;
   equipment: string;
   location: string;
   institute: string;
@@ -31,6 +33,7 @@ interface EndpointType {
 }
 
 const ENDPOINT: EndpointType = {
+  pmt_positions: 'api/equipment/pmt-positions',
   equipment: 'api/equipment',
   location: 'api/location',
   institute: 'api/institute',

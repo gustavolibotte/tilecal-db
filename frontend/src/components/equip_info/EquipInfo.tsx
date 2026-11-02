@@ -1,3 +1,5 @@
+// PMT positions integration v1
+import PmtPositions from "../pmt_positions/PmtPositions";
 import { DataInfo } from "../data_info/DataInfo";
 import { snakeToSpaced, formatDateTime } from "../../utils/string";
 
@@ -28,7 +30,7 @@ export default function EquipInfo(props: EquipInfoProps) {
 
   if (props.equipData.type_params != null){
     fieldConfig = fieldConfig.concat(
-      Object.keys(props.equipData.type_params).map((key: string): any => {
+      Object.keys(props.equipData.type_params).filter(key => props.hist || props.equipData.type_name !== 'PMT' || !['phase1_position', 'box_position'].includes(key)).map((key: string): any => {
         return {
           name: snakeToSpaced(key? key: ''),
           field: `type_params.${key}`,
@@ -50,8 +52,12 @@ export default function EquipInfo(props: EquipInfoProps) {
   }
 
   return (
+    <>
     <DataInfo
       data={props.equipData}
       fields={fieldConfig}/>
+    {!props.hist && !props.equipData.deleted_at && ['PMT', 'PMT Block', 'PMT Block (Standard)', 'PMT Block (Long Cable)'].includes(props.equipData.type_name) &&
+      <PmtPositions key={props.equipData.id} equipmentId={props.equipData.id} />}
+    </>
   );
 }

@@ -17,6 +17,9 @@ $routes->get('/','WebApp::index', [
 ]);
 
 $routes->group('api', static function ($routes){
+    // PMT positions integration v1
+    $routes->get('equipment/pmt-positions', 'PmtPositions::get', ['filter' => ['api_auth', 'action:view']]);
+    $routes->post('equipment/pmt-positions', 'PmtPositions::post', ['filter' => ['api_auth', 'action:edit']]);
 
     $routes->get('equipment', 'Equipments::get', ['filter' => ['api_auth', 'action:view'], 'as' => 'api_equipment_get']);
     $routes->get('equipment/inconsistencies', 'Equipments::getInconsistencies', ['filter' => ['api_auth', 'action:view'], 'as' => 'api_equipment_inconsistencies']);

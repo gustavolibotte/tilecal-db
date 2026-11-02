@@ -510,11 +510,23 @@ class Equipments extends APIController
         );
     }
 
+    // PMT positions integration v1
     public function put(): ResponseInterface
     {
+        $db = db_connect();
         try {
-            return $this->__put__();
+            $db->transException(true)->transBegin();
+            $response = $this->__put__();
+            if ($response->getStatusCode() >= 400) {
+                $db->transRollback();
+            } else {
+                if (!$db->transStatus() || !$db->transCommit()) {
+                    throw new \RuntimeException('Could not commit equipment update.');
+                }
+            }
+            return $response;
         } catch (Throwable $e) {
+            $db->transRollback();
             return $this->failInternalError($e);
         }
     }
@@ -545,6 +557,9 @@ class Equipments extends APIController
             return failValidationErrors($validationRes['errors'], $inputData);
         }
         $id = $validationRes['validatedData']['id'];
+        // Read type_params only after acquiring the same row lock as PmtPositions.
+        $locked = db_connect()->query('SELECT id FROM equipments WHERE id=? AND deleted_at IS NULL FOR UPDATE', [$id])->getRowArray();
+        if (!$locked) return $this->failNotFound();
         $queryData = model('EquipmentModel')
             ->join('equipment_types et', 'equipments.type_id = et.id', 'left')
             ->select('equipments.type_params as type_params')
