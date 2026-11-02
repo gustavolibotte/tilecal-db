@@ -47,11 +47,8 @@ const formatSlotLabel = (slotName: string): string => {
 export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSafe }: AssembleFormProps) {
   const [equipSlotErrors, setEquipSlotErrors] = useState<Array<ReactNode>>([]);
   
-  // State for Mandatory Position Double-Check
   const [verifiedSlots, setVerifiedSlots] = useState<Record<string, boolean>>({});
   
-  // State for Pre-commit Popup
-  const [selectedEquipments, setSelectedEquipments] = useState<Record<string, any>>({});
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [mutationDataPayload, setMutationDataPayload] = useState<any>(null);
 
@@ -68,14 +65,13 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       const mutationData = {
         id: extractSequentialNumber(parentId),
         slots: (Object.entries(values) as [string, string][])
-          .filter(([_, id]) => id.length > 0)
+          .filter(([_, id]) => id && id.length > 0)
           .map(([name, id]) => ({
             name,
             equipment_id: extractSequentialNumber(id)
           }))
       };
       
-      // Instead of mutating immediately, store payload and open the Pre-commit Dialog
       setMutationDataPayload(mutationData);
       setShowConfirmDialog(true);
     },
@@ -89,7 +85,6 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       toast.success('Assembled successfully');
       formik.resetForm();
       setVerifiedSlots({});
-      setSelectedEquipments({});
       queryClient.invalidateQueries({ queryKey: ['equipment', 'get', { relatedEquipmentId: parentId }] });
       setEquipSlotErrors([]);
     },
@@ -104,14 +99,12 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     }
   });
 
-  // Calculate if the submit button should be locked
-  const filledSlotsCount = Object.values(formik.values).filter(val => val && String(val).trim() !== '').length;
+  const filledSlotsCount = Object.values(formik.values).filter(val => val && val.trim().length > 0).length;
   const verifiedCount = Object.keys(formik.values).filter(key => {
     const val = formik.values[key];
-    return val && String(val).trim() !== '' && verifiedSlots[key];
+    return val && val.trim().length > 0 && verifiedSlots[key];
   }).length;
   
-  // Submit is disabled if NO slots are filled, or if the number of filled slots DOES NOT MATCH the verified checkboxes
   const isSubmitDisabled = filledSlotsCount === 0 || filledSlotsCount !== verifiedCount;
 
   if (equipTypeQuery.isPending) return <h4>Loading assembly slots...</h4>;
@@ -146,53 +139,17 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     }
   };
 
-  const renderConfirmationTable = () => {
-    if (!mutationDataPayload || !mutationDataPayload.slots) return null;
-    
-    return (
-        <table className="w-full text-left border-collapse mt-3">
-            <thead>
-                <tr className="border-bottom-1 surface-border">
-                    <th className="p-2">Slot Name</th>
-                    <th className="p-2">Equipment ID</th>
-                    <th className="p-2">Component Specifications</th>
-                </tr>
-            </thead>
-            <tbody>
-                {mutationDataPayload.slots.map((slot: any) => {
-                    const equip = selectedEquipments[slot.name];
-                    const typeName = equip?.type_name || 'N/A';
-                    
-                    // Identify cable specifications for visual highlighting
-                    const isShortCable = typeName.includes('Short Cable') || typeName === 'PMT Block' || typeName === 'PMT Block (Standard)';
-                    const isLongCable = typeName.includes('Long Cable');
-                    
-                    return (
-                        <tr key={slot.name} className="border-bottom-1 surface-border">
-                            <td className="p-2">{formatSlotLabel(slot.name)}</td>
-                            <td className="p-2 font-bold">{slot.equipment_id}</td>
-                            <td className="p-2">
-                                {typeName}
-                                {isShortCable && <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-800 border-round font-bold text-xs">SHORT CABLE</span>}
-                                {isLongCable && <span className="ml-2 px-2 py-1 bg-teal-100 text-teal-800 border-round font-bold text-xs">LONG CABLE</span>}
-                            </td>
-                        </tr>
-                    );
-                })}
-            </tbody>
-        </table>
-    );
-  };
-
   return (
     <div className="card flex flex-column gap-3">
       {equipSlotErrors.length > 0 && <div className="p-message p-message-error mb-3">{equipSlotErrors}</div>}
       
       <form onSubmit={formik.handleSubmit} onKeyDown={barcodeReaderSafe ? preventEnterDefault : undefined}>
+        
         {sortedSlots.map((slot: any) => {
           const label = formatSlotLabel(slot.name);
-          let allowedTypes: string[] | undefined = undefined;
+          const isFilled = formik.values[slot.name] && formik.values[slot.name].trim().length > 0;
           
+          let allowedTypes: string[] | undefined = undefined;
           try {
             if (typeData.slots) {
               const parsedSlots = typeof typeData.slots === 'string' ? JSON.parse(typeData.slots) : typeData.slots;
@@ -205,8 +162,6 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
             console.warn("Could not parse allowed types for slot", slot.name);
           }
 
-          const isFilled = formik.values[slot.name] && String(formik.values[slot.name]).trim() !== '';
-
           return (
             <div className="mt-4 mb-2 p-3 border-1 surface-border border-round" key={slot.name}>
               <SlotSearchInput
@@ -215,25 +170,13 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
                 value={formik.values[slot.name] || ''}
                 onChange={(val: string) => {
                   formik.setFieldValue(slot.name, val);
-                  // If the user clears the field, reset verification and selected equipment
                   if (!val) {
                     setVerifiedSlots(prev => ({...prev, [slot.name]: false}));
-                    setSelectedEquipments(prev => {
-                      const newObj = {...prev};
-                      delete newObj[slot.name];
-                      return newObj;
-                    });
                   }
-                }}
-                onEquipmentSelect={(equip: any) => {
-                  setSelectedEquipments(prev => ({...prev, [slot.name]: equip}));
-                  // Reset verification when changing equipment to force a new check
-                  setVerifiedSlots(prev => ({...prev, [slot.name]: false}));
                 }}
                 allowedTypes={allowedTypes}
               />
               
-              {/* Mandatory Position Double-Check Checkbox */}
               {isFilled && (
                 <div className="flex align-items-center mt-3 ml-1">
                   <Checkbox 
@@ -267,7 +210,6 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
         </div>
       </form>
 
-      {/* Pre-commit Validation Popup */}
       <Dialog 
           header="Confirm Assembly Configuration" 
           visible={showConfirmDialog} 
@@ -281,11 +223,27 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
               </div>
           }
       >
-          <div className="mb-2">
+          <div className="mb-4">
               <i className="pi pi-exclamation-triangle text-orange-500 mr-2 text-xl align-middle"></i>
               <span className="text-lg">Please double-check the configuration before saving to the database.</span>
           </div>
-          {renderConfirmationTable()}
+          
+          <table className="w-full text-left border-collapse mt-3">
+              <thead>
+                  <tr className="border-bottom-1 surface-border">
+                      <th className="p-2">Slot Name</th>
+                      <th className="p-2">Equipment ID</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {mutationDataPayload?.slots?.map((slot: any) => (
+                      <tr key={slot.name} className="border-bottom-1 surface-border">
+                          <td className="p-2">{formatSlotLabel(slot.name)}</td>
+                          <td className="p-2 font-bold">{slot.equipment_id}</td>
+                      </tr>
+                  ))}
+              </tbody>
+          </table>
       </Dialog>
     </div>
   );
