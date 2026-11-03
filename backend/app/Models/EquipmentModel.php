@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Entities\ParentChildRelation;
 use App\Entities\Equipment;
+use App\Libraries\UpgradePosition;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Model;
 use TypeError;
@@ -146,9 +147,16 @@ class EquipmentModel extends LogModel
     public function update($id = null, $data = null): bool
     {
         $this->db->transException(true)->transBegin();
-        $res = parent::update($id, $data);
-        $this->db->transCommit();
-        return $res;
+        try {
+            $res = parent::update($id, $data);
+            if (!$this->db->transStatus() || !$this->db->transCommit()) {
+                throw new \RuntimeException('Could not commit equipment changes.');
+            }
+            return $res;
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            throw $e;
+        }
     }
 
     public function delete($id = null, bool $purge = false)
@@ -236,22 +244,32 @@ class EquipmentModel extends LogModel
      * 
      * @return bool Always true
      */
-    public function updateParent(string $childId, string $parentId, int $slotId): bool
+    public function updateParent(string $childId, string $parentId, int $slotId, ?array $resolution = null, ?array $positionPlan = null): bool
     {
         $this->db->transException(true)->transBegin();
-        $this->deleteParent($childId);
-        $this->addParent($childId, $parentId, $slotId);
-        $parent = $this->select('location_id')->find($parentId);
-        $statusModel = model('StatusModel');
-        $status = $statusModel->where('name', 'Installed')->first();
-        $child = new Equipment([
-            'id' => $childId,
-            'location_id' => $parent->location_id,
-            'status_id' => $status->id
-        ]);
-        $this->update($childId, $child);
-        $this->db->transCommit();
-        return true;
+        try {
+            $plan = $positionPlan ?? UpgradePosition::prepareAssembly($parentId, $childId, $resolution);
+            $this->deleteParent($childId);
+            $this->addParent($childId, $parentId, $slotId);
+            $positionParams = UpgradePosition::applyAssembly($plan);
+            $parent = $this->select('location_id')->find($parentId);
+            $statusModel = model('StatusModel');
+            $status = $statusModel->where('name', 'Installed')->first();
+            $child = new Equipment([
+                'id' => $childId,
+                'location_id' => $parent->location_id,
+                'status_id' => $status->id
+            ]);
+            if ($positionParams !== null) $child->type_params = $positionParams;
+            if (!$this->update($childId, $child)) throw new \RuntimeException('Could not update mounted equipment.');
+            if (!$this->db->transStatus() || !$this->db->transCommit()) {
+                throw new \RuntimeException('Could not commit equipment changes.');
+            }
+            return true;
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            throw $e;
+        }
     }
 
     /**
@@ -266,22 +284,30 @@ class EquipmentModel extends LogModel
                                  bool $updateStatus = false): bool
     {
         $this->db->transException(true)->transBegin();
-        $parentChildModel = model('ParentChildModel');
-        $relations = $parentChildModel->where('child_equip_id', $childId)->findAll();
-        foreach ($relations as $relation) {
-            $parentChildModel->delete($relation->id, purge: true);
+        try {
+            $parentChildModel = model('ParentChildModel');
+            $relations = $parentChildModel->where('child_equip_id', $childId)->findAll();
+            foreach ($relations as $relation) {
+                UpgradePosition::retainBeforeDetach($relation->parent_equip_id, $relation->child_equip_id);
+                $parentChildModel->delete($relation->id, purge: true);
+            }
+            if ($updateStatus){
+                $statusModel = model('StatusModel');
+                $status = $statusModel->where('name', 'Stored')->first();
+                $child = new Equipment([
+                    'id' => $childId,
+                    'status_id' => $status->id
+                ]);
+                $this->update($childId, $child);
+            }
+            if (!$this->db->transStatus() || !$this->db->transCommit()) {
+                throw new \RuntimeException('Could not commit equipment changes.');
+            }
+            return true;
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            throw $e;
         }
-        if ($updateStatus){
-            $statusModel = model('StatusModel');
-            $status = $statusModel->where('name', 'Stored')->first();
-            $child = new Equipment([
-                'id' => $childId,
-                'status_id' => $status->id
-            ]);
-            $this->update($childId, $child);
-        }
-        $this->db->transCommit();
-        return true;
     }
 
     /**
@@ -295,13 +321,21 @@ class EquipmentModel extends LogModel
     public function deleteChildren(string $parentId): bool
     {
         $this->db->transException(true)->transBegin();
-        $parentChildModel = model('ParentChildModel');
-        $relations = $parentChildModel->where('parent_equip_id', $parentId)->findAll();
-        foreach ($relations as $relation) {
-            $parentChildModel->delete($relation->id, purge: true);
+        try {
+            $parentChildModel = model('ParentChildModel');
+            $relations = $parentChildModel->where('parent_equip_id', $parentId)->findAll();
+            foreach ($relations as $relation) {
+                UpgradePosition::retainBeforeDetach($relation->parent_equip_id, $relation->child_equip_id);
+                $parentChildModel->delete($relation->id, purge: true);
+            }
+            if (!$this->db->transStatus() || !$this->db->transCommit()) {
+                throw new \RuntimeException('Could not commit equipment changes.');
+            }
+            return true;
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            throw $e;
         }
-        $this->db->transCommit();
-        return true;
     }
 
     /**
@@ -315,23 +349,31 @@ class EquipmentModel extends LogModel
     public function disassemble(string $parentId, string $childId): bool
     {
         $this->db->transException(true)->transBegin();
-        $parentChildModel = model('ParentChildModel');
-        $relations = $parentChildModel
-            ->where('parent_equip_id', $parentId)
-            ->where('child_equip_id', $childId)
-            ->findAll();
-        foreach ($relations as $relation) {
-            $parentChildModel->delete($relation->id, purge: true);
+        try {
+            $parentChildModel = model('ParentChildModel');
+            $relations = $parentChildModel
+                ->where('parent_equip_id', $parentId)
+                ->where('child_equip_id', $childId)
+                ->findAll();
+            foreach ($relations as $relation) {
+                UpgradePosition::retainBeforeDetach($relation->parent_equip_id, $relation->child_equip_id);
+                $parentChildModel->delete($relation->id, purge: true);
+            }
+            $statusModel = model('StatusModel');
+            $status = $statusModel->where('name', 'Stored')->first();
+            $child = new Equipment([
+                'id' => $childId,
+                'status_id' => $status->id
+            ]);
+            $this->update($childId, $child);
+            if (!$this->db->transStatus() || !$this->db->transCommit()) {
+                throw new \RuntimeException('Could not commit equipment changes.');
+            }
+            return true;
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            throw $e;
         }
-        $statusModel = model('StatusModel');
-        $status = $statusModel->where('name', 'Stored')->first();
-        $child = new Equipment([
-            'id' => $childId,
-            'status_id' => $status->id
-        ]);
-        $this->update($childId, $child);
-        $this->db->transCommit();
-        return true;
     }
 
     protected function mergeTypeParams(array $data): array
@@ -504,20 +546,20 @@ class EquipmentModel extends LogModel
 
         $this->db->transException(true)->transBegin();
         try {
-            foreach ($childrenIds as $childId) {
-                // Check current location to avoid unnecessary updates and history logs
-                $childInfo = $this->select('location_id')->find($childId);
-                if ($childInfo && $childInfo->location_id !== $location->id) {
-                    $child = new Equipment([
-                        'id' => $childId,
-                        'location_name' => $locationName
-                    ]);
-                    // Update triggers beforeUpdate/afterUpdate events and History logging
-                    $this->update($childId, $child);
+                foreach ($childrenIds as $childId) {
+                    // Check current location to avoid unnecessary updates and history logs
+                    $childInfo = $this->select('location_id')->find($childId);
+                    if ($childInfo && $childInfo->location_id !== $location->id) {
+                        $child = new Equipment([
+                            'id' => $childId,
+                            'location_name' => $locationName
+                        ]);
+                        // Update triggers beforeUpdate/afterUpdate events and History logging
+                        $this->update($childId, $child);
+                    }
                 }
-            }
-            $this->db->transCommit();
-            return true;
+                $this->db->transCommit();
+                return true;
         } catch (\Throwable $e) {
             $this->db->transRollback();
             throw $e;

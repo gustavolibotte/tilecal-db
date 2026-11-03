@@ -169,11 +169,6 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
     validationSchema['owner_mne'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['location_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
     validationSchema['status_name'] = Yup.string().required(__FIELD_REQUIRED_MSG__);
-    
-    validationSchema['box_position'] = Yup.number()
-      .min(0, 'Position must be at least 0')
-      .max(48, 'Position must be at most 48')
-      .required(__FIELD_REQUIRED_MSG__);
   }
 
   const formik = useFormik({
@@ -412,7 +407,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
             id='box_position'
             name='Upgrade Position'
             options={boxPositions}
-            required={!isEdit}
+            required={false}
             value={formik.values.box_position}
             help='Position of the PMT in the Phase II upgrade box.'
             onChange={(e) => {
@@ -421,7 +416,7 @@ export default function PmtForm({ equipId, onSuccess, isEdit }: PmtFormProps) {
             errorText={getFormErrorMessage('box_position')} />
         </div>
         </>}
-        {isEdit && <p>Use Edit PMT positions in the Info page to edit Phase1 Position and Upgrade Position.</p>}
+        {isEdit && <p>Use Edit positions in the Info page to edit Phase1 Position and Upgrade Position.</p>}
 
         <div className='mt-3 flex flex-column gap-2'>
           <label htmlFor='comments' className='font-bold text-600'>Comments</label>

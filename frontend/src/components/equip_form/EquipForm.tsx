@@ -32,6 +32,7 @@ interface EquipFormSchema {
   serial: string;
   comments: string;
   type_name?: string;
+  box_position: number | null;
 }
 
 interface EquipFormProps {
@@ -46,6 +47,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
   // State to track the original location before edits
   const [originalLocation, setOriginalLocation] = useState<string>('');
 
+  const isPmtBlock = ['PMT Block', 'PMT Block (Standard)', 'PMT Block (Long Cable)'].includes(typeName);
   const originalValues = useRef<Record<string, any>>({});
   const detectorLocationQuery: any = useQuery({
     queryKey: ['detector_location', 'get', {}], queryFn: defaultQueryFunction
@@ -108,6 +110,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     detector_location_name: '',
     serial: '',
     comments: 'Was tested at ',
+    box_position: null,
   };
 
   const toastId = useRef<Id>();
@@ -158,7 +161,10 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
   const submitData = async (data: EquipFormSchema) => {
     const editable = ['owner_mne', 'location_name', 'detector_location_name', 'status_name', 'serial', 'comments'] as const;
     const payload: Record<string, any> = { id: equipId || data.id };
-    if (!equipId) payload.type_name = typeName;
+    if (!equipId) {
+      payload.type_name = typeName;
+      if (isPmtBlock) payload.box_position = data.box_position;
+    }
     for (const field of editable) {
       const value = data[field] ?? '';
       if (!equipId || value !== (originalValues.current[field] ?? '')) payload[field] = value;
@@ -171,6 +177,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     owner_mne: Yup.string().required(__FIELD_REQUIRED_MSG__),
     location_name: Yup.string().required(__FIELD_REQUIRED_MSG__),
     status_name: Yup.string().required(__FIELD_REQUIRED_MSG__),
+    box_position: Yup.number().integer().min(0).max(48).nullable(),
     serial: serialRules,
     comments: commentsRules,
   }
@@ -387,6 +394,14 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
           {getFormErrorMessage('comments') && <small className="p-error">{getFormErrorMessage('comments')}</small>}
         </div>
 
+        {!isEdit && isPmtBlock && <div className="mt-3">
+          <FormDropdown id="box_position" name="Upgrade Position" required={false}
+            options={Array.from({ length: 49 }, (_, i) => ({ name: String(i), value: i }))}
+            value={formik.values.box_position}
+            help="Optional position reserved for this block."
+            onChange={e => formik.setFieldValue('box_position', e.value ?? null)}
+            errorText={getFormErrorMessage('box_position')} />
+        </div>}
         <div className='mt-4'>
           <Button type="submit" label="Save equipment" loading={equipMutation.isPending} disabled={equipMutation.isPending} />
         </div>

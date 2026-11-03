@@ -25,7 +25,7 @@ export default function PmtPositions({ equipmentId }: { equipmentId: string }) {
   const current = query.data?.data?.[0];
   const save = useMutation({ mutationFn: makeMutationFunction('post', getEndpoint('pmt_positions')),
     onSuccess: async () => {
-      setDraft(null); setMessage('Positions saved on the PMT.');
+      setDraft(null); setMessage('Positions saved.');
       await Promise.all(['pmt_positions', 'equipment', 'equipment_hist'].map(key => client.invalidateQueries({ queryKey: [key] })));
     },
     onError: (error: any) => {
@@ -41,19 +41,18 @@ export default function PmtPositions({ equipmentId }: { equipmentId: string }) {
     <p>Pre-upgrade and upgrade positions.</p>
     {query.isPending && <p>Loading PMT positions...</p>}
     {query.isError && <p role="alert">Could not resolve PMT positions. Check the assembly and retry. <Button label="Reload" onClick={() => query.refetch()} /></p>}
-    {shown && !shown.pmt_id && <p>No PMT is mounted in this block. Mount a PMT to view its positions.</p>}
-    {shown?.pmt_id && <>
-      {equipmentId !== shown.pmt_id && <div className="flex align-items-center gap-2 mb-3">
+    {shown?.version && <>
+      {shown.pmt_id && equipmentId !== shown.pmt_id && <div className="flex align-items-center gap-2 mb-3">
         <b>Mounted PMT:</b>
         <a href={`${equipmentBaseUrl}/equipment/${encodeURIComponent(shown.pmt_id)}`}>{shown.pmt_id}</a>
         <Button type="button" icon="pi pi-question-circle" rounded text
           aria-label="About mounted PMT positions"
-          tooltip="Values are read from this PMT, not stored on this block."
+          tooltip="Positions come from the mounted PMT. Upgrade Position is also retained on the block."
           tooltipOptions={{ position: 'top', event: 'both' }} />
       </div>}
       {fields.map(field => <div className="field flex align-items-center gap-2" key={field.name}>
         <label htmlFor={`${equipmentId}_${field.name}`} className="font-bold">{field.label}: </label>
-        {draft ? <select id={`${equipmentId}_${field.name}`} value={draft[field.name]} disabled={save.isPending}
+        {field.name === 'phase1_position' && !shown.pmt_id ? <span>No PMT mounted</span> : draft ? <select id={`${equipmentId}_${field.name}`} value={draft[field.name]} disabled={save.isPending}
           onChange={e => setDraft({ ...draft, [field.name]: e.target.value })}>
           <option value="">Not recorded</option>
           {draft[field.name] !== '' && !Array.from({ length: field.max - field.min + 1 }, (_, i) => String(i + field.min)).includes(draft[field.name]) &&
@@ -64,13 +63,13 @@ export default function PmtPositions({ equipmentId }: { equipmentId: string }) {
       {shown.phase1_position != null && shown.box_position != null && String(shown.phase1_position) !== String(shown.box_position) &&
         <p>Recorded positions differ. Check the records and box marking; neither value is changed automatically.</p>}
       {draft ? <>
-        <p>Editing PMT <b>{original.pmt_id}</b>. Empty fields are saved as unrecorded.</p>
+        <p>{original.pmt_id ? `Editing PMT ${original.pmt_id}.` : `Reserving Upgrade Position for block ${equipmentId}.`}</p>
         {(changedAssembly || conflict) && <p role="alert">The record changed. Cancel and reload before saving.</p>}
         <div className="flex gap-2">
-          <Button label="Save PMT positions" loading={save.isPending} disabled={save.isPending || conflict || changedAssembly || query.isError}
+          <Button label="Save positions" loading={save.isPending} disabled={save.isPending || conflict || changedAssembly || query.isError}
             onClick={() => {
               const changes: Partial<Record<Field, number | null>> = {};
-              for (const field of fields) if (draft[field.name] !== editable(original[field.name])) {
+              for (const field of fields) if ((field.name !== 'phase1_position' || original.pmt_id) && draft[field.name] !== editable(original[field.name])) {
                 const value = draft[field.name] === '' ? null : Number(draft[field.name]);
                 if (value !== null && (!Number.isInteger(value) || value < field.min || value > field.max)) {
                   setMessage(`Invalid ${field.label}.`); return;
@@ -82,7 +81,7 @@ export default function PmtPositions({ equipmentId }: { equipmentId: string }) {
             }} />
           <Button label="Cancel / Reload" disabled={save.isPending} onClick={() => { setDraft(null); setConflict(false); setMessage(''); query.refetch(); }} />
         </div>
-      </> : user.canEdit() && <Button label="Edit PMT positions" disabled={query.isError || query.isFetching}
+      </> : user.canEdit() && <Button label="Edit positions" disabled={query.isError || query.isFetching}
         onClick={() => { setOriginal(current); setDraft({ phase1_position: editable(current.phase1_position), box_position: editable(current.box_position) }); setConflict(false); setMessage(''); }} />}
     </>}
     {message && <p role="status">{message}</p>}

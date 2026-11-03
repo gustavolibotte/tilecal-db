@@ -19,6 +19,7 @@ interface AssembleFormValues {
 
 interface AssemblyPayload {
   id: string;
+  upgrade_resolution?: { pmt_id: string; source: string; version: string };
   slots: Array<{ name: string; equipment_id: string }>;
 }
 
@@ -60,6 +61,8 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [mutationDataPayload, setMutationDataPayload] = useState<AssemblyPayload | null>(null);
 
+  const [positionConflict, setPositionConflict] = useState<any>(null);
+  const [positionSource, setPositionSource] = useState('');
   const queryClient = useQueryClient();
   const toastId = useRef<Id>('');
   const savingRef = useRef(false);
@@ -75,6 +78,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       if (savingRef.current || filledSlots.length === 0 ||
           filledSlots.some(([name]) => !verifiedSlots[name])) return;
       setEquipSlotErrors([]);
+      setPositionConflict(null); setPositionSource('');
       const mutationData: AssemblyPayload = {
         id: extractSequentialNumber(parentId),
         slots: filledSlots
@@ -98,6 +102,10 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       toast.success('Assembled successfully');
       setShowConfirmDialog(false);
       setMutationDataPayload(null);
+      setPositionConflict(null); setPositionSource('');
+      queryClient.invalidateQueries({ queryKey: ['pmt_positions'] });
+      queryClient.invalidateQueries({ queryKey: ['equipment'] });
+      queryClient.invalidateQueries({ queryKey: ['equipment_hist'] });
       formik.resetForm();
       setVerifiedSlots({});
       setSelectedEquipments({});
@@ -107,10 +115,16 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     onError: (error: AxiosError) => {
       toast.dismiss(toastId.current);
       const resp: any = error?.response?.data;
+      if (error.response?.status === 409 && resp?.data?.code === 'upgrade_position_conflict') {
+        setPositionConflict(resp.data); setPositionSource(''); setShowConfirmDialog(true);
+        return;
+      }
       setShowConfirmDialog(false);
       setMutationDataPayload(null);
       if (resp?.message === __INVALID_DATA_MSG__ && resp.data) {
         setEquipSlotErrors(Object.values(resp.data).map((v: any, i) => <p key={i}>{v}</p>));
+      } else if (error.response?.status === 409) {
+        toast.error(resp?.message || 'Assembly changed. Reload and try again.');
       } else {
         toast.error(error.response?.status === 500
           ? 'Assembly failed on the server (HTTP 500). Check the backend logs.'
@@ -163,8 +177,11 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
         mutationDataPayload.slots.length !== currentSlots.length ||
         mutationDataPayload.slots.some(slot => !verifiedSlots[slot.name] ||
           slot.equipment_id !== extractSequentialNumber((formik.values[slot.name] || '').trim()))) return;
+    if (positionConflict && !positionSource) return;
     savingRef.current = true;
-    assembleMutation.mutate(mutationDataPayload);
+    assembleMutation.mutate({ ...mutationDataPayload,
+      ...(positionConflict ? { upgrade_resolution: { pmt_id: positionConflict.pmt_id,
+        source: positionSource, version: positionConflict.version } } : {}) });
   };
 
   const renderConfirmationTable = () => {
@@ -305,7 +322,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
           footer={
               <div className="flex justify-content-end gap-2 mt-4">
                   <Button type="button" disabled={assembleMutation.isPending} label="Cancel / Edit" icon="pi pi-times" onClick={() => { setShowConfirmDialog(false); setMutationDataPayload(null); }} className="p-button-text p-button-secondary" />
-                  <Button type="button" loading={assembleMutation.isPending} disabled={isSubmitDisabled || !mutationDataPayload} label="Save Assembly" icon="pi pi-check" onClick={executeAssembly} autoFocus className="p-button-success" />
+                  <Button type="button" loading={assembleMutation.isPending} disabled={isSubmitDisabled || !mutationDataPayload || (!!positionConflict && !positionSource)} label="Save Assembly" icon="pi pi-check" onClick={executeAssembly} autoFocus className="p-button-success" />
               </div>
           }
       >
@@ -314,6 +331,19 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
               <span className="text-lg">Please double-check the configuration before saving to the database.</span>
           </div>
           {renderConfirmationTable()}
+          {positionConflict && <fieldset className="mt-3 p-3" disabled={assembleMutation.isPending}>
+            <legend>Choose Upgrade Position</legend>
+            <p>{positionConflict.changed ? 'Positions changed. Review the current values and choose again.' : 'Block and PMT have different Upgrade Positions.'}</p>
+            <p>The selected position will be saved on both when assembly succeeds.</p>
+            {(['block', 'pmt'] as const).map(source => <div className="field flex align-items-center gap-2" key={source}>
+              <input type="radio" name="upgrade-resolution" id={`upgrade-${source}`} value={source}
+                checked={positionSource === source} onChange={() => setPositionSource(source)} />
+              <label htmlFor={`upgrade-${source}`}>
+                {source === 'block' ? `Block ${positionConflict.block_id}` : `PMT ${positionConflict.pmt_id}`}:
+                {' '}{(source === 'block' ? positionConflict.block_position : positionConflict.pmt_position) ?? 'Not recorded'}
+              </label>
+            </div>)}
+          </fieldset>}
       </Dialog>
     </div>
   );

@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Entities\Equipment;
+use App\Libraries\UpgradePosition;
+use App\Libraries\PositionConflict;
 use App\Validation\EquipmentRules;
 use App\Validation\Validator;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -266,6 +268,11 @@ class Equipments extends APIController
             foreach ($paramsList as $param) {
                 $validInput['type_params'][$param] = remove_value($param, $validInput, false);
             }
+        }
+
+        if (in_array($inputData['type_name'], UpgradePosition::BLOCKS, true) && array_key_exists('box_position', $validInput)) {
+            $validInput['type_params'][UpgradePosition::RESERVED] = $validInput['box_position'];
+            unset($validInput['box_position']);
         }
 
         $equipment = new Equipment($validInput);
@@ -557,15 +564,18 @@ class Equipments extends APIController
             return failValidationErrors($validationRes['errors'], $inputData);
         }
         $id = $validationRes['validatedData']['id'];
-        // Read type_params only after acquiring the same row lock as PmtPositions.
-        $locked = db_connect()->query('SELECT id FROM equipments WHERE id=? AND deleted_at IS NULL FOR UPDATE', [$id])->getRowArray();
+        // A locking read must also supply the JSON; a later snapshot read can be stale.
+        $locked = db_connect()->query('SELECT e.type_params, t.name AS type_name, t.params
+            FROM equipments e JOIN equipment_types t ON t.id=e.type_id
+            WHERE e.id=? AND e.deleted_at IS NULL FOR UPDATE', [$id])->getRowArray();
         if (!$locked) return $this->failNotFound();
-        $queryData = model('EquipmentModel')
-            ->join('equipment_types et', 'equipments.type_id = et.id', 'left')
-            ->select('equipments.type_params as type_params')
-            ->select('et.name as type_name')
-            ->select('et.params as params')
-            ->find($id);
+        $queryData = new Equipment($locked);
+        $submittedPositions = $this->request->getJSON(true);
+        if (is_array($submittedPositions) && ($queryData->type_name === 'PMT' || in_array($queryData->type_name, UpgradePosition::BLOCKS, true))
+            && (array_key_exists('box_position', $submittedPositions) || array_key_exists('phase1_position', $submittedPositions)
+                || array_key_exists(UpgradePosition::RESERVED, $submittedPositions))) {
+            return $this->failBadRequest(null, 'Use the position editor to update positions.');
+        }
         $equipRules = EquipmentRules::getEditRulesFromTypeName($queryData->type_name);
         $inputData = $this->request->getVar(array_keys($equipRules));
         $clearedFields = [];
@@ -744,9 +754,22 @@ class Equipments extends APIController
 
     public function assemble()
     {
+        $db = db_connect();
         try {
-            return $this->__assemble__();
+            $db->query('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+            $db->transException(true)->transBegin();
+            $response = $this->__assemble__();
+            if ($response->getStatusCode() >= 400) $db->transRollback();
+            elseif (!$db->transStatus() || !$db->transCommit()) throw new \RuntimeException('Could not commit assembly.');
+            return $response;
+        } catch (PositionConflict $e) {
+            $db->transRollback();
+            return $this->buildAPIResponse(409, $e->details, $e->getMessage());
+        } catch (\DomainException $e) {
+            $db->transRollback();
+            return $this->buildAPIResponse(409, null, $e->getMessage());
         } catch (Throwable $e) {
+            $db->transRollback();
             return $this->failInternalError($e);
         }
     }
@@ -783,6 +806,26 @@ class Equipments extends APIController
         $inputData = $this->request->getVar(array_keys($inputRules));
         helper(['cast', 'response']);
         $inputData = std_to_array($inputData);
+        $request = $this->request->getJSON(true);
+        $resolution = $request['upgrade_resolution'] ?? null;
+        if ($resolution !== null && !is_array($resolution)) return $this->failBadRequest();
+        // Lock the participants before checking slots; concurrent assemblies must revalidate.
+        if (!is_array($inputData['slots'] ?? null)) return $this->failBadRequest();
+        $ids = [$inputData['id'] ?? null];
+        $names = []; $children = [];
+        foreach ($inputData['slots'] as $slot) {
+            if (!is_array($slot) || !is_string($slot['name'] ?? null)) return $this->failBadRequest();
+            $names[] = $slot['name']; $children[] = $slot['equipment_id'] ?? null;
+            $ids[] = $slot['equipment_id'] ?? null;
+        }
+        if (count(array_unique($names)) !== count($names)) return $this->failBadRequest(null, 'Duplicate assembly slot.');
+        foreach ($ids as $candidate) {
+            if (!is_string($candidate) || !preg_match('/^[A-Z0-9]{7}$/D', $candidate)) return $this->failBadRequest();
+        }
+        if (count(array_unique($children)) !== count($children)) return $this->failBadRequest(null, 'Duplicate component.');
+        $ids = array_unique($ids); sort($ids);
+        foreach ($ids as $candidate) UpgradePosition::equipment($candidate);
+
         $validationRes = Validator::validate($inputData, $inputRules);
         if (!$validationRes['valid']) {
             return failValidationErrors($validationRes['errors'], $inputData);
@@ -792,7 +835,13 @@ class Equipments extends APIController
         $db = db_connect();
         $equipmentModel = model('EquipmentModel');
         $typeSlotModel = model('TypeSlotModel');
-        $db->transException(true)->transBegin();
+        // Resolve every position before inserting any slots. Conflict tokens must describe
+        // committed state, not relation IDs that would be rolled back on a conflict.
+        $positionPlans = [];
+        foreach ($validInput['slots'] as $slotInfo) {
+            $positionPlans[$slotInfo['equipment_id']] = UpgradePosition::prepareAssembly(
+                $validInput['id'], $slotInfo['equipment_id'], $resolution);
+        }
         foreach ($validInput['slots'] as $slotInfo) {
             $slotId = $typeSlotModel
                 ->select('id')
@@ -801,10 +850,11 @@ class Equipments extends APIController
             $equipmentModel->updateParent(
                 $slotInfo['equipment_id'],
                 $validInput['id'],
-                $slotId
+                $slotId,
+                $resolution,
+                $positionPlans[$slotInfo['equipment_id']]
             );
         }
-        $db->transCommit();
         return buildAPIResponse(200, message: 'Assembled');
     }
 

@@ -370,6 +370,9 @@ class EquipmentRules
         } else {
             $rules = self::getDefaultRegisterRule();
         }
+        if (in_array($typeName, \App\Libraries\UpgradePosition::BLOCKS, true)) {
+            $rules['box_position'] = ['\App\Libraries\UpgradePosition::optionalRule' => []];
+        }
         return $rules;
     }
 
@@ -691,24 +694,7 @@ class EquipmentRules
                     ]
                 ],
             ],
-            'box_position' => [
-                '\App\Validation\GeneralRules::required' => [],
-                '\App\Validation\GeneralRules::isInt' => [
-                    'params' => [
-                        'cast' => true
-                    ]
-                ],
-                '\App\Validation\GeneralRules::greaterThan' => [
-                    'params' => [
-                        'value' => -1
-                    ]
-                ],
-                '\App\Validation\GeneralRules::smallerThan' => [
-                    'params' => [
-                        'value' => 49
-                    ]
-                ],
-            ]
+            'box_position' => ['\App\Libraries\UpgradePosition::optionalRule' => []]
         ];
     }
 

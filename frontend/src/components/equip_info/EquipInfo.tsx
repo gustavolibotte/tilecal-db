@@ -30,9 +30,9 @@ export default function EquipInfo(props: EquipInfoProps) {
 
   if (props.equipData.type_params != null){
     fieldConfig = fieldConfig.concat(
-      Object.keys(props.equipData.type_params).filter(key => props.hist || props.equipData.type_name !== 'PMT' || !['phase1_position', 'box_position'].includes(key)).map((key: string): any => {
+      Object.keys(props.equipData.type_params).filter(key => props.hist || key !== 'planned_upgrade_position').filter(key => props.hist || props.equipData.type_name !== 'PMT' || !['phase1_position', 'box_position'].includes(key)).map((key: string): any => {
         return {
-          name: snakeToSpaced(key? key: ''),
+          name: key === 'planned_upgrade_position' ? 'Reserved Upgrade Position' : snakeToSpaced(key? key: ''),
           field: `type_params.${key}`,
           template: (data: any) => data.type_params[key]};
       })
