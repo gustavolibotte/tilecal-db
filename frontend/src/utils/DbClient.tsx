@@ -2,6 +2,7 @@ import axios from 'axios';
 
 interface EndpointType {
   // PMT positions integration v1
+  assembly_scan: string;
   pmt_positions: string;
   equipment: string;
   location: string;
@@ -33,6 +34,7 @@ interface EndpointType {
 }
 
 const ENDPOINT: EndpointType = {
+  assembly_scan: 'api/equipment/assembly-scan',
   pmt_positions: 'api/equipment/pmt-positions',
   equipment: 'api/equipment',
   location: 'api/location',

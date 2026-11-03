@@ -7,6 +7,8 @@ use App\Entities\Equipment;
 final class UpgradePosition
 {
     public const BLOCKS = ['PMT Block', 'PMT Block (Standard)', 'PMT Block (Long Cable)'];
+    public const DRAWERS = ['Mini Drawer', 'Mini Drawer (Standard)', 'Mini Drawer (With Patch-Panel)',
+        'Micro Drawer 4', 'Micro Drawer 5', 'Micro Drawer 6', 'Micro Drawer 7'];
     public const RESERVED = 'planned_upgrade_position';
 
     public static function normalize($value): ?int
@@ -147,10 +149,47 @@ final class UpgradePosition
             'value' => self::choose($blockValue, $pmtValue, $resolution['source'] ?? null)];
     }
 
+    public static function scanPosition($value): int
+    {
+        if (!is_int($value) || $value < 1 || $value > 48) {
+            throw new \DomainException('Upgrade Position must be an integer from 1 to 48.');
+        }
+        return $value;
+    }
+
+    /** A scanned position is an explicit edit, confirmed together with drawer assembly. */
+    public static function prepareDrawer(string $parentId, array $slot): ?array
+    {
+        $parent = self::equipment($parentId);
+        $child = self::equipment($slot['equipment_id']);
+        $required = in_array($parent['type_name'], self::DRAWERS, true)
+            && in_array($child['type_name'], self::BLOCKS, true);
+        if (!$required) {
+            if (array_key_exists('upgrade_position', $slot) || array_key_exists('position_version', $slot)) {
+                throw new \DomainException('Upgrade Position is only accepted for PMT Blocks in mini/micro drawers.');
+            }
+            return null;
+        }
+        $value = self::scanPosition($slot['upgrade_position'] ?? null);
+        $snapshot = self::snapshot($child['id']);
+        if (!is_string($slot['position_version'] ?? null)
+            || !hash_equals($snapshot['version'], $slot['position_version'])) {
+            throw new \DomainException('Block positions or assembly changed. Validate the block ID again.');
+        }
+        return ['kind' => 'drawer', 'context' => $snapshot['_context'], 'value' => $value];
+    }
+
     /** Return PMT parameters for the same UPDATE that sets its assembly status/location. */
     public static function applyAssembly(?array $plan): ?array
     {
         if (!$plan) return null;
+        if (($plan['kind'] ?? null) === 'drawer') {
+            $context = $plan['context'];
+            if ($context['pmt']) self::write($context['pmt'], ['box_position' => $plan['value']]);
+            $params = self::params($context['block']);
+            $params[self::RESERVED] = $plan['value'];
+            return $params;
+        }
         self::write($plan['block'], [self::RESERVED => $plan['value']]);
         $params = self::params($plan['pmt']);
         if (($params['box_position'] ?? null) === $plan['value']) return null;

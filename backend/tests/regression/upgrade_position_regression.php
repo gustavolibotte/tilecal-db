@@ -95,5 +95,34 @@ namespace {
     check(Positions::params($database->equipment['0AA0001'])['phase1_position'] === 3, 'Phase1 never transferred');
     check(Positions::params($database->equipment['0AA0001'])['qe'] === 19.1, 'PMT metadata preserved');
     fails(fn() => Positions::prepareAssembly('PB00001','0AA0001',$decision), 'Stale choice after conflict disappears must reopen confirmation');
+    // Barcode drawer positions: 1..48, atomic plan, stale snapshot, empty/mounted blocks.
+    foreach ([0,49,-1,1.5,true,null,'12','1e1',[]] as $value) {
+        fails(fn() => Positions::scanPosition($value), 'Reject invalid scanned position');
+    }
+    check(Positions::scanPosition(1) === 1 && Positions::scanPosition(48) === 48, 'Inclusive scanner range');
+    foreach (Positions::DRAWERS as $drawerType) {
+        $database->equipment['2000113'] = row('2000113',$drawerType,[]);
+        $snapshot = Positions::snapshot('PB00001');
+        $slot = ['equipment_id'=>'PB00001','upgrade_position'=>12,'position_version'=>$snapshot['version']];
+        $before = $database->history;
+        $plan = Positions::prepareDrawer('2000113',$slot);
+        check($database->history === $before, 'Preparing drawer does not write');
+        $params = Positions::applyAssembly($plan);
+        check($params[Positions::RESERVED] === 12 && $params['keep'] === 'block metadata', 'Reservation preserves JSON');
+        $database->update('PB00001',new \App\Entities\Equipment(['type_params'=>$params]));
+    }
+    $database->relations[] = ['id'=>2,'parent_equip_id'=>'PB00001','child_equip_id'=>'0AA0001','deleted_at'=>null];
+    $snapshot = Positions::snapshot('PB00001');
+    $slot = ['equipment_id'=>'PB00001','upgrade_position'=>48,'position_version'=>$snapshot['version']];
+    $plan = Positions::prepareDrawer('2000113',$slot);
+    $params = Positions::applyAssembly($plan);
+    $database->update('PB00001',new \App\Entities\Equipment(['type_params'=>$params]));
+    check(Positions::snapshot('PB00001')['box_position'] === 48, 'Mounted PMT follows scanned position');
+    check(Positions::params($database->equipment['PB00001'])[Positions::RESERVED] === 48, 'Block and PMT consistent');
+    check(Positions::params($database->equipment['0AA0001'])['phase1_position'] === 3, 'Phase1 untouched by scan');
+    check(Positions::params($database->equipment['0AA0001'])['qe'] === 19.1, 'Other PMT parameters untouched');
+    fails(fn() => Positions::prepareDrawer('2000113',$slot), 'Stale scan cannot overwrite');
+    fails(fn() => Positions::prepareDrawer('2000113',['equipment_id'=>'PB00001']), 'Position required in drawer');
+    fails(fn() => Positions::prepareDrawer('PB00001',['equipment_id'=>'0AA0001','upgrade_position'=>12]), 'Reject position outside drawer/block flow');
     echo "Passed {$count} service assertions (in-memory adapter; no MySQL).\n";
 }

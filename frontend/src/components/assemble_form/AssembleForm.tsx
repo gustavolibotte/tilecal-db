@@ -1,14 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import './assemble_form.css';
-import { getEndpoint, makeMutationFunction } from '../../utils/DbClient';
+import { defaultQueryFunction, getEndpoint, makeMutationFunction } from '../../utils/DbClient';
 import { toast, Id } from 'react-toastify';
 import { useFormik } from 'formik';
 import { AxiosError } from 'axios';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import { Checkbox } from 'primereact/checkbox';
+import UpgradePositionInput from './UpgradePositionInput';
+import { drawerTypes, scanId, scanPosition } from '../../utils/assemblyScan';
 import SlotSearchInput from '../slot_search_input/SlotSearchInput';
-import { ReactNode, useRef, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { midTransactionToastConfig } from '../../utils/toast';
 import { preventEnterDefault } from '../../utils/event';
 import { extractSequentialNumber } from '../../utils/validation_rules';
@@ -20,7 +21,7 @@ interface AssembleFormValues {
 interface AssemblyPayload {
   id: string;
   upgrade_resolution?: { pmt_id: string; source: string; version: string };
-  slots: Array<{ name: string; equipment_id: string }>;
+  slots: Array<{ name: string; equipment_id: string; upgrade_position?: number; position_version?: string }>;
 }
 
 interface AssembleFormProps {
@@ -52,12 +53,18 @@ const formatSlotLabel = (slotName: string): string => {
 
 export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSafe }: AssembleFormProps) {
   const [equipSlotErrors, setEquipSlotErrors] = useState<Array<ReactNode>>([]);
-  
-  // State for Mandatory Position Double-Check
+
+  // IDs become valid only after a successful server check.
   const [verifiedSlots, setVerifiedSlots] = useState<Record<string, boolean>>({});
-  
+
+  const isDrawer = drawerTypes.includes(parentTypeName);
+  const needsPosition = (slot: string) => isDrawer && slot.includes('pmt_block_slot');
+  const [positions, setPositions] = useState<Record<string, string>>({});
+  const [validPositions, setValidPositions] = useState<Record<string, boolean>>({});
+  const [validationEpoch, setValidationEpoch] = useState(0);
   // State for Pre-commit Popup
   const [selectedEquipments, setSelectedEquipments] = useState<Record<string, any>>({});
+  const selectedRef = useRef(selectedEquipments); selectedRef.current = selectedEquipments;
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [mutationDataPayload, setMutationDataPayload] = useState<AssemblyPayload | null>(null);
 
@@ -76,7 +83,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     onSubmit: (values) => {
       const filledSlots = Object.entries(values).filter(([, id]) => id.trim() !== '');
       if (savingRef.current || filledSlots.length === 0 ||
-          filledSlots.some(([name]) => !verifiedSlots[name])) return;
+          filledSlots.some(([name]) => !verifiedSlots[name] || (needsPosition(name) && !validPositions[name])) || isSubmitDisabled) return;
       setEquipSlotErrors([]);
       setPositionConflict(null); setPositionSource('');
       const mutationData: AssemblyPayload = {
@@ -84,15 +91,24 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
         slots: filledSlots
           .map(([name, id]) => ({
             name,
-            equipment_id: extractSequentialNumber(id.trim())
+            equipment_id: scanId(id)!,
+            ...(needsPosition(name) ? { upgrade_position: scanPosition(positions[name] || '')!,
+              position_version: selectedEquipments[name]?.positions?.version } : {})
           }))
       };
-      
+
       // Instead of mutating immediately, store payload and open the Pre-commit Dialog
       setMutationDataPayload(mutationData);
       setShowConfirmDialog(true);
     },
   });
+
+  useEffect(() => {
+    formik.resetForm(); setVerifiedSlots({}); setPositions({}); setValidPositions({});
+    setSelectedEquipments({}); selectedRef.current = {};
+    setShowConfirmDialog(false); setMutationDataPayload(null); setEquipSlotErrors([]);
+    setPositionConflict(null); setPositionSource('');
+  }, [parentId, parentTypeName]);
 
   const assembleMutation = useMutation({
     mutationFn: makeMutationFunction('post', getEndpoint('equipment_assemble')),
@@ -107,7 +123,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       queryClient.invalidateQueries({ queryKey: ['equipment'] });
       queryClient.invalidateQueries({ queryKey: ['equipment_hist'] });
       formik.resetForm();
-      setVerifiedSlots({});
+      setVerifiedSlots({}); setPositions({}); setValidPositions({});
       setSelectedEquipments({});
       queryClient.invalidateQueries({ queryKey: ['equipment', 'get', { relatedEquipmentId: parentId }] });
       setEquipSlotErrors([]);
@@ -121,6 +137,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       }
       setShowConfirmDialog(false);
       setMutationDataPayload(null);
+      setVerifiedSlots({}); setValidationEpoch(epoch => epoch + 1);
       if (resp?.message === __INVALID_DATA_MSG__ && resp.data) {
         setEquipSlotErrors(Object.values(resp.data).map((v: any, i) => <p key={i}>{v}</p>));
       } else if (error.response?.status === 409) {
@@ -134,15 +151,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     onSettled: () => { savingRef.current = false; }
   });
 
-  // Calculate if the submit button should be locked
-  const filledSlotsCount = Object.values(formik.values).filter(val => val && String(val).trim() !== '').length;
-  const verifiedCount = Object.keys(formik.values).filter(key => {
-    const val = formik.values[key];
-    return val && String(val).trim() !== '' && verifiedSlots[key];
-  }).length;
-  
-  // Submit is disabled if NO slots are filled, or if the number of filled slots DOES NOT MATCH the verified checkboxes
-  const isSubmitDisabled = assembleMutation.isPending || filledSlotsCount === 0 || filledSlotsCount !== verifiedCount;
+  const filledSlotsCount = Object.values(formik.values).filter(value => value.trim()).length;
 
   if (equipTypeQuery.isPending) return <h4>Loading assembly slots...</h4>;
   if (equipTypeQuery.isError) return <h4>Error loading equipment metadata.</h4>;
@@ -169,6 +178,10 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
 
   const sortedSlots = [...slotsToRender].sort((a, b) => a.name.localeCompare(b.name));
 
+  const requiredSlots = isDrawer ? sortedSlots : sortedSlots.filter(slot => formik.values[slot.name]?.trim());
+  const isSubmitDisabled = assembleMutation.isPending || filledSlotsCount === 0 || requiredSlots.some(slot =>
+    !verifiedSlots[slot.name] || (needsPosition(slot.name) && !validPositions[slot.name]));
+
   const executeAssembly = () => {
     if (savingRef.current || isSubmitDisabled || !mutationDataPayload) return;
     // Save only the configuration that is still displayed and verified.
@@ -176,7 +189,8 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     if (mutationDataPayload.id !== extractSequentialNumber(parentId) ||
         mutationDataPayload.slots.length !== currentSlots.length ||
         mutationDataPayload.slots.some(slot => !verifiedSlots[slot.name] ||
-          slot.equipment_id !== extractSequentialNumber((formik.values[slot.name] || '').trim()))) return;
+          slot.equipment_id !== scanId(formik.values[slot.name] || '') ||
+          (needsPosition(slot.name) && slot.upgrade_position !== scanPosition(positions[slot.name] || '')))) return;
     if (positionConflict && !positionSource) return;
     savingRef.current = true;
     assembleMutation.mutate({ ...mutationDataPayload,
@@ -186,7 +200,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
 
   const renderConfirmationTable = () => {
     if (!mutationDataPayload || !mutationDataPayload.slots) return null;
-    
+
     return (
         <table className="w-full text-left border-collapse mt-3">
             <thead>
@@ -194,17 +208,18 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
                     <th className="p-2">Slot Name</th>
                     <th className="p-2">Equipment ID</th>
                     <th className="p-2">Component Specifications</th>
+                    {isDrawer && <th className="p-2">Upgrade Position</th>}
                 </tr>
             </thead>
             <tbody>
                 {mutationDataPayload.slots.map((slot: any) => {
                     const equip = selectedEquipments[slot.name];
                     const typeName = equip?.type_name || 'N/A';
-                    
+
                     // Identify cable specifications for visual highlighting
                     const isShortCable = typeName.includes('Short Cable') || typeName === 'PMT Block' || typeName === 'PMT Block (Standard)';
                     const isLongCable = typeName.includes('Long Cable');
-                    
+
                     return (
                         <tr key={slot.name} className="border-bottom-1 surface-border">
                             <td className="p-2">{formatSlotLabel(slot.name)}</td>
@@ -214,6 +229,9 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
                                 {isShortCable && <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-800 border-round font-bold text-xs">SHORT CABLE</span>}
                                 {isLongCable && <span className="ml-2 px-2 py-1 bg-teal-100 text-teal-800 border-round font-bold text-xs">LONG CABLE</span>}
                             </td>
+                            {isDrawer && <td className="p-2">{slot.upgrade_position !== undefined && <>
+                              {equip?.positions?.box_position ?? 'Not recorded'} → <b>{slot.upgrade_position}</b>
+                            </>}</td>}
                         </tr>
                     );
                 })}
@@ -225,13 +243,13 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   return (
     <div className="card flex flex-column gap-3">
       {equipSlotErrors.length > 0 && <div className="p-message p-message-error mb-3">{equipSlotErrors}</div>}
-      
+
       <form onSubmit={formik.handleSubmit} onKeyDown={barcodeReaderSafe ? preventEnterDefault : undefined}>
         <fieldset disabled={assembleMutation.isPending} style={{ border: 0, padding: 0, margin: 0 }}>
         {sortedSlots.map((slot: any) => {
           const label = formatSlotLabel(slot.name);
           let allowedTypes: string[] | undefined = undefined;
-          
+
           try {
             if (typeData.slots) {
               const parsedSlots = typeof typeData.slots === 'string' ? JSON.parse(typeData.slots) : typeData.slots;
@@ -244,21 +262,23 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
             console.warn("Could not parse allowed types for slot", slot.name);
           }
 
-          const isFilled = formik.values[slot.name] && String(formik.values[slot.name]).trim() !== '';
 
           return (
             <div className="mt-4 mb-2 p-3 border-1 surface-border border-round" key={slot.name}>
               <SlotSearchInput
                 id={slot.name}
+                autoFocus={slot.name === sortedSlots[0]?.name}
                 label={label}
                 value={formik.values[slot.name] || ''}
                 onChange={(val: string) => {
                   formik.setFieldValue(slot.name, val);
-                  // Any ID edit invalidates the physical check and the preview.
+                  // Any edit invalidates the checked identity and the preview.
                   if (val !== formik.values[slot.name]) {
                     setMutationDataPayload(null);
                     setShowConfirmDialog(false);
                     setVerifiedSlots(prev => ({...prev, [slot.name]: false}));
+                    setPositions(prev => ({...prev, [slot.name]: ''}));
+                    setValidPositions(prev => ({...prev, [slot.name]: false}));
                     setSelectedEquipments(prev => {
                       const newObj = {...prev};
                       delete newObj[slot.name];
@@ -266,44 +286,52 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
                     });
                   }
                 }}
+                validationEpoch={validationEpoch}
+                validateEquipment={async (id: string) => {
+                  const response: any = await defaultQueryFunction({ queryKey: ['assembly_scan', 'get', {
+                    parent_id: scanId(parentId), equipment_id: id, slot: slot.name
+                  }] });
+                  const equipment = response.data?.[0];
+                  if (!equipment || equipment.id !== id) throw new Error('Invalid validation response. Try again.');
+                  if (Object.entries(selectedRef.current).some(([name, item]) => name !== slot.name && item?.id === id)) {
+                    throw new Error('This equipment is already selected in another slot.');
+                  }
+                  return equipment;
+                }}
                 onEquipmentSelect={(equip: any) => {
-                  setSelectedEquipments(prev => ({...prev, [slot.name]: equip}));
-                  // Reset verification when changing equipment to force a new check
-                  setVerifiedSlots(prev => ({...prev, [slot.name]: false}));
+                  selectedRef.current = {...selectedRef.current, [slot.name]: equip};
+                  setSelectedEquipments(selectedRef.current);
+                  setVerifiedSlots(prev => ({...prev, [slot.name]: !!equip}));
                 }}
                 allowedTypes={allowedTypes}
               />
-              
-              {/* Mandatory Position Double-Check Checkbox */}
-              {isFilled && (
-                <div className="flex align-items-center mt-3 ml-1">
-                  <Checkbox 
-                      disabled={assembleMutation.isPending}
-                      inputId={`verify_${slot.name}`} 
-                      checked={!!verifiedSlots[slot.name]} 
-                      onChange={(e) => setVerifiedSlots(prev => ({...prev, [slot.name]: e.checked || false}))} 
-                  />
-                  <label htmlFor={`verify_${slot.name}`} className={`ml-2 text-sm font-bold ${verifiedSlots[slot.name] ? 'text-green-600' : 'text-orange-500'}`}>
-                      {verifiedSlots[slot.name] ? '✓ Physically verified' : 'Required: Confirm physical position in slot'}
-                  </label>
-                </div>
-              )}
+
+              {needsPosition(slot.name) && <UpgradePositionInput
+                id={`${slot.name}-position`} value={positions[slot.name] || ''}
+                disabled={!verifiedSlots[slot.name]}
+                onChange={value => {
+                  setPositions(prev => ({...prev, [slot.name]: value}));
+                  setMutationDataPayload(null); setShowConfirmDialog(false);
+                }}
+                onValidated={valid => setValidPositions(prev => ({...prev, [slot.name]: valid}))}
+              />}
+
             </div>
           );
         })}
-        
+
         <div className="mt-4 flex flex-column">
-          <Button 
-            type="submit" 
-            label="Confirm Assembly" 
-            icon="pi pi-box" 
+          <Button
+            type="submit" data-assembly-field
+            label="Confirm Assembly"
+            icon="pi pi-box"
             disabled={isSubmitDisabled}
             className={isSubmitDisabled ? 'p-button-secondary' : 'p-button-primary'}
           />
           {isSubmitDisabled && filledSlotsCount > 0 && (
              <small className="text-orange-500 mt-2 font-bold">
                <i className="pi pi-lock mr-1"></i>
-               Please check the physical verification box for all selected equipments to unlock assembly.
+               Validate all required equipment IDs and positions to confirm assembly.
              </small>
           )}
         </div>
@@ -311,10 +339,10 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       </form>
 
       {/* Pre-commit Validation Popup */}
-      <Dialog 
-          header="Confirm Assembly Configuration" 
-          visible={showConfirmDialog} 
-          style={{ width: '60vw' }} 
+      <Dialog
+          header="Confirm Assembly Configuration"
+          visible={showConfirmDialog}
+          style={{ width: '60vw' }}
           breakpoints={{ '960px': '85vw', '640px': '100vw' }}
           closable={!assembleMutation.isPending}
           closeOnEscape={!assembleMutation.isPending}

@@ -17,6 +17,7 @@ $routes->get('/','WebApp::index', [
 ]);
 
 $routes->group('api', static function ($routes){
+    $routes->get('equipment/assembly-scan', 'AssemblyScan::get', ['filter' => ['api_auth', 'action:view']]);
     // PMT positions integration v1
     $routes->get('equipment/pmt-positions', 'PmtPositions::get', ['filter' => ['api_auth', 'action:view']]);
     $routes->post('equipment/pmt-positions', 'PmtPositions::post', ['filter' => ['api_auth', 'action:edit']]);

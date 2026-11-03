@@ -822,6 +822,7 @@ class Equipments extends APIController
         foreach ($ids as $candidate) {
             if (!is_string($candidate) || !preg_match('/^[A-Z0-9]{7}$/D', $candidate)) return $this->failBadRequest();
         }
+        if (in_array($inputData['id'], $children, true)) return $this->failBadRequest(null, 'Equipment cannot be mounted into itself.');
         if (count(array_unique($children)) !== count($children)) return $this->failBadRequest(null, 'Duplicate component.');
         $ids = array_unique($ids); sort($ids);
         foreach ($ids as $candidate) UpgradePosition::equipment($candidate);
@@ -839,7 +840,8 @@ class Equipments extends APIController
         // committed state, not relation IDs that would be rolled back on a conflict.
         $positionPlans = [];
         foreach ($validInput['slots'] as $slotInfo) {
-            $positionPlans[$slotInfo['equipment_id']] = UpgradePosition::prepareAssembly(
+            $positionPlans[$slotInfo['equipment_id']] = UpgradePosition::prepareDrawer($validInput['id'], $slotInfo)
+                ?? UpgradePosition::prepareAssembly(
                 $validInput['id'], $slotInfo['equipment_id'], $resolution);
         }
         foreach ($validInput['slots'] as $slotInfo) {
