@@ -7,6 +7,7 @@ namespace App\Entities {
     }
 }
 namespace {
+    require __DIR__ . '/../../app/Libraries/EquipmentParams.php';
     require __DIR__ . '/../../app/Libraries/PositionConflict.php';
     require __DIR__ . '/../../app/Libraries/UpgradePosition.php';
     require __DIR__ . '/../../app/Validation/Validator.php';

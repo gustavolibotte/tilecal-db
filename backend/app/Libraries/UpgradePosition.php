@@ -40,9 +40,7 @@ final class UpgradePosition
 
     public static function params(array $row): array
     {
-        $value = $row['type_params'] === null ? [] : json_decode($row['type_params'], true, 512, JSON_THROW_ON_ERROR);
-        if (!is_array($value)) throw new \DomainException('Invalid equipment parameters.');
-        return $value;
+        return EquipmentParams::decode($row['type_params'] ?? null);
     }
 
     public static function relations(string $id, string $side): array

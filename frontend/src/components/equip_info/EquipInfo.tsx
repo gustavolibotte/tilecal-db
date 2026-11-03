@@ -28,7 +28,11 @@ export default function EquipInfo(props: EquipInfoProps) {
     { name: 'Serial', field: 'serial' }
   ];
 
-  if (props.equipData.type_params != null){
+  const params = props.equipData.type_params;
+  const invalidParams = props.equipData.type_params_error ||
+    (params != null && (typeof params !== 'object' || Array.isArray(params) && params.length > 0));
+
+  if (!invalidParams && params != null){
     fieldConfig = fieldConfig.concat(
       Object.keys(props.equipData.type_params).filter(key => props.hist || key !== 'planned_upgrade_position').filter(key => props.hist || props.equipData.type_name !== 'PMT' || !['phase1_position', 'box_position'].includes(key)).map((key: string): any => {
         return {
@@ -53,6 +57,9 @@ export default function EquipInfo(props: EquipInfoProps) {
 
   return (
     <>
+    {invalidParams && <p role="alert" className="text-orange-600">
+      Equipment parameters could not be read. The stored data has been preserved.
+    </p>}
     <DataInfo
       data={props.equipData}
       fields={fieldConfig}/>

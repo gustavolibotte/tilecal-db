@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Entities\Equipment;
 use App\Libraries\UpgradePosition;
+use App\Libraries\EquipmentParams;
 use App\Libraries\PositionConflict;
 use App\Validation\EquipmentRules;
 use App\Validation\Validator;
@@ -204,7 +205,7 @@ class Equipments extends APIController
         
         helper('app_array');
         foreach ($data as &$sample) {
-            $sample['type_params'] = json_decode($sample['type_params']);
+            EquipmentParams::present($sample);
         }
         
         $payload = [
@@ -569,7 +570,8 @@ class Equipments extends APIController
             FROM equipments e JOIN equipment_types t ON t.id=e.type_id
             WHERE e.id=? AND e.deleted_at IS NULL FOR UPDATE', [$id])->getRowArray();
         if (!$locked) return $this->failNotFound();
-        $queryData = new Equipment($locked);
+        // Database JSON is already encoded; do not pass it through an Entity setter.
+        $queryData = (object)$locked;
         $submittedPositions = $this->request->getJSON(true);
         if (is_array($submittedPositions) && ($queryData->type_name === 'PMT' || in_array($queryData->type_name, UpgradePosition::BLOCKS, true))
             && (array_key_exists('box_position', $submittedPositions) || array_key_exists('phase1_position', $submittedPositions)
@@ -595,11 +597,12 @@ class Equipments extends APIController
         }
         $validInput = $validationRes['validatedData'];
         $validInput = array_merge($validInput, $clearedFields);
-        $validInput['type_params'] = $queryData->type_params;
-        foreach(json_decode($queryData->params, true) as $param) {
-            if (array_key_exists($param, $validInput)) {
-                $validInput['type_params'][$param] = remove_value($param, $validInput);
-            }
+        $submittedFields = is_array($submittedPositions) ? $submittedPositions : $this->request->getRawInput();
+        try {
+            $validInput = EquipmentParams::editPayload($validInput, $submittedFields,
+                json_decode($queryData->params, true, 512, JSON_THROW_ON_ERROR), $locked['type_params']);
+        } catch (\DomainException $e) {
+            return $this->buildAPIResponse(409, null, $e->getMessage());
         }
         $equip = new Equipment($validInput);
         model('EquipmentModel')->update($equip->id, $equip);

@@ -38,7 +38,7 @@ class HistModel extends BaseModel
             ->where('eh.record_id', $id)
             ->get()->getResultArray();
         array_walk($equipmentLogs, function (&$value, $key){
-            $value['type_params'] = json_decode($value['type_params'], true);
+            \App\Libraries\EquipmentParams::present($value);
         });
         $equipmentRelationLogs = $this->db->table('parent_child_equips_hist pceh')
             ->select("'parent_rel' as hist_type")
