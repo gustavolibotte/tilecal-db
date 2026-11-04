@@ -1,7 +1,7 @@
 <?php
-
 namespace App\Controllers;
 
+use App\Libraries\EquipmentSearch;
 use CodeIgniter\HTTP\ResponseInterface;
 use Throwable;
 
@@ -10,127 +10,36 @@ class Search extends APIController
     public function index(): ResponseInterface
     {
         try {
-            $query = $this->request->getGet('q');
-            
-            if (empty($query) || strlen($query) < 2) {
-                return $this->buildAPIResponse(200, []);
-            }
-
-            $sequential = null;
-            $normalizedQuery = strtoupper($query);
-            
-            if (strlen($normalizedQuery) >= 14) {
-                $suffix = substr($normalizedQuery, 7);
-                $cleanSuffix = preg_replace('/[^0-9]/', '', $suffix);
-                
-                if (strlen($cleanSuffix) === 7) {
-                    $sequential = $cleanSuffix;
-                }
-            }
-
-            $results = [];
-            $limitPerCategory = 5;
-            
-            $db = db_connect();
-
-            $equipBuilder = $db->table('equipments e')
-                ->select('e.id, e.serial, et.name as type_name')
-                ->join('equipment_types et', 'e.type_id = et.id', 'left')
-                ->groupStart()
-                    ->like('e.id', $query, 'both', null, true)
-                    ->orLike('e.serial', $query, 'both', null, true)
-                    ->orLike('et.name', $query, 'both', null, true);
-            
-            if ($sequential) {
-                $equipBuilder->orLike('e.id', $sequential, 'both', null, true)
-                             ->orLike('e.serial', $sequential, 'both', null, true);
-            }
-            
-            $equipments = $equipBuilder->groupEnd()
-                ->where('e.deleted_at', null)
-                ->orderBy('e.updated_at', 'DESC')
-                ->limit($limitPerCategory * 2)
-                ->get()->getResultArray();
-
-            foreach ($equipments as $eq) {
-                $serialStr = (!empty($eq['serial']) && $eq['serial'] !== $eq['id']) ? " (Serial: {$eq['serial']})" : "";
-                $results[] = [
-                    'type' => 'equipment',
-                    'label' => $eq['id'],
-                    'description' => $eq['type_name'] . $serialStr,
-                    'icon' => 'pi-box',
-                    'url' => '/equipment/' . urlencode($eq['id'])
-                ];
-            }
-
-            $locations = $db->table('locations')
-                ->select('name, description')
-                ->groupStart()
-                    ->like('name', $query, 'both', null, true)
-                    ->orLike('description', $query, 'both', null, true)
-                ->groupEnd()
-                ->where('deleted_at', null)
-                ->limit($limitPerCategory)
-                ->get()->getResultArray();
-
-            foreach ($locations as $loc) {
-                $results[] = [
-                    'type' => 'location',
-                    'label' => $loc['name'],
-                    'description' => 'Location: ' . ($loc['description'] ?? ''),
-                    'icon' => 'pi-map-marker',
-                    'url' => '/equipment?location_name=' . urlencode($loc['name'])
-                ];
-            }
-
-            $institutes = $db->table('institutes')
-                ->select('mne, name')
-                ->groupStart()
-                    ->like('mne', $query, 'both', null, true)
-                    ->orLike('name', $query, 'both', null, true)
-                ->groupEnd()
-                ->where('deleted_at', null)
-                ->limit($limitPerCategory)
-                ->get()->getResultArray();
-
-            foreach ($institutes as $inst) {
-                $results[] = [
-                    'type' => 'institute',
-                    'label' => $inst['mne'],
-                    'description' => 'Institute: ' . $inst['name'],
-                    'icon' => 'pi-building',
-                    'url' => '/equipment?owner_name=' . urlencode($inst['name'])
-                ];
-            }
-
-            $statuses = $db->table('statuses')
-                ->select('name, description')
-                ->groupStart()
-                    ->like('name', $query, 'both', null, true)
-                    ->orLike('description', $query, 'both', null, true)
-                ->groupEnd()
-                ->where('deleted_at', null)
-                ->limit($limitPerCategory)
-                ->get()->getResultArray();
-
-            foreach ($statuses as $st) {
-                $results[] = [
-                    'type' => 'status',
-                    'label' => $st['name'],
-                    'description' => 'Status: ' . ($st['description'] ?? ''),
-                    'icon' => 'pi-tag',
-                    'url' => '/equipment?status_name=' . urlencode($st['name'])
-                ];
-            }
-
-            return $this->buildAPIResponse(200, $results);
-
-        } catch (Throwable $e) {
-            return $this->response->setStatusCode(500)->setJSON([
-                'status' => 500,
-                'message' => 'SQL ERROR: ' . $e->getMessage() . ' at line ' . $e->getLine() . ' in ' . basename($e->getFile()),
-                'data' => null
+            $options = EquipmentSearch::options($this->request->getGet());
+            $counts = array_fill_keys(EquipmentSearch::CATEGORIES, 0);
+            $pageSize = 25;
+            if ($options['q'] === '') return $this->buildAPIResponse(200, [
+                'results'=>[], 'counts'=>$counts, 'total'=>0, 'page'=>1, 'page_size'=>$pageSize
             ]);
+            $db = db_connect();
+            if ($this->request->getGet('preview') === '1') {
+                $options['category'] = 'equipment';
+                $plan = EquipmentSearch::plan($options, 'equipment');
+                $rows = $db->query($plan['sql'] . ' LIMIT 6', $plan['bindings'])->getResultArray();
+                return $this->buildAPIResponse(200, ['results'=>array_map(fn($row)=>EquipmentSearch::result($row, $plan, $options), $rows)]);
+            }
+            foreach (EquipmentSearch::CATEGORIES as $category) {
+                $plan = EquipmentSearch::plan($options, $category);
+                $counts[$category] = (int)$db->query($plan['count_sql'], $plan['count_bindings'])->getRowArray()['total'];
+            }
+            $total = $counts[$options['category']];
+            $page = min($options['page'], max(1, (int)ceil($total / $pageSize)));
+            $plan = EquipmentSearch::plan($options, $options['category']);
+            $offset = ($page - 1) * $pageSize;
+            $rows = $db->query($plan['sql'] . " LIMIT $pageSize OFFSET $offset", $plan['bindings'])->getResultArray();
+            $results = array_map(fn($row)=>EquipmentSearch::result($row, $plan, $options), $rows);
+            return $this->buildAPIResponse(200, ['results'=>$results, 'counts'=>$counts,
+                'total'=>$total, 'page'=>$page, 'page_size'=>$pageSize]);
+        } catch (\InvalidArgumentException $e) {
+            return $this->buildAPIResponse(400, null, $e->getMessage());
+        } catch (Throwable $e) {
+            log_message('error', 'Global search failed: {message}', ['message'=>$e->getMessage()]);
+            return $this->buildAPIResponse(500, null, 'Search could not be completed. Please retry.');
         }
     }
 }
