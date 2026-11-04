@@ -373,6 +373,9 @@ class EquipmentRules
         if (in_array($typeName, \App\Libraries\UpgradePosition::BLOCKS, true)) {
             $rules['box_position'] = ['\App\Libraries\UpgradePosition::optionalRule' => []];
         }
+        if ($typeName === 'Mainboard') {
+            $rules['fuses_removed'] = ['\App\Libraries\MainboardFuses::optionalRule' => []];
+        }
         return $rules;
     }
 
@@ -394,6 +397,9 @@ class EquipmentRules
             $rules = self::$specificRuleMethod();
         } else {
             $rules = self::getDefaultEditRule();
+        }
+        if ($typeName === 'Mainboard') {
+            $rules['fuses_removed'] = ['\App\Libraries\MainboardFuses::optionalRule' => []];
         }
         return $rules;
     }

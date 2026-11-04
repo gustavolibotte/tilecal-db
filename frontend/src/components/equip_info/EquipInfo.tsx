@@ -34,13 +34,19 @@ export default function EquipInfo(props: EquipInfoProps) {
 
   if (!invalidParams && params != null){
     fieldConfig = fieldConfig.concat(
-      Object.keys(props.equipData.type_params).filter(key => props.hist || key !== 'planned_upgrade_position').filter(key => props.hist || props.equipData.type_name !== 'PMT' || !['phase1_position', 'box_position'].includes(key)).map((key: string): any => {
+      Object.keys(props.equipData.type_params).filter(key => key !== 'fuses_removed' || props.equipData.type_name !== 'Mainboard').filter(key => props.hist || key !== 'planned_upgrade_position').filter(key => props.hist || props.equipData.type_name !== 'PMT' || !['phase1_position', 'box_position'].includes(key)).map((key: string): any => {
         return {
           name: key === 'planned_upgrade_position' ? 'Reserved Upgrade Position' : snakeToSpaced(key? key: ''),
           field: `type_params.${key}`,
           template: (data: any) => data.type_params[key]};
       })
     );
+  }
+
+  if (props.equipData.type_name === 'Mainboard' && !invalidParams) {
+    fieldConfig.push({ name: 'FUSES is removed?', field: 'type_params.fuses_removed',
+      template: (data: any) => data.type_params?.fuses_removed === true ? 'Yes' :
+        data.type_params?.fuses_removed === false ? 'No' : 'Not recorded' });
   }
 
   fieldConfig = fieldConfig.concat([

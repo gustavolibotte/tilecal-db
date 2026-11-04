@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Entities\Equipment;
 use App\Libraries\UpgradePosition;
 use App\Libraries\EquipmentParams;
+use App\Libraries\MainboardFuses;
 use App\Libraries\PositionConflict;
 use App\Validation\EquipmentRules;
 use App\Validation\Validator;
@@ -275,6 +276,11 @@ class Equipments extends APIController
             $validInput['type_params'][UpgradePosition::RESERVED] = $validInput['box_position'];
             unset($validInput['box_position']);
         }
+
+        if ($inputData['type_name'] === 'Mainboard' && array_key_exists(MainboardFuses::FIELD, $inputData)) {
+            $validInput['type_params'][MainboardFuses::FIELD] = $inputData[MainboardFuses::FIELD];
+        }
+        unset($validInput[MainboardFuses::FIELD]);
 
         $equipment = new Equipment($validInput);
         $model = model('EquipmentModel');
@@ -600,7 +606,8 @@ class Equipments extends APIController
         $submittedFields = is_array($submittedPositions) ? $submittedPositions : $this->request->getRawInput();
         try {
             $validInput = EquipmentParams::editPayload($validInput, $submittedFields,
-                json_decode($queryData->params, true, 512, JSON_THROW_ON_ERROR), $locked['type_params']);
+                MainboardFuses::parameterNames($queryData->type_name,
+                    json_decode($queryData->params, true, 512, JSON_THROW_ON_ERROR)), $locked['type_params']);
         } catch (\DomainException $e) {
             return $this->buildAPIResponse(409, null, $e->getMessage());
         }

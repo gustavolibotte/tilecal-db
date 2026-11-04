@@ -37,6 +37,7 @@ const formatSlotLabel = (slotName: string): string => {
   if (name.includes('hv_divider_slot')) return 'Active HV Divider';
   if (name.includes('pmt_slot')) return 'PMT';
 
+  if (name.includes('hv_bus_board_slot')) return 'HV Bus Board';
   if (name.includes('mainboard_slot')) return 'Mainboard';
   if (name.includes('daughterboard_slot')) return 'Daughterboard';
 
@@ -78,10 +79,14 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     queryKey: ['equipment_type', 'get', { type_name: parentTypeName }]
   });
 
+  const mountedQuery: any = useQuery({
+    queryKey: ['equipment', 'get', { relatedEquipmentId: parentId }], queryFn: defaultQueryFunction
+  });
+
   const formik = useFormik<AssembleFormValues>({
     initialValues: {},
     onSubmit: (values) => {
-      const filledSlots = Object.entries(values).filter(([, id]) => id.trim() !== '');
+      const filledSlots = Object.entries(values).filter(([name, id]) => id.trim() !== '' && sortedSlots.some(slot => slot.name === name));
       if (savingRef.current || filledSlots.length === 0 ||
           filledSlots.some(([name]) => !verifiedSlots[name] || (needsPosition(name) && !validPositions[name])) || isSubmitDisabled) return;
       setEquipSlotErrors([]);
@@ -151,8 +156,9 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     onSettled: () => { savingRef.current = false; }
   });
 
-  const filledSlotsCount = Object.values(formik.values).filter(value => value.trim()).length;
 
+  if (mountedQuery.isPending) return <h4>Loading mounted components...</h4>;
+  if (mountedQuery.isError) return <h4>Could not check occupied slots. Reload before assembling.</h4>;
   if (equipTypeQuery.isPending) return <h4>Loading assembly slots...</h4>;
   if (equipTypeQuery.isError) return <h4>Error loading equipment metadata.</h4>;
 
@@ -176,8 +182,16 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     );
   }
 
-  const sortedSlots = [...slotsToRender].sort((a, b) => a.name.localeCompare(b.name));
+  const mountedData = mountedQuery.data?.data;
+  const mountedRows: any[] = Array.isArray(mountedData) ? mountedData : mountedData?.data || [];
+  const occupied = new Set(mountedRows.filter(row => row.relation_type === 'child' && !row.deleted_at).map(row => row.slot_name));
+  const rank = (name: string) => name.includes('daughterboard_slot') ? 0 : name.includes('mainboard_slot') ? 1 :
+    name.includes('hv_bus_board_slot') ? 2 : 3;
+  const sortedSlots = slotsToRender.filter(slot => !occupied.has(slot.name)).sort((a, b) =>
+    rank(a.name) - rank(b.name) || a.name.localeCompare(b.name, undefined, { numeric: true }));
+  if (!sortedSlots.length) return <p>All slots are already occupied.</p>;
 
+  const filledSlotsCount = sortedSlots.filter(slot => formik.values[slot.name]?.trim()).length;
   const requiredSlots = isDrawer ? sortedSlots : sortedSlots.filter(slot => formik.values[slot.name]?.trim());
   const isSubmitDisabled = assembleMutation.isPending || filledSlotsCount === 0 || requiredSlots.some(slot =>
     !verifiedSlots[slot.name] || (needsPosition(slot.name) && !validPositions[slot.name]));
@@ -185,7 +199,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   const executeAssembly = () => {
     if (savingRef.current || isSubmitDisabled || !mutationDataPayload) return;
     // Save only the configuration that is still displayed and verified.
-    const currentSlots = Object.entries(formik.values).filter(([, id]) => id.trim() !== '');
+    const currentSlots = Object.entries(formik.values).filter(([name, id]) => id.trim() !== '' && sortedSlots.some(slot => slot.name === name));
     if (mutationDataPayload.id !== extractSequentialNumber(parentId) ||
         mutationDataPayload.slots.length !== currentSlots.length ||
         mutationDataPayload.slots.some(slot => !verifiedSlots[slot.name] ||
@@ -208,20 +222,23 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
                     <th className="p-2">Slot Name</th>
                     <th className="p-2">Equipment ID</th>
                     <th className="p-2">Component Specifications</th>
-                    {isDrawer && <th className="p-2">Upgrade Position</th>}
+                    {isDrawer && <><th className="p-2">Current Upgrade Position</th><th className="p-2">Scanned Upgrade Position</th><th className="p-2">Position update</th></>}
                 </tr>
             </thead>
             <tbody>
                 {mutationDataPayload.slots.map((slot: any) => {
                     const equip = selectedEquipments[slot.name];
                     const typeName = equip?.type_name || 'N/A';
+                    const currentPosition = equip?.positions?.box_position;
+                    const hasPosition = slot.upgrade_position !== undefined;
+                    const conflict = hasPosition && currentPosition != null && Number(currentPosition) !== slot.upgrade_position;
 
                     // Identify cable specifications for visual highlighting
                     const isShortCable = typeName.includes('Short Cable') || typeName === 'PMT Block' || typeName === 'PMT Block (Standard)';
                     const isLongCable = typeName.includes('Long Cable');
 
                     return (
-                        <tr key={slot.name} className="border-bottom-1 surface-border">
+                        <tr key={slot.name} className={`border-bottom-1 surface-border ${conflict ? 'bg-orange-50' : ''}`}>
                             <td className="p-2">{formatSlotLabel(slot.name)}</td>
                             <td className="p-2 font-bold">{slot.equipment_id}</td>
                             <td className="p-2">
@@ -229,9 +246,14 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
                                 {isShortCable && <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-800 border-round font-bold text-xs">SHORT CABLE</span>}
                                 {isLongCable && <span className="ml-2 px-2 py-1 bg-teal-100 text-teal-800 border-round font-bold text-xs">LONG CABLE</span>}
                             </td>
-                            {isDrawer && <td className="p-2">{slot.upgrade_position !== undefined && <>
-                              {equip?.positions?.box_position ?? 'Not recorded'} → <b>{slot.upgrade_position}</b>
-                            </>}</td>}
+                            {isDrawer && <>
+                              <td className="p-2">{hasPosition ? currentPosition ?? 'Not recorded' : '—'}</td>
+                              <td className="p-2 font-bold">{slot.upgrade_position ?? '—'}</td>
+                              <td className="p-2">{conflict ? <span className="text-orange-800 font-bold">
+                                <i className="pi pi-exclamation-triangle mr-2" />Position mismatch. The scanned position will replace the current position.
+                              </span> : hasPosition ? currentPosition == null ? 'The scanned position will be saved.' : 'Unchanged.' : '—'}</td>
+                            </>}
+
                         </tr>
                     );
                 })}
@@ -242,6 +264,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
 
   return (
     <div className="card flex flex-column gap-3">
+      {occupied.size > 0 && <p className="text-600">Occupied slots are preserved. Scan components for the remaining slots.</p>}
       {equipSlotErrors.length > 0 && <div className="p-message p-message-error mb-3">{equipSlotErrors}</div>}
 
       <form onSubmit={formik.handleSubmit} onKeyDown={barcodeReaderSafe ? preventEnterDefault : undefined}>

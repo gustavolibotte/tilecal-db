@@ -18,6 +18,7 @@ import {
   serialRules,
 } from '../../utils/validation_rules';
 import * as Yup from 'yup';
+import FuseSelection from '../fuse_selection/FuseSelection';
 import { Message } from 'primereact/message';
 
 import { applyAtlasBarcodeMask } from '../../utils/string'; 
@@ -33,6 +34,7 @@ interface EquipFormSchema {
   comments: string;
   type_name?: string;
   box_position: number | null;
+  fuses_removed: boolean | null;
 }
 
 interface EquipFormProps {
@@ -111,6 +113,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
     serial: '',
     comments: 'Was tested at ',
     box_position: null,
+    fuses_removed: null,
   };
 
   const toastId = useRef<Id>();
@@ -169,6 +172,10 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
       const value = data[field] ?? '';
       if (!equipId || value !== (originalValues.current[field] ?? '')) payload[field] = value;
     }
+    if (typeName === 'Mainboard' && (!equipId || data.fuses_removed !==
+        (originalValues.current.type_params?.fuses_removed ?? null))) {
+      payload.fuses_removed = data.fuses_removed;
+    }
     if (equipId && Object.keys(payload).length === 1) { onSuccess?.(); return; }
     equipMutation.mutate(payload);
   };
@@ -212,6 +219,7 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
         ...initialValues, // Ensures all fields from the schema are present
         ...equipment, // Overwrites with values from the API response
         // Ensure null values from the API don't break the components
+        fuses_removed: equipment.type_params?.fuses_removed ?? null,
         comments: equipment.comments || '',
         owner_mne: equipment.owner_mne || '',
         location_name: equipment.location_name || '',
@@ -374,6 +382,8 @@ export default function EquipForm({ equipId, typeName, onSuccess, isEdit }: Equi
         </div>
         
         <div className='mt-3 flex flex-column gap-2'>
+          {typeName === 'Mainboard' && <FuseSelection value={formik.values.fuses_removed}
+            onChange={value => formik.setFieldValue('fuses_removed', value)} disabled={equipMutation.isPending} />}
           <label htmlFor='comments' className='font-bold text-600'>Comments</label>
           <InputTextarea
             id='comments'
