@@ -1,0 +1,1105 @@
+{
+  "schema_version": "1.0.0",
+  "title": "ATLAS TileCal Phase-II Superdrawer: consolidated PMT block location schemes",
+  "sources": {
+    "primary": {
+      "filename": "SDs_PMT_Blocks_location_scheme.pdf",
+      "pages": 3,
+      "priority": "authoritative_for_visual_layout"
+    },
+    "secondary": {
+      "filename": "drawers.pdf",
+      "pages": 3,
+      "priority": "historical_context_and_textual_counts"
+    },
+    "comparison": {
+      "filename": "Texto colado(20261105-101007).txt",
+      "priority": "reviewed_and_corrected"
+    },
+    "user_verification": "Slot 45 of Long Barrel MD4 is occupied; 44 empty."
+  },
+  "conventions": {
+    "slot_numbering": "global_physical_position_number_left_to_right",
+    "slot_occupancy": "physical PMT block visually present; empty slots are physically represented positions without a PMT block",
+    "short_module_absent_positions": "Positions 1-4 do not belong to the short module, and are not counted as empty.",
+    "mini_drawer": "12 physical positions, with one schematic set of electronic boards",
+    "micro_drawer": "2 or 6 physical positions; no separate schematic electronic-board set",
+    "electronics_board_names_as_labeled": [
+      "Main Board",
+      "Daughter Board",
+      "HV_Opto Board"
+    ],
+    "boards_per_electronic_set_assumed_from_repeated_schematic": {
+      "main_board": 1,
+      "daughter_board": 1,
+      "hv_opto_board": 1
+    },
+    "blue_markers": "Top and bottom rectangular blue markings show positions; their precise mechanical/electrical function is not specified.",
+    "cable_arrow_caution": "Colored-arrow labels represent visually indicated position references; do not interpret as verified electronic channel connector assignments.",
+    "not_quantified_from_schemes": [
+      "individual FENICS boards",
+      "individual HV dividers",
+      "HV Bus Boards",
+      "connectors",
+      "fasteners",
+      "cable length in mm"
+    ]
+  },
+  "configurations": [
+    {
+      "id": "LB",
+      "module_type": "Long Barrel",
+      "slot_range": [
+        1,
+        48
+      ],
+      "not_present_in_this_configuration": [],
+      "total_slots": 48,
+      "total_pmt_blocks": 45,
+      "total_empty_slots": 3,
+      "occupied_pmt_slots": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        45,
+        46,
+        47,
+        48
+      ],
+      "empty_slots": [
+        32,
+        33,
+        44
+      ],
+      "mini_drawer_count": 4,
+      "micro_drawer_count": 0,
+      "total_mechanical_units": 4,
+      "electronic_sets": 4,
+      "schematic_board_totals": {
+        "main_board": 4,
+        "daughter_board": 4,
+        "hv_opto_board": 4
+      },
+      "mechanical_order": [
+        "MD1",
+        "MD2",
+        "MD3",
+        "MD4"
+      ],
+      "units": [
+        {
+          "id": "MD1",
+          "type": "minidrawer",
+          "slot_range": [
+            1,
+            12
+          ],
+          "slots": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "occupied_pmt_slots": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "empty_slots": [],
+          "slot_count": 12,
+          "pmt_block_count": 12,
+          "empty_count": 0,
+          "electronics_set_count": 1,
+          "schematic_boards": {
+            "main_board": 1,
+            "daughter_board": 1,
+            "hv_opto_board": 1
+          },
+          "blue_marked_positions": [
+            2,
+            3,
+            10,
+            11
+          ]
+        },
+        {
+          "id": "MD2",
+          "type": "minidrawer",
+          "slot_range": [
+            13,
+            24
+          ],
+          "slots": [
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24
+          ],
+          "occupied_pmt_slots": [
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24
+          ],
+          "empty_slots": [],
+          "slot_count": 12,
+          "pmt_block_count": 12,
+          "empty_count": 0,
+          "electronics_set_count": 1,
+          "schematic_boards": {
+            "main_board": 1,
+            "daughter_board": 1,
+            "hv_opto_board": 1
+          },
+          "blue_marked_positions": [
+            14,
+            15,
+            22,
+            23
+          ]
+        },
+        {
+          "id": "MD3",
+          "type": "minidrawer",
+          "slot_range": [
+            25,
+            36
+          ],
+          "slots": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36
+          ],
+          "occupied_pmt_slots": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            34,
+            35,
+            36
+          ],
+          "empty_slots": [
+            32,
+            33
+          ],
+          "slot_count": 12,
+          "pmt_block_count": 10,
+          "empty_count": 2,
+          "electronics_set_count": 1,
+          "schematic_boards": {
+            "main_board": 1,
+            "daughter_board": 1,
+            "hv_opto_board": 1
+          },
+          "blue_marked_positions": [
+            26,
+            27,
+            34,
+            35
+          ]
+        },
+        {
+          "id": "MD4",
+          "type": "minidrawer",
+          "slot_range": [
+            37,
+            48
+          ],
+          "slots": [
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48
+          ],
+          "occupied_pmt_slots": [
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            45,
+            46,
+            47,
+            48
+          ],
+          "empty_slots": [
+            44
+          ],
+          "slot_count": 12,
+          "pmt_block_count": 11,
+          "empty_count": 1,
+          "electronics_set_count": 1,
+          "schematic_boards": {
+            "main_board": 1,
+            "daughter_board": 1,
+            "hv_opto_board": 1
+          },
+          "blue_marked_positions": [
+            38,
+            39,
+            46,
+            47
+          ]
+        }
+      ],
+      "long_cable_pmt_positions_stated_in_note": [],
+      "cable_arrow_annotations": [],
+      "interpretation_notes": [
+        "Slot 45 in MD4 is occupied; slot 44 is empty.",
+        "No microdrawers or longer-cable annotations appear."
+      ],
+      "source_discrepancies": [
+        "The earlier assistant report mistakenly marked slot 45 as empty, obtaining 44 instead of 45 PMTs. The PDFs indicate 45 occupied positions."
+      ]
+    },
+    {
+      "id": "EB",
+      "module_type": "Extended Barrel",
+      "slot_range": [
+        1,
+        48
+      ],
+      "not_present_in_this_configuration": [],
+      "total_slots": 48,
+      "total_pmt_blocks": 32,
+      "total_empty_slots": 16,
+      "occupied_pmt_slots": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        21,
+        22,
+        23,
+        24,
+        29,
+        30,
+        33,
+        34,
+        37,
+        38,
+        41,
+        42,
+        43,
+        44
+      ],
+      "empty_slots": [
+        19,
+        20,
+        25,
+        26,
+        27,
+        28,
+        31,
+        32,
+        35,
+        36,
+        39,
+        40,
+        45,
+        46,
+        47,
+        48
+      ],
+      "mini_drawer_count": 3,
+      "micro_drawer_count": 2,
+      "total_mechanical_units": 5,
+      "electronic_sets": 3,
+      "schematic_board_totals": {
+        "main_board": 3,
+        "daughter_board": 3,
+        "hv_opto_board": 3
+      },
+      "mechanical_order": [
+        "MD1",
+        "MD2",
+        "mD4",
+        "MD3",
+        "mD5"
+      ],
+      "units": [
+        {
+          "id": "MD1",
+          "type": "minidrawer",
+          "slot_range": [
+            1,
+            12
+          ],
+          "slots": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "occupied_pmt_slots": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "empty_slots": [],
+          "slot_count": 12,
+          "pmt_block_count": 12,
+          "empty_count": 0,
+          "electronics_set_count": 1,
+          "schematic_boards": {
+            "main_board": 1,
+            "daughter_board": 1,
+            "hv_opto_board": 1
+          },
+          "blue_marked_positions": [
+            2,
+            3,
+            10,
+            11
+          ]
+        },
+        {
+          "id": "MD2",
+          "type": "minidrawer",
+          "slot_range": [
+            13,
+            24
+          ],
+          "slots": [
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24
+          ],
+          "occupied_pmt_slots": [
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            21,
+            22,
+            23,
+            24
+          ],
+          "empty_slots": [
+            19,
+            20
+          ],
+          "slot_count": 12,
+          "pmt_block_count": 10,
+          "empty_count": 2,
+          "electronics_set_count": 1,
+          "schematic_boards": {
+            "main_board": 1,
+            "daughter_board": 1,
+            "hv_opto_board": 1
+          },
+          "blue_marked_positions": [
+            14,
+            15,
+            22,
+            23
+          ]
+        },
+        {
+          "id": "mD4",
+          "type": "microdrawer",
+          "slot_range": [
+            25,
+            30
+          ],
+          "slots": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "occupied_pmt_slots": [
+            29,
+            30
+          ],
+          "empty_slots": [
+            25,
+            26,
+            27,
+            28
+          ],
+          "slot_count": 6,
+          "pmt_block_count": 2,
+          "empty_count": 4,
+          "electronics_set_count": 0,
+          "schematic_boards": {
+            "main_board": 0,
+            "daughter_board": 0,
+            "hv_opto_board": 0
+          },
+          "blue_marked_positions": [
+            26,
+            27
+          ]
+        },
+        {
+          "id": "MD3",
+          "type": "minidrawer",
+          "slot_range": [
+            31,
+            42
+          ],
+          "slots": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42
+          ],
+          "occupied_pmt_slots": [
+            33,
+            34,
+            37,
+            38,
+            41,
+            42
+          ],
+          "empty_slots": [
+            31,
+            32,
+            35,
+            36,
+            39,
+            40
+          ],
+          "slot_count": 12,
+          "pmt_block_count": 6,
+          "empty_count": 6,
+          "electronics_set_count": 1,
+          "schematic_boards": {
+            "main_board": 1,
+            "daughter_board": 1,
+            "hv_opto_board": 1
+          },
+          "blue_marked_positions": [
+            32,
+            33,
+            40,
+            41
+          ]
+        },
+        {
+          "id": "mD5",
+          "type": "microdrawer",
+          "slot_range": [
+            43,
+            48
+          ],
+          "slots": [
+            43,
+            44,
+            45,
+            46,
+            47,
+            48
+          ],
+          "occupied_pmt_slots": [
+            43,
+            44
+          ],
+          "empty_slots": [
+            45,
+            46,
+            47,
+            48
+          ],
+          "slot_count": 6,
+          "pmt_block_count": 2,
+          "empty_count": 4,
+          "electronics_set_count": 0,
+          "schematic_boards": {
+            "main_board": 0,
+            "daughter_board": 0,
+            "hv_opto_board": 0
+          },
+          "blue_marked_positions": [
+            46,
+            47
+          ]
+        }
+      ],
+      "long_cable_pmt_positions_stated_in_note": [
+        29,
+        30,
+        41,
+        42,
+        43,
+        44
+      ],
+      "cable_arrow_annotations": [
+        {
+          "pmt_physical_slot": 29,
+          "pmt_unit": "mD4",
+          "diagram_color": "red",
+          "diagram_referenced_position": 31,
+          "referenced_unit": "MD3",
+          "relationship": "colored_curved_arrow_annotation",
+          "electrical_channel_mapping_confirmed": false,
+          "interpretation_note": "31 is an empty physical slot in MD3; the figure does not document a PCB connector/channel ID."
+        },
+        {
+          "pmt_physical_slot": 30,
+          "pmt_unit": "mD4",
+          "diagram_color": "green",
+          "diagram_referenced_position": 32,
+          "referenced_unit": "MD3",
+          "relationship": "colored_curved_arrow_annotation",
+          "electrical_channel_mapping_confirmed": false,
+          "interpretation_note": "32 is an empty physical slot in MD3; the figure does not document a PCB connector/channel ID."
+        },
+        {
+          "pmt_physical_slot": 43,
+          "pmt_unit": "mD5",
+          "diagram_color": "red",
+          "diagram_referenced_position": 41,
+          "referenced_unit": "MD3",
+          "relationship": "colored_curved_arrow_annotation",
+          "electrical_channel_mapping_confirmed": false,
+          "interpretation_note": "41 is visibly occupied by a PMT in MD3; therefore do not assert this is a free electronic channel."
+        },
+        {
+          "pmt_physical_slot": 44,
+          "pmt_unit": "mD5",
+          "diagram_color": "green",
+          "diagram_referenced_position": 42,
+          "referenced_unit": "MD3",
+          "relationship": "colored_curved_arrow_annotation",
+          "electrical_channel_mapping_confirmed": false,
+          "interpretation_note": "42 is visibly occupied by a PMT in MD3; therefore do not assert this is a free electronic channel."
+        }
+      ],
+      "interpretation_notes": [
+        "The note lists longer-cable PMTs at 29,30,41,42,43,44.",
+        "The same note ambiguously associates positions 41,42 with mD5, but the actual drawing locates them in MD3.",
+        "The mD4 arrows bear labels 31 and 32, not 23 and 24; they are visually next to MD3.",
+        "Arrow reference labels are NOT established electronic channel assignments.",
+        "MD2 holds ten physical PMT blocks and MD3 holds six."
+      ],
+      "source_discrepancies": [
+        "The comparison report incorrectly reassigns physical occupancy: MD2 as 6 and MD3 as 10.",
+        "The claim that the old drawing has eight physical slots in mD5 or duplicates physical 41,42 is not supported: labels 41,42 occur as arrow annotations, while mD5 slot numbers are 43-48.",
+        "The comparison report assigns 29/30 to MD2 target 23/24, contrary to visible arrow labels 31/32.",
+        "The longer-cable note is inconsistent or ambiguous with respect to physical locations of 41 and 42."
+      ]
+    },
+    {
+      "id": "SHORT_EBA15_EBC18",
+      "module_type": "EBA15 and EBC18 shorter modules",
+      "slot_range": [
+        5,
+        48
+      ],
+      "not_present_in_this_configuration": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "total_slots": 44,
+      "total_pmt_blocks": 30,
+      "total_empty_slots": 14,
+      "occupied_pmt_slots": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        29,
+        30,
+        33,
+        34,
+        37,
+        38,
+        41,
+        42,
+        43,
+        44
+      ],
+      "empty_slots": [
+        25,
+        26,
+        27,
+        28,
+        31,
+        32,
+        35,
+        36,
+        39,
+        40,
+        45,
+        46,
+        47,
+        48
+      ],
+      "mini_drawer_count": 3,
+      "micro_drawer_count": 2,
+      "total_mechanical_units": 5,
+      "electronic_sets": 3,
+      "schematic_board_totals": {
+        "main_board": 3,
+        "daughter_board": 3,
+        "hv_opto_board": 3
+      },
+      "mechanical_order": [
+        "MD1",
+        "MD2",
+        "mD6",
+        "MD3",
+        "mD7"
+      ],
+      "units": [
+        {
+          "id": "MD1",
+          "type": "minidrawer",
+          "slot_range": [
+            5,
+            16
+          ],
+          "slots": [
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "occupied_pmt_slots": [
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "empty_slots": [],
+          "slot_count": 12,
+          "pmt_block_count": 12,
+          "empty_count": 0,
+          "electronics_set_count": 1,
+          "schematic_boards": {
+            "main_board": 1,
+            "daughter_board": 1,
+            "hv_opto_board": 1
+          },
+          "blue_marked_positions": [
+            6,
+            7,
+            14,
+            15
+          ]
+        },
+        {
+          "id": "MD2",
+          "type": "minidrawer",
+          "slot_range": [
+            17,
+            28
+          ],
+          "slots": [
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28
+          ],
+          "occupied_pmt_slots": [
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24
+          ],
+          "empty_slots": [
+            25,
+            26,
+            27,
+            28
+          ],
+          "slot_count": 12,
+          "pmt_block_count": 8,
+          "empty_count": 4,
+          "electronics_set_count": 1,
+          "schematic_boards": {
+            "main_board": 1,
+            "daughter_board": 1,
+            "hv_opto_board": 1
+          },
+          "blue_marked_positions": [
+            18,
+            19,
+            26,
+            27
+          ]
+        },
+        {
+          "id": "mD6",
+          "type": "microdrawer",
+          "slot_range": [
+            29,
+            34
+          ],
+          "slots": [
+            29,
+            30,
+            31,
+            32,
+            33,
+            34
+          ],
+          "occupied_pmt_slots": [
+            29,
+            30,
+            33,
+            34
+          ],
+          "empty_slots": [
+            31,
+            32
+          ],
+          "slot_count": 6,
+          "pmt_block_count": 4,
+          "empty_count": 2,
+          "electronics_set_count": 0,
+          "schematic_boards": {
+            "main_board": 0,
+            "daughter_board": 0,
+            "hv_opto_board": 0
+          },
+          "blue_marked_positions": [
+            30,
+            31
+          ]
+        },
+        {
+          "id": "MD3",
+          "type": "minidrawer",
+          "slot_range": [
+            35,
+            46
+          ],
+          "slots": [
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46
+          ],
+          "occupied_pmt_slots": [
+            37,
+            38,
+            41,
+            42,
+            43,
+            44
+          ],
+          "empty_slots": [
+            35,
+            36,
+            39,
+            40,
+            45,
+            46
+          ],
+          "slot_count": 12,
+          "pmt_block_count": 6,
+          "empty_count": 6,
+          "electronics_set_count": 1,
+          "schematic_boards": {
+            "main_board": 1,
+            "daughter_board": 1,
+            "hv_opto_board": 1
+          },
+          "blue_marked_positions": [
+            36,
+            37,
+            44,
+            45
+          ]
+        },
+        {
+          "id": "mD7",
+          "type": "microdrawer",
+          "slot_range": [
+            47,
+            48
+          ],
+          "slots": [
+            47,
+            48
+          ],
+          "occupied_pmt_slots": [],
+          "empty_slots": [
+            47,
+            48
+          ],
+          "slot_count": 2,
+          "pmt_block_count": 0,
+          "empty_count": 2,
+          "electronics_set_count": 0,
+          "schematic_boards": {
+            "main_board": 0,
+            "daughter_board": 0,
+            "hv_opto_board": 0
+          },
+          "blue_marked_positions": [
+            47
+          ]
+        }
+      ],
+      "long_cable_pmt_positions_stated_in_note": [
+        29,
+        30,
+        33,
+        34
+      ],
+      "cable_arrow_annotations": [
+        {
+          "pmt_physical_slot": 29,
+          "pmt_unit": "mD6",
+          "diagram_color": "red",
+          "diagram_referenced_position": 27,
+          "referenced_unit": "MD2",
+          "relationship": "colored_curved_arrow_annotation",
+          "electrical_channel_mapping_confirmed": false,
+          "interpretation_note": "Red callout 27 is close to the left-hand mD6 PMT."
+        },
+        {
+          "pmt_physical_slot": 30,
+          "pmt_unit": "mD6",
+          "diagram_color": "green",
+          "diagram_referenced_position": 28,
+          "referenced_unit": "MD2",
+          "relationship": "colored_curved_arrow_annotation",
+          "electrical_channel_mapping_confirmed": false,
+          "interpretation_note": "Green callout 28 is close to the left-hand mD6 PMT."
+        },
+        {
+          "pmt_physical_slot": 33,
+          "pmt_unit": "mD6",
+          "diagram_color": "red",
+          "diagram_referenced_position": 35,
+          "referenced_unit": "MD3",
+          "relationship": "colored_curved_arrow_annotation",
+          "electrical_channel_mapping_confirmed": false,
+          "interpretation_note": "Red callout 35 is close to the right-hand mD6 PMT."
+        },
+        {
+          "pmt_physical_slot": 34,
+          "pmt_unit": "mD6",
+          "diagram_color": "green",
+          "diagram_referenced_position": 36,
+          "referenced_unit": "MD3",
+          "relationship": "colored_curved_arrow_annotation",
+          "electrical_channel_mapping_confirmed": false,
+          "interpretation_note": "Green callout 36 is close to the right-hand mD6 PMT."
+        }
+      ],
+      "interpretation_notes": [
+        "Positions 1-4 are absent from this short configuration, not empty installed slots.",
+        "mD7 consists of positions 47 and 48; neither contains a PMT in the drawing.",
+        "The old document title says EBA15/EBC15; the updated title says EBA15/EBC18.",
+        "The old text states 34 PMTs, but the visible graphic presents 30 and the updated graphic also presents 30.",
+        "Arrows mark relationships but do not identify verified PCB connector/channel IDs."
+      ],
+      "source_discrepancies": [
+        "The comparison report claims that old drawing shows a PMT in slot 45 and a total of 31 visually occupied; the old rendering also shows 45 as empty.",
+        "The preliminary document incorrectly states 34 PMTs in its heading."
+      ]
+    }
+  ],
+  "validation": {
+    "lb_pmt_blocks": 45,
+    "eb_pmt_blocks": 32,
+    "short_pmt_blocks": 30,
+    "verified": "Every configuration has unique contiguous slot ownership across units; occupied and empty slots partition exactly all represented slots; unit counts sum to configuration totals."
+  }
+}

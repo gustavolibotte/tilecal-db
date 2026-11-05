@@ -234,6 +234,7 @@ class EquipmentRules
             return false;
         }
         $parentTypeName = $parentType->name;
+        $managedDrawer = \App\Libraries\DrawerLayout::managed($parentTypeName);
 
         // Parent requires long cables if it is a Patch-Panel Mini Drawer or a Long Cable PMT Block
         $isLongCableParent = (strpos($parentTypeName, 'Patch-Panel') !== false) || (strpos($parentTypeName, 'Long Cable') !== false);
@@ -285,7 +286,7 @@ class EquipmentRules
             $isShortCableChild = (strpos($childTypeName, 'Short Cable') !== false) || in_array($childTypeName, ['PMT Block', 'PMT Block (Standard)']);
 
             // Critical Hardware Constraint: Cable Length Match
-            if ($isLongCableParent && $isShortCableChild) {
+            if (!$managedDrawer && $isLongCableParent && $isShortCableChild) {
                 $error = sprintf(
                     '%s: Hardware mismatch. Parent "%s" requires Long Cable components, but "%s" is a Short Cable component.',
                     $assemblySlot['name'],
@@ -296,7 +297,7 @@ class EquipmentRules
                 return false;
             }
 
-            if (!$isLongCableParent && $isLongCableChild) {
+            if (!$managedDrawer && !$isLongCableParent && $isLongCableChild) {
                 $error = sprintf(
                     '%s: Hardware mismatch. Parent "%s" requires Short Cable components, but "%s" is a Long Cable component.',
                     $assemblySlot['name'],
@@ -337,7 +338,7 @@ class EquipmentRules
                 return false;
             }
     
-            if (!$typeModel->slotAllowsEquip($assemblySlot['name'], $assemblySlot['equipment_id'])) {
+            if (!$managedDrawer && !$typeModel->slotAllowsEquip($assemblySlot['name'], $assemblySlot['equipment_id'])) {
                 $error = sprintf(
                     '%s: Slot is available but does not allow insertion of equipment %s.',
                     $assemblySlot['name'],
@@ -347,6 +348,11 @@ class EquipmentRules
                 return false;
             }
 
+        }
+        if ($managedDrawer) {
+            try {
+                \App\Libraries\DrawerAssembly::validateSlots(\App\Libraries\UpgradePosition::equipment($parentId), $data, false);
+            } catch (\DomainException $e) { $error = $e->getMessage(); return false; }
         }
         return true;
     }

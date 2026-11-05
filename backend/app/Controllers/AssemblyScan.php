@@ -26,7 +26,8 @@ final class AssemblyScan extends APIController
                 $db->transRollback();
                 return $this->buildAPIResponse(404, null, 'Equipment is not registered or has been deleted.');
             }
-            $data = ['id' => $parent, 'slots' => [['name' => $slot, 'equipment_id' => $child]]];
+            $data = ['detector_location_name' => $this->request->getGet('detector_location_name'),
+                'drawer_unit' => $this->request->getGet('drawer_unit'), 'id' => $parent, 'slots' => [['name' => $slot, 'equipment_id' => $child]]];
             $error = '';
             if ($parent === $child || !EquipmentRules::validAssemblySlots('slots', $data, $error, ['parent_id_field' => 'id'])) {
                 $db->transRollback();

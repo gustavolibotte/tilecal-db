@@ -3,6 +3,7 @@ require __DIR__ . '/../../app/Libraries/MainboardFuses.php';
 require __DIR__ . '/../../app/Libraries/EquipmentParams.php';
 require __DIR__ . '/../../app/Libraries/UpgradePosition.php';
 require __DIR__ . '/../../app/Libraries/DrawerSlotPlan.php';
+require __DIR__ . '/../../app/Libraries/DrawerLayout.php';
 require __DIR__ . '/../../app/Validation/Validator.php';
 use App\Libraries\MainboardFuses as Fuses;
 use App\Libraries\EquipmentParams as Params;
@@ -28,7 +29,7 @@ $types=[['id'=>31,'name'=>'HV Bus Board','active'=>1,'deleted_at'=>null]];
 $ids=[45,8,43,9,10,11,12];
 foreach (Positions::DRAWERS as $i=>$name) $types[]=['id'=>$ids[$i],'name'=>$name,'active'=>1,'deleted_at'=>null];
 $plan=Slots::plan($types,[],[]);
-check(count($plan)===7,'All seven drawer types');
+check(count($plan)===3,'Only mini-drawer types receive HV Bus Board slots');
 $slots=[];$allowed=[];
 foreach($plan as $i=>$item) {
  check($item['action']==='add','Initial addition');

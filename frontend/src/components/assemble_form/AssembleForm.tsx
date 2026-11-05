@@ -20,6 +20,8 @@ interface AssembleFormValues {
 
 interface AssemblyPayload {
   id: string;
+  detector_location_name?: string;
+  drawer_unit?: string;
   upgrade_resolution?: { pmt_id: string; source: string; version: string };
   slots: Array<{ name: string; equipment_id: string; upgrade_position?: number; position_version?: string }>;
 }
@@ -28,6 +30,7 @@ interface AssembleFormProps {
   parentId: string;
   parentTypeName: string;
   barcodeReaderSafe?: boolean;
+  layout?: any;
 }
 
 const formatSlotLabel = (slotName: string): string => {
@@ -52,7 +55,7 @@ const formatSlotLabel = (slotName: string): string => {
     .replace(/\b\w/g, (l) => l.toUpperCase());
 };
 
-export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSafe }: AssembleFormProps) {
+function AssemblyFields({ parentId, parentTypeName, barcodeReaderSafe, layout }: AssembleFormProps) {
   const [equipSlotErrors, setEquipSlotErrors] = useState<Array<ReactNode>>([]);
 
   // IDs become valid only after a successful server check.
@@ -93,6 +96,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       setPositionConflict(null); setPositionSource('');
       const mutationData: AssemblyPayload = {
         id: extractSequentialNumber(parentId),
+        ...(layout ? {detector_location_name: layout.profile.location, drawer_unit: layout.profile.unit} : {}),
         slots: filledSlots
           .map(([name, id]) => ({
             name,
@@ -124,6 +128,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       setShowConfirmDialog(false);
       setMutationDataPayload(null);
       setPositionConflict(null); setPositionSource('');
+      queryClient.invalidateQueries({ queryKey: ['assembly_layout'] });
       queryClient.invalidateQueries({ queryKey: ['pmt_positions'] });
       queryClient.invalidateQueries({ queryKey: ['equipment'] });
       queryClient.invalidateQueries({ queryKey: ['equipment_hist'] });
@@ -173,6 +178,8 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
     slotsToRender = namesArray.filter((n: string) => n.trim().length > 0).map((n: string) => ({ name: n.trim() }));
   }
 
+  if (layout) slotsToRender = layout.slots;
+
   if (slotsToRender.length === 0) {
     return (
       <div className="card p-3 text-yellow-600 bg-yellow-50 border-round">
@@ -185,14 +192,16 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
   const mountedData = mountedQuery.data?.data;
   const mountedRows: any[] = Array.isArray(mountedData) ? mountedData : mountedData?.data || [];
   const occupied = new Set(mountedRows.filter(row => row.relation_type === 'child' && !row.deleted_at).map(row => row.slot_name));
+  if (layout) Object.keys(layout.occupied || {}).forEach(name => occupied.add(name));
   const rank = (name: string) => name.includes('daughterboard_slot') ? 0 : name.includes('mainboard_slot') ? 1 :
     name.includes('hv_bus_board_slot') ? 2 : 3;
-  const sortedSlots = slotsToRender.filter(slot => !occupied.has(slot.name)).sort((a, b) =>
+  const remainingSlots = slotsToRender.filter(slot => !occupied.has(slot.name));
+  const sortedSlots = layout ? remainingSlots : remainingSlots.sort((a, b) =>
     rank(a.name) - rank(b.name) || a.name.localeCompare(b.name, undefined, { numeric: true }));
   if (!sortedSlots.length) return <p>All slots are already occupied.</p>;
 
   const filledSlotsCount = sortedSlots.filter(slot => formik.values[slot.name]?.trim()).length;
-  const requiredSlots = isDrawer ? sortedSlots : sortedSlots.filter(slot => formik.values[slot.name]?.trim());
+  const requiredSlots = (isDrawer || layout) ? sortedSlots : sortedSlots.filter(slot => formik.values[slot.name]?.trim());
   const isSubmitDisabled = assembleMutation.isPending || filledSlotsCount === 0 || requiredSlots.some(slot =>
     !verifiedSlots[slot.name] || (needsPosition(slot.name) && !validPositions[slot.name]));
 
@@ -239,7 +248,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
 
                     return (
                         <tr key={slot.name} className={`border-bottom-1 surface-border ${conflict ? 'bg-orange-50' : ''}`}>
-                            <td className="p-2">{formatSlotLabel(slot.name)}</td>
+                            <td className="p-2">{layout?.slots.find((item: any) => item.name === slot.name)?.label || formatSlotLabel(slot.name)}</td>
                             <td className="p-2 font-bold">{slot.equipment_id}</td>
                             <td className="p-2">
                                 {typeName}
@@ -270,7 +279,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       <form onSubmit={formik.handleSubmit} onKeyDown={barcodeReaderSafe ? preventEnterDefault : undefined}>
         <fieldset disabled={assembleMutation.isPending} style={{ border: 0, padding: 0, margin: 0 }}>
         {sortedSlots.map((slot: any) => {
-          const label = formatSlotLabel(slot.name);
+          const label = slot.label || formatSlotLabel(slot.name);
           let allowedTypes: string[] | undefined = undefined;
 
           try {
@@ -286,6 +295,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
           }
 
 
+          if (layout) allowedTypes = slot.allowed_type_ids;
           return (
             <div className="mt-4 mb-2 p-3 border-1 surface-border border-round" key={slot.name}>
               <SlotSearchInput
@@ -312,7 +322,8 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
                 validationEpoch={validationEpoch}
                 validateEquipment={async (id: string) => {
                   const response: any = await defaultQueryFunction({ queryKey: ['assembly_scan', 'get', {
-                    parent_id: scanId(parentId), equipment_id: id, slot: slot.name
+                    parent_id: scanId(parentId), equipment_id: id, slot: slot.name,
+                    ...(layout ? {detector_location_name: layout.profile.location, drawer_unit: layout.profile.unit} : {})
                   }] });
                   const equipment = response.data?.[0];
                   if (!equipment || equipment.id !== id) throw new Error('Invalid validation response. Try again.');
@@ -330,6 +341,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
               />
 
               {needsPosition(slot.name) && <UpgradePositionInput
+                expectedPosition={slot.position}
                 id={`${slot.name}-position`} value={positions[slot.name] || ''}
                 disabled={!verifiedSlots[slot.name]}
                 onChange={value => {
@@ -381,6 +393,7 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
               <i className="pi pi-exclamation-triangle text-orange-500 mr-2 text-xl align-middle"></i>
               <span className="text-lg">Please double-check the configuration before saving to the database.</span>
           </div>
+          {layout && <p><b>{layout.profile.configuration} {layout.profile.unit}</b> — Detector Location: {layout.profile.location || 'Not assigned'}</p>}
           {renderConfirmationTable()}
           {positionConflict && <fieldset className="mt-3 p-3" disabled={assembleMutation.isPending}>
             <legend>Choose Upgrade Position</legend>
@@ -398,4 +411,58 @@ export default function AssembleForm({ parentId, parentTypeName, barcodeReaderSa
       </Dialog>
     </div>
   );
+}
+
+const superDrawerTypes = ['P2 LB Super Drawer', 'P2 LB Super Drawer BSI',
+  'P2 EB Super Drawer', 'P2 EB Super Drawer BSI', 'P2 Short EB Super Drawer'];
+
+export default function AssembleForm(props: AssembleFormProps) {
+  const managed = drawerTypes.includes(props.parentTypeName) || superDrawerTypes.includes(props.parentTypeName);
+  const [location, setLocation] = useState('');
+  const [unit, setUnit] = useState('');
+  const layoutQuery: any = useQuery({
+    queryKey: ['assembly_layout', 'get', {parent_id: scanId(props.parentId), detector_location_name: location, drawer_unit: unit}],
+    queryFn: defaultQueryFunction, enabled: managed, refetchOnWindowFocus: false
+  });
+  useEffect(() => { setLocation(''); setUnit(''); }, [props.parentId, props.parentTypeName]);
+  if (!managed) return <AssemblyFields {...props} />;
+  const layout = layoutQuery.data?.data?.[0];
+  const mini = props.parentTypeName.startsWith('Mini Drawer');
+  const locationValue = location || layout?.profile?.location || layout?.current_location || '';
+  const unitValue = unit || layout?.profile?.unit || '';
+  const retry = () => layoutQuery.refetch();
+  return <div className="flex flex-column gap-3">
+    <div className="field">
+      <label className="font-bold block mb-2" htmlFor="assembly-detector-location">Detector Location</label>
+      <select id="assembly-detector-location" className="p-inputtext w-full" value={locationValue}
+        onChange={event => {setLocation(event.target.value); setUnit('');}}>
+        <option value="">Select detector module</option>
+        {(layout?.locations || []).map((name: string) => <option key={name} value={name}>{name}</option>)}
+      </select>
+      <small>Saved with the confirmed assembly. Existing assignments are preserved.</small>
+    </div>
+    {mini && <div className="field">
+      <label className="font-bold block mb-2" htmlFor="assembly-drawer-unit">Mini-drawer unit</label>
+      <select id="assembly-drawer-unit" className="p-inputtext w-full" value={unitValue} onChange={event => setUnit(event.target.value)}>
+        <option value="">Select unit</option>
+        {['MD1', 'MD2', 'MD3', 'MD4'].map(name => <option key={name} value={name}
+          disabled={name === 'MD4' && locationValue.startsWith('EB')}>{name}</option>)}
+      </select>
+    </div>}
+    {layoutQuery.isFetching && <p>Loading layout...</p>}
+    {layoutQuery.isError && <div role="alert">Could not load assembly layout. <Button type="button" label="Retry" onClick={retry} /></div>}
+    {!layoutQuery.isFetching && layout?.issues?.length > 0 && <div role="alert" className="p-message p-message-warn p-3">
+      {layout.issues.map((issue: string) => <p key={issue}>{issue}</p>)}
+      <Button type="button" label="Reload layout" onClick={retry} />
+    </div>}
+    {!layoutQuery.isFetching && layout?.ready && <>
+      <p><b>{layout.profile.configuration} {layout.profile.unit}</b>
+        {layout.physical && <> — {layout.physical.pmt_block_count} PMT blocks.
+          {' '}Empty physical positions: {layout.physical.empty_slots.join(', ') || 'None'}.</>}</p>
+      {layout.slots.length === 0
+        ? <p>This micro-drawer is a mechanical spacer. No PMT blocks or electronics boards are required.</p>
+        : <AssemblyFields key={`${props.parentId}:${layout.profile.configuration}:${layout.profile.unit}:${layout.profile.location}`}
+            {...props} layout={layout} />}
+    </>}
+  </div>;
 }

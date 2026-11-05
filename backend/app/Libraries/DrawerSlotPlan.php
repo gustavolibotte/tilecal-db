@@ -12,9 +12,10 @@ final class DrawerSlotPlan
             throw new \DomainException('Active HV Bus Board type 31 is required.');
         }
         $plan = [];
-        foreach (UpgradePosition::DRAWERS as $name) {
+        foreach (DrawerLayout::MINIS as $name) {
             $type = $byName[$name] ?? null;
-            if (!$type || $type['deleted_at'] !== null || !(int)$type['active']) {
+            if (!$type) continue; // Standard-name aliases need not all exist.
+            if ($type['deleted_at'] !== null || !(int)$type['active']) {
                 throw new \DomainException('Missing active drawer type: ' . $name);
             }
             $matches = [];

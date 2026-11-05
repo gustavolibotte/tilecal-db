@@ -6,6 +6,7 @@ interface Props {
   id: string;
   value: string;
   disabled: boolean;
+  expectedPosition?: number;
   onChange: (value: string) => void;
   onValidated: (valid: boolean) => void;
 }
@@ -18,7 +19,8 @@ export default function UpgradePositionInput(props: Props) {
   const latest = useRef(props); latest.current = props;
   const validate = (raw: string) => {
     clearTimeout(timer.current);
-    const valid = scanPosition(raw) !== null;
+    const parsed = scanPosition(raw);
+    const valid = parsed !== null && (latest.current.expectedPosition === undefined || parsed === latest.current.expectedPosition);
     setStatus(valid ? 'valid' : 'invalid'); latest.current.onValidated(valid);
     if (valid) setFocusVersion(version => version + 1);
     else (document.getElementById(latest.current.id) as HTMLInputElement)?.select();
@@ -27,12 +29,12 @@ export default function UpgradePositionInput(props: Props) {
     clearTimeout(timer.current); setStatus('idle'); latest.current.onValidated(false);
     if (props.value && !props.disabled) timer.current = setTimeout(() => validate(props.value), 400);
     return () => clearTimeout(timer.current);
-  }, [props.value, props.disabled]);
+  }, [props.value, props.disabled, props.expectedPosition]);
   return <div className="field mt-3">
     <label htmlFor={props.id} className="font-bold">Upgrade Position:</label>
     <div className="p-inputgroup mt-1">
       <InputText id={props.id} data-assembly-field value={props.value} disabled={props.disabled}
-        inputMode="numeric" autoComplete="off" placeholder="Scan position (1–48)"
+        inputMode="numeric" autoComplete="off" placeholder={props.expectedPosition === undefined ? 'Scan position (1–48)' : `Scan position ${props.expectedPosition}`}
         aria-invalid={status === 'invalid'} aria-describedby={`${props.id}-feedback`}
         onChange={event => { clearTimeout(timer.current); setStatus('idle');
           props.onValidated(false); props.onChange(event.target.value); }}
@@ -47,7 +49,7 @@ export default function UpgradePositionInput(props: Props) {
       </span>
     </div>
     <small id={`${props.id}-feedback`} role="status" className="p-error block mt-1">
-      {status === 'invalid' ? 'Enter an integer from 1 to 48.' : ''}
+      {status === 'invalid' ? props.expectedPosition === undefined ? 'Enter an integer from 1 to 48.' : `Expected physical position ${props.expectedPosition}.` : ''}
     </small>
   </div>;
 }

@@ -817,6 +817,8 @@ class Equipments extends APIController
         helper(['cast', 'response']);
         $inputData = std_to_array($inputData);
         $request = $this->request->getJSON(true);
+        $inputData['detector_location_name'] = $request['detector_location_name'] ?? '';
+        $inputData['drawer_unit'] = $request['drawer_unit'] ?? '';
         $resolution = $request['upgrade_resolution'] ?? null;
         if ($resolution !== null && !is_array($resolution)) return $this->failBadRequest();
         // Lock the participants before checking slots; concurrent assemblies must revalidate.
@@ -842,6 +844,8 @@ class Equipments extends APIController
             return failValidationErrors($validationRes['errors'], $inputData);
         }
         $validInput = $validationRes['validatedData'];
+        $parentRow = UpgradePosition::equipment($validInput['id']);
+        $drawerProfile = \App\Libraries\DrawerAssembly::validateSlots($parentRow, $inputData, true);
 
         $db = db_connect();
         $equipmentModel = model('EquipmentModel');
@@ -858,6 +862,7 @@ class Equipments extends APIController
             $slotId = $typeSlotModel
                 ->select('id')
                 ->where('name', $slotInfo['name'])
+                ->where('parent_type_id', $parentRow['type_id'])
                 ->first()->id;
             $equipmentModel->updateParent(
                 $slotInfo['equipment_id'],
@@ -866,6 +871,10 @@ class Equipments extends APIController
                 $resolution,
                 $positionPlans[$slotInfo['equipment_id']]
             );
+        }
+        if ($drawerProfile !== null) {
+            \App\Libraries\DrawerAssembly::persist($parentRow, $drawerProfile, $validInput['slots']);
+            \App\Libraries\DrawerAssembly::validateExisting(UpgradePosition::equipment($validInput['id']), $drawerProfile, true);
         }
         return buildAPIResponse(200, message: 'Assembled');
     }
