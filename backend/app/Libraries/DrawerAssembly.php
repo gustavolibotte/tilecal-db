@@ -165,14 +165,57 @@ final class DrawerAssembly
     }
     public static function saveProfile(array $equipment, array $profile): void
     {
-        $changes = [self::PARAM => ['configuration' => $profile['configuration'], 'unit' => $profile['unit']]];
-        UpgradePosition::write($equipment, $changes);
+        // Read the current row inside the assembly transaction.
+        $equipment = UpgradePosition::equipment($equipment['id']);
+        $params = UpgradePosition::params($equipment);
+        $changes = [];
+
+        $newProfile = [
+            'configuration' => $profile['configuration'],
+            'unit' => $profile['unit'],
+        ];
+
+        $storedProfile = $params[self::PARAM] ?? null;
+        if ($storedProfile instanceof \stdClass) {
+            $storedProfile = get_object_vars($storedProfile);
+        }
+
+        if ($storedProfile !== $newProfile) {
+            // Preserve all other equipment parameters.
+            $params[self::PARAM] = $newProfile;
+            $changes['type_params'] = $params;
+        }
+
         if (self::location($equipment) === '' && $profile['location'] !== '') {
-            $location = db_connect()->table('detector_locations')->where('name', $profile['location'])->where('deleted_at', null)->get()->getRowArray();
-            if (!$location) throw new \DomainException('Detector Location is not registered.');
-            if (!model('EquipmentModel')->update($equipment['id'], new Equipment(['detector_location_id' => $location['id']]))) {
-                throw new \RuntimeException('Could not save Detector Location.');
+            $location = db_connect()
+                ->table('detector_locations')
+                ->where('name', $profile['location'])
+                ->where('deleted_at', null)
+                ->get()
+                ->getRowArray();
+
+            if (!$location) {
+                throw new \DomainException(
+                    'Detector Location is not registered.'
+                );
             }
+
+            $changes['detector_location_id'] = $location['id'];
+        }
+
+        if ($changes === []) {
+            return;
+        }
+
+        // Save the profile and location together so the audit trigger
+        // receives one equipment update for this operation.
+        if (!model('EquipmentModel')->update(
+            $equipment['id'],
+            new Equipment($changes)
+        )) {
+            throw new \RuntimeException(
+                'Could not save drawer assembly profile and Detector Location.'
+            );
         }
     }
     public static function persist(array $parent, array $profile, array $entries): void
