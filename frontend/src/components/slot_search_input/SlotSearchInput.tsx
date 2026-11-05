@@ -97,7 +97,7 @@ export default function SlotSearchInput(props: SlotSearchInputProps) {
     setSearching(true); setOpen(true);
     try {
       const params: any = { id: value.trim(), id_matchMode: 'contains' };
-      if (allowedTypes?.length) params.type_name = allowedTypes;
+      if (allowedTypes?.length) params.type_id = allowedTypes;
       const response: any = await defaultQueryFunction({ queryKey: ['equipment', 'get', params] });
       setResults(Array.isArray(response.data) ? response.data : response.data?.data || []);
     } catch { setResults([]); setMessage('Search failed. Try again.'); }

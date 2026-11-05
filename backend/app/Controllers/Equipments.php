@@ -44,6 +44,7 @@ class Equipments extends APIController
         $inputRules = [
             'id' => ['\App\Validation\GeneralRules::permitEmpty' => []],
             'id_matchMode' => ['\App\Validation\GeneralRules::permitEmpty' => []],
+            'type_id' => ['\App\Validation\GeneralRules::permitEmpty' => []],
             'type_name' => ['\App\Validation\GeneralRules::permitEmpty' => []],
             'type_name_matchMode' => ['\App\Validation\GeneralRules::permitEmpty' => []],
             'status_name' => ['\App\Validation\GeneralRules::permitEmpty' => []],
@@ -100,6 +101,19 @@ class Equipments extends APIController
             $equipmentModel = $this->parseDynamicFilter($idFilter, $idMatchMode, 'equipments.id', $equipmentModel);
         }
         
+        // Assembly slots provide type IDs, not type names.
+        $typeIds = $validInput['type_id'] ?? null;
+        if ($typeIds !== null && $typeIds !== '' && $typeIds !== []) {
+            $typeIds = is_array($typeIds) ? $typeIds : [$typeIds];
+            foreach ($typeIds as $typeId) {
+                if (!(is_string($typeId) || is_int($typeId)) ||
+                    !preg_match('/^[1-9][0-9]*$/D', (string)$typeId)) {
+                    return $this->failBadRequest();
+                }
+            }
+            $equipmentModel->whereIn('equipments.type_id', $typeIds);
+        }
+
         $equipmentModel = $this->parseDynamicFilter($validInput['type_name'] ?? null, $validInput['type_name_matchMode'] ?? 'equals', 'equipment_types.name', $equipmentModel);
         $equipmentModel = $this->parseDynamicFilter($validInput['status_name'] ?? null, $validInput['status_name_matchMode'] ?? 'equals', 'statuses.name', $equipmentModel);
         $equipmentModel = $this->parseDynamicFilter($validInput['location_name'] ?? null, $validInput['location_name_matchMode'] ?? 'equals', 'locations.name', $equipmentModel);
@@ -780,6 +794,7 @@ class Equipments extends APIController
             return $this->buildAPIResponse(409, null, $e->getMessage());
         } catch (Throwable $e) {
             $db->transRollback();
+            log_message('error', 'Drawer assembly failed: {exception}', ['exception' => $e]);
             return $this->failInternalError($e);
         }
     }

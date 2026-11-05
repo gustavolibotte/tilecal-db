@@ -47,6 +47,7 @@ final class AssemblyScan extends APIController
             return $this->buildAPIResponse(409, null, $e->getMessage());
         } catch (Throwable $e) {
             $db->transRollback();
+            log_message('error', 'Assembly scan failed: {exception}', ['exception' => $e]);
             return $this->failInternalError($e);
         }
     }
