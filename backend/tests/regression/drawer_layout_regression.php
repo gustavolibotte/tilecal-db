@@ -49,7 +49,7 @@ check(array_values(array_column(array_filter($specs,fn($s)=>isset($s['position']
  'mini_drawer_pmt_block_slot_03','mini_drawer_pmt_block_slot_04','mini_drawer_pmt_block_slot_07',
  'mini_drawer_pmt_block_slot_08','mini_drawer_pmt_block_slot_11','mini_drawer_pmt_block_slot_12'], 'Mini slots preserve local physical numbering across empty positions');
 foreach($specs as $slot) if(isset($slot['position'])) {
- check($slot['types']===(in_array($slot['position'],[41,42])?['PMT Block (Long Cable)']:['PMT Block','PMT Block (Standard)']),'Cable type follows physical position');
+ check($slot['types']===\App\Libraries\UpgradePosition::BLOCKS && $slot['cable']===(in_array($slot['position'],[41,42])?'Long Cable':'Short Cable'),'Cable type follows physical position');
 }
 $catalog=[['id'=>91,'name'=>'drawer_8_hv_bus_board_slot']];
 $bound=Assembly::bind($specs,$catalog);

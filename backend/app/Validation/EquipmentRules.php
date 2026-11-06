@@ -236,6 +236,8 @@ class EquipmentRules
         $parentTypeName = $parentType->name;
         $managedDrawer = \App\Libraries\DrawerLayout::managed($parentTypeName);
 
+        $blockParent = in_array($parentTypeName, \App\Libraries\UpgradePosition::BLOCKS, true);
+
         // Parent requires long cables if it is a Patch-Panel Mini Drawer or a Long Cable PMT Block
         $isLongCableParent = (strpos($parentTypeName, 'Patch-Panel') !== false) || (strpos($parentTypeName, 'Long Cable') !== false);
 
@@ -292,7 +294,7 @@ class EquipmentRules
             }
 
             // Critical Hardware Constraint: Cable Length Match
-            if (!$managedDrawer && $isLongCableParent && $isShortCableChild) {
+            if (!$managedDrawer && !$blockParent && $isLongCableParent && $isShortCableChild) {
                 $error = sprintf(
                     '%s: Hardware mismatch. Parent "%s" requires Long Cable components, but "%s" is a Short Cable component.',
                     $assemblySlot['name'],
@@ -303,7 +305,7 @@ class EquipmentRules
                 return false;
             }
 
-            if (!$managedDrawer && !$isLongCableParent && $isLongCableChild) {
+            if (!$managedDrawer && !$blockParent && !$isLongCableParent && $isLongCableChild) {
                 $error = sprintf(
                     '%s: Hardware mismatch. Parent "%s" requires Short Cable components, but "%s" is a Long Cable component.',
                     $assemblySlot['name'],

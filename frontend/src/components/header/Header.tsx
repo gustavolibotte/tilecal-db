@@ -11,6 +11,7 @@ const GITLAB_ISSUES_URL = 'https://gitlab.cern.ch/tilecal-p2-db/tilecal-db/-/iss
 const DOCS_URL = 'https://tilecal-p2-db.docs.cern.ch/';
 
 interface EquipType {
+  id: string | number;
   name: string;
 }
 
@@ -58,8 +59,9 @@ export default function Header() {
     if (equipTypes.length > 0) {
       registerItems.push({ separator: true });
       equipTypes.forEach((et: EquipType) => {
+        if (et.name.startsWith('PMT Block') && Number(et.id) !== 5) return;
         registerItems.push({
-          label: et.name,
+          label: Number(et.id) === 5 ? 'PMT Block' : et.name,
           command: () => navigate(getEquipRegisterRoute(et.name))
         });
       });

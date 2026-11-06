@@ -7,6 +7,7 @@ namespace App\Entities {
 namespace App\Models { class LogModel { protected $db; } }
 namespace App\Libraries {
     final class UpgradePosition {
+        public const BLOCKS = ['PMT Block', 'PMT Block (Standard)', 'PMT Block (Long Cable)'];
         public const DRAWERS = ['Mini Drawer', 'Mini Drawer (Standard)', 'Mini Drawer (With Patch-Panel)', 'Micro Drawer 4', 'Micro Drawer 5', 'Micro Drawer 6', 'Micro Drawer 7'];
         public static function equipment(string $id): array { return \State::$rows[$id]; }
         public static function params(array $row): array { return $row['type_params'] ?? []; }
@@ -24,6 +25,7 @@ namespace {
     require __DIR__ . '/../../app/Models/EquipmentModel.php';
     use App\Libraries\DrawerAssembly as Assembly;
     use App\Libraries\DrawerLayout as Layout;
+    use App\Libraries\UpgradePosition;
     class State {
         public static array $rows = [], $links = [], $catalog = [], $updates = [];
         public static int $nextSlot = 1;
@@ -87,6 +89,13 @@ namespace {
         foreach (Assembly::slots($row, $profile) as $slot) {
             $id = 'C' . str_pad((string)count(State::$rows), 6, '0', STR_PAD_LEFT);
             State::$rows[$id] = ['id'=>$id,'type_name'=>$slot['types'][0], 'type_id'=>$slot['types']===['HV Bus Board']?31:99,'type_params'=>[], 'position'=>$slot['position']??null];
+            if (isset($slot['cable'])) {
+                foreach (['FENICS', 'Active HV Divider'] as $index => $family) {
+                    $part = $id . $index;
+                    State::$rows[$part] = ['type_name' => $family . ' (' . $slot['cable'] . ')'];
+                    State::$links[] = ['parent_equip_id'=>$id,'child_equip_id'=>$part,'slot_id'=>1000+$index];
+                }
+            }
             State::$links[] = ['parent_equip_id'=>$row['id'],'child_equip_id'=>$id,'slot_id'=>$slot['slot_id']];
         }
     }
@@ -132,6 +141,23 @@ namespace {
         $blockLink=array_values(array_filter(State::$links,fn($r)=>$r['parent_equip_id']===$first))[3];
         State::$rows[$blockLink['child_equip_id']]['position']=48;
         rejects(fn()=>Assembly::validateExisting(State::$rows[$parent['id']],$profile,true),'existing Upgrade Position');
+    }
+    foreach ([41 => 'PB00095', 42 => 'PB00097'] as $position => $id) {
+        $block = ['id' => $id, 'type_name' => 'PMT Block', 'type_id' => 2];
+        $slot = ['position' => $position, 'label' => "position $position", 'types' => UpgradePosition::BLOCKS, 'cable' => 'Long Cable'];
+        State::$links = [];
+        foreach (['FENICS', 'Active HV Divider'] as $family) {
+            State::$rows[$family] = ['type_name' => "$family (Long Cable)"];
+            State::$links[] = ['parent_equip_id' => $id, 'child_equip_id' => $family];
+        }
+        Assembly::validateChild([], [], $slot, $block, true);
+        foreach (['FENICS', 'Active HV Divider'] as $family) {
+            State::$rows[$family]['type_name'] = "$family (Short Cable)";
+            rejects(fn()=>Assembly::validateChild([], [], $slot, $block, true), "$family (Long Cable)");
+            State::$rows[$family]['type_name'] = "$family (Long Cable)";
+        }
+        array_pop(State::$links);
+        rejects(fn()=>Assembly::validateChild([], [], $slot, $block, false), 'Mounted: none');
     }
     // Real updateParent + real profileChanges + real persist, with an audit-sensitive fake model.
     State::$rows = State::$links = State::$catalog = State::$updates = []; State::$nextSlot=1;

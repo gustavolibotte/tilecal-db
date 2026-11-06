@@ -426,7 +426,7 @@ export default function EquipBatchForm() {
     <div className="card p-4 shadow-2 border-round">
       <div className="mb-4">
         <label className="font-bold block mb-2 text-700">1. Select Equipment Category</label>
-        <Dropdown value={selectedType} options={equipTypesQuery.data?.data?.map((t:any)=>({label:t.name, value:t.name})) || []} 
+        <Dropdown value={selectedType} options={equipTypesQuery.data?.data?.filter((t:any) => !t.name.startsWith('PMT Block') || Number(t.id) === 5).map((t:any)=>({label:Number(t.id) === 5 ? 'PMT Block' : t.name, value:t.name})) || []}
           onChange={(e) => {setSelectedType(e.value);}} 
           placeholder="Choose the Equipment Type" className="w-full md:w-30rem" />
         {selectedType && <Message severity="info" text={smartHint} className="mt-3 w-full justify-content-start" />}

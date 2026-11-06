@@ -235,6 +235,19 @@ class Equipments extends APIController
         );
     }
 
+    private function registrationType(string $name): string
+    {
+        if (!in_array($name, UpgradePosition::BLOCKS, true)) return $name;
+        if ($name === 'PMT Block (Long Cable)') {
+            throw new \DomainException('Register a PMT Block and install the required FENICS and divider.');
+        }
+        $type = model('EquipmentTypeModel')->find(5);
+        if (!$type || !$type->active || !in_array($type->name, ['PMT Block', 'PMT Block (Standard)'], true)) {
+            throw new \DomainException('Check the active PMT Block catalog entry for type 5.');
+        }
+        return $type->name;
+    }
+
     private function createEquipmentInstance(array $inputData): string
     {
         helper(['app_array']);
@@ -247,6 +260,7 @@ class Equipments extends APIController
             throw new \Exception("Missing equipment type.");
         }
 
+        $inputData['type_name'] = $this->registrationType($inputData['type_name']);
         $registerRules = EquipmentRules::getRegisterRulesFromTypeName($inputData['type_name']);
         $validationRes = Validator::validate($inputData, $registerRules);
 
@@ -429,6 +443,12 @@ class Equipments extends APIController
             }
 
             if (!empty($row['type_name'])) {
+                try {
+                    $row['type_name'] = $this->registrationType($row['type_name']);
+                } catch (\DomainException $e) {
+                    $rowStatus['valid'] = false;
+                    $rowStatus['errors']['type_name'] = $e->getMessage();
+                }
                 $registerRules = EquipmentRules::getRegisterRulesFromTypeName($row['type_name']);
                 $validationRes = Validator::validate($row, $registerRules);
                 if (!$validationRes['valid']) {

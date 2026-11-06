@@ -82,7 +82,8 @@ final class DrawerLayout
             $localSlot = $mini ? $position - $unit['slot_range'][0] + 1 : $index + 1;
             $slots[] = ['name' => sprintf('%s_pmt_block_slot_%02d', $prefix, $localSlot),
                 'label' => 'PMT Block — position ' . $position, 'position' => $position,
-                'types' => $long ? ['PMT Block (Long Cable)'] : ['PMT Block', 'PMT Block (Standard)']];
+                'cable' => $long ? 'Long Cable' : 'Short Cable',
+                'types' => UpgradePosition::BLOCKS];
         }
         return $slots;
     }

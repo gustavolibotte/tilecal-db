@@ -243,15 +243,17 @@ function AssemblyFields({ parentId, parentTypeName, barcodeReaderSafe, layout }:
                     const conflict = hasPosition && currentPosition != null && Number(currentPosition) !== slot.upgrade_position;
 
                     // Identify cable specifications for visual highlighting
-                    const isShortCable = typeName.includes('Short Cable') || typeName === 'PMT Block' || typeName === 'PMT Block (Standard)';
-                    const isLongCable = typeName.includes('Long Cable');
+                    const slotCable = layout?.slots.find((item: any) => item.name === slot.name)?.cable;
+                    const isBlock = typeName.startsWith('PMT Block');
+                    const isShortCable = isBlock ? slotCable === 'Short Cable' : typeName.includes('Short Cable');
+                    const isLongCable = isBlock ? slotCable === 'Long Cable' : typeName.includes('Long Cable');
 
                     return (
                         <tr key={slot.name} className={`border-bottom-1 surface-border ${conflict ? 'bg-orange-50' : ''}`}>
                             <td className="p-2">{layout?.slots.find((item: any) => item.name === slot.name)?.label || formatSlotLabel(slot.name)}</td>
                             <td className="p-2 font-bold">{slot.equipment_id}</td>
                             <td className="p-2">
-                                {typeName}
+                                {isBlock ? 'PMT Block' : typeName}
                                 {isShortCable && <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-800 border-round font-bold text-xs">SHORT CABLE</span>}
                                 {isLongCable && <span className="ml-2 px-2 py-1 bg-teal-100 text-teal-800 border-round font-bold text-xs">LONG CABLE</span>}
                             </td>

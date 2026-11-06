@@ -32,11 +32,11 @@ final class ConfigureDrawerLayouts extends BaseCommand
             if ((int)($byName['HV Bus Board']['id'] ?? 0) !== 31) throw new \DomainException('Active HV Bus Board type 31 is required.');
             $planned = [];
             foreach ($byName as $name => $type) {
-                if ($name === 'PMT Block (Standard)') {
+                if (in_array($name, \App\Libraries\UpgradePosition::BLOCKS, true)) {
                     $required = [
-                        'pmt_block_electronics_slot' => 'FENICS (Short Cable)',
-                        'pmt_block_hv_divider_slot' => 'Active HV Divider (Short Cable)',
-                        'pmt_block_pmt_slot' => 'PMT',
+                        'pmt_block_electronics_slot' => ['FENICS (Short Cable)', 'FENICS (Long Cable)'],
+                        'pmt_block_hv_divider_slot' => ['Active HV Divider (Short Cable)', 'Active HV Divider (Long Cable)'],
+                        'pmt_block_pmt_slot' => ['PMT'],
                     ];
                     foreach ($required as $slotName => $childType) {
                         $id = null;
@@ -48,7 +48,7 @@ final class ConfigureDrawerLayouts extends BaseCommand
                         }
                         $planned[$type['id'] . ':' . $slotName] = [
                             'slot_id' => $id, 'parent_type_id' => $type['id'],
-                            'name' => $slotName, 'types' => [$childType],
+                            'name' => $slotName, 'types' => $childType,
                         ];
                     }
                     continue;
@@ -87,7 +87,7 @@ final class ConfigureDrawerLayouts extends BaseCommand
                 foreach ($slot['types'] as $allowedName) {
                     if (!isset($byName[$allowedName])) {
                         // Standard-name aliases are optional, but at least one allowed type must exist.
-                        if (in_array($allowedName, ['Mini Drawer', 'Mini Drawer (Standard)', 'PMT Block', 'PMT Block (Standard)'], true)) continue;
+                        if (in_array($allowedName, ['Mini Drawer', 'Mini Drawer (Standard)', 'PMT Block', 'PMT Block (Standard)', 'PMT Block (Long Cable)'], true)) continue;
                         throw new \DomainException('Missing active type: ' . $allowedName);
                     }
                     $typeId = $byName[$allowedName]['id']; $found = false;

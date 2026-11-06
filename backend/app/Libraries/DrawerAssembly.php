@@ -97,6 +97,23 @@ final class DrawerAssembly
     public static function validateChild(array $parent, array $profile, array $slot, array $child, bool $complete): void
     {
         self::checkType($slot, $child);
+        if (isset($slot['cable'])) {
+            $required = ['FENICS', 'Active HV Divider'];
+            $mounted = [];
+            foreach (UpgradePosition::relations($child['id'], 'parent') as $relation) {
+                $part = UpgradePosition::equipment($relation['child_equip_id']);
+                $mounted[] = $part['type_name'];
+            }
+            foreach ($required as $family) {
+                $expected = $family . ' (' . $slot['cable'] . ')';
+                $found = array_values(array_filter($mounted, static fn($type) =>
+                    $type === $family || str_starts_with($type, $family . ' (')));
+                if ($found !== [$expected]) {
+                    throw new \DomainException(sprintf('%s: %s requires %s. Mounted: %s.',
+                        $slot['label'], $child['id'], $expected, implode(', ', $found) ?: 'none'));
+                }
+            }
+        }
         if (!isset($slot['unit'])) return;
         $location = self::location($child);
         if ($location !== '' && $profile['location'] !== '' && $location !== $profile['location']) {
