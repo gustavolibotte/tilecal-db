@@ -285,6 +285,12 @@ class EquipmentRules
             // Treat standard PMT Blocks as short cable components
             $isShortCableChild = (strpos($childTypeName, 'Short Cable') !== false) || in_array($childTypeName, ['PMT Block', 'PMT Block (Standard)']);
 
+            if (in_array($parentTypeName, \App\Libraries\UpgradePosition::BLOCKS, true)
+                && in_array($childTypeName, \App\Libraries\UpgradePosition::BLOCKS, true)) {
+                $error = self::processSlotError('A PMT Block cannot contain another PMT Block.', $index);
+                return false;
+            }
+
             // Critical Hardware Constraint: Cable Length Match
             if (!$managedDrawer && $isLongCableParent && $isShortCableChild) {
                 $error = sprintf(
@@ -338,7 +344,7 @@ class EquipmentRules
                 return false;
             }
     
-            if (!$managedDrawer && !$typeModel->slotAllowsEquip($assemblySlot['name'], $assemblySlot['equipment_id'])) {
+            if (!$managedDrawer && !$typeModel->slotAllowsEquip($assemblySlot['name'], $assemblySlot['equipment_id'], (int)$parentEquip->type_id)) {
                 $error = sprintf(
                     '%s: Slot is available but does not allow insertion of equipment %s.',
                     $assemblySlot['name'],

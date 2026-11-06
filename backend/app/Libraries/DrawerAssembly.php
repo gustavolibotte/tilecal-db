@@ -139,7 +139,11 @@ final class DrawerAssembly
             }
             $occupied[$slot['name']] = $child['id'];
         }
-        if ($complete && count($occupied) !== count($specs)) throw new \DomainException($parent['id'] . ': drawer assembly is incomplete.');
+        if ($complete && count($occupied) !== count($specs)) {
+            $missing = array_filter($specs, static fn($slot) => !isset($occupied[$slot['name']]));
+            throw new \DomainException($parent['id'] . ': drawer assembly is incomplete. Missing: '
+                . implode(', ', array_column($missing, 'label')) . '. Complete this drawer before mounting it into the super-drawer.');
+        }
         return $occupied;
     }
     public static function validateSlots(array $parent, array $input, bool $complete): ?array
@@ -154,7 +158,8 @@ final class DrawerAssembly
             if (!$slot || $slot['slot_id'] === null) throw new \DomainException('Slot is unavailable for this layout. Run assembly:configure-layouts if metadata is missing.');
             if (isset($occupied[$slot['name']])) throw new \DomainException('Selected slot is already occupied.');
             $child = UpgradePosition::equipment($entry['equipment_id']);
-            self::validateChild($parent, $profile, $slot, $child, $complete);
+            // A selected drawer must be ready even during the read-only ID scan.
+            self::validateChild($parent, $profile, $slot, $child, $complete || isset($slot['unit']));
             if ($complete && isset($slot['position']) && ($entry['upgrade_position'] ?? null) !== $slot['position']) {
                 throw new \DomainException($slot['label'] . ': scanned Upgrade Position must be ' . $slot['position'] . '.');
             }
@@ -163,7 +168,8 @@ final class DrawerAssembly
         if ($complete && count($occupied) !== count($specs)) throw new \DomainException('Fill all occupied positions and electronics slots in the selected layout.');
         return $profile;
     }
-    public static function saveProfile(array $equipment, array $profile): void
+    /** Build changes without writing; attachment combines them with status/location. */
+    public static function profileChanges(array $equipment, array $profile): array
     {
         // Read the current row inside the assembly transaction.
         $equipment = UpgradePosition::equipment($equipment['id']);
@@ -180,7 +186,8 @@ final class DrawerAssembly
             $storedProfile = get_object_vars($storedProfile);
         }
 
-        if ($storedProfile !== $newProfile) {
+        if (!is_array($storedProfile) || ($storedProfile['configuration'] ?? null) !== $profile['configuration']
+            || ($storedProfile['unit'] ?? null) !== $profile['unit']) {
             // Preserve all other equipment parameters.
             $params[self::PARAM] = $newProfile;
             $changes['type_params'] = $params;
@@ -203,9 +210,13 @@ final class DrawerAssembly
             $changes['detector_location_id'] = $location['id'];
         }
 
-        if ($changes === []) {
-            return;
-        }
+        return $changes;
+    }
+
+    public static function saveProfile(array $equipment, array $profile): void
+    {
+        $changes = self::profileChanges($equipment, $profile);
+        if ($changes === []) return;
 
         // Save the profile and location together so the audit trigger
         // receives one equipment update for this operation.
@@ -221,12 +232,6 @@ final class DrawerAssembly
     public static function persist(array $parent, array $profile, array $entries): void
     {
         self::saveProfile($parent, $profile);
-        if (!isset(DrawerLayout::SUPERS[$parent['type_name']])) return;
-        $slots = self::slots($parent, $profile);
-        foreach ($entries as $entry) foreach ($slots as $slot) if ($slot['name'] === $entry['name']) {
-            $child = UpgradePosition::equipment($entry['equipment_id']);
-            self::saveProfile($child, ['configuration' => $profile['configuration'], 'unit' => $slot['unit'],
-                'location' => $profile['location'] ?: self::location($child)]);
-        }
+        // Child profiles are saved by updateParent in the same equipment UPDATE.
     }
 }

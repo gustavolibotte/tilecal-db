@@ -873,7 +873,17 @@ class Equipments extends APIController
                 ?? UpgradePosition::prepareAssembly(
                 $validInput['id'], $slotInfo['equipment_id'], $resolution);
         }
+        $drawerSlots = $drawerProfile !== null
+            ? array_column(\App\Libraries\DrawerAssembly::slots($parentRow, $drawerProfile), null, 'name') : [];
         foreach ($validInput['slots'] as $slotInfo) {
+            $childProfile = null;
+            if (isset($drawerSlots[$slotInfo['name']]['unit'])) {
+                $childProfile = [
+                    'configuration' => $drawerProfile['configuration'],
+                    'unit' => $drawerSlots[$slotInfo['name']]['unit'],
+                    'location' => $drawerProfile['location'],
+                ];
+            }
             $slotId = $typeSlotModel
                 ->select('id')
                 ->where('name', $slotInfo['name'])
@@ -884,7 +894,8 @@ class Equipments extends APIController
                 $validInput['id'],
                 $slotId,
                 $resolution,
-                $positionPlans[$slotInfo['equipment_id']]
+                $positionPlans[$slotInfo['equipment_id']],
+                $childProfile
             );
         }
         if ($drawerProfile !== null) {

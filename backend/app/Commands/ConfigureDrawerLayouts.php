@@ -32,6 +32,27 @@ final class ConfigureDrawerLayouts extends BaseCommand
             if ((int)($byName['HV Bus Board']['id'] ?? 0) !== 31) throw new \DomainException('Active HV Bus Board type 31 is required.');
             $planned = [];
             foreach ($byName as $name => $type) {
+                if ($name === 'PMT Block (Standard)') {
+                    $required = [
+                        'pmt_block_electronics_slot' => 'FENICS (Short Cable)',
+                        'pmt_block_hv_divider_slot' => 'Active HV Divider (Short Cable)',
+                        'pmt_block_pmt_slot' => 'PMT',
+                    ];
+                    foreach ($required as $slotName => $childType) {
+                        $id = null;
+                        foreach ($allSlots as $existing) {
+                            if ((int)$existing['parent_type_id'] === (int)$type['id']
+                                && $existing['name'] === $slotName && $existing['deleted_at'] === null) {
+                                $id = $existing['id'];
+                            }
+                        }
+                        $planned[$type['id'] . ':' . $slotName] = [
+                            'slot_id' => $id, 'parent_type_id' => $type['id'],
+                            'name' => $slotName, 'types' => [$childType],
+                        ];
+                    }
+                    continue;
+                }
                 if (!DrawerLayout::managed($name)) continue;
                 $profiles = [];
                 if (isset(DrawerLayout::SUPERS[$name])) $profiles[] = DrawerLayout::profile($name, '', '');

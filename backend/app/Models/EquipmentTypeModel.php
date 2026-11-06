@@ -108,7 +108,7 @@ class EquipmentTypeModel extends LogModel
      * 
      * @return bool true if equipment is allowed in the slot
      */
-    public function slotAllowsEquip(string $slotName, string $equipmentId): bool
+    public function slotAllowsEquip(string $slotName, string $equipmentId, int $parentTypeId): bool
     {
         $res = $this->builder('type_slots ts')
             ->select('1')
@@ -116,6 +116,9 @@ class EquipmentTypeModel extends LogModel
             ->join('equipments e', 'ats.allowed_type_id=e.type_id')
             ->where('e.id', $equipmentId)
             ->where('ts.name', $slotName)
+            ->where('ts.parent_type_id', $parentTypeId)
+            ->where('ts.deleted_at', null)
+            ->where('ats.deleted_at', null)
             ->get()->getFirstRow('array');
         return isset($res);
     }

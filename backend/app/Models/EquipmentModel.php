@@ -244,7 +244,7 @@ class EquipmentModel extends LogModel
      * 
      * @return bool Always true
      */
-    public function updateParent(string $childId, string $parentId, int $slotId, ?array $resolution = null, ?array $positionPlan = null): bool
+    public function updateParent(string $childId, string $parentId, int $slotId, ?array $resolution = null, ?array $positionPlan = null, ?array $drawerProfile = null): bool
     {
         $this->db->transException(true)->transBegin();
         try {
@@ -261,6 +261,14 @@ class EquipmentModel extends LogModel
                 'status_id' => $status->id
             ]);
             if ($positionParams !== null) $child->type_params = $positionParams;
+            if ($drawerProfile !== null) {
+                if ($positionParams !== null) throw new \LogicException('Drawer profile and PMT position plans cannot be combined.');
+                foreach (\App\Libraries\DrawerAssembly::profileChanges(
+                    UpgradePosition::equipment($childId), $drawerProfile
+                ) as $field => $value) {
+                    $child->$field = $value;
+                }
+            }
             if (!$this->update($childId, $child)) throw new \RuntimeException('Could not update mounted equipment.');
             if (!$this->db->transStatus() || !$this->db->transCommit()) {
                 throw new \RuntimeException('Could not commit equipment changes.');
